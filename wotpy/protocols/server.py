@@ -5,6 +5,10 @@
 class BaseProtocolServer(object):
     """Base protocol server class."""
 
+    def __init__(self, port, scheme):
+        self._port = port
+        self._scheme = scheme
+
     def add_resource(self, path, resource_listener):
         """Adds a resource listener under the given path."""
 
@@ -29,10 +33,10 @@ class BaseProtocolServer(object):
     def port(self):
         """Port getter."""
 
-        return None
+        return self._port
 
     @property
     def scheme(self):
         """Scheme getter."""
 
-        return None
+        return self._scheme
