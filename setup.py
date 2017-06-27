@@ -1,7 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
 from setuptools import setup, find_packages
+
+install_requires = [
+    'tornado>=4.0,<5.0'
+]
+
+# concurrent.futures is a built-in in Python 3 but needs a backport in Python 2
+
+if sys.version_info[0] == 2:
+    install_requires.append('futures>=3.0,<4.0')
 
 setup(
     name='wotpy',
@@ -21,8 +31,7 @@ setup(
     ],
     packages=find_packages(),
     include_package_data=True,
-    install_requires=[
-    ],
+    install_requires=install_requires,
     extras_require={
         'tests': [
             'pytest',
