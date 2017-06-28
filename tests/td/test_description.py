@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import random
 import copy
 
 # noinspection PyPackageRequirements
 import pytest
 from jsonschema import ValidationError
 
-from wotpy.td.description import ThingDescription
 from tests.utils import random_dict_mess
+from wotpy.td.description import ThingDescription
 
 TEST_TD = {
     "@context": [
