@@ -22,7 +22,7 @@ setup(
     author_email='andres.garcia@fundacionctic.org',
     url='https://bitbucket.org/fundacionctic/wot-py',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'Operating System :: Unix',
