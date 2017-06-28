@@ -3,7 +3,50 @@
 
 import json
 
-from wotpy.td.interaction import Interaction
+from jsonschema import validate
+
+from wotpy.td.interaction import Interaction, InteractionTypes
+
+SCHEMA_THING_DESCRIPTION = {
+    '$schema': 'http://json-schema.org/schema#',
+    'id': 'http://fundacionctic.org/schemas/thing-description.json',
+    'type': 'object',
+    'properties': {
+        '@context': {
+            'oneOf': [
+                {'type': 'string'},
+                {
+                    'type': 'array',
+                    'items': {
+                        'oneOf': [
+                            {'type': 'string'},
+                            {'type': 'object'}
+                        ]
+                    }
+                }
+            ]
+        },
+        'name': {'type': 'string'},
+        'base': {'type': 'string'},
+        '@type': {
+            'type': 'array',
+            'items': {'type': 'string'}
+        },
+        'interaction': {
+            'type': 'array',
+            'items': {
+                'anyOf': [
+                    Interaction.schema(InteractionTypes.PROPERTY),
+                    Interaction.schema(InteractionTypes.ACTION),
+                    Interaction.schema(InteractionTypes.EVENT)
+                ]
+            }
+        }
+    },
+    'required': [
+        'name'
+    ]
+}
 
 
 class ThingDescription(object):
@@ -16,8 +59,19 @@ class ThingDescription(object):
 
         return ThingDescription(json.loads(json_str))
 
+    @classmethod
+    def schema(cls):
+        """Returns the JSON schema that describes a thing description."""
+
+        return SCHEMA_THING_DESCRIPTION
+
     def __init__(self, doc):
         self._doc = doc
+
+    def validate(self):
+        """Validates this instance agains its JSON schema."""
+
+        validate(self._doc, self.schema())
 
     @property
     def name(self):
