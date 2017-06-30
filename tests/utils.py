@@ -5,16 +5,16 @@ import random
 import string
 
 
-def random_alphanum(length=8):
+def random_alphanum(length=16):
     """Returns a random alphanumeric string."""
 
     return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
 
 
-def random_dict_mess(the_dict, num_updates=8, existing_keys_only=False):
+def random_dict_mess(the_dict, num_updates=10, existing_keys_only=False, random_builder=None):
     """Pollutes the given dict adding and updating random keys with random values."""
 
-    def build_random_value():
+    def _default_random_builder():
         return [
             random_alphanum(),
             random.random(),
@@ -22,7 +22,9 @@ def random_dict_mess(the_dict, num_updates=8, existing_keys_only=False):
             [random.random() for _ in range(random.randint(1, 10))]
         ]
 
+    random_builder = random_builder if random_builder else _default_random_builder
+
     for _ in range(num_updates):
         is_new_key = random.choice([True, False]) if not existing_keys_only else False
         the_key = random_alphanum() if is_new_key else random.choice(list(the_dict.keys()))
-        the_dict[the_key] = build_random_value()
+        the_dict[the_key] = random_builder()
