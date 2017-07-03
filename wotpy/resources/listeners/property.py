@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from concurrent.futures import Future
+
 from wotpy.resources.listeners.base import BaseResourceListener
 
 
@@ -15,10 +17,12 @@ class PropertyResourceListener(BaseResourceListener):
         """Called to handle property reads.
         Returns a future that resolves to the property value."""
 
-        pass
+        # ToDo: implement
+        return super(self, PropertyResourceListener).on_read()
 
     def on_write(self, value):
         """Called to handle property writes.
         Returns a future that resolves to void when the write is finished."""
 
-        pass
+        # ToDo: implement
+        return super(self, PropertyResourceListener).on_write(value)

@@ -1,24 +1,35 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from concurrent.futures import Future
+
 
 class BaseResourceListener(object):
     """Base resource listener."""
+
+    @classmethod
+    def _build_not_implemented_future(cls):
+        """Returns a Future that raises NotImplementedError."""
+
+        future = Future()
+        future.set_exception(NotImplementedError())
+
+        return future
 
     def on_read(self):
         """Called to handle resource reads.
         Returns a future that resolves to the read value."""
 
-        raise NotImplementedError()
+        return self._build_not_implemented_future()
 
     def on_write(self, value):
         """Called to handle resource writes.
         Returns a future that resolves to void when the write is finished."""
 
-        raise NotImplementedError()
+        return self._build_not_implemented_future()
 
     def on_invoke(self, invocation_args):
         """Called to handle resource invocations.
         Returns a future that resolves to the invocation response."""
 
-        raise NotImplementedError()
+        return self._build_not_implemented_future()
