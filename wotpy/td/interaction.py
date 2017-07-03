@@ -102,8 +102,11 @@ class Interaction(object):
 
         return type_schema_dict[interaction_type]
 
-    def __init__(self, doc):
+    def __init__(self, doc, init_validate=True):
         self._doc = doc
+
+        if init_validate:
+            self.validate()
 
     def validate(self):
         """Validates this instance agains its JSON schema."""

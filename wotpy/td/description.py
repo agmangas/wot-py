@@ -65,8 +65,11 @@ class ThingDescription(object):
 
         return SCHEMA_THING_DESCRIPTION
 
-    def __init__(self, doc):
+    def __init__(self, doc, init_validate=True):
         self._doc = doc
+
+        if init_validate:
+            self.validate()
 
     def validate(self):
         """Validates this instance agains its JSON schema."""
