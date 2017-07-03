@@ -77,6 +77,12 @@ class ThingDescription(object):
         validate(self._doc, self.schema())
 
     @property
+    def doc(self):
+        """Document getter."""
+
+        return self._doc
+
+    @property
     def name(self):
         """Name getter."""
 
