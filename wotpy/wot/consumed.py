@@ -6,9 +6,29 @@ class ConsumedThing(object):
     """An entity that serves to interact with a Thing.
     An application uses this class when it acts as a 'client' of the Thing."""
 
-    def __init__(self, servient, thing_description):
+    def __init__(self, servient, name, url, description):
         self.servient = servient
-        self.thing_description = thing_description
+        self._name = name
+        self._url = url
+        self._description = description
+
+    @property
+    def name(self):
+        """Name property."""
+
+        return self._name
+
+    @property
+    def url(self):
+        """URL property."""
+
+        return self._url
+
+    @property
+    def description(self):
+        """Description property."""
+
+        return self._description
 
     def invoke_action(self, action_name, *args):
         """Invokes an action."""
