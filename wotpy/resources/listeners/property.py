@@ -13,16 +13,30 @@ class PropertyResourceListener(BaseResourceListener):
         self.exposed_thing = exposed_thing
         self.interaction = interaction
 
+    @property
+    def _property_name(self):
+        """Getter for the name of this property interaction."""
+
+        return self.exposed_thing.name
+
     def on_read(self):
         """Called to handle property reads.
         Returns a future that resolves to the property value."""
 
-        # ToDo: implement
-        return super(self, PropertyResourceListener).on_read()
+        property_value = self.exposed_thing.get_property(self._property_name)
+
+        future = Future()
+        future.set_result(property_value)
+
+        return future
 
     def on_write(self, value):
         """Called to handle property writes.
         Returns a future that resolves to void when the write is finished."""
 
-        # ToDo: implement
-        return super(self, PropertyResourceListener).on_write(value)
+        self.exposed_thing.set_property(self._property_name, value)
+
+        future = Future()
+        future.set_result(True)
+
+        return future

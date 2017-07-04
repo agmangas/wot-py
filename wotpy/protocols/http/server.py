@@ -3,22 +3,30 @@
 
 from wotpy.protocols.server import BaseProtocolServer
 
-import tornado.ioloop
+import tornado.gen
 import tornado.web
 
 
 # noinspection PyAbstractClass
 class ResourceRequestHandler(tornado.web.RequestHandler):
-    """"""
+    """Tornado RequestHandler to handle WoT
+    interface requests using ResourceListeners."""
 
     # noinspection PyMethodOverriding
     def initialize(self, resource_listener):
         # noinspection PyAttributeOutsideInit
         self.resource_listener = resource_listener
 
+    @tornado.gen.coroutine
     def get(self):
-        value = self.resource_listener.on_read()
+        future_value = self.resource_listener.on_read()
+        value = yield future_value
         self.write({'value': value})
+
+    @tornado.gen.coroutine
+    def post(self):
+        value = self.get_argument('value')
+        yield self.resource_listener.on_write(value)
 
 
 class HttpServer(BaseProtocolServer):
@@ -40,7 +48,7 @@ class HttpServer(BaseProtocolServer):
         self._resources.pop(path)
 
     def _build_application_handlers(self):
-        """"""
+        """Builds a list of handlers for a Tornado application."""
 
         def _build_url_spec(path, resource_listener):
             return tornado.web.URLSpec(
@@ -52,7 +60,7 @@ class HttpServer(BaseProtocolServer):
             for path, resource_listener in self._resources.items()]
 
     def _build_application(self):
-        """"""
+        """Builds an instance of a Tornado application to handle the WoT interface requests."""
 
         return tornado.web.Application(self._build_application_handlers())
 
