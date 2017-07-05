@@ -50,10 +50,10 @@ class HttpServer(BaseProtocolServer):
     def _build_application_handlers(self):
         """Builds a list of handlers for a Tornado application."""
 
-        def _build_url_spec(path, resource_listener):
+        def _build_url_spec(the_path, the_resource_listener):
             return tornado.web.URLSpec(
-                path, ResourceRequestHandler,
-                kwargs=dict(resource_listener=resource_listener))
+                the_path, ResourceRequestHandler,
+                kwargs=dict(resource_listener=the_resource_listener))
 
         return [
             _build_url_spec(path, resource_listener)
