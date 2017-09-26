@@ -7,7 +7,8 @@ from setuptools import setup, find_packages
 install_requires = [
     'tornado>=4.0,<5.0',
     'jsonschema>=2.0,<3.0',
-    'six>=1.10.0,<2.0'
+    'six>=1.10.0,<2.0',
+    'rx>=1.6.0,<2.0'
 ]
 
 # concurrent.futures is a built-in in Python 3 but needs a backport in Python 2
