@@ -26,9 +26,11 @@ class ThingFilter(object):
     """Represents a filter that may be applied
     to a things discovery operation."""
 
-    def __init__(self, discovery_type=DiscoveryType.ANY):
-        assert discovery_type in DiscoveryType.list()
-        self.discovery_type = discovery_type
+    def __init__(self, url, description, method=DiscoveryType.ANY):
+        assert method in DiscoveryType.list()
+        self.discovery_type = method
+        self.url = url
+        self.description = description
 
 
 class ThingInit(object):
@@ -56,13 +58,13 @@ class WoT(object):
 
         pass
 
-    def retrieve(self, url):
+    def consume(self, url):
         """Takes a URL and returns a Future that resolves to a
         ConsumedThing that has been retrieved from the given URL."""
 
         pass
 
-    def create_local_thing(self, thing_init):
+    def expose(self, thing_init):
         """Takes a ThingInit instance and returns a Future that resolves
         to an ExposedThing that will be hosted in the local servient."""
 
