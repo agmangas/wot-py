@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from rx import Observable
+
 
 class DiscoveryType(object):
     """Enumeration of discovery types."""
@@ -56,7 +58,8 @@ class WoT(object):
         """Takes a ThingFilter instance and returns an Observable
         that will emit events for each discovered Thing or error."""
 
-        pass
+        # noinspection PyUnresolvedReferences
+        return Observable.empty()
 
     def consume(self, url):
         """Takes a URL and returns a Future that resolves to a
