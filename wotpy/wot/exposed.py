@@ -1,92 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from rx import Observable
+
 from wotpy.td.description import ThingDescription
+from wotpy.wot.enums import RequestType
+from wotpy.wot.dictionaries import ThingEventInit, ThingActionInit, ThingPropertyInit
+from wotpy.wot.interfaces.exposed import BaseExposedThing
+from wotpy.wot.interfaces.consumed import BaseConsumedThing
 
 
-class ThingPropertyInit(object):
-    """Represents the set of properties required to initialize a thing property."""
-
-    def __init__(self, name, value, configurable=True, enumerable=True,
-                 writable=True, semantic_types=None, data_description=None):
-        self.name = name
-        self.value = value
-        self.configurable = configurable
-        self.enumerable = enumerable
-        self.writable = writable
-        self.semantic_types = semantic_types
-        self.data_description = data_description
-
-
-class ThingEventInit(object):
-    """Represents the set of properties required to initialize a thing event."""
-
-    def __init__(self, name, semantic_types=None, output_data_description=None):
-        self.name = name
-        self.semantic_types = semantic_types
-        self.output_data_description = output_data_description
-
-
-class ThingActionInit(object):
-    """Represents the set of properties required to initialize a thing action."""
-
-    def __init__(self, name, action, input_data_description=None,
-                 output_data_description=None, semantic_types=None):
-        self.name = name
-        self.action = action
-        self.input_data_description = input_data_description
-        self.output_data_description = output_data_description
-        self.semantic_types = semantic_types
-
-
-class PropertyRequest(object):
-    """Represents the information that is passed to the callback
-    that gets called when a property is updated or retrieved."""
-
-    def __init__(self, request_from, thing_property_init, options):
-        self.request_from = request_from
-        self.thing_property_init = thing_property_init
-        self.options = options
-
-
-class ActionRequest(object):
-    """Represents the information that is passed to the
-    callback that gets called when an action is invoked."""
-
-    def __init__(self, request_from, thing_action_init, input_data):
-        self.request_from = request_from
-        self.thing_action_init = thing_action_init
-        self.input_data = input_data
-
-
-class ObserveRequest(object):
-    """Represents the information that is passed to the callback
-    that gets called when the thing receives an observe request."""
-
-    def __init__(self, request_from, observe_type, subscribe, name):
-        assert observe_type in ObserveType.list()
-        self.request_from = request_from
-        self.observe_type = observe_type
-        self.subscribe = subscribe
-        self.name = name
-
-
-class ObserveType(object):
-    """Enumeration of observable types."""
-
-    PROPERTY = 'property',
-    ACTION = 'action',
-    EVENT = 'event',
-    TD = 'td'
-
-    @classmethod
-    def list(cls):
-        """Returns a list with all observable types."""
-
-        return [cls.PROPERTY, cls.ACTION, cls.EVENT, cls.TD]
-
-
-class ExposedThing(object):
+class ExposedThing(BaseConsumedThing, BaseExposedThing):
     """An entity that serves to define the behavior of a Thing.
     An application uses this class when it acts as the Thing 'server'."""
 
@@ -114,116 +38,160 @@ class ExposedThing(object):
 
         return self._thing_description.doc
 
-    def invoke_action(self, action_name, *args):
-        """Invokes an action."""
+    def invoke_action(self, name, *args, **kwargs):
+        """Takes the Action name from the name argument and the list of parameters,
+        then requests from the underlying platform and the Protocol Bindings to
+        invoke the Action on the remote Thing and return the result. Returns a
+        Promise that resolves with the return value or rejects with an Error."""
 
         pass
 
-    def set_property(self, property_name, value):
-        """Set a property value."""
+    def remove_all_listeners(self, event_name=None):
+        """Removes all listeners for the Event provided by
+        the event_name optional argument, or if that was not
+        provided, then removes all listeners from all Events."""
 
         pass
 
-    def get_property(self, property_name):
-        """Get a property value."""
+    def get_property(self, name):
+        """Takes the Property name as the name argument, then requests from
+        the underlying platform and the Protocol Bindings to retrieve the
+        Property on  the remote Thing and return the result. Returns a Promise
+        that resolves with the Property value or rejects with an Error."""
+
+        pass
+
+    def set_property(self, name, value):
+        """Takes the Property name as the name argument and the new value as the
+        value argument, then requests from the underlying platform and the Protocol
+        Bindings to update the Property on the remote Thing and return the result.
+        Returns a Promise that resolves on success or rejects with an Error."""
 
         pass
 
     def add_listener(self, event_name, listener):
-        """Add a new listener for the given event."""
+        """Adds the listener provided in the argument listener to
+        the Event name provided in the argument event_name."""
 
         pass
 
     def remove_listener(self, event_name, listener):
-        """Removes an existing listener for the given event."""
+        """Removes a listener from the Event identified by
+        the provided event_name and listener argument."""
 
         pass
 
-    def remove_all_listeners(self, event_name):
-        """Removes all listeners for the given event."""
+    def observe(self, name, request_type):
+        """Returns an Observable for the Property, Event or Action
+        specified in the name argument, allowing subscribing and
+        unsubscribing to notifications. The requestType specifies
+        whether a Property, an Event or an Action is observed."""
 
-        pass
+        assert request_type in RequestType.list()
+        # noinspection PyUnresolvedReferences
+        return Observable.empty()
 
-    def add_property(self, thing_property_init):
-        """Takes a ThingPropertyInit instance and
-        creates a new property in this thing."""
+    def add_property(self, the_property):
+        """Adds a Property defined by the argument and updates the Thing Description."""
 
-        pass
+        assert isinstance(the_property, ThingPropertyInit)
 
     def remove_property(self, name):
-        """Removes an existing property by name."""
+        """Removes the Property specified by the name argument,
+        updates the Thing Description and returns the object."""
 
         pass
 
-    def add_action(self, thing_action_init):
-        """Takes a ThingActionInit instance and
-        creates a new action in this thing."""
+    def add_action(self, action):
+        """Adds an Action to the Thing object as defined by the action
+        argument of type ThingActionInit and updates the Thing Description."""
 
-        pass
+        assert isinstance(action, ThingActionInit)
 
     def remove_action(self, name):
-        """Removes an existing action by name."""
+        """Removes the Action specified by the name argument,
+        updates the Thing Description and returns the object."""
 
         pass
 
-    def add_event(self, thing_event_init):
-        """Takes a ThingEventInit instance and
-        creates a new event in this thing."""
+    def add_event(self, event):
+        """Adds an event to the Thing object as defined by the event argument
+        of type ThingEventInit and updates the Thing Description."""
 
-        pass
+        assert isinstance(event, ThingEventInit)
 
     def remove_event(self, name):
-        """Removes an existing event by name."""
-
-        pass
-
-    def register(self, directory=None):
-        """Register this thing in a directory.
-        Returns a Future that resolves when the operation has completed."""
-
-        pass
-
-    def unregister(self):
-        """Unregister this thing from a directory.
-        Returns a Future that resolves when the operation has completed."""
-
-        pass
-
-    def start(self):
-        """"""
-
-        pass
-
-    def stop(self):
-        """"""
-
-        pass
-
-    def emit_event(self, event_name, payload):
-        """Emits an event."""
+        """Removes the event specified by the name argument,
+        updates the Thing Description and returns the object."""
 
         pass
 
     def on_retrieve_property(self, handler):
-        """Callback called when a property is retrieved.
-        The handler is a function that takes an argument of type PropertyRequest."""
+        """Registers the handler function for Property retrieve requests received
+        for the Thing, as defined by the handler property of type RequestHandler.
+        The handler will receive an argument request of type Request where at least
+        request.name is defined and represents the name of the Property to be retrieved."""
 
         pass
 
     def on_update_property(self, handler):
-        """Callback called when a property is updated.
-        The handler is a function that takes an argument of type PropertyRequest."""
+        """Defines the handler function for Property update requests received for the Thing,
+        as defined by the handler property of type RequestHandler. The handler will receive
+        an argument request of type Request where request.name defines the name of the
+        Property to be retrieved and request.data defines the new value of the Property."""
 
         pass
 
     def on_invoke_action(self, handler):
-        """Callback called when an action is invoked.
-        The handler is a function that takes an argument of type ActionRequest."""
+        """Defines the handler function for Action invocation requests received
+        for the Thing, as defined by the handler property of type RequestHandler.
+        The handler will receive an argument request of type Request where request.name
+        defines the name of the Action to be invoked and request.data defines the input
+        arguments for the Action as defined by the Thing Description."""
 
         pass
 
     def on_observe(self, handler):
-        """Callback called when an observe request is received.
-        The handler is a function that takes an argument of type ObserveRequest."""
+        """Defines the handler function for observe requests received for
+        the Thing, as defined by the handler property of type RequestHandler.
+        The handler will receive an argument request of type Request where:
+        * request.name defines the name of the Property or Action or event to be observed.
+        * request.options.observeType is of type RequestType and defines whether a
+        Property change or Action invocation or event emitting is observed, or the
+        changes to the Thing Description are observed.
+        * request.options.subscribe is true if subscription is turned or kept being
+        turned on, and it is false when subscription is turned off."""
+
+        pass
+
+    def register(self, directory=None):
+        """Generates the Thing Description given the properties, Actions
+        and Event defined for this object. If a directory argument is given,
+        make a request to register the Thing Description with the given WoT
+        repository by invoking its register Action."""
+
+        pass
+
+    def unregister(self, directory=None):
+        """If a directory argument is given, make a request to unregister
+        the Thing Description with the given WoT repository by invoking its
+        unregister Action. Then, and in the case no arguments were provided
+        to this function, stop the Thing and remove the Thing Description."""
+
+        pass
+
+    def start(self):
+        """Start serving external requests for the Thing."""
+
+        pass
+
+    def stop(self):
+        """Stop serving external requests for the Thing."""
+
+        pass
+
+    def emit_event(self, event_name, payload):
+        """Emits an the event initialized with the event name specified by
+        the event_name argument and data specified by the payload argument."""
 
         pass

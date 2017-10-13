@@ -3,49 +3,7 @@
 
 from rx import Observable
 
-
-class DiscoveryType(object):
-    """Enumeration of discovery types."""
-
-    ANY = 'any'
-    LOCAL = 'local'
-    NEARBY = 'nearby'
-    DIRECTORY = 'directory'
-    BROADCAST = 'broadcast'
-    OTHER = 'other'
-
-    @classmethod
-    def list(cls):
-        """Returns a list with all discovery types."""
-
-        return [
-            cls.ANY, cls.LOCAL, cls.NEARBY,
-            cls.DIRECTORY, cls.BROADCAST, cls.OTHER
-        ]
-
-
-class ThingFilter(object):
-    """Represents a filter that may be applied
-    to a things discovery operation."""
-
-    def __init__(self, url, description, method=DiscoveryType.ANY):
-        assert method in DiscoveryType.list()
-        self.discovery_type = method
-        self.url = url
-        self.description = description
-
-
-class ThingInit(object):
-    """Represents the set of properties required
-    to create a locally hosted thing."""
-
-    def __init__(self, name, url, description=None):
-        """Constructor. If description is None a basic empty
-        thing description document will be used instead."""
-
-        self.name = name
-        self.url = url
-        self.description = description if description else {'name': self.name}
+from wotpy.wot.dictionaries import ThingFilter
 
 
 class WoT(object):
@@ -58,6 +16,7 @@ class WoT(object):
         """Takes a ThingFilter instance and returns an Observable
         that will emit events for each discovered Thing or error."""
 
+        assert isinstance(thing_filter, ThingFilter)
         # noinspection PyUnresolvedReferences
         return Observable.empty()
 
