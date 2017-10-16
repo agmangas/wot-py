@@ -3,6 +3,7 @@
 
 from jsonschema import validate
 
+from wotpy.utils.enums import EnumListMixin
 from wotpy.td.link import InteractionLink
 
 SCHEMA_INTERACTION_BASE = {
@@ -71,18 +72,12 @@ SCHEMA_INTERACTION_EVENT = {
 }
 
 
-class InteractionTypes(object):
+class InteractionTypes(EnumListMixin):
     """Enumeration of interaction types."""
 
     PROPERTY = 'Property'
     ACTION = 'Action'
     EVENT = 'Event'
-
-    @classmethod
-    def list(cls):
-        """Returns a list with all interaction types."""
-
-        return [cls.PROPERTY, cls.ACTION, cls.EVENT]
 
 
 class Interaction(object):
