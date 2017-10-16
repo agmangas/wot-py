@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from wotpy.enums import EnumListMixin
+from wotpy.utils.enums import EnumListMixin
 
 
 class DiscoveryMethod(EnumListMixin):

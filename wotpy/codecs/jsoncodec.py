@@ -4,18 +4,17 @@
 import json
 
 from wotpy.codecs.base import BaseCodec
+from wotpy.codecs.enums import MediaTypes
 
 
 class JsonCodec(BaseCodec):
     """JSON codec class."""
 
-    MEDIA_TYPE_JSON = 'application/json'
-
     @property
     def media_types(self):
         """Returns the JSON media types."""
 
-        return [self.MEDIA_TYPE_JSON]
+        return [MediaTypes.JSON]
 
     def to_value(self, value):
         """Takes an encoded value from a request that may be an UTF8 bytes

@@ -2,18 +2,17 @@
 # -*- coding: utf-8 -*-
 
 from wotpy.codecs.base import BaseCodec
+from wotpy.codecs.enums import MediaTypes
 
 
 class TextCodec(BaseCodec):
     """Text codec class."""
 
-    MEDIA_TYPE_TEXT = 'text/plain'
-
     @property
     def media_types(self):
         """Returns the text media types."""
 
-        return [self.MEDIA_TYPE_TEXT]
+        return [MediaTypes.TEXT]
 
     def to_value(self, value):
         """Takes an encoded value from a request that may be a UTF8 bytes
