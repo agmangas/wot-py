@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import random
 import copy
+import random
 
 # noinspection PyPackageRequirements
 import pytest
 from jsonschema import ValidationError
 
 from tests.utils import random_dict_mess
-from wotpy.td.description import ThingDescription
-from wotpy.td.interaction import Interaction, InteractionTypes
+from wotpy.td.jsonld.thing import JsonLDThingDescription
+from wotpy.td.enums import InteractionTypes
+from wotpy.td.jsonld.interaction import JsonLDInteraction
 
 TEST_TD = {
     '@context': [
@@ -85,29 +86,17 @@ TEST_INTERACTION = {
 }
 
 
-def test_emtpy_thing_description():
-    """Minimal Thing Descriptions can be created when initial document is not supplied."""
-
-    thing_description_01 = ThingDescription()
-    thing_description_02 = ThingDescription()
-
-    assert len(thing_description_01.interaction) == 0
-    assert thing_description_01.name
-    assert thing_description_02.name
-    assert thing_description_01.name != thing_description_02.name
-
-
 def test_thing_description_validate():
     """Example Thing Description from W3C GitHub page validates correctly."""
 
-    thing_description = ThingDescription(doc=TEST_TD)
+    thing_description = JsonLDThingDescription(doc=TEST_TD)
     thing_description.validate()
 
 
 def test_thing_description_properties():
     """Properties can be retrieved from Thing Description objects."""
 
-    thing_description = ThingDescription(doc=TEST_TD)
+    thing_description = JsonLDThingDescription(doc=TEST_TD)
 
     assert thing_description.name == TEST_TD.get('name')
     assert thing_description.base == TEST_TD.get('base')
@@ -128,14 +117,14 @@ def test_thing_description_validate_err():
     random_dict_mess(td_dict, random_builder=random_builder)
 
     with pytest.raises(ValidationError):
-        thing_description_err = ThingDescription(doc=td_dict)
+        thing_description_err = JsonLDThingDescription(doc=td_dict)
         thing_description_err.validate()
 
 
 def test_interaction_properties():
     """Properties can be retrieved from Interaction objects."""
 
-    interaction = Interaction(TEST_INTERACTION)
+    interaction = JsonLDInteraction(TEST_INTERACTION)
 
     assert interaction.interaction_type == InteractionTypes.PROPERTY
     assert interaction.name == TEST_INTERACTION.get('name')
