@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import uuid
 import json
 
 from jsonschema import validate
@@ -13,18 +14,13 @@ SCHEMA_THING_DESCRIPTION = {
     'type': 'object',
     'properties': {
         '@context': {
-            'oneOf': [
-                {'type': 'string'},
-                {
-                    'type': 'array',
-                    'items': {
-                        'oneOf': [
-                            {'type': 'string'},
-                            {'type': 'object'}
-                        ]
-                    }
-                }
-            ]
+            'type': 'array',
+            'items': {
+                'oneOf': [
+                    {'type': 'string'},
+                    {'type': 'object'}
+                ]
+            }
         },
         'name': {'type': 'string'},
         'base': {'type': 'string'},
@@ -44,13 +40,25 @@ SCHEMA_THING_DESCRIPTION = {
         }
     },
     'required': [
-        'name'
+        'name',
+        '@context'
     ]
 }
 
 
+def _build_empty_doc():
+    """Builds and returns an empty thing description document."""
+
+    return {
+        "@context": [ThingDescription.TD_CONTEXT_URL],
+        "name": str(uuid.uuid4())
+    }
+
+
 class ThingDescription(object):
     """A ThingDescription JSON-LD document."""
+
+    TD_CONTEXT_URL = "https://w3c.github.io/wot/w3c-wot-td-context.jsonld"
 
     @classmethod
     def loads(cls, json_str):
@@ -65,8 +73,8 @@ class ThingDescription(object):
 
         return SCHEMA_THING_DESCRIPTION
 
-    def __init__(self, doc, init_validate=True):
-        self._doc = doc
+    def __init__(self, doc=None, init_validate=True):
+        self._doc = doc if doc else _build_empty_doc()
 
         if init_validate:
             self.validate()

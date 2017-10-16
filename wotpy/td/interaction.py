@@ -29,11 +29,10 @@ SCHEMA_INTERACTION_PROPERTY = {
             'type': 'object',
             'properties': {
                 'outputData': {'type': 'object'},
-                'writable': {'type': 'boolean'},
-                'stability': {'type': 'number'}
+                'writable': {'type': 'boolean'}
             },
             'required': [
-                'writable'
+                'outputData'
             ]
         }
     ]
@@ -63,7 +62,10 @@ SCHEMA_INTERACTION_EVENT = {
             'type': 'object',
             'properties': {
                 'outputData': {'type': 'object'}
-            }
+            },
+            'required': [
+                'outputData'
+            ]
         }
     ]
 }
