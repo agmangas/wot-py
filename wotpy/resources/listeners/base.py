@@ -34,3 +34,9 @@ class BaseResourceListener(object):
         Returns a future that resolves to the invocation response."""
 
         return self._build_not_implemented_future()
+
+    def on_observe(self, name, request_type):
+        """Called to handle resource observations.
+        Returns a future that resolves to void when the observation process has finished."""
+
+        return self._build_not_implemented_future()
