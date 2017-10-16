@@ -3,7 +3,6 @@
 
 from rx import Observable
 
-from wotpy.td.description import ThingDescription
 from wotpy.wot.enums import RequestType
 from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 
@@ -16,7 +15,7 @@ class ConsumedThing(AbstractConsumedThing):
         self.servient = servient
         self._name = name
         self._url = url
-        self._thing_description = ThingDescription(description)
+        self._description = description
 
     @property
     def name(self):
@@ -34,7 +33,7 @@ class ConsumedThing(AbstractConsumedThing):
     def description(self):
         """Description property."""
 
-        return self._thing_description.doc
+        return self._description
 
     def invoke_action(self, name, *args):
         """Takes the Action name from the name argument and the list of parameters,

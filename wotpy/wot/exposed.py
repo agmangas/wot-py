@@ -3,11 +3,10 @@
 
 from rx import Observable
 
-from wotpy.td.description import ThingDescription
-from wotpy.wot.enums import RequestType
 from wotpy.wot.dictionaries import ThingEventInit, ThingActionInit, ThingPropertyInit
-from wotpy.wot.interfaces.exposed import AbstractExposedThing
+from wotpy.wot.enums import RequestType
 from wotpy.wot.interfaces.consumed import AbstractConsumedThing
+from wotpy.wot.interfaces.exposed import AbstractExposedThing
 
 
 class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
@@ -18,7 +17,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         self._servient = servient
         self._name = name
         self._url = url
-        self._thing_description = ThingDescription(description)
+        self._description = description
 
     @property
     def name(self):
@@ -36,7 +35,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
     def description(self):
         """Description property."""
 
-        return self._thing_description.doc
+        return self._description
 
     def invoke_action(self, name, *args, **kwargs):
         """Takes the Action name from the name argument and the list of parameters,
