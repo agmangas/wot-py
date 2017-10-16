@@ -5,10 +5,10 @@ from rx import Observable
 
 from wotpy.td.description import ThingDescription
 from wotpy.wot.enums import RequestType
-from wotpy.wot.interfaces.consumed import BaseConsumedThing
+from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 
 
-class ConsumedThing(BaseConsumedThing):
+class ConsumedThing(AbstractConsumedThing):
     """An entity that serves to interact with a Thing.
     An application uses this class when it acts as a 'client' of the Thing."""
 

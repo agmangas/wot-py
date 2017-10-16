@@ -6,11 +6,11 @@ from rx import Observable
 from wotpy.td.description import ThingDescription
 from wotpy.wot.enums import RequestType
 from wotpy.wot.dictionaries import ThingEventInit, ThingActionInit, ThingPropertyInit
-from wotpy.wot.interfaces.exposed import BaseExposedThing
-from wotpy.wot.interfaces.consumed import BaseConsumedThing
+from wotpy.wot.interfaces.exposed import AbstractExposedThing
+from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 
 
-class ExposedThing(BaseConsumedThing, BaseExposedThing):
+class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
     """An entity that serves to define the behavior of a Thing.
     An application uses this class when it acts as the Thing 'server'."""
 

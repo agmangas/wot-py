@@ -4,7 +4,7 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 
 
-class BaseConsumedThing(object):
+class AbstractConsumedThing(object):
     __metaclass__ = ABCMeta
 
     @abstractproperty

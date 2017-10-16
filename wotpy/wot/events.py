@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from wotpy.wot.interfaces.event import BaseEvent
+from wotpy.wot.interfaces.event import AbstractEvent
 from wotpy.wot.dictionaries import \
     PropertyChangeEventInit, \
     ActionInvocationEventInit, \
     ThingDescriptionChangeEventInit
 
 
-class PropertyChangeEvent(BaseEvent):
+class PropertyChangeEvent(AbstractEvent):
     """Event triggered to indicate a property change."""
 
     def __init__(self, data):
@@ -22,7 +22,7 @@ class PropertyChangeEvent(BaseEvent):
         return self._data
 
 
-class ActionInvocationEvent(BaseEvent):
+class ActionInvocationEvent(AbstractEvent):
     """Event triggered to indicate an action invocation."""
 
     def __init__(self, data):
@@ -36,7 +36,7 @@ class ActionInvocationEvent(BaseEvent):
         return self._data
 
 
-class ThingDescriptionChangeEvent(BaseEvent):
+class ThingDescriptionChangeEvent(AbstractEvent):
     """Event triggered to indicate a thing description change."""
 
     def __init__(self, data):

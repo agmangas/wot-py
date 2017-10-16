@@ -4,7 +4,7 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 
 
-class BaseRequest(object):
+class AbstractRequest(object):
     __metaclass__ = ABCMeta
 
     @abstractproperty

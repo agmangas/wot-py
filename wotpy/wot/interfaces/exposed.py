@@ -4,7 +4,7 @@
 from abc import ABCMeta, abstractmethod
 
 
-class BaseExposedThing(object):
+class AbstractExposedThing(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod

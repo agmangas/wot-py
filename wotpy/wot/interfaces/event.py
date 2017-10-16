@@ -4,7 +4,7 @@
 from abc import ABCMeta, abstractproperty
 
 
-class BaseEvent(object):
+class AbstractEvent(object):
     __metaclass__ = ABCMeta
 
     @abstractproperty

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# noinspection PyCompatibility
 from concurrent.futures import Future
 
 from wotpy.resources.listeners.base import BaseResourceListener
