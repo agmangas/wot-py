@@ -23,6 +23,12 @@ class JsonLDInteraction(object):
         validate(self._doc, interaction_schema_for_type(self.interaction_type))
 
     @property
+    def doc(self):
+        """Raw document dictionary property."""
+
+        return self._doc
+
+    @property
     def interaction_type(self):
         """Returns the interaction type."""
 
@@ -34,43 +40,37 @@ class JsonLDInteraction(object):
 
     @property
     def type(self):
-        """Type getter."""
+        """Type property."""
 
         return self._doc.get("@type")
 
     @property
     def name(self):
-        """Name getter."""
+        """Name property."""
 
         return self._doc.get("name")
 
     @property
     def output_data(self):
-        """outputData getter."""
+        """outputData property."""
 
         return self._doc.get("outputData")
 
     @property
     def input_data(self):
-        """inputData getter."""
+        """inputData property."""
 
         return self._doc.get("inputData")
 
     @property
     def writable(self):
-        """Writable getter."""
+        """Writable property."""
 
         return self._doc.get("writable")
 
     @property
-    def stability(self):
-        """Stability getter."""
-
-        return self._doc.get("stability")
-
-    @property
     def link(self):
-        """Returns a list of InteractionLink instances that
+        """Returns a list of JsonLDLink instances that
         represent the links contained in this interaction."""
 
         return [JsonLDLink(item) for item in self._doc.get("link", [])]

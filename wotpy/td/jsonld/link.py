@@ -21,6 +21,12 @@ class JsonLDLink(object):
         validate(self._doc, SCHEMA_INTERACTION_LINK)
 
     @property
+    def doc(self):
+        """Raw document dictionary property."""
+
+        return self._doc
+
+    @property
     def href(self):
         """Href property."""
 
