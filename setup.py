@@ -40,7 +40,8 @@ setup(
             'pytest',
             'pytest-cov',
             'mock',
-            'tox'
+            'tox',
+            'faker'
         ]
     }
 )
