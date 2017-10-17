@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import warnings
-
-from wotpy.utils.strings import clean_str
 from wotpy.td.constants import WOT_CONTEXT_URL
 from wotpy.td.jsonld.thing import JsonLDThingDescription
+from wotpy.utils.strings import clean_str
 
 
 class Thing(object):
@@ -13,12 +11,7 @@ class Thing(object):
     more physical and / or virtual Things) in the Web of Thing context."""
 
     def __init__(self, name, security=None, base=None):
-        clean_name = clean_str(name)
-
-        if clean_name != name:
-            warnings.warn("Unsafe name \"{}\" (using clean: \"{}\")".format(name, clean_name))
-
-        self._name = clean_name
+        self._name = clean_str(name, warn=True)
         self.security = security
         self.base = base
         self._interactions = []

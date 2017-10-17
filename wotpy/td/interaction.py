@@ -1,25 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import warnings
-
 from abc import ABCMeta, abstractmethod
 
 from wotpy.td.enums import InteractionTypes
-from wotpy.utils.strings import clean_str
 from wotpy.td.jsonld.interaction import JsonLDInteraction
+from wotpy.utils.strings import clean_str
 
 
 class InteractionPattern(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, name):
-        clean_name = clean_str(name)
-
-        if clean_name != name:
-            warnings.warn("Unsafe name \"{}\" (using clean: \"{}\")".format(name, clean_name))
-
-        self._name = clean_name
+        self._name = clean_str(name, warn=True)
         self._types = []
         self._links = []
         self._meta = {}
