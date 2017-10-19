@@ -17,13 +17,8 @@ class InteractionPattern(object):
         self._links = []
         self._meta = {}
 
-    def __cmp__(self, other):
-        is_equal = self.name == other.name
-
-        if is_equal:
-            return 0
-
-        return 1 if self.name > other.name else -1
+    def __eq__(self, other):
+        return self.name == other.name
 
     def __hash__(self):
         return hash(self.name)

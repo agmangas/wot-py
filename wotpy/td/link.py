@@ -12,14 +12,9 @@ class Link(object):
         self.href = href
         self.media_type = media_type
 
-    def __cmp__(self, other):
-        is_equal = self.href == other.href and \
-                   self.media_type == other.media_type
-
-        if is_equal:
-            return 0
-
-        return 1 if self.href > other.href else -1
+    def __eq__(self, other):
+        return self.href == other.href and \
+               self.media_type == other.media_type
 
     def __hash__(self):
         return hash((self.href, self.media_type))

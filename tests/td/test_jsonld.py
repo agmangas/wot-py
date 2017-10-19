@@ -57,3 +57,15 @@ def test_interaction_properties():
     assert interaction.interaction_type == InteractionTypes.PROPERTY
     assert interaction.name == INTERACTION_EXAMPLE.get('name')
     assert len(interaction.link) == len(INTERACTION_EXAMPLE.get('link', []))
+
+
+def test_thing_description_no_context():
+    """Thing Descriptions without any context do not validate."""
+
+    td_dict = copy.deepcopy(TD_EXAMPLE)
+
+    jsonld_thing_descr = JsonLDThingDescription(doc=td_dict, validation=True)
+
+    with pytest.raises(ValidationError):
+        td_dict["@context"] = []
+        jsonld_thing_descr.validate()
