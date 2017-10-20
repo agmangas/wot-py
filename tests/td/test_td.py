@@ -144,16 +144,19 @@ def test_thing_duplicated_contexts():
 
     thing = Thing(name=name)
 
+    base_len = len(thing.context)
+
     thing.add_context(context_url=ctx_url_01)
-
-    with pytest.raises(ValueError):
-        thing.add_context(context_url=ctx_url_01)
-
+    assert len(thing.context) == base_len + 1
+    thing.add_context(context_url=ctx_url_01)
+    assert len(thing.context) == base_len + 1
     thing.add_context(context_url=ctx_url_02)
+    assert len(thing.context) == base_len + 2
     thing.add_context(context_url=ctx_url_02, context_prefix=ctx_prefix_01)
-
-    with pytest.raises(ValueError):
-        thing.add_context(context_url=ctx_url_03, context_prefix=ctx_prefix_01)
-
+    assert len(thing.context) == base_len + 3
+    thing.add_context(context_url=ctx_url_03, context_prefix=ctx_prefix_01)
+    assert len(thing.context) == base_len + 3
     thing.add_context(context_url=ctx_url_03, context_prefix=ctx_prefix_02)
+    assert len(thing.context) == base_len + 4
     thing.add_context(context_url=ctx_url_03)
+    assert len(thing.context) == base_len + 5

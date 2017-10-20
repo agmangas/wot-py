@@ -45,17 +45,23 @@ class Thing(object):
 
         return self._types
 
+    @property
+    def context(self):
+        """Context property."""
+
+        return self._contexts
+
     def add_context(self, context_url, context_prefix=None):
         """Add a new context with an optional prefix."""
 
         if not context_prefix and context_url in self._contexts:
-            raise ValueError("Duplicated context: {}".format(context_url))
+            return
 
         ctx_dicts = filter(lambda item: isinstance(item, dict), self._contexts)
-        is_dup_prefix = next((True for dct in ctx_dicts if context_prefix in dct), None)
+        dup_prefix = next((True for dct in ctx_dicts if context_prefix in dct), None)
 
-        if is_dup_prefix:
-            raise ValueError("Duplicated prefix: {}".format(context_prefix))
+        if dup_prefix:
+            return
 
         if context_prefix:
             self._contexts.append({context_prefix: context_url})
@@ -111,7 +117,7 @@ class Thing(object):
         """Returns the JSON-LD dict representation for this instance."""
 
         doc = {
-            "@context": self._contexts,
+            "@context": self.context,
             "@type": self.type,
             "name": self.name,
             "interaction": [item.to_jsonld_dict() for item in self.interaction]
