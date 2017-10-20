@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from six.moves import filter
+
 from wotpy.td.constants import WOT_CONTEXT_URL
 from wotpy.td.jsonld.thing import JsonLDThingDescription
 from wotpy.utils.strings import clean_str
@@ -45,6 +47,15 @@ class Thing(object):
 
     def add_context(self, context_url, context_prefix=None):
         """Add a new context with an optional prefix."""
+
+        if not context_prefix and context_url in self._contexts:
+            raise ValueError("Duplicated context: {}".format(context_url))
+
+        ctx_dicts = filter(lambda item: isinstance(item, dict), self._contexts)
+        is_dup_prefix = next((True for dct in ctx_dicts if context_prefix in dct), None)
+
+        if is_dup_prefix:
+            raise ValueError("Duplicated prefix: {}".format(context_prefix))
 
         if context_prefix:
             self._contexts.append({context_prefix: context_url})

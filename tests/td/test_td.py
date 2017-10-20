@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import pytest
 from faker import Faker
 
 from wotpy.td.interaction import Property
@@ -127,3 +128,32 @@ def test_link_equality():
     assert link_01 != link_04
     assert link_01 in [link_02]
     assert link_01 not in [link_03, link_04]
+
+
+def test_thing_duplicated_contexts():
+    """It is not possible to add duplicated contexts to Things."""
+
+    fake = Faker()
+
+    ctx_url_01 = fake.url()
+    ctx_url_02 = fake.url()
+    ctx_url_03 = fake.url()
+    ctx_prefix_01 = fake.user_name()
+    ctx_prefix_02 = fake.user_name()
+    name = fake.user_name()
+
+    thing = Thing(name=name)
+
+    thing.add_context(context_url=ctx_url_01)
+
+    with pytest.raises(ValueError):
+        thing.add_context(context_url=ctx_url_01)
+
+    thing.add_context(context_url=ctx_url_02)
+    thing.add_context(context_url=ctx_url_02, context_prefix=ctx_prefix_01)
+
+    with pytest.raises(ValueError):
+        thing.add_context(context_url=ctx_url_03, context_prefix=ctx_prefix_01)
+
+    thing.add_context(context_url=ctx_url_03, context_prefix=ctx_prefix_02)
+    thing.add_context(context_url=ctx_url_03)
