@@ -39,36 +39,36 @@ class SemanticType(object):
 class ThingPropertyInit(object):
     """Represents the set of properties required to initialize a thing property."""
 
-    def __init__(self, name, value, configurable=False, enumerable=True,
-                 writable=True, semantic_types=None, description=None):
+    def __init__(self, name, value, description, configurable=False,
+                 enumerable=True, writable=True, semantic_types=None):
         self.name = name
         self.value = value
+        self.description = description
         self.configurable = configurable
         self.enumerable = enumerable
         self.writable = writable
-        self.semantic_types = semantic_types
-        self.description = description
+        self.semantic_types = semantic_types if semantic_types else []
 
 
 class ThingEventInit(object):
     """Represents the set of properties required to initialize a thing event."""
 
-    def __init__(self, name, semantic_types=None, data_description=None):
+    def __init__(self, name, data_description, semantic_types=None):
         self.name = name
-        self.semantic_types = semantic_types
         self.data_description = data_description
+        self.semantic_types = semantic_types if semantic_types else []
 
 
 class ThingActionInit(object):
     """Represents the set of properties required to initialize a thing action."""
 
-    def __init__(self, name, action, input_data_description=None,
-                 output_data_description=None, semantic_types=None):
+    def __init__(self, name, action, input_data_description,
+                 output_data_description, semantic_types=None):
         self.name = name
         self.action = action
         self.input_data_description = input_data_description
         self.output_data_description = output_data_description
-        self.semantic_types = semantic_types
+        self.semantic_types = semantic_types if semantic_types else []
 
 
 class PropertyChangeEventInit(object):

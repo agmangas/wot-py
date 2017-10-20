@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# noinspection PyCompatibility
+from concurrent.futures import Future
+
 from rx import Observable
 
-from wotpy.wot.dictionaries import ThingEventInit, ThingActionInit, ThingPropertyInit
+from wotpy.td.enums import InteractionTypes
+from wotpy.td.interaction import Property, Action, Event
+from wotpy.td.thing import Thing
 from wotpy.wot.enums import RequestType
 from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 from wotpy.wot.interfaces.exposed import AbstractExposedThing
@@ -13,58 +18,114 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
     """An entity that serves to define the behavior of a Thing.
     An application uses this class when it acts as the Thing 'server'."""
 
-    def __init__(self, servient, name, url, description):
+    def __init__(self, servient, thing):
         self._servient = servient
-        self._name = name
-        self._url = url
-        self._description = description
+        self._thing = thing
+        self._prop_values = {}
+        self._action_funcs = {}
+
+    @classmethod
+    def from_name(cls, servient, name):
+        """Builds an empty ExposedThing with the given name."""
+
+        thing = Thing(name=name)
+        return ExposedThing(servient=servient, thing=thing)
+
+    @classmethod
+    def from_url(cls, servient, url):
+        """Builds an ExposedThing initialized from the data
+        retrieved from the Thing Description document at the URL."""
+
+        raise NotImplementedError()
+
+    @classmethod
+    def from_description(cls, servient, doc):
+        """Builds an ExposedThing initialized from
+        the given Thing Description document."""
+
+        raise NotImplementedError()
+
+    def _set_property_value(self, prop, value):
+        """Sets a Property value."""
+
+        self._prop_values[prop] = value
+
+    def _get_property_value(self, prop):
+        """Returns a Property value."""
+
+        return self._prop_values.get(prop, None)
+
+    def _set_action_func(self, action, func):
+        """Sets the action function of an Action."""
+
+        self._action_funcs[action] = func
+
+    def _get_action_func(self, action):
+        """Returns the action function of an Action."""
+
+        return self._action_funcs.get(action, None)
 
     @property
     def name(self):
         """Name property."""
 
-        return self._name
+        return self._thing.name
 
     @property
     def url(self):
         """URL property."""
 
-        return self._url
+        return None
 
     @property
     def description(self):
         """Description property."""
 
-        return self._description
-
-    def invoke_action(self, name, *args, **kwargs):
-        """Takes the Action name from the name argument and the list of parameters,
-        then requests from the underlying platform and the Protocol Bindings to
-        invoke the Action on the remote Thing and return the result. Returns a
-        Promise that resolves with the return value or rejects with an Error."""
-
-        pass
-
-    def remove_all_listeners(self, event_name=None):
-        """Removes all listeners for the Event provided by
-        the event_name optional argument, or if that was not
-        provided, then removes all listeners from all Events."""
-
-        pass
+        return self._thing.to_jsonld_thing_description().doc
 
     def get_property(self, name):
         """Takes the Property name as the name argument, then requests from
         the underlying platform and the Protocol Bindings to retrieve the
-        Property on  the remote Thing and return the result. Returns a Promise
+        Property on the remote Thing and return the result. Returns a Promise
         that resolves with the Property value or rejects with an Error."""
 
-        pass
+        proprty = self._thing.find_interaction(
+            name, interaction_type=InteractionTypes.PROPERTY)
+
+        future = Future()
+
+        if proprty:
+            value = self._get_property_value(proprty)
+            future.set_result(value)
+        else:
+            future.set_exception(ValueError())
+
+        return future
 
     def set_property(self, name, value):
         """Takes the Property name as the name argument and the new value as the
         value argument, then requests from the underlying platform and the Protocol
         Bindings to update the Property on the remote Thing and return the result.
         Returns a Promise that resolves on success or rejects with an Error."""
+
+        proprty = self._thing.find_interaction(
+            name, interaction_type=InteractionTypes.PROPERTY)
+
+        future = Future()
+
+        if proprty:
+            self._set_property_value(proprty, value)
+            future.set_result(True)
+        else:
+            future.set_exception(ValueError())
+
+        return future
+
+    def invoke_action(self, name, *args, **kwargs):
+        """Takes the Action name from the name argument and the list of parameters,
+        then requests from the underlying platform and the Protocol Bindings to
+        invoke the Action on the remote Thing and return the result. Returns a
+        Promise that resolves with the return value or rejects with an Error."""
 
         pass
 
@@ -80,6 +141,13 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         pass
 
+    def remove_all_listeners(self, event_name=None):
+        """Removes all listeners for the Event provided by
+        the event_name optional argument, or if that was not
+        provided, then removes all listeners from all Events."""
+
+        pass
+
     def observe(self, name, request_type):
         """Returns an Observable for the Property, Event or Action
         specified in the name argument, allowing subscribing and
@@ -90,40 +158,69 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         # noinspection PyUnresolvedReferences
         return Observable.empty()
 
-    def add_property(self, the_property):
-        """Adds a Property defined by the argument and updates the Thing Description."""
+    def add_property(self, property_init):
+        """Adds a Property defined by the argument and updates the Thing Description.
+        Takes an instance of ThingPropertyInit as argument."""
 
-        assert isinstance(the_property, ThingPropertyInit)
+        prop = Property(
+            name=property_init.name,
+            output_data=property_init.description,
+            writable=property_init.writable)
+
+        for item in property_init.semantic_types:
+            self._thing.add_context(context_url=item.context)
+            prop.add_type(item.name)
+
+        self._thing.add_interaction(prop)
+        self._set_property_value(prop, property_init.value)
 
     def remove_property(self, name):
         """Removes the Property specified by the name argument,
         updates the Thing Description and returns the object."""
 
-        pass
+        self._thing.remove_interaction(name, interaction_type=InteractionTypes.PROPERTY)
 
-    def add_action(self, action):
+    def add_action(self, action_init):
         """Adds an Action to the Thing object as defined by the action
-        argument of type ThingActionInit and updates the Thing Description."""
+        argument of type ThingActionInit and updates th,e Thing Description."""
 
-        assert isinstance(action, ThingActionInit)
+        action = Action(
+            name=action_init.name,
+            output_data=action_init.output_data_description,
+            input_data=action_init.input_data_description)
+
+        for item in action_init.semantic_types:
+            self._thing.add_context(context_url=item.context)
+            action.add_type(item.name)
+
+        self._thing.add_interaction(action)
+        self._set_action_func(action, action_init.action)
 
     def remove_action(self, name):
         """Removes the Action specified by the name argument,
         updates the Thing Description and returns the object."""
 
-        pass
+        self._thing.remove_interaction(name, interaction_type=InteractionTypes.ACTION)
 
-    def add_event(self, event):
+    def add_event(self, event_init):
         """Adds an event to the Thing object as defined by the event argument
         of type ThingEventInit and updates the Thing Description."""
 
-        assert isinstance(event, ThingEventInit)
+        event = Event(
+            name=event_init.name,
+            output_data=event_init.data_description)
+
+        for item in event_init.semantic_types:
+            self._thing.add_context(context_url=item.context)
+            event.add_type(item.name)
+
+        self._thing.add_interaction(event)
 
     def remove_event(self, name):
         """Removes the event specified by the name argument,
         updates the Thing Description and returns the object."""
 
-        pass
+        self._thing.remove_interaction(name, interaction_type=InteractionTypes.EVENT)
 
     def on_retrieve_property(self, handler):
         """Registers the handler function for Property retrieve requests received
