@@ -79,21 +79,21 @@ class Thing(object):
         return next((item for item in self._interactions if _is_match(item)), None)
 
     def add_interaction(self, interaction):
-        """Add a new Link."""
+        """Add a new Interaction."""
 
         if interaction in self._interactions:
             raise ValueError("Already existing Interaction")
 
         self._interactions.append(interaction)
 
-    def remove_interaction(self, interaction):
-        """Remove an existing Link."""
+    def remove_interaction(self, name, interaction_type=None):
+        """Remove an existing Interaction by name."""
 
-        try:
-            pop_idx = self._interactions.index(interaction)
-            self._interactions.pop(pop_idx)
-        except ValueError:
-            pass
+        interaction_remove = self.find_interaction(name, interaction_type=interaction_type)
+
+        if interaction_remove:
+            item_idx = self._interactions.index(interaction_remove)
+            self._interactions.pop(item_idx)
 
     def add_type(self, val):
         """Add a new type."""
