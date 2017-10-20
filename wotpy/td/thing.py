@@ -68,6 +68,16 @@ class Thing(object):
         else:
             self._contexts.append(context_url)
 
+    def find_interaction(self, name, interaction_type=None):
+        """Returns the Interaction that matches the given name."""
+
+        def _is_match(intrct):
+            equal_name = intrct.name == name
+            type_match = True if not interaction_type else interaction_type in intrct.type
+            return equal_name and type_match
+
+        return next((item for item in self._interactions if _is_match(item)), None)
+
     def add_interaction(self, interaction):
         """Add a new Link."""
 
