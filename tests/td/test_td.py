@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pytest
 from faker import Faker
 
 from wotpy.td.interaction import Property
@@ -30,7 +29,7 @@ def test_jsonld_doc_from_thing():
     prop_name = fake.user_name()
     prop_output_data = {"type": "number"}
 
-    prop = Property(name=prop_name, output_data=prop_output_data, writable=True)
+    prop = Property(thing=thing, name=prop_name, output_data=prop_output_data, writable=True)
 
     link_href_01 = "/prop-01"
     link_media_type_01 = "application/json"
@@ -38,8 +37,8 @@ def test_jsonld_doc_from_thing():
     link_href_02 = "/prop-02"
     link_media_type_02 = "application/json"
 
-    link_01 = Link(href=link_href_01, media_type=link_media_type_01)
-    link_02 = Link(href=link_href_02, media_type=link_media_type_02)
+    link_01 = Link(interaction=prop, href=link_href_01, media_type=link_media_type_01)
+    link_02 = Link(interaction=prop, href=link_href_02, media_type=link_media_type_02)
 
     prop.add_link(link_01)
     prop.add_link(link_02)
@@ -113,15 +112,21 @@ def test_link_equality():
 
     fake = Faker()
 
+    thing_name = fake.user_name()
     href_01 = fake.url()
     href_02 = fake.url()
     media_type_01 = "application/json"
     media_type_02 = "text/html"
+    prop_name = fake.user_name()
+    prop_output_data = {"type": "number"}
 
-    link_01 = Link(href=href_01, media_type=media_type_01)
-    link_02 = Link(href=href_01, media_type=media_type_01)
-    link_03 = Link(href=href_01, media_type=media_type_02)
-    link_04 = Link(href=href_02, media_type=media_type_01)
+    thing = Thing(name=thing_name)
+    prop = Property(thing=thing, name=prop_name, output_data=prop_output_data)
+
+    link_01 = Link(interaction=prop, href=href_01, media_type=media_type_01)
+    link_02 = Link(interaction=prop, href=href_01, media_type=media_type_01)
+    link_03 = Link(interaction=prop, href=href_01, media_type=media_type_02)
+    link_04 = Link(interaction=prop, href=href_02, media_type=media_type_01)
 
     assert link_01 == link_02
     assert link_01 != link_03
@@ -148,15 +153,21 @@ def test_thing_duplicated_contexts():
 
     thing.add_context(context_url=ctx_url_01)
     assert len(thing.context) == base_len + 1
+
     thing.add_context(context_url=ctx_url_01)
     assert len(thing.context) == base_len + 1
+
     thing.add_context(context_url=ctx_url_02)
     assert len(thing.context) == base_len + 2
+
     thing.add_context(context_url=ctx_url_02, context_prefix=ctx_prefix_01)
     assert len(thing.context) == base_len + 3
+
     thing.add_context(context_url=ctx_url_03, context_prefix=ctx_prefix_01)
     assert len(thing.context) == base_len + 3
+
     thing.add_context(context_url=ctx_url_03, context_prefix=ctx_prefix_02)
     assert len(thing.context) == base_len + 4
+
     thing.add_context(context_url=ctx_url_03)
     assert len(thing.context) == base_len + 5

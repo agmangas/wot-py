@@ -11,17 +11,25 @@ from wotpy.utils.strings import clean_str
 class InteractionPattern(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, name):
+    def __init__(self, thing, name):
+        self._thing = thing
         self._name = clean_str(name, warn=True)
         self._types = []
         self._links = []
         self._meta = {}
 
     def __eq__(self, other):
-        return self.name == other.name
+        return self.thing == other.thing and \
+               self.name == other.name
 
     def __hash__(self):
-        return hash(self.name)
+        return hash((self.thing, self.name))
+
+    @property
+    def thing(self):
+        """Thing property."""
+
+        return self._thing
 
     @property
     def name(self):
@@ -118,8 +126,8 @@ class Property(InteractionPattern):
     that can be static (e.g., supported mode, rated output voltage, etc.) or
     dynamic (e.g., current fill level of water, minimum recorded temperature, etc.)."""
 
-    def __init__(self, name, output_data, writable=True):
-        super(Property, self).__init__(name)
+    def __init__(self, thing, name, output_data, writable=True):
+        super(Property, self).__init__(thing, name)
         assert not len(self.type)
         self.add_type(InteractionTypes.PROPERTY)
         self.output_data = output_data
@@ -143,8 +151,8 @@ class Action(InteractionPattern):
     targets changes or processes on a Thing that take a certain time to complete
     (i.e., actions cannot be applied instantaneously like property writes). """
 
-    def __init__(self, name, output_data, input_data):
-        super(Action, self).__init__(name)
+    def __init__(self, thing, name, output_data, input_data):
+        super(Action, self).__init__(thing, name)
         assert not len(self.type)
         self.add_type(InteractionTypes.ACTION)
         self.output_data = output_data
@@ -167,8 +175,8 @@ class Event(InteractionPattern):
     """The Event interaction pattern (also see Event vocabulary definition section)
     enables a mechanism to be notified by a Thing on a certain condition."""
 
-    def __init__(self, name, output_data):
-        super(Event, self).__init__(name)
+    def __init__(self, thing, name, output_data):
+        super(Event, self).__init__(thing, name)
         assert not len(self.type)
         self.add_type(InteractionTypes.EVENT)
         self.output_data = output_data

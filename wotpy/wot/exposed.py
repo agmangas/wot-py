@@ -163,6 +163,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         Takes an instance of ThingPropertyInit as argument."""
 
         prop = Property(
+            thing=self._thing,
             name=property_init.name,
             output_data=property_init.description,
             writable=property_init.writable)
@@ -185,6 +186,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         argument of type ThingActionInit and updates th,e Thing Description."""
 
         action = Action(
+            thing=self._thing,
             name=action_init.name,
             output_data=action_init.output_data_description,
             input_data=action_init.input_data_description)
@@ -207,6 +209,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         of type ThingEventInit and updates the Thing Description."""
 
         event = Event(
+            thing=self._thing,
             name=event_init.name,
             output_data=event_init.data_description)
 
