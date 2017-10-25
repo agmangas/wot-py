@@ -100,3 +100,21 @@ class ThingDescriptionChangeEventInit(object):
         self.name = name
         self.data = data
         self.description = description
+
+
+class Request(object):
+    """Represents an incoming request the ExposedThing is supposed to handle, for instance
+    retrieving and updating properties, invoking Actions and observing Events (WoT interactions)."""
+
+    def __init__(self, request_type, name, respond, respond_with_error,
+                 request_from=None, options=None, data=None):
+        assert callable(respond)
+        assert callable(respond_with_error)
+
+        self.request_type = request_type
+        self.name = name
+        self.respond = respond
+        self.respond_with_error = respond_with_error
+        self.request_from = request_from
+        self.options = options
+        self.data = data
