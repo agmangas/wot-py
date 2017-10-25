@@ -5,24 +5,53 @@
 from concurrent.futures import Future
 
 from rx import Observable
+from tornado.queues import Queue
 
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.thing import Thing
+from wotpy.utils.enums import EnumListMixin
 from wotpy.wot.enums import RequestType
 from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 from wotpy.wot.interfaces.exposed import AbstractExposedThing
+from wotpy.wot.dictionaries import Request
 
 
 class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
     """An entity that serves to define the behavior of a Thing.
     An application uses this class when it acts as the Thing 'server'."""
 
+    class HandlerKeys(EnumListMixin):
+        """Enumeration of handler keys."""
+
+        RETRIEVE_PROPERTY = "retrieve_property"
+        UPDATE_PROPERTY = "update_property"
+        INVOKE_ACTION = "invoke_action"
+        OBSERVE = "observe"
+
+    class InteractionStateKeys(EnumListMixin):
+        """Enumeration of interaction state keys."""
+
+        PROPERTY_VALUES = "property_values"
+        ACTION_FUNCTIONS = "action_functions"
+
     def __init__(self, servient, thing):
         self._servient = servient
         self._thing = thing
-        self._prop_values = {}
-        self._action_funcs = {}
+
+        self._interaction_states = {
+            self.InteractionStateKeys.PROPERTY_VALUES: {},
+            self.InteractionStateKeys.ACTION_FUNCTIONS: {}
+        }
+
+        self._handlers = {
+            self.HandlerKeys.RETRIEVE_PROPERTY: self._default_retrieve_property_handler,
+            self.HandlerKeys.UPDATE_PROPERTY: self._default_update_property_handler,
+            self.HandlerKeys.INVOKE_ACTION: self._default_invoke_action_handler,
+            self.HandlerKeys.OBSERVE: self._default_observe_handler
+        }
+
+        self._event_queue = Queue()
 
     @classmethod
     def from_name(cls, servient, name):
@@ -48,22 +77,90 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
     def _set_property_value(self, prop, value):
         """Sets a Property value."""
 
-        self._prop_values[prop] = value
+        prop_values = self.InteractionStateKeys.PROPERTY_VALUES
+        self._interaction_states[prop_values][prop] = value
 
     def _get_property_value(self, prop):
         """Returns a Property value."""
 
-        return self._prop_values.get(prop, None)
+        prop_values = self.InteractionStateKeys.PROPERTY_VALUES
+        return self._interaction_states[prop_values].get(prop, None)
 
     def _set_action_func(self, action, func):
         """Sets the action function of an Action."""
 
-        self._action_funcs[action] = func
+        action_funcs = self.InteractionStateKeys.ACTION_FUNCTIONS
+        self._interaction_states[action_funcs][action] = func
 
     def _get_action_func(self, action):
         """Returns the action function of an Action."""
 
-        return self._action_funcs.get(action, None)
+        action_funcs = self.InteractionStateKeys.ACTION_FUNCTIONS
+        return self._interaction_states[action_funcs].get(action, None)
+
+    def _get_handler(self, handler_type):
+        """Returns the currently defined handler for the given handler type."""
+
+        return self._handlers[handler_type]
+
+    def _set_handler(self, handler_type, handler):
+        """Sets the currently defined handler for the given handler type."""
+
+        self._handlers[handler_type] = handler
+
+    def _default_retrieve_property_handler(self, request):
+        """Default handler for onRetrieveProperty."""
+
+        try:
+            assert request.request_type == RequestType.PROPERTY
+            assert request.name
+
+            prop = self._thing.find_interaction(
+                request.name, interaction_type=InteractionTypes.PROPERTY)
+
+            if not prop:
+                raise ValueError("Not found: {}".format(request.name))
+
+            prop_value = self._get_property_value(prop)
+
+            return request.respond(prop_value)
+        except (ValueError, AssertionError) as ex:
+            request.respond_with_error(ex)
+            future = Future()
+            future.set_exception(ex)
+            return future
+
+    def _default_update_property_handler(self, request):
+        """Default handler for onUpdateProperty."""
+
+        try:
+            assert request.request_type == RequestType.PROPERTY
+            assert request.name and request.data
+
+            prop = self._thing.find_interaction(
+                request.name, interaction_type=InteractionTypes.PROPERTY)
+
+            if not prop:
+                raise ValueError("Not found: {}".format(request.name))
+
+            self._set_property_value(prop, request.data)
+
+            return request.respond()
+        except (ValueError, AssertionError) as ex:
+            request.respond_with_error(ex)
+            future = Future()
+            future.set_exception(ex)
+            return future
+
+    def _default_invoke_action_handler(self, request):
+        """Default handler for onInvokeAction."""
+
+        pass
+
+    def _default_observe_handler(self, request):
+        """Default handler for onObserve."""
+
+        pass
 
     @property
     def name(self):
@@ -89,18 +186,25 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         Property on the remote Thing and return the result. Returns a Promise
         that resolves with the Property value or rejects with an Error."""
 
-        proprty = self._thing.find_interaction(
-            name, interaction_type=InteractionTypes.PROPERTY)
+        future_prop_val = Future()
 
-        future = Future()
+        def _respond(val):
+            future_prop_val.set_result(val)
+            return future_prop_val
 
-        if proprty:
-            value = self._get_property_value(proprty)
-            future.set_result(value)
-        else:
-            future.set_exception(ValueError())
+        def _respond_with_error(err):
+            future_prop_val.set_exception(err)
 
-        return future
+        request = Request(
+            name=name,
+            request_type=RequestType.PROPERTY,
+            respond=_respond,
+            respond_with_error=_respond_with_error)
+
+        handler = self._get_handler(self.HandlerKeys.RETRIEVE_PROPERTY)
+        handler(request)
+
+        return future_prop_val
 
     def set_property(self, name, value):
         """Takes the Property name as the name argument and the new value as the
@@ -108,18 +212,26 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         Bindings to update the Property on the remote Thing and return the result.
         Returns a Promise that resolves on success or rejects with an Error."""
 
-        proprty = self._thing.find_interaction(
-            name, interaction_type=InteractionTypes.PROPERTY)
+        future_prop_set = Future()
 
-        future = Future()
+        def _respond():
+            future_prop_set.set_result(True)
+            return future_prop_set
 
-        if proprty:
-            self._set_property_value(proprty, value)
-            future.set_result(True)
-        else:
-            future.set_exception(ValueError())
+        def _respond_with_error(err):
+            future_prop_set.set_exception(err)
 
-        return future
+        request = Request(
+            name=name,
+            request_type=RequestType.PROPERTY,
+            respond=_respond,
+            respond_with_error=_respond_with_error,
+            data=value)
+
+        handler = self._get_handler(self.HandlerKeys.UPDATE_PROPERTY)
+        handler(request)
+
+        return future_prop_set
 
     def invoke_action(self, name, *args, **kwargs):
         """Takes the Action name from the name argument and the list of parameters,
@@ -151,7 +263,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
     def observe(self, name, request_type):
         """Returns an Observable for the Property, Event or Action
         specified in the name argument, allowing subscribing and
-        unsubscribing to notifications. The requestType specifies
+        unsubscribing to notifications. The request_type specifies
         whether a Property, an Event or an Action is observed."""
 
         assert request_type in RequestType.list()
@@ -231,7 +343,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         The handler will receive an argument request of type Request where at least
         request.name is defined and represents the name of the Property to be retrieved."""
 
-        pass
+        self._set_handler(self.HandlerKeys.RETRIEVE_PROPERTY, handler)
 
     def on_update_property(self, handler):
         """Defines the handler function for Property update requests received for the Thing,
@@ -239,7 +351,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         an argument request of type Request where request.name defines the name of the
         Property to be retrieved and request.data defines the new value of the Property."""
 
-        pass
+        self._set_handler(self.HandlerKeys.UPDATE_PROPERTY, handler)
 
     def on_invoke_action(self, handler):
         """Defines the handler function for Action invocation requests received
@@ -248,7 +360,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         defines the name of the Action to be invoked and request.data defines the input
         arguments for the Action as defined by the Thing Description."""
 
-        pass
+        self._set_handler(self.HandlerKeys.INVOKE_ACTION, handler)
 
     def on_observe(self, handler):
         """Defines the handler function for observe requests received for
@@ -261,7 +373,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         * request.options.subscribe is true if subscription is turned or kept being
         turned on, and it is false when subscription is turned off."""
 
-        pass
+        self._set_handler(self.HandlerKeys.OBSERVE, handler)
 
     def register(self, directory=None):
         """Generates the Thing Description given the properties, Actions
