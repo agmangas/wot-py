@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import copy
-import random
 
 import pytest
+from faker import Faker
 from jsonschema import ValidationError
 
 from tests.td.resources import TD_EXAMPLE, INTERACTION_EXAMPLE
-from tests.utils import random_dict_mess
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.jsonld.interaction import JsonLDInteraction
 from wotpy.td.jsonld.thing import JsonLDThingDescription
@@ -34,15 +33,10 @@ def test_thing_description_properties():
 def test_thing_description_validate_err():
     """An erroneous Thing Description raises error on validation."""
 
-    def random_builder():
-        return [
-            random.random(),
-            int(random.random()),
-            [random.random() for _ in range(random.randint(1, 10))]
-        ]
+    fake = Faker()
 
     td_dict = copy.deepcopy(TD_EXAMPLE)
-    random_dict_mess(td_dict, random_builder=random_builder)
+    td_dict["interaction"] = fake.pydict()
 
     with pytest.raises(ValidationError):
         thing_description_err = JsonLDThingDescription(doc=td_dict)
