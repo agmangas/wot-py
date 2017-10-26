@@ -106,10 +106,10 @@ class Request(object):
     """Represents an incoming request the ExposedThing is supposed to handle, for instance
     retrieving and updating properties, invoking Actions and observing Events (WoT interactions)."""
 
-    def __init__(self, request_type, name, respond, respond_with_error,
+    def __init__(self, request_type, name, respond=None, respond_with_error=None,
                  request_from=None, options=None, data=None):
-        assert callable(respond)
-        assert callable(respond_with_error)
+        assert respond is None or callable(respond)
+        assert respond_with_error is None or callable(respond_with_error)
 
         self.request_type = request_type
         self.name = name
