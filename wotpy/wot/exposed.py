@@ -5,16 +5,18 @@
 from concurrent.futures import Future
 
 from rx import Observable
-from tornado.queues import Queue
+from rx.subjects import Subject
+from rx.concurrency import IOLoopScheduler
 
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.thing import Thing
 from wotpy.utils.enums import EnumListMixin
-from wotpy.wot.enums import RequestType
+from wotpy.wot.enums import RequestType, ThingEventType
 from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 from wotpy.wot.interfaces.exposed import AbstractExposedThing
-from wotpy.wot.dictionaries import Request
+from wotpy.wot.dictionaries import Request, PropertyChangeEventInit
+from wotpy.wot.events import PropertyChangeEvent
 
 
 class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
@@ -35,7 +37,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         PROPERTY_VALUES = "property_values"
         ACTION_FUNCTIONS = "action_functions"
 
-    def __init__(self, servient, thing):
+    def __init__(self, servient, thing, scheduler=None):
         self._servient = servient
         self._thing = thing
 
@@ -51,7 +53,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             self.HandlerKeys.OBSERVE: self._default_observe_handler
         }
 
-        self._event_queue = Queue()
+        self._scheduler = scheduler or IOLoopScheduler()
+        self._events_stream = Subject()
 
     @classmethod
     def from_name(cls, servient, name):
@@ -231,6 +234,13 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         handler = self._get_handler(self.HandlerKeys.UPDATE_PROPERTY)
         handler(request)
 
+        # noinspection PyUnusedLocal
+        def _publish_event(ft):
+            event_data = PropertyChangeEventInit(name=name, value=value)
+            self._events_stream.on_next(PropertyChangeEvent(data=event_data))
+
+        future_prop_set.add_done_callback(_publish_event)
+
         return future_prop_set
 
     def invoke_action(self, name, *args, **kwargs):
@@ -266,9 +276,32 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         unsubscribing to notifications. The request_type specifies
         whether a Property, an Event or an Action is observed."""
 
-        assert request_type in RequestType.list()
+        def _build_property_filter():
+            proprty = self._thing.find_interaction(
+                name, interaction_type=InteractionTypes.PROPERTY)
+
+            if not proprty:
+                raise ValueError("Property not found: {}".format(name))
+
+            def _filter(item):
+                return item.event_type == ThingEventType.PROPERTY_CHANGE and \
+                       item.data.name == name
+
+            return _filter
+
+        filter_builder_map = {
+            RequestType.PROPERTY: _build_property_filter
+        }
+
+        if request_type not in filter_builder_map:
+            raise NotImplementedError()
+
+        stream_filter = filter_builder_map[request_type]()
+
         # noinspection PyUnresolvedReferences
-        return Observable.empty()
+        return self._events_stream \
+            .filter(stream_filter) \
+            .subscribe_on(self._scheduler)
 
     def add_property(self, property_init):
         """Adds a Property defined by the argument and updates the Thing Description.
