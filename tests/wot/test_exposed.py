@@ -106,8 +106,7 @@ class TestObservePropertyChange(tornado.testing.AsyncTestCase):
         fake = Faker()
 
         thing = Thing(name=fake.pystr())
-        scheduler = IOLoopScheduler(loop=self.io_loop)
-        exp_thing = ExposedThing(servient=None, thing=thing, scheduler=scheduler)
+        exp_thing = ExposedThing(servient=None, thing=thing)
 
         thing_prop_init = ThingPropertyInit(
             name=fake.pystr(),
