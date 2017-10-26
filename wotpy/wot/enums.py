@@ -40,3 +40,13 @@ class TDChangeMethod(EnumListMixin):
     ADD = "add"
     REMOVE = "remove"
     CHANGE = "change"
+
+
+class ThingEventType(EnumListMixin):
+    """Enumeration for the default events
+    that are supported on all ExposedThings."""
+
+    PROPERTY_CHANGE = "propertychange"
+    ACTION_INVOCATION = "actioninvocation"
+    DESCRIPTION_CHANGE = "descriptionchange"
+    GENERIC_EVENT = "tddefined"

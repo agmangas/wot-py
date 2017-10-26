@@ -1,50 +1,57 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from wotpy.wot.interfaces.event import AbstractEvent
-from wotpy.wot.dictionaries import \
-    PropertyChangeEventInit, \
-    ActionInvocationEventInit, \
-    ThingDescriptionChangeEventInit
+from wotpy.wot.enums import ThingEventType
 
 
-class PropertyChangeEvent(AbstractEvent):
-    """Event triggered to indicate a property change."""
+class Event(object):
+    """Base event class.
+    Represents a generic event defined in a TD."""
 
     def __init__(self, data):
-        assert isinstance(data, PropertyChangeEventInit)
         self._data = data
 
     @property
     def data(self):
-        """Data property getter."""
+        """Data property."""
 
         return self._data
-
-
-class ActionInvocationEvent(AbstractEvent):
-    """Event triggered to indicate an action invocation."""
-
-    def __init__(self, data):
-        assert isinstance(data, ActionInvocationEventInit)
-        self._data = data
 
     @property
-    def data(self):
-        """Data property getter."""
+    def event_type(self):
+        """Event type property."""
 
-        return self._data
+        return ThingEventType.GENERIC_EVENT
 
 
-class ThingDescriptionChangeEvent(AbstractEvent):
-    """Event triggered to indicate a thing description change."""
-
-    def __init__(self, data):
-        assert isinstance(data, ThingDescriptionChangeEventInit)
-        self._data = data
+class PropertyChangeEvent(Event):
+    """Event triggered to indicate a property change.
+    Should be initialized with a PropertyChangeEventInit instance."""
 
     @property
-    def data(self):
-        """Data property getter."""
+    def event_type(self):
+        """Event type property."""
 
-        return self._data
+        return ThingEventType.PROPERTY_CHANGE
+
+
+class ActionInvocationEvent(Event):
+    """Event triggered to indicate an action invocation.
+    Should be initialized with a ActionInvocationEventInit instance."""
+
+    @property
+    def event_type(self):
+        """Event type property."""
+
+        return ThingEventType.ACTION_INVOCATION
+
+
+class ThingDescriptionChangeEvent(Event):
+    """Event triggered to indicate a thing description change.
+    Should be initialized with a ThingDescriptionChangeEventInit instance."""
+
+    @property
+    def event_type(self):
+        """Event type property."""
+
+        return ThingEventType.DESCRIPTION_CHANGE
