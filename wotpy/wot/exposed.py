@@ -3,20 +3,19 @@
 
 # noinspection PyCompatibility
 from concurrent.futures import Future
-
-from rx import Observable
-from rx.subjects import Subject
 from rx.concurrency import IOLoopScheduler
+from rx.subjects import Subject
+from rx import Observable
 
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.thing import Thing
 from wotpy.utils.enums import EnumListMixin
+from wotpy.wot.dictionaries import Request, PropertyChangeEventInit
 from wotpy.wot.enums import RequestType, ThingEventType
+from wotpy.wot.events import PropertyChangeEvent
 from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 from wotpy.wot.interfaces.exposed import AbstractExposedThing
-from wotpy.wot.dictionaries import Request, PropertyChangeEventInit
-from wotpy.wot.events import PropertyChangeEvent
 
 
 class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
@@ -127,7 +126,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             prop_value = self._get_property_value(prop)
 
             return request.respond(prop_value)
-        except (ValueError, AssertionError) as ex:
+        except Exception as ex:
             request.respond_with_error(ex)
             future = Future()
             future.set_exception(ex)
@@ -149,7 +148,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             self._set_property_value(prop, request.data)
 
             return request.respond()
-        except (ValueError, AssertionError) as ex:
+        except Exception as ex:
             request.respond_with_error(ex)
             future = Future()
             future.set_exception(ex)
@@ -163,7 +162,54 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
     def _default_observe_handler(self, request):
         """Default handler for onObserve."""
 
-        pass
+        def _build_property_filter():
+            """Returns a filter that can be appended to the global events
+            stream to generate an Observable for property update events."""
+
+            name = request.name
+
+            proprty = self._thing.find_interaction(
+                name, interaction_type=InteractionTypes.PROPERTY)
+
+            if not proprty:
+                raise ValueError("Property not found: {}".format(name))
+
+            def _filter_func(item):
+                return item.event_type == ThingEventType.PROPERTY_CHANGE and \
+                       item.data.name == name
+
+            return _filter_func
+
+        try:
+            assert request.request_type == RequestType.EVENT
+            assert request.name and request.options
+
+            observe_type = request.options.get("observeType")
+            subscribe = request.options.get("subscribe", False)
+
+            assert observe_type in RequestType.list()
+
+            filter_builder_map = {
+                RequestType.PROPERTY: _build_property_filter
+            }
+
+            if observe_type not in filter_builder_map:
+                raise NotImplementedError()
+
+            stream_filter = filter_builder_map[observe_type]()
+
+            # noinspection PyUnresolvedReferences
+            observable = self._events_stream \
+                .filter(stream_filter) \
+                .subscribe_on(self._scheduler)
+
+            if not subscribe:
+                observable = observable.first()
+
+            return observable
+        except Exception as ex:
+            # noinspection PyUnresolvedReferences
+            return Observable.throw(ex)
 
     @property
     def name(self):
@@ -276,32 +322,15 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         unsubscribing to notifications. The request_type specifies
         whether a Property, an Event or an Action is observed."""
 
-        def _build_property_filter():
-            proprty = self._thing.find_interaction(
-                name, interaction_type=InteractionTypes.PROPERTY)
+        request = Request(
+            name=name,
+            request_type=RequestType.EVENT,
+            options={"observeType": request_type, "subscribe": True})
 
-            if not proprty:
-                raise ValueError("Property not found: {}".format(name))
+        handler = self._get_handler(self.HandlerKeys.OBSERVE)
+        observable = handler(request)
 
-            def _filter(item):
-                return item.event_type == ThingEventType.PROPERTY_CHANGE and \
-                       item.data.name == name
-
-            return _filter
-
-        filter_builder_map = {
-            RequestType.PROPERTY: _build_property_filter
-        }
-
-        if request_type not in filter_builder_map:
-            raise NotImplementedError()
-
-        stream_filter = filter_builder_map[request_type]()
-
-        # noinspection PyUnresolvedReferences
-        return self._events_stream \
-            .filter(stream_filter) \
-            .subscribe_on(self._scheduler)
+        return observable
 
     def add_property(self, property_init):
         """Adds a Property defined by the argument and updates the Thing Description.
