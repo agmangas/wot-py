@@ -4,9 +4,9 @@ pipelines:
         image: python:2.7
         script:
           - pip install -U .[tests]
-          - pytest --cov=wotpy
+          - pytest -sv --cov=wotpy
     - step:
         image: python:3.6
         script:
           - pip install -U .[tests]
-          - pytest --cov=wotpy
+          - pytest -sv --cov=wotpy
