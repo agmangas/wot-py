@@ -9,8 +9,12 @@ from faker import Faker
 from tornado import ioloop, gen
 
 from tests.utils import FutureTimeout
-from tests.wot.fixtures import exposed_thing, thing_property_init, thing_event_init
-from wotpy.wot.enums import RequestType
+from wotpy.wot.enums import RequestType, TDChangeMethod, TDChangeType
+from tests.wot.fixtures import \
+    exposed_thing, \
+    thing_property_init, \
+    thing_event_init, \
+    thing_action_init
 
 
 # noinspection PyShadowingNames
@@ -80,8 +84,7 @@ class TestObserve(tornado.testing.AsyncTestCase):
         self.exposed_thing = exposed_thing()
         self.thing_property_init = thing_property_init()
         self.thing_event_init = thing_event_init()
-        self.exposed_thing.add_property(property_init=self.thing_property_init)
-        self.exposed_thing.add_event(event_init=self.thing_event_init)
+        self.thing_action_init = thing_action_init()
         self.periodic_cb = None
         self.subscription = None
         self.fake = Faker()
@@ -98,18 +101,19 @@ class TestObserve(tornado.testing.AsyncTestCase):
         """Property changes can be observed."""
 
         prop_name = self.thing_property_init.name
+        self.exposed_thing.add_property(property_init=self.thing_property_init)
 
         observable = self.exposed_thing.observe(
             name=prop_name,
             request_type=RequestType.PROPERTY)
 
         values = self.fake.pylist(5, True, *(str,))
-        event_complete_futures = dict((val, Future()) for val in values)
+        complete_futures = dict((val, Future()) for val in values)
 
         def _on_next(ev):
             emitted_value = ev.data.value
-            if event_complete_futures.get(emitted_value):
-                event_complete_futures[emitted_value].set_result(True)
+            if complete_futures.get(emitted_value):
+                complete_futures[emitted_value].set_result(True)
 
         self.subscription = observable.subscribe(_on_next)
 
@@ -121,25 +125,26 @@ class TestObserve(tornado.testing.AsyncTestCase):
         self.periodic_cb = ioloop.PeriodicCallback(callback=_set_properties, callback_time=50)
         self.periodic_cb.start()
 
-        yield event_complete_futures
+        yield complete_futures
 
     @tornado.testing.gen_test
     def test_observe_event(self):
         """TD-defined events can be observed."""
 
         event_name = self.thing_event_init.name
+        self.exposed_thing.add_event(event_init=self.thing_event_init)
 
         observable = self.exposed_thing.observe(
             name=event_name,
             request_type=RequestType.EVENT)
 
         values = self.fake.pylist(5, True, *(str,))
-        event_complete_futures = dict((val, Future()) for val in values)
+        complete_futures = dict((val, Future()) for val in values)
 
         def _on_next(ev):
             emitted_value = ev.data
-            if event_complete_futures.get(emitted_value):
-                event_complete_futures[emitted_value].set_result(True)
+            if complete_futures.get(emitted_value):
+                complete_futures[emitted_value].set_result(True)
 
         self.subscription = observable.subscribe(_on_next)
 
@@ -151,4 +156,54 @@ class TestObserve(tornado.testing.AsyncTestCase):
         self.periodic_cb = ioloop.PeriodicCallback(callback=_emit_events, callback_time=50)
         self.periodic_cb.start()
 
-        yield event_complete_futures
+        yield complete_futures
+
+    @tornado.testing.gen_test
+    def test_observe_td_changes(self):
+        """Thing Description changes can be observed."""
+
+        prop_name = self.thing_property_init.name
+        event_name = self.thing_event_init.name
+        action_name = self.thing_action_init.name
+
+        observable = self.exposed_thing.observe(
+            name=None,
+            request_type=RequestType.TD)
+
+        complete_futures = {
+            (TDChangeType.PROPERTY, TDChangeMethod.ADD): Future(),
+            (TDChangeType.PROPERTY, TDChangeMethod.REMOVE): Future(),
+            (TDChangeType.EVENT, TDChangeMethod.ADD): Future(),
+            (TDChangeType.EVENT, TDChangeMethod.REMOVE): Future(),
+            (TDChangeType.ACTION, TDChangeMethod.ADD): Future(),
+            (TDChangeType.ACTION, TDChangeMethod.REMOVE): Future()
+        }
+
+        def _on_next(ev):
+            change_type = ev.data.td_change_type
+            change_method = ev.data.method
+            interaction_name = ev.data.name
+            future_key = (change_type, change_method)
+            complete_futures[future_key].set_result(interaction_name)
+
+        self.subscription = observable.subscribe(_on_next)
+
+        def _change_td():
+            self.exposed_thing.add_event(event_init=self.thing_event_init)
+            self.exposed_thing.remove_event(name=event_name)
+            self.exposed_thing.add_property(property_init=self.thing_property_init)
+            self.exposed_thing.remove_property(name=prop_name)
+            self.exposed_thing.add_action(action_init=self.thing_action_init)
+            self.exposed_thing.remove_action(name=action_name)
+
+        self.periodic_cb = ioloop.PeriodicCallback(callback=_change_td, callback_time=50)
+        self.periodic_cb.start()
+
+        yield complete_futures
+
+        assert complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.ADD)].result() == prop_name
+        assert complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.REMOVE)].result() == prop_name
+        assert complete_futures[(TDChangeType.EVENT, TDChangeMethod.ADD)].result() == event_name
+        assert complete_futures[(TDChangeType.EVENT, TDChangeMethod.REMOVE)].result() == event_name
+        assert complete_futures[(TDChangeType.ACTION, TDChangeMethod.ADD)].result() == action_name
+        assert complete_futures[(TDChangeType.ACTION, TDChangeMethod.REMOVE)].result() == action_name

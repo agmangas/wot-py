@@ -11,11 +11,21 @@ from wotpy.td.enums import InteractionTypes
 from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.thing import Thing
 from wotpy.utils.enums import EnumListMixin
-from wotpy.wot.dictionaries import Request, PropertyChangeEventInit
-from wotpy.wot.enums import RequestType, DefaultThingEvent
-from wotpy.wot.events import EmittedEvent, PropertyChangeEmittedEvent
 from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 from wotpy.wot.interfaces.exposed import AbstractExposedThing
+from wotpy.wot.dictionaries import \
+    Request, \
+    PropertyChangeEventInit, \
+    ThingDescriptionChangeEventInit
+from wotpy.wot.events import \
+    EmittedEvent, \
+    PropertyChangeEmittedEvent, \
+    ThingDescriptionChangeEmittedEvent
+from wotpy.wot.enums import \
+    RequestType, \
+    DefaultThingEvent, \
+    TDChangeMethod, \
+    TDChangeType
 
 
 class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
@@ -188,7 +198,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         def _build_event_filter():
             """Returns a filter that can be appended to the global events
-            stream to generate an Observable for TD-defined events."""
+            stream to generate an Observable for custom events defined in the TD."""
 
             event_name = request.name
             self._validate_has_interaction(event_name, InteractionTypes.EVENT)
@@ -198,9 +208,18 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
             return _filter_func
 
+        def _build_td_filter():
+            """Returns a filter that can be appended to the global events
+            stream to generate an Observable for TD change events."""
+
+            def _filter_func(item):
+                return item.name == DefaultThingEvent.DESCRIPTION_CHANGE
+
+            return _filter_func
+
         try:
             assert request.request_type == RequestType.EVENT
-            assert request.name and request.options
+            assert request.options
 
             observe_type = request.options.get("observeType")
             subscribe = request.options.get("subscribe", False)
@@ -209,7 +228,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
             filter_builder_map = {
                 RequestType.PROPERTY: _build_property_filter,
-                RequestType.EVENT: _build_event_filter
+                RequestType.EVENT: _build_event_filter,
+                RequestType.TD: _build_td_filter
             }
 
             if observe_type not in filter_builder_map:
@@ -368,11 +388,27 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         self._thing.add_interaction(prop)
         self._set_property_value(prop, property_init.value)
 
+        event_data = ThingDescriptionChangeEventInit(
+            td_change_type=TDChangeType.PROPERTY,
+            method=TDChangeMethod.ADD,
+            name=property_init.name,
+            data=property_init,
+            description=self._thing.to_jsonld_dict())
+
+        self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
+
     def remove_property(self, name):
         """Removes the Property specified by the name argument,
         updates the Thing Description and returns the object."""
 
         self._thing.remove_interaction(name, interaction_type=InteractionTypes.PROPERTY)
+
+        event_data = ThingDescriptionChangeEventInit(
+            td_change_type=TDChangeType.PROPERTY,
+            method=TDChangeMethod.REMOVE,
+            name=name)
+
+        self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
     def add_action(self, action_init):
         """Adds an Action to the Thing object as defined by the action
@@ -391,11 +427,27 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         self._thing.add_interaction(action)
         self._set_action_func(action, action_init.action)
 
+        event_data = ThingDescriptionChangeEventInit(
+            td_change_type=TDChangeType.ACTION,
+            method=TDChangeMethod.ADD,
+            name=action_init.name,
+            data=action_init,
+            description=self._thing.to_jsonld_dict())
+
+        self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
+
     def remove_action(self, name):
         """Removes the Action specified by the name argument,
         updates the Thing Description and returns the object."""
 
         self._thing.remove_interaction(name, interaction_type=InteractionTypes.ACTION)
+
+        event_data = ThingDescriptionChangeEventInit(
+            td_change_type=TDChangeType.ACTION,
+            method=TDChangeMethod.REMOVE,
+            name=name)
+
+        self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
     def add_event(self, event_init):
         """Adds an event to the Thing object as defined by the event argument
@@ -412,11 +464,27 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         self._thing.add_interaction(event)
 
+        event_data = ThingDescriptionChangeEventInit(
+            td_change_type=TDChangeType.EVENT,
+            method=TDChangeMethod.ADD,
+            name=event_init.name,
+            data=event_init,
+            description=self._thing.to_jsonld_dict())
+
+        self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
+
     def remove_event(self, name):
         """Removes the event specified by the name argument,
         updates the Thing Description and returns the object."""
 
         self._thing.remove_interaction(name, interaction_type=InteractionTypes.EVENT)
+
+        event_data = ThingDescriptionChangeEventInit(
+            td_change_type=TDChangeType.EVENT,
+            method=TDChangeMethod.REMOVE,
+            name=name)
+
+        self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
     def on_retrieve_property(self, handler):
         """Registers the handler function for Property retrieve requests received

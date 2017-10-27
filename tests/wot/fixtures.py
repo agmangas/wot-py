@@ -5,7 +5,10 @@ import pytest
 from faker import Faker
 
 from wotpy.wot.exposed import ExposedThing
-from wotpy.wot.dictionaries import ThingPropertyInit, ThingEventInit
+from wotpy.wot.dictionaries import \
+    ThingPropertyInit, \
+    ThingEventInit, \
+    ThingActionInit
 
 
 @pytest.fixture
@@ -29,6 +32,19 @@ def thing_event_init():
     return ThingEventInit(
         name=fake.user_name(),
         data_description={"type": "string"})
+
+
+@pytest.fixture
+def thing_action_init():
+    """Builds and returns a random ThingActionInit."""
+
+    fake = Faker()
+
+    return ThingActionInit(
+        name=fake.user_name(),
+        action=lambda x: x.upper(),
+        input_data_description={"type": "string"},
+        output_data_description={"type": "string"})
 
 
 @pytest.fixture

@@ -90,10 +90,10 @@ class ActionInvocationEventInit(object):
 class ThingDescriptionChangeEventInit(object):
     """The data attribute represents the changes that occurred to the Thing Description."""
 
-    def __init__(self, td_change_type, method, name, data, description):
+    def __init__(self, td_change_type, method, name, data=None, description=None):
         assert td_change_type in TDChangeType.list()
         assert method in TDChangeMethod.list()
-        assert isinstance(data, (ThingPropertyInit, ThingActionInit, ThingEventInit))
+        assert data is None or isinstance(data, (ThingPropertyInit, ThingActionInit, ThingEventInit))
 
         self.td_change_type = td_change_type
         self.method = method
