@@ -1,0 +1,18 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import tornado.concurrent
+# noinspection PyCompatibility
+import concurrent.futures
+
+
+def is_future(obj):
+    """Returns True if the given object looks like a Future."""
+
+    if isinstance(obj, (tornado.concurrent.Future, concurrent.futures.Future)):
+        return True
+
+    return hasattr(obj, "result") and \
+           hasattr(obj, "add_done_callback") and \
+           callable(obj.result) and \
+           callable(obj.add_done_callback)
