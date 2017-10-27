@@ -40,9 +40,12 @@ def thing_action_init():
 
     fake = Faker()
 
+    def _upper(val):
+        return val.upper()
+
     return ThingActionInit(
         name=fake.user_name(),
-        action=lambda x: x.upper(),
+        action=_upper,
         input_data_description={"type": "string"},
         output_data_description={"type": "string"})
 

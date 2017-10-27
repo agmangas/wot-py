@@ -11,6 +11,7 @@ from wotpy.td.enums import InteractionTypes
 from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.thing import Thing
 from wotpy.utils.enums import EnumListMixin
+from wotpy.utils.futures import is_future
 from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 from wotpy.wot.interfaces.exposed import AbstractExposedThing
 from wotpy.wot.dictionaries import \
@@ -134,6 +135,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
     def _default_retrieve_property_handler(self, request):
         """Default handler for onRetrieveProperty."""
 
+        future_ret = Future()
+
         try:
             assert request.request_type == RequestType.PROPERTY
             assert request.name
@@ -146,15 +149,18 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
             prop_value = self._get_property_value(prop)
 
-            return request.respond(prop_value)
+            request.respond(prop_value)
+            future_ret.set_result(prop_value)
         except Exception as ex:
             request.respond_with_error(ex)
-            future = Future()
-            future.set_exception(ex)
-            return future
+            future_ret.set_exception(ex)
+
+        return future_ret
 
     def _default_update_property_handler(self, request):
         """Default handler for onUpdateProperty."""
+
+        future_ret = Future()
 
         try:
             assert request.request_type == RequestType.PROPERTY
@@ -168,17 +174,52 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
             self._set_property_value(prop, request.data)
 
-            return request.respond()
+            request.respond()
+            future_ret.set_result(None)
         except Exception as ex:
             request.respond_with_error(ex)
-            future = Future()
-            future.set_exception(ex)
-            return future
+            future_ret.set_exception(ex)
+
+        return future_ret
 
     def _default_invoke_action_handler(self, request):
         """Default handler for onInvokeAction."""
 
-        pass
+        future_ret = Future()
+
+        try:
+            assert request.request_type == RequestType.ACTION
+            assert request.name
+
+            input_kwargs = request.data if hasattr(request, "data") else {}
+
+            assert isinstance(input_kwargs, dict)
+
+            action = self._thing.find_interaction(
+                request.name, interaction_type=InteractionTypes.ACTION)
+
+            if not action:
+                raise ValueError("Not found: {}".format(request.name))
+
+            action_func = self._get_action_func(action)
+            assert callable(action_func)
+            action_result = action_func(**input_kwargs)
+
+            if is_future(action_result):
+                def _respond_callback(action_result_future):
+                    completed_result = action_result_future.result()
+                    request.respond(completed_result)
+                    future_ret.set_result(completed_result)
+
+                action_result.add_done_callback(_respond_callback)
+            else:
+                request.respond(action_result)
+                future_ret.set_result(action_result)
+        except Exception as ex:
+            request.respond_with_error(ex)
+            future_ret.set_exception(ex)
+
+        return future_ret
 
     def _default_observe_handler(self, request):
         """Default handler for onObserve."""
@@ -274,14 +315,13 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         Property on the remote Thing and return the result. Returns a Promise
         that resolves with the Property value or rejects with an Error."""
 
-        future_prop_val = Future()
+        future_get = Future()
 
         def _respond(val):
-            future_prop_val.set_result(val)
-            return future_prop_val
+            future_get.set_result(val)
 
         def _respond_with_error(err):
-            future_prop_val.set_exception(err)
+            future_get.set_exception(err)
 
         request = Request(
             name=name,
@@ -292,7 +332,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         handler = self._get_handler(self.HandlerKeys.RETRIEVE_PROPERTY)
         handler(request)
 
-        return future_prop_val
+        return future_get
 
     def set_property(self, name, value):
         """Takes the Property name as the name argument and the new value as the
@@ -300,14 +340,13 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         Bindings to update the Property on the remote Thing and return the result.
         Returns a Promise that resolves on success or rejects with an Error."""
 
-        future_prop_set = Future()
+        future_set = Future()
 
         def _respond():
-            future_prop_set.set_result(True)
-            return future_prop_set
+            future_set.set_result(None)
 
         def _respond_with_error(err):
-            future_prop_set.set_exception(err)
+            future_set.set_exception(err)
 
         request = Request(
             name=name,
@@ -324,17 +363,41 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             event_data = PropertyChangeEventInit(name=name, value=value)
             self._events_stream.on_next(PropertyChangeEmittedEvent(init=event_data))
 
-        future_prop_set.add_done_callback(_publish_event)
+        future_set.add_done_callback(_publish_event)
 
-        return future_prop_set
+        return future_set
 
-    def invoke_action(self, name, *args, **kwargs):
+    def invoke_action(self, name, **kwargs):
         """Takes the Action name from the name argument and the list of parameters,
         then requests from the underlying platform and the Protocol Bindings to
         invoke the Action on the remote Thing and return the result. Returns a
         Promise that resolves with the return value or rejects with an Error."""
 
-        pass
+        future_invoke = Future()
+
+        def _respond(action_result):
+            future_invoke.set_result(action_result)
+
+        def _respond_with_error(err):
+            future_invoke.set_exception(err)
+
+        request = Request(
+            name=name,
+            request_type=RequestType.ACTION,
+            respond=_respond,
+            respond_with_error=_respond_with_error,
+            data=kwargs)
+
+        handler = self._get_handler(self.HandlerKeys.INVOKE_ACTION)
+        handler(request)
+
+        # noinspection PyUnusedLocal
+        def _publish_event(ft):
+            pass
+
+        future_invoke.add_done_callback(_publish_event)
+
+        return future_invoke
 
     def add_listener(self, event_name, listener):
         """Adds the listener provided in the argument listener to
