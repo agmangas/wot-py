@@ -340,20 +340,20 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Adds the listener provided in the argument listener to
         the Event name provided in the argument event_name."""
 
-        pass
+        raise NotImplementedError("Please use observe() instead")
 
     def remove_listener(self, event_name, listener):
         """Removes a listener from the Event identified by
         the provided event_name and listener argument."""
 
-        pass
+        raise NotImplementedError("Please use observe() instead")
 
     def remove_all_listeners(self, event_name=None):
         """Removes all listeners for the Event provided by
         the event_name optional argument, or if that was not
         provided, then removes all listeners from all Events."""
 
-        pass
+        raise NotImplementedError("Please use observe() instead")
 
     def observe(self, name, request_type):
         """Returns an Observable for the Property, Event or Action
