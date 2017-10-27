@@ -110,6 +110,17 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         self._handlers[handler_type] = handler
 
+    def _validate_has_interaction(self, interaction_name, interaction_type):
+        """Raises ValueError if the given interaction does not exist in this Thing."""
+
+        interaction = self._thing.find_interaction(
+            name=interaction_name,
+            interaction_type=interaction_type)
+
+        if not interaction:
+            raise ValueError("Interaction ({}) not found: {}".format(
+                interaction_type, interaction_name))
+
     def _default_retrieve_property_handler(self, request):
         """Default handler for onRetrieveProperty."""
 
@@ -166,17 +177,12 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             """Returns a filter that can be appended to the global events
             stream to generate an Observable for property update events."""
 
-            name = request.name
-
-            proprty = self._thing.find_interaction(
-                name, interaction_type=InteractionTypes.PROPERTY)
-
-            if not proprty:
-                raise ValueError("Property not found: {}".format(name))
+            prop_name = request.name
+            self._validate_has_interaction(prop_name, InteractionTypes.PROPERTY)
 
             def _filter_func(item):
                 return item.name == DefaultThingEvent.PROPERTY_CHANGE and \
-                       item.data.name == name
+                       item.data.name == prop_name
 
             return _filter_func
 
@@ -185,12 +191,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             stream to generate an Observable for TD-defined events."""
 
             event_name = request.name
-
-            event_interaction = self._thing.find_interaction(
-                event_name, interaction_type=InteractionTypes.EVENT)
-
-            if not event_interaction:
-                raise ValueError("Event not found: {}".format(event_name))
+            self._validate_has_interaction(event_name, InteractionTypes.EVENT)
 
             def _filter_func(item):
                 return item.name == event_name

@@ -107,8 +107,9 @@ class TestObserve(tornado.testing.AsyncTestCase):
         event_complete_futures = dict((val, Future()) for val in values)
 
         def _on_next(ev):
-            if event_complete_futures.get(ev.data.value):
-                event_complete_futures[ev.data.value].set_result(True)
+            emitted_value = ev.data.value
+            if event_complete_futures.get(emitted_value):
+                event_complete_futures[emitted_value].set_result(True)
 
         self.subscription = observable.subscribe(_on_next)
 
@@ -136,8 +137,9 @@ class TestObserve(tornado.testing.AsyncTestCase):
         event_complete_futures = dict((val, Future()) for val in values)
 
         def _on_next(ev):
-            if event_complete_futures.get(ev.data):
-                event_complete_futures[ev.data].set_result(True)
+            emitted_value = ev.data
+            if event_complete_futures.get(emitted_value):
+                event_complete_futures[emitted_value].set_result(True)
 
         self.subscription = observable.subscribe(_on_next)
 
