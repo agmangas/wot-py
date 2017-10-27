@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import pytest
 from faker import Faker
 
 from wotpy.wot.exposed import ExposedThing
 from wotpy.wot.dictionaries import ThingPropertyInit
 
 
-def build_thing_property_init():
+@pytest.fixture
+def thing_property_init():
     """Builds and returns a random ThingPropertyInit."""
 
     fake = Faker()
@@ -18,7 +20,8 @@ def build_thing_property_init():
         description={"type": "string"})
 
 
-def build_exposed_thing():
+@pytest.fixture
+def exposed_thing():
     """Builds and returns a random ExposedThing."""
 
     fake = Faker()
