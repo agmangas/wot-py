@@ -42,11 +42,10 @@ class TDChangeMethod(EnumListMixin):
     CHANGE = "change"
 
 
-class ThingEventType(EnumListMixin):
+class DefaultThingEvent(EnumListMixin):
     """Enumeration for the default events
     that are supported on all ExposedThings."""
 
     PROPERTY_CHANGE = "propertychange"
     ACTION_INVOCATION = "actioninvocation"
     DESCRIPTION_CHANGE = "descriptionchange"
-    GENERIC_EVENT = "tddefined"

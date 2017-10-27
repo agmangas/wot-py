@@ -12,8 +12,8 @@ from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.thing import Thing
 from wotpy.utils.enums import EnumListMixin
 from wotpy.wot.dictionaries import Request, PropertyChangeEventInit
-from wotpy.wot.enums import RequestType, ThingEventType
-from wotpy.wot.events import PropertyChangeEvent
+from wotpy.wot.enums import RequestType, DefaultThingEvent
+from wotpy.wot.events import EmittedEvent, PropertyChangeEmittedEvent
 from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 from wotpy.wot.interfaces.exposed import AbstractExposedThing
 
@@ -175,8 +175,25 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
                 raise ValueError("Property not found: {}".format(name))
 
             def _filter_func(item):
-                return item.event_type == ThingEventType.PROPERTY_CHANGE and \
+                return item.name == DefaultThingEvent.PROPERTY_CHANGE and \
                        item.data.name == name
+
+            return _filter_func
+
+        def _build_event_filter():
+            """Returns a filter that can be appended to the global events
+            stream to generate an Observable for TD-defined events."""
+
+            event_name = request.name
+
+            event_interaction = self._thing.find_interaction(
+                event_name, interaction_type=InteractionTypes.EVENT)
+
+            if not event_interaction:
+                raise ValueError("Event not found: {}".format(event_name))
+
+            def _filter_func(item):
+                return item.name == event_name
 
             return _filter_func
 
@@ -190,7 +207,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             assert observe_type in RequestType.list()
 
             filter_builder_map = {
-                RequestType.PROPERTY: _build_property_filter
+                RequestType.PROPERTY: _build_property_filter,
+                RequestType.EVENT: _build_event_filter
             }
 
             if observe_type not in filter_builder_map:
@@ -283,7 +301,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         # noinspection PyUnusedLocal
         def _publish_event(ft):
             event_data = PropertyChangeEventInit(name=name, value=value)
-            self._events_stream.on_next(PropertyChangeEvent(data=event_data))
+            self._events_stream.on_next(PropertyChangeEmittedEvent(init=event_data))
 
         future_prop_set.add_done_callback(_publish_event)
 
@@ -467,4 +485,4 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Emits an the event initialized with the event name specified by
         the event_name argument and data specified by the payload argument."""
 
-        pass
+        self._events_stream.on_next(EmittedEvent(name=event_name, init=payload))

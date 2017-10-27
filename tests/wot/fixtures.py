@@ -5,7 +5,7 @@ import pytest
 from faker import Faker
 
 from wotpy.wot.exposed import ExposedThing
-from wotpy.wot.dictionaries import ThingPropertyInit
+from wotpy.wot.dictionaries import ThingPropertyInit, ThingEventInit
 
 
 @pytest.fixture
@@ -18,6 +18,17 @@ def thing_property_init():
         name=fake.user_name(),
         value=fake.pystr(),
         description={"type": "string"})
+
+
+@pytest.fixture
+def thing_event_init():
+    """Builds and returns a random ThingEventInit."""
+
+    fake = Faker()
+
+    return ThingEventInit(
+        name=fake.user_name(),
+        data_description={"type": "string"})
 
 
 @pytest.fixture

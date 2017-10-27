@@ -9,7 +9,7 @@ from faker import Faker
 from tornado import ioloop, gen
 
 from tests.utils import FutureTimeout
-from tests.wot.fixtures import exposed_thing, thing_property_init
+from tests.wot.fixtures import exposed_thing, thing_property_init, thing_event_init
 from wotpy.wot.enums import RequestType
 
 
@@ -79,8 +79,19 @@ class TestObserve(tornado.testing.AsyncTestCase):
         super(TestObserve, self).setUp()
         self.exposed_thing = exposed_thing()
         self.thing_property_init = thing_property_init()
+        self.thing_event_init = thing_event_init()
         self.exposed_thing.add_property(property_init=self.thing_property_init)
+        self.exposed_thing.add_event(event_init=self.thing_event_init)
+        self.periodic_cb = None
+        self.subscription = None
         self.fake = Faker()
+
+    def tearDown(self):
+        if self.periodic_cb:
+            self.periodic_cb.stop()
+
+        if self.subscription:
+            self.subscription.dispose()
 
     @tornado.testing.gen_test
     def test_observe_property_change(self):
@@ -92,24 +103,50 @@ class TestObserve(tornado.testing.AsyncTestCase):
             name=prop_name,
             request_type=RequestType.PROPERTY)
 
-        values = self.fake.pylist(5, True, *(int,))
+        values = self.fake.pylist(5, True, *(str,))
         event_complete_futures = dict((val, Future()) for val in values)
 
         def _on_next(ev):
             if event_complete_futures.get(ev.data.value):
                 event_complete_futures[ev.data.value].set_result(True)
 
-        subscription = observable.subscribe(_on_next)
+        self.subscription = observable.subscribe(_on_next)
 
         @gen.coroutine
         def _set_properties():
             for val in values:
                 yield self.exposed_thing.set_property(prop_name, val)
 
-        periodic_cb = ioloop.PeriodicCallback(callback=_set_properties, callback_time=50)
-        periodic_cb.start()
+        self.periodic_cb = ioloop.PeriodicCallback(callback=_set_properties, callback_time=50)
+        self.periodic_cb.start()
 
         yield event_complete_futures
 
-        periodic_cb.stop()
-        subscription.dispose()
+    @tornado.testing.gen_test
+    def test_observe_event(self):
+        """TD-defined events can be observed."""
+
+        event_name = self.thing_event_init.name
+
+        observable = self.exposed_thing.observe(
+            name=event_name,
+            request_type=RequestType.EVENT)
+
+        values = self.fake.pylist(5, True, *(str,))
+        event_complete_futures = dict((val, Future()) for val in values)
+
+        def _on_next(ev):
+            if event_complete_futures.get(ev.data):
+                event_complete_futures[ev.data].set_result(True)
+
+        self.subscription = observable.subscribe(_on_next)
+
+        @gen.coroutine
+        def _emit_events():
+            for val in values:
+                yield self.exposed_thing.emit_event(event_name, val)
+
+        self.periodic_cb = ioloop.PeriodicCallback(callback=_emit_events, callback_time=50)
+        self.periodic_cb.start()
+
+        yield event_complete_futures
