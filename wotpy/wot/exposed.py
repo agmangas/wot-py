@@ -317,8 +317,10 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         future_get = Future()
 
-        def _respond(val):
-            future_get.set_result(val)
+        # noinspection PyUnusedLocal
+        def _respond(*resp_args, **resp_kwargs):
+            assert len(resp_args), "Must respond with property value"
+            future_get.set_result(resp_args[0])
 
         def _respond_with_error(err):
             future_get.set_exception(err)
@@ -342,7 +344,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         future_set = Future()
 
-        def _respond():
+        # noinspection PyUnusedLocal
+        def _respond(*resp_args, **resp_kwargs):
             future_set.set_result(None)
 
         def _respond_with_error(err):
@@ -359,11 +362,11 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         handler(request)
 
         # noinspection PyUnusedLocal
-        def _publish_event(ft):
+        def _publish_property_change_event(ft):
             event_data = PropertyChangeEventInit(name=name, value=value)
             self._events_stream.on_next(PropertyChangeEmittedEvent(init=event_data))
 
-        future_set.add_done_callback(_publish_event)
+        future_set.add_done_callback(_publish_property_change_event)
 
         return future_set
 
@@ -375,8 +378,10 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         future_invoke = Future()
 
-        def _respond(action_result):
-            future_invoke.set_result(action_result)
+        # noinspection PyUnusedLocal
+        def _respond(*resp_args, **resp_kwargs):
+            assert len(resp_args), "Must respond with action invocation result"
+            future_invoke.set_result(resp_args[0])
 
         def _respond_with_error(err):
             future_invoke.set_exception(err)
@@ -392,10 +397,10 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         handler(request)
 
         # noinspection PyUnusedLocal
-        def _publish_event(ft):
+        def _publish_action_invocation_event(ft):
             pass
 
-        future_invoke.add_done_callback(_publish_event)
+        future_invoke.add_done_callback(_publish_action_invocation_event)
 
         return future_invoke
 
