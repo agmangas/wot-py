@@ -183,8 +183,6 @@ def test_observe_event(exposed_thing, thing_event_init):
 def test_observe_td_changes(exposed_thing, thing_property_init, thing_event_init, thing_action_init):
     """Thing Description changes can be observed."""
 
-    fake = Faker()
-
     prop_name = thing_property_init.name
     event_name = thing_event_init.name
     action_name = thing_action_init.name
