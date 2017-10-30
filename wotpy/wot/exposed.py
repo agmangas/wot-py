@@ -138,8 +138,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         future_ret = Future()
 
         try:
-            assert request.request_type == RequestType.PROPERTY
-            assert request.name
+            assert request.request_type == RequestType.PROPERTY and \
+                   request.name
 
             prop = self._find_interaction(
                 interaction_name=request.name,
@@ -147,10 +147,10 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
             prop_value = self._get_property_value(prop)
 
-            request.respond(prop_value)
+            request.respond and request.respond(prop_value)
             future_ret.set_result(prop_value)
         except Exception as ex:
-            request.respond_with_error(ex)
+            request.respond_with_error and request.respond_with_error(ex)
             future_ret.set_exception(ex)
 
         return future_ret
@@ -161,8 +161,9 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         future_ret = Future()
 
         try:
-            assert request.request_type == RequestType.PROPERTY
-            assert request.name and request.data
+            assert request.request_type == RequestType.PROPERTY and \
+                   request.name and \
+                   request.data
 
             prop = self._find_interaction(
                 interaction_name=request.name,
@@ -170,10 +171,10 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
             self._set_property_value(prop, request.data)
 
-            request.respond()
+            request.respond and request.respond()
             future_ret.set_result(None)
         except Exception as ex:
-            request.respond_with_error(ex)
+            request.respond_with_error and request.respond_with_error(ex)
             future_ret.set_exception(ex)
 
         return future_ret
@@ -184,8 +185,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         future_ret = Future()
 
         try:
-            assert request.request_type == RequestType.ACTION
-            assert request.name
+            assert request.request_type == RequestType.ACTION and \
+                   request.name
 
             input_kwargs = request.data if hasattr(request, "data") else {}
 
@@ -196,7 +197,9 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
                 interaction_type=InteractionTypes.ACTION)
 
             action_func = self._get_action_func(action)
-            assert callable(action_func)
+
+            assert callable(action_func), "No action defined for: {}".format(request.name)
+
             action_result = action_func(**input_kwargs)
 
             def _respond_callback(ft):
@@ -207,10 +210,10 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             if is_future(action_result):
                 action_result.add_done_callback(_respond_callback)
             else:
-                request.respond(action_result)
+                request.respond and request.respond(action_result)
                 future_ret.set_result(action_result)
         except Exception as ex:
-            request.respond_with_error(ex)
+            request.respond_with_error and request.respond_with_error(ex)
             future_ret.set_exception(ex)
 
         return future_ret
@@ -253,8 +256,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             return _filter_func
 
         try:
-            assert request.request_type == RequestType.EVENT
-            assert request.options
+            assert request.request_type == RequestType.EVENT and \
+                   request.options
 
             observe_type = request.options.get("observeType")
             subscribe = request.options.get("subscribe", False)
