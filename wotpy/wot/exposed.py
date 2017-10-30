@@ -3,30 +3,29 @@
 
 # noinspection PyCompatibility
 from concurrent.futures import Future
-from rx.concurrency import IOLoopScheduler
-from rx.subjects import Subject
 from rx import Observable
+from rx.subjects import Subject
 
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.thing import Thing
 from wotpy.utils.enums import EnumListMixin
 from wotpy.utils.futures import is_future
-from wotpy.wot.interfaces.consumed import AbstractConsumedThing
-from wotpy.wot.interfaces.exposed import AbstractExposedThing
 from wotpy.wot.dictionaries import \
     Request, \
     PropertyChangeEventInit, \
     ThingDescriptionChangeEventInit
-from wotpy.wot.events import \
-    EmittedEvent, \
-    PropertyChangeEmittedEvent, \
-    ThingDescriptionChangeEmittedEvent
 from wotpy.wot.enums import \
     RequestType, \
     DefaultThingEvent, \
     TDChangeMethod, \
     TDChangeType
+from wotpy.wot.events import \
+    EmittedEvent, \
+    PropertyChangeEmittedEvent, \
+    ThingDescriptionChangeEmittedEvent
+from wotpy.wot.interfaces.consumed import AbstractConsumedThing
+from wotpy.wot.interfaces.exposed import AbstractExposedThing
 
 
 class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
@@ -47,7 +46,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         PROPERTY_VALUES = "property_values"
         ACTION_FUNCTIONS = "action_functions"
 
-    def __init__(self, servient, thing, scheduler=None):
+    def __init__(self, servient, thing):
         self._servient = servient
         self._thing = thing
 
@@ -63,7 +62,6 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             self.HandlerKeys.OBSERVE: self._default_observe_handler
         }
 
-        self._scheduler = scheduler or IOLoopScheduler()
         self._events_stream = Subject()
 
     @classmethod
@@ -279,9 +277,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             stream_filter = filter_builder_map[observe_type]()
 
             # noinspection PyUnresolvedReferences
-            observable = self._events_stream \
-                .filter(stream_filter) \
-                .subscribe_on(self._scheduler)
+            observable = self._events_stream.filter(stream_filter)
 
             if not subscribe:
                 observable = observable.first()
