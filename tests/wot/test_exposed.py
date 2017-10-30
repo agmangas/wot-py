@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import copy
 import pytest
 import tornado.testing
 # noinspection PyCompatibility
@@ -74,6 +75,55 @@ def test_on_retrieve_property(exposed_thing, thing_property_init):
 
     with pytest.raises(ValueError):
         future_get_03.result(timeout=FutureTimeout.MINIMAL)
+
+
+class TestInvokeAction(tornado.testing.AsyncTestCase):
+    """Action invocation test cases."""
+
+    @tornado.testing.gen_test
+    def test_invoke_action(self):
+        """Actions can be invoked on ExposedThings."""
+
+        exposed_thing_ = exposed_thing()
+        thing_action_init_ = thing_action_init()
+
+        action_init_sync = copy.deepcopy(thing_action_init_)
+        action_init_async = copy.deepcopy(thing_action_init_)
+
+        fake = Faker()
+
+        name_sync = fake.pystr()
+        name_async = fake.pystr()
+        arg_sync = fake.pystr()
+        arg_async = fake.pystr()
+
+        def _sync_upper(val):
+            return str(val).upper()
+
+        action_init_sync.name = name_sync
+        action_init_sync.action = _sync_upper
+
+        future_async = Future()
+
+        @gen.coroutine
+        def _async_upper(val):
+            yield gen.sleep(0.1)
+            raise gen.Return(str(val).upper())
+
+        action_init_async.name = name_async
+        action_init_async.action = _async_upper
+
+        exposed_thing_.add_action(action_init=action_init_sync)
+        exposed_thing_.add_action(action_init=action_init_async)
+
+        future_invoke_sync = exposed_thing_.invoke_action(name_sync, val=arg_sync)
+        future_invoke_async = exposed_thing_.invoke_action(name_async, val=arg_async)
+
+        yield future_invoke_sync
+        yield future_invoke_async
+
+        assert future_invoke_sync.result() == arg_sync.upper()
+        assert future_invoke_async.result() == arg_async.upper()
 
 
 class TestObserve(tornado.testing.AsyncTestCase):

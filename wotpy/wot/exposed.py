@@ -205,12 +205,12 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             assert callable(action_func)
             action_result = action_func(**input_kwargs)
 
-            if is_future(action_result):
-                def _respond_callback(action_result_future):
-                    completed_result = action_result_future.result()
-                    request.respond(completed_result)
-                    future_ret.set_result(completed_result)
+            def _respond_callback(ft):
+                completed_result = ft.result()
+                request.respond(completed_result)
+                future_ret.set_result(completed_result)
 
+            if is_future(action_result):
                 action_result.add_done_callback(_respond_callback)
             else:
                 request.respond(action_result)
