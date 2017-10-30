@@ -180,6 +180,41 @@ def test_observe_event(exposed_thing, thing_event_init):
 
 
 # noinspection PyShadowingNames
+def test_observe_invoke_action(exposed_thing, thing_action_init):
+    """Events defined in the Thing Description can be observed."""
+
+    fake = Faker()
+
+    executor = ThreadPoolExecutor(max_workers=1)
+
+    def _async_lower(val):
+        return executor.submit(lambda x: x.lower(), val)
+
+    thing_action_init.action = _async_lower
+
+    exposed_thing.add_action(action_init=thing_action_init)
+
+    observable = exposed_thing.observe(
+        name=thing_action_init.name,
+        request_type=RequestType.ACTION)
+
+    future_event_emitted = Future()
+
+    def _on_next(ev):
+        future_event_emitted.set_result(ev.data.action_name)
+
+    subscription = observable.subscribe(_on_next)
+
+    action_arg = fake.pystr()
+    future_result = exposed_thing.invoke_action(thing_action_init.name, val=action_arg)
+
+    assert future_result.result(timeout=FutureTimeout.MINIMAL) == action_arg.lower()
+    assert future_event_emitted.result(timeout=FutureTimeout.MINIMAL) == thing_action_init.name
+
+    subscription.dispose()
+
+
+# noinspection PyShadowingNames
 def test_observe_td_changes(exposed_thing, thing_property_init, thing_event_init, thing_action_init):
     """Thing Description changes can be observed."""
 

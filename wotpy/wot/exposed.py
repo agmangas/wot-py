@@ -14,7 +14,8 @@ from wotpy.utils.futures import is_future
 from wotpy.wot.dictionaries import \
     Request, \
     PropertyChangeEventInit, \
-    ThingDescriptionChangeEventInit
+    ThingDescriptionChangeEventInit, \
+    ActionInvocationEventInit
 from wotpy.wot.enums import \
     RequestType, \
     DefaultThingEvent, \
@@ -23,7 +24,8 @@ from wotpy.wot.enums import \
 from wotpy.wot.events import \
     EmittedEvent, \
     PropertyChangeEmittedEvent, \
-    ThingDescriptionChangeEmittedEvent
+    ThingDescriptionChangeEmittedEvent, \
+    ActionInvocationEmittedEvent
 from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 from wotpy.wot.interfaces.exposed import AbstractExposedThing
 
@@ -226,7 +228,10 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             stream to generate an Observable for property update events."""
 
             prop_name = request.name
-            self._find_interaction(prop_name, InteractionTypes.PROPERTY)
+
+            self._find_interaction(
+                interaction_name=prop_name,
+                interaction_type=InteractionTypes.PROPERTY)
 
             def _filter_func(item):
                 return item.name == DefaultThingEvent.PROPERTY_CHANGE and \
@@ -239,10 +244,29 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             stream to generate an Observable for custom events defined in the TD."""
 
             event_name = request.name
-            self._find_interaction(event_name, InteractionTypes.EVENT)
+
+            self._find_interaction(
+                interaction_name=event_name,
+                interaction_type=InteractionTypes.EVENT)
 
             def _filter_func(item):
                 return item.name == event_name
+
+            return _filter_func
+
+        def _build_action_filter():
+            """Returns a filter that can be appended to the global events
+            stream to generate an Observable for custom events defined in the TD."""
+
+            action_name = request.name
+
+            self._find_interaction(
+                interaction_name=action_name,
+                interaction_type=InteractionTypes.ACTION)
+
+            def _filter_func(item):
+                return item.name == DefaultThingEvent.ACTION_INVOCATION and \
+                       item.data.action_name == action_name
 
             return _filter_func
 
@@ -267,7 +291,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             filter_builder_map = {
                 RequestType.PROPERTY: _build_property_filter,
                 RequestType.EVENT: _build_event_filter,
-                RequestType.TD: _build_td_filter
+                RequestType.TD: _build_td_filter,
+                RequestType.ACTION: _build_action_filter
             }
 
             if observe_type not in filter_builder_map:
@@ -357,11 +382,11 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         handler(request)
 
         # noinspection PyUnusedLocal
-        def _publish_property_change_event(ft):
+        def _publish_event(ft):
             event_data = PropertyChangeEventInit(name=name, value=value)
             self._events_stream.on_next(PropertyChangeEmittedEvent(init=event_data))
 
-        future_set.add_done_callback(_publish_property_change_event)
+        future_set.add_done_callback(_publish_event)
 
         return future_set
 
@@ -392,10 +417,11 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         handler(request)
 
         # noinspection PyUnusedLocal
-        def _publish_action_invocation_event(ft):
-            pass
+        def _publish_event(ft):
+            event_data = ActionInvocationEventInit(action_name=name, return_value=ft.result())
+            self._events_stream.on_next(ActionInvocationEmittedEvent(init=event_data))
 
-        future_invoke.add_done_callback(_publish_action_invocation_event)
+        future_invoke.add_done_callback(_publish_event)
 
         return future_invoke
 
