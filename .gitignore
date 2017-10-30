@@ -205,6 +205,9 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
+
+# Entire IDEA folder
+.idea
 ### Vim template
 # swap
 [._]*.s[a-w][a-z]
