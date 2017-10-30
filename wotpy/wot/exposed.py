@@ -119,7 +119,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         self._handlers[handler_type] = handler
 
-    def _validate_has_interaction(self, interaction_name, interaction_type):
+    def _find_interaction(self, interaction_name, interaction_type):
         """Raises ValueError if the given interaction does not exist in this Thing."""
 
         interaction = self._thing.find_interaction(
@@ -130,6 +130,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             raise ValueError("Interaction ({}) not found: {}".format(
                 interaction_type, interaction_name))
 
+        return interaction
+
     def _default_retrieve_property_handler(self, request):
         """Default handler for onRetrieveProperty."""
 
@@ -139,11 +141,9 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             assert request.request_type == RequestType.PROPERTY
             assert request.name
 
-            prop = self._thing.find_interaction(
-                request.name, interaction_type=InteractionTypes.PROPERTY)
-
-            if not prop:
-                raise ValueError("Not found: {}".format(request.name))
+            prop = self._find_interaction(
+                interaction_name=request.name,
+                interaction_type=InteractionTypes.PROPERTY)
 
             prop_value = self._get_property_value(prop)
 
@@ -164,11 +164,9 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             assert request.request_type == RequestType.PROPERTY
             assert request.name and request.data
 
-            prop = self._thing.find_interaction(
-                request.name, interaction_type=InteractionTypes.PROPERTY)
-
-            if not prop:
-                raise ValueError("Not found: {}".format(request.name))
+            prop = self._find_interaction(
+                interaction_name=request.name,
+                interaction_type=InteractionTypes.PROPERTY)
 
             self._set_property_value(prop, request.data)
 
@@ -193,11 +191,9 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
             assert isinstance(input_kwargs, dict)
 
-            action = self._thing.find_interaction(
-                request.name, interaction_type=InteractionTypes.ACTION)
-
-            if not action:
-                raise ValueError("Not found: {}".format(request.name))
+            action = self._find_interaction(
+                interaction_name=request.name,
+                interaction_type=InteractionTypes.ACTION)
 
             action_func = self._get_action_func(action)
             assert callable(action_func)
@@ -227,7 +223,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             stream to generate an Observable for property update events."""
 
             prop_name = request.name
-            self._validate_has_interaction(prop_name, InteractionTypes.PROPERTY)
+            self._find_interaction(prop_name, InteractionTypes.PROPERTY)
 
             def _filter_func(item):
                 return item.name == DefaultThingEvent.PROPERTY_CHANGE and \
@@ -240,7 +236,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             stream to generate an Observable for custom events defined in the TD."""
 
             event_name = request.name
-            self._validate_has_interaction(event_name, InteractionTypes.EVENT)
+            self._find_interaction(event_name, InteractionTypes.EVENT)
 
             def _filter_func(item):
                 return item.name == event_name
