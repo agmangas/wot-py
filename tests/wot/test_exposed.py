@@ -110,6 +110,44 @@ def test_on_retrieve_specific_property(exposed_thing, thing_property_init):
 
 
 # noinspection PyShadowingNames
+def test_on_invoke_specific_action(exposed_thing, thing_action_init):
+    """Custom handlers to invoke specific actions can be defined on a ExposedThing."""
+
+    fake = Faker()
+
+    action_init_01 = copy.deepcopy(thing_action_init)
+    action_init_02 = copy.deepcopy(thing_action_init)
+
+    executor = ThreadPoolExecutor(max_workers=1)
+
+    def _async_lower(val):
+        return executor.submit(lambda x: x.lower(), val)
+
+    action_init_01.name = fake.pystr()
+    action_init_01.action = _async_lower
+
+    action_init_02.name = fake.pystr()
+    action_init_02.action = _async_lower
+
+    def _handler_dummy(request):
+        request.respond(True)
+
+    exposed_thing.add_action(action_init=action_init_01)
+    exposed_thing.add_action(action_init=action_init_02)
+
+    action_arg = fake.pystr()
+    action_out = _async_lower(action_arg).result(timeout=FutureTimeout.SHORT)
+
+    assert exposed_thing.invoke_action(action_init_01.name, val=action_arg).result() == action_out
+    assert exposed_thing.invoke_action(action_init_02.name, val=action_arg).result() == action_out
+
+    exposed_thing.on_invoke_action(handler=_handler_dummy, name=action_init_01.name)
+
+    assert exposed_thing.invoke_action(action_init_01.name).result() is True
+    assert exposed_thing.invoke_action(action_init_02.name, val=action_arg).result() == action_out
+
+
+# noinspection PyShadowingNames
 def test_invoke_action_sync(exposed_thing, thing_action_init):
     """Synchronous actions can be invoked on ExposedThings."""
 
