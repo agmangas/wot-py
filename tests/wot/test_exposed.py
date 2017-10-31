@@ -222,9 +222,7 @@ def test_observe_td_changes(exposed_thing, thing_property_init, thing_event_init
     event_name = thing_event_init.name
     action_name = thing_action_init.name
 
-    observable = exposed_thing.observe(
-        name=None,
-        request_type=RequestType.TD)
+    observable = exposed_thing.observe(request_type=RequestType.TD)
 
     complete_futures = {
         (TDChangeType.PROPERTY, TDChangeMethod.ADD): Future(),

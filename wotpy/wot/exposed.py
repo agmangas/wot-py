@@ -444,11 +444,14 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         raise NotImplementedError("Please use observe() instead")
 
-    def observe(self, name, request_type):
+    def observe(self, name=None, request_type=None):
         """Returns an Observable for the Property, Event or Action
         specified in the name argument, allowing subscribing and
         unsubscribing to notifications. The request_type specifies
         whether a Property, an Event or an Action is observed."""
+
+        if request_type is not RequestType.TD and name is None:
+            raise ValueError("Name is required for request type: {}".format(request_type))
 
         request = Request(
             name=name,
