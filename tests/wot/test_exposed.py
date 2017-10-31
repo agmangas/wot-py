@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import copy
+
 # noinspection PyPackageRequirements
 import pytest
 # noinspection PyCompatibility
@@ -46,7 +48,7 @@ def test_set_property(exposed_thing, thing_property_init):
 
 # noinspection PyShadowingNames
 def test_on_retrieve_property(exposed_thing, thing_property_init):
-    """Custom handlers to retrieve properties can be defined on ExposedThings."""
+    """A custom global handler to retrieve properties can be defined on a ExposedThing."""
 
     fake = Faker()
 
@@ -60,21 +62,51 @@ def test_on_retrieve_property(exposed_thing, thing_property_init):
 
     exposed_thing.add_property(property_init=thing_property_init)
     exposed_thing.on_retrieve_property(_handler_dummy)
-    future_get_01 = exposed_thing.get_property(thing_property_init.name)
 
-    assert future_get_01.result(timeout=FutureTimeout.MINIMAL) == dummy_value
+    assert exposed_thing.get_property(thing_property_init.name).result() == dummy_value
 
     future_set = exposed_thing.set_property(thing_property_init.name, fake.pystr())
-    future_set.result(timeout=FutureTimeout.MINIMAL)
-    future_get_02 = exposed_thing.get_property(thing_property_init.name)
 
-    assert future_get_02.result(timeout=FutureTimeout.MINIMAL) == dummy_value
+    assert future_set.done()
+    assert exposed_thing.get_property(thing_property_init.name).result() == dummy_value
 
     exposed_thing.on_retrieve_property(_handler_error)
-    future_get_03 = exposed_thing.get_property(thing_property_init.name)
 
     with pytest.raises(ValueError):
-        future_get_03.result(timeout=FutureTimeout.MINIMAL)
+        exposed_thing.get_property(thing_property_init.name).result()
+
+
+def test_on_retrieve_specific_property(exposed_thing, thing_property_init):
+    """Custom handlers to retrieve specific properties can be defined on a ExposedThing."""
+
+    fake = Faker()
+
+    prop_init_01 = copy.deepcopy(thing_property_init)
+    prop_init_02 = copy.deepcopy(thing_property_init)
+
+    prop_init_01.name = fake.pystr()
+    prop_init_01.value = fake.pystr()
+
+    prop_init_02.name = fake.pystr()
+    prop_init_02.value = fake.pystr()
+
+    dummy_value = fake.pystr()
+
+    def _handler_dummy(request):
+        request.respond(dummy_value)
+
+    exposed_thing.add_property(property_init=prop_init_01)
+    exposed_thing.add_property(property_init=prop_init_02)
+    exposed_thing.on_retrieve_property(handler=_handler_dummy, name=prop_init_01.name)
+
+    assert exposed_thing.get_property(prop_init_01.name).result() == dummy_value
+    assert exposed_thing.get_property(prop_init_01.name).result() != prop_init_01.value
+    assert exposed_thing.get_property(prop_init_02.name).result() == prop_init_02.value
+
+    future_set = exposed_thing.set_property(prop_init_01.name, fake.pystr())
+
+    assert future_set.done()
+    assert exposed_thing.get_property(prop_init_01.name).result() == dummy_value
 
 
 # noinspection PyShadowingNames

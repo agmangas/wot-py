@@ -57,11 +57,17 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             self.InteractionStateKeys.ACTION_FUNCTIONS: {}
         }
 
-        self._handlers = {
+        self._handlers_global = {
             self.HandlerKeys.RETRIEVE_PROPERTY: self._default_retrieve_property_handler,
             self.HandlerKeys.UPDATE_PROPERTY: self._default_update_property_handler,
             self.HandlerKeys.INVOKE_ACTION: self._default_invoke_action_handler,
             self.HandlerKeys.OBSERVE: self._default_observe_handler
+        }
+
+        self._handlers = {
+            self.HandlerKeys.RETRIEVE_PROPERTY: {},
+            self.HandlerKeys.UPDATE_PROPERTY: {},
+            self.HandlerKeys.INVOKE_ACTION: {}
         }
 
         self._events_stream = Subject()
@@ -111,15 +117,19 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         action_funcs = self.InteractionStateKeys.ACTION_FUNCTIONS
         return self._interaction_states[action_funcs].get(action, None)
 
-    def _get_handler(self, handler_type):
+    def _get_handler(self, handler_type, interaction=None):
         """Returns the currently defined handler for the given handler type."""
 
-        return self._handlers[handler_type]
+        interaction_handler = self._handlers.get(handler_type, {}).get(interaction, None)
+        return interaction_handler or self._handlers_global[handler_type]
 
-    def _set_handler(self, handler_type, handler):
+    def _set_handler(self, handler_type, handler, interaction=None):
         """Sets the currently defined handler for the given handler type."""
 
-        self._handlers[handler_type] = handler
+        if interaction is None or handler_type not in self._handlers:
+            self._handlers_global[handler_type] = handler
+        else:
+            self._handlers[handler_type][interaction] = handler
 
     def _find_interaction(self, interaction_name, interaction_type):
         """Raises ValueError if the given interaction does not exist in this Thing."""
@@ -345,13 +355,20 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         def _respond_with_error(err):
             future_get.set_exception(err)
 
+        interaction = self._find_interaction(
+            interaction_name=name,
+            interaction_type=InteractionTypes.PROPERTY)
+
+        handler = self._get_handler(
+            handler_type=self.HandlerKeys.RETRIEVE_PROPERTY,
+            interaction=interaction)
+
         request = Request(
             name=name,
             request_type=RequestType.PROPERTY,
             respond=_respond,
             respond_with_error=_respond_with_error)
 
-        handler = self._get_handler(self.HandlerKeys.RETRIEVE_PROPERTY)
         handler(request)
 
         return future_get
@@ -371,6 +388,14 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         def _respond_with_error(err):
             future_set.set_exception(err)
 
+        interaction = self._find_interaction(
+            interaction_name=name,
+            interaction_type=InteractionTypes.PROPERTY)
+
+        handler = self._get_handler(
+            handler_type=self.HandlerKeys.UPDATE_PROPERTY,
+            interaction=interaction)
+
         request = Request(
             name=name,
             request_type=RequestType.PROPERTY,
@@ -378,7 +403,6 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             respond_with_error=_respond_with_error,
             data=value)
 
-        handler = self._get_handler(self.HandlerKeys.UPDATE_PROPERTY)
         handler(request)
 
         # noinspection PyUnusedLocal
@@ -406,6 +430,14 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         def _respond_with_error(err):
             future_invoke.set_exception(err)
 
+        interaction = self._find_interaction(
+            interaction_name=name,
+            interaction_type=InteractionTypes.ACTION)
+
+        handler = self._get_handler(
+            handler_type=self.HandlerKeys.INVOKE_ACTION,
+            interaction=interaction)
+
         request = Request(
             name=name,
             request_type=RequestType.ACTION,
@@ -413,7 +445,6 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             respond_with_error=_respond_with_error,
             data=kwargs)
 
-        handler = self._get_handler(self.HandlerKeys.INVOKE_ACTION)
         handler(request)
 
         # noinspection PyUnusedLocal
@@ -451,7 +482,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         whether a Property, an Event or an Action is observed."""
 
         if request_type is not RequestType.TD and name is None:
-            raise ValueError("Name is required for request type: {}".format(request_type))
+            raise ValueError("Name required for requests of type: {}".format(request_type))
 
         request = Request(
             name=name,
@@ -578,30 +609,60 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
-    def on_retrieve_property(self, handler):
+    def on_retrieve_property(self, handler, name=None):
         """Registers the handler function for Property retrieve requests received
         for the Thing, as defined by the handler property of type RequestHandler.
         The handler will receive an argument request of type Request where at least
         request.name is defined and represents the name of the Property to be retrieved."""
 
-        self._set_handler(self.HandlerKeys.RETRIEVE_PROPERTY, handler)
+        interaction = None
 
-    def on_update_property(self, handler):
+        if name is not None:
+            interaction = self._find_interaction(
+                interaction_name=name,
+                interaction_type=InteractionTypes.PROPERTY)
+
+        self._set_handler(
+            handler_type=self.HandlerKeys.RETRIEVE_PROPERTY,
+            handler=handler,
+            interaction=interaction)
+
+    def on_update_property(self, handler, name=None):
         """Defines the handler function for Property update requests received for the Thing,
         as defined by the handler property of type RequestHandler. The handler will receive
         an argument request of type Request where request.name defines the name of the
         Property to be retrieved and request.data defines the new value of the Property."""
 
-        self._set_handler(self.HandlerKeys.UPDATE_PROPERTY, handler)
+        interaction = None
 
-    def on_invoke_action(self, handler):
+        if name is not None:
+            interaction = self._find_interaction(
+                interaction_name=name,
+                interaction_type=InteractionTypes.PROPERTY)
+
+        self._set_handler(
+            handler_type=self.HandlerKeys.UPDATE_PROPERTY,
+            handler=handler,
+            interaction=interaction)
+
+    def on_invoke_action(self, handler, name=None):
         """Defines the handler function for Action invocation requests received
         for the Thing, as defined by the handler property of type RequestHandler.
         The handler will receive an argument request of type Request where request.name
         defines the name of the Action to be invoked and request.data defines the input
         arguments for the Action as defined by the Thing Description."""
 
-        self._set_handler(self.HandlerKeys.INVOKE_ACTION, handler)
+        interaction = None
+
+        if name is not None:
+            interaction = self._find_interaction(
+                interaction_name=name,
+                interaction_type=InteractionTypes.ACTION)
+
+        self._set_handler(
+            handler_type=self.HandlerKeys.INVOKE_ACTION,
+            handler=handler,
+            interaction=interaction)
 
     def on_observe(self, handler):
         """Defines the handler function for observe requests received for
@@ -614,7 +675,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         * request.options.subscribe is true if subscription is turned or kept being
         turned on, and it is false when subscription is turned off."""
 
-        self._set_handler(self.HandlerKeys.OBSERVE, handler)
+        self._set_handler(handler_type=self.HandlerKeys.OBSERVE, handler=handler)
 
     def register(self, directory=None):
         """Generates the Thing Description given the properties, Actions
