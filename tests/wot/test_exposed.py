@@ -10,14 +10,13 @@ from concurrent.futures import Future, ThreadPoolExecutor
 # noinspection PyPackageRequirements
 from faker import Faker
 
-from tests.utils import FutureTimeout
-from wotpy.wot.enums import RequestType, TDChangeMethod, TDChangeType
 # noinspection PyUnresolvedReferences
 from tests.wot.fixtures import \
     exposed_thing, \
     thing_property_init, \
     thing_event_init, \
     thing_action_init
+from wotpy.wot.enums import RequestType, TDChangeMethod, TDChangeType
 
 
 # noinspection PyShadowingNames
@@ -27,7 +26,7 @@ def test_get_property(exposed_thing, thing_property_init):
     exposed_thing.add_property(property_init=thing_property_init)
     future_get = exposed_thing.get_property(thing_property_init.name)
 
-    assert future_get.result(timeout=FutureTimeout.MINIMAL) == thing_property_init.value
+    assert future_get.result() == thing_property_init.value
 
 
 # noinspection PyShadowingNames
@@ -40,10 +39,12 @@ def test_set_property(exposed_thing, thing_property_init):
     exposed_thing.add_property(property_init=thing_property_init)
     updated_val = fake.pystr()
     future_set = exposed_thing.set_property(thing_property_init.name, updated_val)
-    future_set.result(timeout=FutureTimeout.MINIMAL)
+
+    assert future_set.done()
+
     future_get = exposed_thing.get_property(thing_property_init.name)
 
-    assert future_get.result(timeout=FutureTimeout.MINIMAL) == updated_val
+    assert future_get.result() == updated_val
 
 
 # noinspection PyShadowingNames
@@ -136,7 +137,7 @@ def test_on_invoke_specific_action(exposed_thing, thing_action_init):
     exposed_thing.add_action(action_init=action_init_02)
 
     action_arg = fake.pystr()
-    action_out = _async_lower(action_arg).result(timeout=FutureTimeout.SHORT)
+    action_out = _async_lower(action_arg).result()
 
     assert exposed_thing.invoke_action(action_init_01.name, val=action_arg).result() == action_out
     assert exposed_thing.invoke_action(action_init_02.name, val=action_arg).result() == action_out
@@ -162,7 +163,7 @@ def test_invoke_action_sync(exposed_thing, thing_action_init):
     exposed_thing.add_action(action_init=thing_action_init)
     future_result = exposed_thing.invoke_action(thing_action_init.name, val=action_arg)
 
-    assert future_result.result(timeout=FutureTimeout.MINIMAL) == action_arg.upper()
+    assert future_result.result() == action_arg.upper()
 
 
 # noinspection PyShadowingNames
@@ -185,7 +186,7 @@ def test_invoke_action_async(exposed_thing, thing_action_init):
     exposed_thing.add_action(action_init=thing_action_init)
     future_result = exposed_thing.invoke_action(thing_action_init.name, val=action_arg)
 
-    assert future_result.result(timeout=FutureTimeout.MINIMAL) == action_arg.upper()
+    assert future_result.result() == action_arg.upper()
 
 
 # noinspection PyShadowingNames
@@ -212,7 +213,7 @@ def test_observe_property_change(exposed_thing, thing_property_init):
 
     for val in property_values:
         future_set = exposed_thing.set_property(prop_name, val)
-        future_set.result(timeout=FutureTimeout.MINIMAL)
+        assert future_set.done()
 
     assert emitted_values == property_values
 
@@ -278,8 +279,8 @@ def test_observe_invoke_action(exposed_thing, thing_action_init):
     action_arg = fake.pystr()
     future_result = exposed_thing.invoke_action(thing_action_init.name, val=action_arg)
 
-    assert future_result.result(timeout=FutureTimeout.MINIMAL) == action_arg.lower()
-    assert future_event_emitted.result(timeout=FutureTimeout.MINIMAL) == thing_action_init.name
+    assert future_result.result() == action_arg.lower()
+    assert future_event_emitted.result() == thing_action_init.name
 
     subscription.dispose()
 
