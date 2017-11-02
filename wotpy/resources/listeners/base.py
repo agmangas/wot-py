@@ -3,6 +3,7 @@
 
 # noinspection PyCompatibility
 from concurrent.futures import Future
+from rx import Observable
 
 
 class BaseResourceListener(object):
@@ -29,14 +30,15 @@ class BaseResourceListener(object):
 
         return self._build_not_implemented_future()
 
-    def on_invoke(self, invocation_args):
+    def on_invoke(self, **kwargs):
         """Called to handle resource invocations.
         Returns a future that resolves to the invocation response."""
 
         return self._build_not_implemented_future()
 
-    def on_observe(self, name, request_type):
+    def on_observe(self):
         """Called to handle resource observations.
-        Returns a future that resolves to void when the observation process has finished."""
+        Returns an Observable."""
 
-        return self._build_not_implemented_future()
+        # noinspection PyUnresolvedReferences
+        return Observable.throw(NotImplementedError())
