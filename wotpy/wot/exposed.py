@@ -339,6 +339,12 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         return self._thing.to_jsonld_thing_description().doc
 
+    @property
+    def thing(self):
+        """Internal Thing property."""
+
+        return self._thing
+
     def get_property(self, name):
         """Takes the Property name as the name argument, then requests from
         the underlying platform and the Protocol Bindings to retrieve the
