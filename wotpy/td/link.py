@@ -10,18 +10,20 @@ class Link(object):
     """Communication metadata where a service can be accessed by a
     client application. An interaction might have more than one link."""
 
-    def __init__(self, interaction, **kwargs):
+    def __init__(self, interaction, protocol, **kwargs):
         assert json.dumps(kwargs), "Metadata must be JSON-serializable"
         self._interaction = interaction
+        self._protocol = protocol
         self._metadata = kwargs
 
     def __eq__(self, other):
         return self.interaction == other.interaction and \
+               self.protocol == other.protocol and \
                set(self.metadata.items()) == set(other.metadata.items())
 
     def __hash__(self):
         meta_items = sorted(list(self.metadata.items()))
-        hash_key = [self.interaction] + meta_items
+        hash_key = [self.interaction, self.protocol] + meta_items
         return hash(tuple(hash_key))
 
     @property
@@ -29,6 +31,12 @@ class Link(object):
         """Interaction property."""
 
         return self._interaction
+
+    @property
+    def protocol(self):
+        """Protocol property."""
+
+        return self._protocol
 
     @property
     def metadata(self):

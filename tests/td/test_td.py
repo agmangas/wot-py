@@ -6,6 +6,7 @@ from faker import Faker
 from wotpy.td.interaction import Property
 from wotpy.td.link import Link
 from wotpy.td.thing import Thing
+from wotpy.protocols.enums import ProtocolTypes
 
 SCHEMA_ORG_URL = "http://schema.org/"
 SCHEMA_ORG_PREFIX = "schema"
@@ -37,8 +38,8 @@ def test_jsonld_doc_from_thing():
     link_href_02 = "/prop-02"
     link_media_type_02 = "application/json"
 
-    link_01 = Link(interaction=prop, href=link_href_01, media_type=link_media_type_01)
-    link_02 = Link(interaction=prop, href=link_href_02, media_type=link_media_type_02)
+    link_01 = Link(interaction=prop, protocol=ProtocolTypes.HTTP, href=link_href_01, media_type=link_media_type_01)
+    link_02 = Link(interaction=prop, protocol=ProtocolTypes.HTTP, href=link_href_02, media_type=link_media_type_02)
 
     prop.add_link(link_01)
     prop.add_link(link_02)
@@ -123,10 +124,10 @@ def test_link_equality():
     thing = Thing(name=thing_name)
     prop = Property(thing=thing, name=prop_name, output_data=prop_output_data)
 
-    link_01 = Link(interaction=prop, href=href_01, media_type=media_type_01)
-    link_02 = Link(interaction=prop, href=href_01, media_type=media_type_01)
-    link_03 = Link(interaction=prop, href=href_01, media_type=media_type_02)
-    link_04 = Link(interaction=prop, href=href_02, media_type=media_type_01)
+    link_01 = Link(interaction=prop, protocol=ProtocolTypes.HTTP, href=href_01, media_type=media_type_01)
+    link_02 = Link(interaction=prop, protocol=ProtocolTypes.HTTP, href=href_01, media_type=media_type_01)
+    link_03 = Link(interaction=prop, protocol=ProtocolTypes.HTTP, href=href_01, media_type=media_type_02)
+    link_04 = Link(interaction=prop, protocol=ProtocolTypes.HTTP, href=href_02, media_type=media_type_01)
 
     assert link_01 == link_02
     assert link_01 != link_03
