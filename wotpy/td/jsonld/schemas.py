@@ -22,15 +22,7 @@ def interaction_schema_for_type(interaction_type):
 SCHEMA_INTERACTION_LINK = {
     "$schema": "http://json-schema.org/schema#",
     "id": "http://fundacionctic.org/schemas/interaction-link.json",
-    "type": "object",
-    "properties": {
-        "href": {"type": "string"},
-        "mediaType": {"type": "string"}
-    },
-    "required": [
-        "href",
-        "mediaType"
-    ]
+    "type": "object"
 }
 
 SCHEMA_INTERACTION_BASE = {
