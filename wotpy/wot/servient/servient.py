@@ -12,23 +12,34 @@ class Servient(object):
     or servers using the capabilities of a Web client such as Web browser. """
 
     def __init__(self):
-        self.servers = []
-        self.client_factories = {}
-        self.things = {}
-        self.resource_listeners = {}
+        self._servers = []
+        self._things = {}
+        self._resource_listeners = {}
 
-    def add_media_type(self, codec):
-        """Adds a media type to the list of supported types."""
+    @property
+    def servers(self):
+        """Servient servers property."""
+
+        return self._servers
+
+    @property
+    def exposed_things(self):
+        """Servient exposed things property."""
+
+        return self._things
+
+    def add_server(self):
+        """Adds a new server under this servient."""
 
         pass
 
-    def get_supported_media_types(self):
-        """Returns the list of supported media types."""
+    def add_exposed_thing(self, exposed_thing):
+        """Adds a ExposedThing to this servient."""
 
         pass
 
-    def choose_link(self, interactions):
-        """Takes a list of interactions and chooses the most appropriate link."""
+    def get_exposed_thing(self, name):
+        """Gets a ExposedThing by name."""
 
         pass
 
@@ -39,53 +50,6 @@ class Servient(object):
 
     def remove_resource_listener(self, path):
         """Removes the resource listener for the given path."""
-
-        pass
-
-    def add_server(self):
-        """Adds a new server under this servient."""
-
-        pass
-
-    def get_servers(self):
-        """Returns the current list of servers."""
-
-        pass
-
-    def add_client_factory(self, client_factory):
-        """Add a client factory to build clients for
-        the requests made by this servient."""
-
-        pass
-
-    def has_client_for(self, scheme):
-        """Returns true if a client for the given scheme exists."""
-
-        pass
-
-    def get_client_for(self, scheme):
-        """Returns a client for the given scheme."""
-
-        pass
-
-    def get_client_schemes(self):
-        """Returns the supported client schemes."""
-
-        pass
-
-    def add_thing_from_td(self, thing_description):
-        """Takes a thing description object and builds a
-        ExposedThing that is then added to this servient."""
-
-        pass
-
-    def add_thing(self, exposed_thing):
-        """Adds a ExposedThing to this servient."""
-
-        pass
-
-    def get_thing(self, name):
-        """Gets a ExposedThing by name."""
 
         pass
 
