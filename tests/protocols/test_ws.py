@@ -3,14 +3,19 @@
 
 import tornado.testing
 import tornado.websocket
+import tornado.gen
 # noinspection PyPackageRequirements
 from faker import Faker
+from concurrent.futures import Future
 
+from wotpy.wot.enums import RequestType
 from wotpy.protocols.ws.enums import WebsocketMethods
 from wotpy.protocols.ws.messages import \
     WebsocketMessageRequest, \
     WebsocketMessageResponse, \
-    WebsocketMessageError
+    WebsocketMessageError, \
+    WebsocketMessageEmittedItem, \
+    parse_ws_message
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.wot.dictionaries import ThingPropertyInit
 from wotpy.wot.exposed import ExposedThing
@@ -160,3 +165,52 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
         ws_error = WebsocketMessageError.from_raw(raw_error)
 
         assert ws_error.code
+
+    @tornado.testing.gen_test
+    def test_observe_property(self):
+        """Properties can be observed using Websockets."""
+
+        future_observe = Future()
+        futures_emitted = [Future(), Future()]
+
+        updated_val_01 = self.fake.pystr()
+        updated_val_02 = self.fake.pystr()
+
+        prop_name = self.prop_init_01.name
+
+        observe_req_id = self.fake.pyint()
+        subscription_id = None
+
+        def _on_message_callback(msg):
+            ws_msg = parse_ws_message(msg)
+            if isinstance(ws_msg, WebsocketMessageResponse):
+                assert not future_observe.done()
+                assert ws_msg.res_id == observe_req_id
+                future_observe.set_result(ws_msg.result)
+            elif isinstance(ws_msg, WebsocketMessageEmittedItem):
+                assert subscription_id is not None
+                assert ws_msg.subscription_id == subscription_id
+                assert ws_msg.data["name"] == prop_name
+                assert ws_msg.data["value"] in [updated_val_01, updated_val_02]
+                future_emitted = next(future for future in futures_emitted if not future.done())
+                future_emitted.set_result(True)
+            else:
+                raise Exception("Unexpected WS message")
+
+        conn = yield tornado.websocket.websocket_connect(
+            self.url_thing_01,
+            on_message_callback=_on_message_callback)
+
+        ws_request = WebsocketMessageRequest(
+            method=WebsocketMethods.OBSERVE,
+            params={"name": prop_name, "request_type": RequestType.PROPERTY},
+            req_id=observe_req_id)
+
+        conn.write_message(ws_request.to_json())
+
+        subscription_id = yield future_observe
+
+        assert self.exposed_thing_01.set_property(prop_name, updated_val_01).done()
+        assert self.exposed_thing_01.set_property(prop_name, updated_val_02).done()
+
+        yield futures_emitted
