@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from wotpy.protocols.ws.enums import WebsocketMethods
+from wotpy.wot.enums import RequestType
 
 JSON_RPC_VERSION = "2.0"
 
@@ -78,21 +79,69 @@ SCHEMA_RESPONSE = {
     ]
 }
 
+# JSON schema for WS WoT emitted items messages
+
+SCHEMA_EMITTED_ITEM = {
+    "$schema": "http://json-schema.org/schema#",
+    "id": "http://fundacionctic.org/schemas/wotpy-ws-emitted-item.json",
+    "type": "object",
+    "properties": {
+        "subscription": {"type": "string"},
+        "name": {"type": "string"},
+        "data": {"type": "object"}
+    },
+    "required": [
+        "subscription",
+        "name",
+        "data"
+    ]
+}
+
 # Schema for the parameters of a "get property" invocation
 
 SCHEMA_PARAMS_GET_PROPERTY = {
+    "$schema": "http://json-schema.org/schema#",
+    "id": "http://fundacionctic.org/schemas/wotpy-ws-params-get-property.json",
     "type": "object",
-    "properties": {"name": {"type": "string"}},
-    "required": ["name"]
+    "properties": {
+        "name": {"type": "string"}
+    },
+    "required": [
+        "name"
+    ]
 }
 
 # Schema for the parameters of a "set property" invocation
 
 SCHEMA_PARAMS_SET_PROPERTY = {
+    "$schema": "http://json-schema.org/schema#",
+    "id": "http://fundacionctic.org/schemas/wotpy-ws-params-set-property.json",
     "type": "object",
     "properties": {
         "name": {"type": "string"},
         "value": {"type": "string"}
     },
-    "required": ["name", "value"]
+    "required": [
+        "name",
+        "value"
+    ]
+}
+
+# Schema for the parameters of an "observe" invocation
+
+SCHEMA_PARAMS_OBSERVE = {
+    "$schema": "http://json-schema.org/schema#",
+    "id": "http://fundacionctic.org/schemas/wotpy-ws-params-observe.json",
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"},
+        "request_type": {
+            "type": "string",
+            "enum": RequestType.list()
+        }
+    },
+    "required": [
+        "name",
+        "request_type"
+    ]
 }

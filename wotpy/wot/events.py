@@ -31,8 +31,8 @@ class PropertyChangeEmittedEvent(EmittedEvent):
 
     # noinspection PyUnusedLocal
     def __init__(self, init):
-        super(PropertyChangeEmittedEvent, self) \
-            .__init__(init=init, name=DefaultThingEvent.PROPERTY_CHANGE)
+        super(PropertyChangeEmittedEvent, self).__init__(
+            init=init, name=DefaultThingEvent.PROPERTY_CHANGE)
 
 
 class ActionInvocationEmittedEvent(EmittedEvent):
@@ -41,8 +41,8 @@ class ActionInvocationEmittedEvent(EmittedEvent):
 
     # noinspection PyUnusedLocal
     def __init__(self, init):
-        super(ActionInvocationEmittedEvent, self) \
-            .__init__(init=init, name=DefaultThingEvent.ACTION_INVOCATION)
+        super(ActionInvocationEmittedEvent, self).__init__(
+            init=init, name=DefaultThingEvent.ACTION_INVOCATION)
 
 
 class ThingDescriptionChangeEmittedEvent(EmittedEvent):
@@ -51,5 +51,5 @@ class ThingDescriptionChangeEmittedEvent(EmittedEvent):
 
     # noinspection PyUnusedLocal
     def __init__(self, init):
-        super(ThingDescriptionChangeEmittedEvent, self) \
-            .__init__(init=init, name=DefaultThingEvent.DESCRIPTION_CHANGE)
+        super(ThingDescriptionChangeEmittedEvent, self).__init__(
+            init=init, name=DefaultThingEvent.DESCRIPTION_CHANGE)

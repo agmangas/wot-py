@@ -6,7 +6,11 @@ import json
 from jsonschema import validate
 
 from wotpy.protocols.ws.enums import WebsocketErrors
-from wotpy.protocols.ws.schemas import SCHEMA_REQUEST, SCHEMA_RESPONSE, JSON_RPC_VERSION
+from wotpy.protocols.ws.schemas import \
+    SCHEMA_REQUEST, \
+    SCHEMA_RESPONSE, \
+    SCHEMA_EMITTED_ITEM, \
+    JSON_RPC_VERSION
 
 
 class WebsocketMessageException(Exception):
@@ -45,14 +49,14 @@ class WebsocketMessageRequest(object):
     def to_dict(self):
         """Returns this message as a dict."""
 
-        request_msg = {
+        msg = {
             "jsonrpc": JSON_RPC_VERSION,
             "method": self.method,
             "params": self.params,
             "id": self.req_id
         }
 
-        return request_msg
+        return msg
 
     def to_json(self):
         """Returns this message as a JSON string."""
@@ -90,13 +94,13 @@ class WebsocketMessageResponse(object):
     def to_dict(self):
         """Returns this message as a dict."""
 
-        error_msg = {
+        msg = {
             "jsonrpc": JSON_RPC_VERSION,
             "result": self.result,
             "id": self.res_id
         }
 
-        return error_msg
+        return msg
 
     def to_json(self):
         """Returns this message as a JSON string."""
@@ -136,7 +140,7 @@ class WebsocketMessageError(object):
     def to_dict(self):
         """Returns this message as a dict."""
 
-        error_msg = {
+        msg = {
             "jsonrpc": JSON_RPC_VERSION,
             "error": {
                 "code": self.code,
@@ -145,7 +149,34 @@ class WebsocketMessageError(object):
             "id": self.res_id
         }
 
-        return error_msg
+        return msg
+
+    def to_json(self):
+        """Returns this message as a JSON string."""
+
+        return json.dumps(self.to_dict())
+
+
+class WebsocketMessageEmittedItem(object):
+    """Represents a Websockets message for an items emitted by an Observable."""
+
+    def __init__(self, subscription_id, name, data):
+        self.subscription_id = subscription_id
+        self.name = name
+        self.data = data if isinstance(data, dict) else data.__dict__
+
+        validate(self.to_dict(), SCHEMA_EMITTED_ITEM)
+
+    def to_dict(self):
+        """Returns this message as a dict."""
+
+        msg = {
+            "subscription": self.subscription_id,
+            "name": self.name,
+            "data": self.data
+        }
+
+        return msg
 
     def to_json(self):
         """Returns this message as a JSON string."""
