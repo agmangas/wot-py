@@ -164,6 +164,22 @@ class WebsocketMessageError(object):
 class WebsocketMessageEmittedItem(object):
     """Represents a Websockets message for an items emitted by an Observable."""
 
+    @classmethod
+    def from_raw(cls, raw_msg):
+        """Builds a new WebsocketMessageEmittedItem instance from a raw socket message.
+        Raises WebsocketMessageException if the message is invalid."""
+
+        try:
+            msg = json.loads(raw_msg)
+            validate(msg, SCHEMA_EMITTED_ITEM)
+
+            return WebsocketMessageEmittedItem(
+                subscription_id=msg["subscription"],
+                name=msg["name"],
+                data=msg["data"])
+        except Exception as ex:
+            raise WebsocketMessageException(str(ex))
+
     def __init__(self, subscription_id, name, data):
         self.subscription_id = subscription_id
         self.name = name
