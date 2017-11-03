@@ -6,6 +6,16 @@ from wotpy.wot.enums import RequestType
 
 JSON_RPC_VERSION = "2.0"
 
+# Schema for message IDs
+
+SCHEMA_ID = {
+    "oneOf": [
+        {"type": "string"},
+        {"type": "integer"},
+        {"type": "null"}
+    ]
+}
+
 # JSON schema for WS WoT request messages
 
 SCHEMA_REQUEST = {
@@ -27,13 +37,7 @@ SCHEMA_REQUEST = {
                 {"type": "array"}
             ]
         },
-        "id": {
-            "oneOf": [
-                {"type": "string"},
-                {"type": "integer"},
-                {"type": "null"}
-            ]
-        }
+        "id": SCHEMA_ID
     },
     "required": [
         "jsonrpc",
@@ -53,6 +57,26 @@ SCHEMA_RESPONSE = {
             "enum": ["2.0"]
         },
         "result": {},
+        "id": SCHEMA_ID
+    },
+    "required": [
+        "jsonrpc",
+        "result",
+        "id"
+    ]
+}
+
+# JSON schema for WS WoT response messages
+
+SCHEMA_ERROR = {
+    "$schema": "http://json-schema.org/schema#",
+    "id": "http://fundacionctic.org/schemas/wotpy-ws-error.json",
+    "type": "object",
+    "properties": {
+        "jsonrpc": {
+            "type": "string",
+            "enum": ["2.0"]
+        },
         "error": {
             "type": "object",
             "properties": {
@@ -65,16 +89,11 @@ SCHEMA_RESPONSE = {
                 "message"
             ]
         },
-        "id": {
-            "oneOf": [
-                {"type": "string"},
-                {"type": "integer"},
-                {"type": "null"}
-            ]
-        }
+        "id": SCHEMA_ID
     },
     "required": [
         "jsonrpc",
+        "error",
         "id"
     ]
 }
