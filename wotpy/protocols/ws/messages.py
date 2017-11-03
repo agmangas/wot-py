@@ -14,6 +14,27 @@ from wotpy.protocols.ws.schemas import \
     JSON_RPC_VERSION
 
 
+def parse_ws_message(raw_msg):
+    """Takes a raw WebSockets message and attempts
+    to parse it to create a message instance."""
+
+    msg_klasses = [
+        WebsocketMessageRequest,
+        WebsocketMessageError,
+        WebsocketMessageResponse,
+        WebsocketMessageEmittedItem
+    ]
+
+    for klass in msg_klasses:
+        try:
+            msg_instance = klass.from_raw(raw_msg)
+            return msg_instance
+        except WebsocketMessageException:
+            pass
+
+    raise WebsocketMessageException("Invalid message: {}".format(raw_msg))
+
+
 class WebsocketMessageException(Exception):
     """Exception raised when a WS message appears to be invalid."""
 
@@ -30,13 +51,13 @@ class WebsocketMessageRequest(object):
         Raises WebsocketMessageException if the message is invalid."""
 
         try:
-            request_msg = json.loads(raw_msg)
-            validate(request_msg, SCHEMA_REQUEST)
+            msg = json.loads(raw_msg)
+            validate(msg, SCHEMA_REQUEST)
 
             return WebsocketMessageRequest(
-                method=request_msg["method"],
-                params=request_msg["params"],
-                req_id=request_msg.get("id", None))
+                method=msg["method"],
+                params=msg["params"],
+                req_id=msg.get("id", None))
         except Exception as ex:
             raise WebsocketMessageException(str(ex))
 
@@ -77,12 +98,12 @@ class WebsocketMessageResponse(object):
         Raises WebsocketMessageException if the message is invalid."""
 
         try:
-            response_msg = json.loads(raw_msg)
-            validate(response_msg, SCHEMA_RESPONSE)
+            msg = json.loads(raw_msg)
+            validate(msg, SCHEMA_RESPONSE)
 
             return WebsocketMessageResponse(
-                result=response_msg["result"],
-                res_id=response_msg.get("id", None))
+                result=msg["result"],
+                res_id=msg.get("id", None))
         except Exception as ex:
             raise WebsocketMessageException(str(ex))
 
@@ -121,13 +142,13 @@ class WebsocketMessageError(object):
         Raises WebsocketMessageException if the message is invalid."""
 
         try:
-            error_msg = json.loads(raw_msg)
-            validate(error_msg, SCHEMA_ERROR)
+            msg = json.loads(raw_msg)
+            validate(msg, SCHEMA_ERROR)
 
             return WebsocketMessageError(
-                message=error_msg["error"]["message"],
-                code=error_msg["error"]["code"],
-                res_id=error_msg.get("id", None))
+                message=msg["error"]["message"],
+                code=msg["error"]["code"],
+                res_id=msg.get("id", None))
         except Exception as ex:
             raise WebsocketMessageException(str(ex))
 
