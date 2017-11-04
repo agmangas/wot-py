@@ -9,7 +9,7 @@ from faker import Faker
 from concurrent.futures import Future
 
 from wotpy.wot.enums import RequestType
-from wotpy.protocols.ws.enums import WebsocketMethods
+from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketErrors
 from wotpy.protocols.ws.messages import \
     WebsocketMessageRequest, \
     WebsocketMessageResponse, \
@@ -24,6 +24,7 @@ from wotpy.wot.exposed import ExposedThing
 class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
     """Test case for the WoT Websockets server."""
 
+    # noinspection PyAttributeOutsideInit
     def setUp(self):
         self.fake = Faker()
 
@@ -214,3 +215,28 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
         assert self.exposed_thing_01.set_property(prop_name, updated_val_02).done()
 
         yield futures_emitted
+
+    @tornado.testing.gen_test
+    def test_observe_not_found_error(self):
+        """Observing an unexisting interaction results in a subscription error message."""
+
+        observe_msg_id = self.fake.pyint()
+        prop_name_err = self.fake.pystr()
+
+        conn = yield tornado.websocket.websocket_connect(self.url_thing_01)
+
+        ws_request = WebsocketMessageRequest(
+            method=WebsocketMethods.OBSERVE,
+            params={"name": prop_name_err, "request_type": RequestType.PROPERTY},
+            msg_id=observe_msg_id)
+
+        conn.write_message(ws_request.to_json())
+
+        msg_observe_resp_raw = yield conn.read_message()
+        msg_observe_resp = WebsocketMessageResponse.from_raw(msg_observe_resp_raw)
+
+        msg_observe_err_raw = yield conn.read_message()
+        msg_observe_err = WebsocketMessageError.from_raw(msg_observe_err_raw)
+
+        assert msg_observe_err.code == WebsocketErrors.SUBSCRIPTION_ERROR
+        assert msg_observe_err.data["subscription"] == msg_observe_resp.result

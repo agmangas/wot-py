@@ -160,6 +160,7 @@ class WebsocketMessageError(object):
             return WebsocketMessageError(
                 message=msg["error"]["message"],
                 code=msg["error"]["code"],
+                data=msg["error"].get("data", None),
                 msg_id=msg.get("id", None))
         except Exception as ex:
             raise WebsocketMessageException(str(ex))
