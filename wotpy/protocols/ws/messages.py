@@ -57,19 +57,25 @@ class WebsocketMessageRequest(object):
             return WebsocketMessageRequest(
                 method=msg["method"],
                 params=msg["params"],
-                req_id=msg.get("id", None))
+                msg_id=msg.get("id", None))
         except Exception as ex:
             raise WebsocketMessageException(str(ex))
 
-    def __init__(self, method, params, req_id=None):
+    def __init__(self, method, params, msg_id=None):
         self.method = method
         self.params = params
-        self.req_id = req_id
+        self.msg_id = msg_id
 
         try:
             validate(self.to_dict(), SCHEMA_REQUEST)
         except ValidationError as ex:
             raise WebsocketMessageError(str(ex))
+
+    @property
+    def id(self):
+        """ID property."""
+
+        return self.msg_id
 
     def to_dict(self):
         """Returns this message as a dict."""
@@ -78,7 +84,7 @@ class WebsocketMessageRequest(object):
             "jsonrpc": JSON_RPC_VERSION,
             "method": self.method,
             "params": self.params,
-            "id": self.req_id
+            "id": self.id
         }
 
         return msg
@@ -103,18 +109,24 @@ class WebsocketMessageResponse(object):
 
             return WebsocketMessageResponse(
                 result=msg["result"],
-                res_id=msg.get("id", None))
+                msg_id=msg.get("id", None))
         except Exception as ex:
             raise WebsocketMessageException(str(ex))
 
-    def __init__(self, result, res_id=None):
+    def __init__(self, result, msg_id=None):
         self.result = result
-        self.res_id = res_id
+        self.msg_id = msg_id
 
         try:
             validate(self.to_dict(), SCHEMA_RESPONSE)
         except ValidationError as ex:
             raise WebsocketMessageError(str(ex))
+
+    @property
+    def id(self):
+        """ID property."""
+
+        return self.msg_id
 
     def to_dict(self):
         """Returns this message as a dict."""
@@ -122,7 +134,7 @@ class WebsocketMessageResponse(object):
         msg = {
             "jsonrpc": JSON_RPC_VERSION,
             "result": self.result,
-            "id": self.res_id
+            "id": self.id
         }
 
         return msg
@@ -148,13 +160,13 @@ class WebsocketMessageError(object):
             return WebsocketMessageError(
                 message=msg["error"]["message"],
                 code=msg["error"]["code"],
-                res_id=msg.get("id", None))
+                msg_id=msg.get("id", None))
         except Exception as ex:
             raise WebsocketMessageException(str(ex))
 
-    def __init__(self, message, code=WebsocketErrors.INTERNAL_ERROR, data=None, res_id=None):
+    def __init__(self, message, code=WebsocketErrors.INTERNAL_ERROR, data=None, msg_id=None):
         self.message = message
-        self.res_id = res_id
+        self.msg_id = msg_id
         self.code = code
         self.data = data
 
@@ -162,6 +174,12 @@ class WebsocketMessageError(object):
             validate(self.to_dict(), SCHEMA_ERROR)
         except ValidationError as ex:
             raise WebsocketMessageError(str(ex))
+
+    @property
+    def id(self):
+        """ID property."""
+
+        return self.msg_id
 
     def to_dict(self):
         """Returns this message as a dict."""
@@ -173,7 +191,7 @@ class WebsocketMessageError(object):
                 "message": self.message,
                 "data": self.data
             },
-            "id": self.res_id
+            "id": self.id
         }
 
         return msg

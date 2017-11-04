@@ -94,17 +94,17 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
         ws_request_prop_01 = WebsocketMessageRequest(
             method=WebsocketMethods.GET_PROPERTY,
             params={"name": self.prop_init_01.name},
-            req_id=request_id_01)
+            msg_id=request_id_01)
 
         ws_request_prop_02 = WebsocketMessageRequest(
             method=WebsocketMethods.GET_PROPERTY,
             params={"name": self.prop_init_02.name},
-            req_id=request_id_02)
+            msg_id=request_id_02)
 
         ws_request_prop_03 = WebsocketMessageRequest(
             method=WebsocketMethods.GET_PROPERTY,
             params={"name": self.prop_init_03.name},
-            req_id=request_id_03)
+            msg_id=request_id_03)
 
         conns[0].write_message(ws_request_prop_01.to_json())
         conns[0].write_message(ws_request_prop_02.to_json())
@@ -124,9 +124,9 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
             request_id_03: self.prop_init_03
         }
 
-        assert ws_resp_01.result == prop_init_map[ws_resp_01.res_id].value
-        assert ws_resp_02.result == prop_init_map[ws_resp_02.res_id].value
-        assert ws_resp_03.result == prop_init_map[ws_resp_03.res_id].value
+        assert ws_resp_01.result == prop_init_map[ws_resp_01.id].value
+        assert ws_resp_02.result == prop_init_map[ws_resp_02.id].value
+        assert ws_resp_03.result == prop_init_map[ws_resp_03.id].value
 
         yield conns[0].close()
         yield conns[1].close()
@@ -139,12 +139,12 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
 
         updated_value = self.fake.pystr()
         prop_name = self.prop_init_01.name
-        req_id = self.fake.pyint()
+        msg_id = self.fake.pyint()
 
         ws_request = WebsocketMessageRequest(
             method=WebsocketMethods.SET_PROPERTY,
             params={"name": prop_name, "value": updated_value},
-            req_id=req_id)
+            msg_id=msg_id)
 
         assert self.exposed_thing_01.get_property(prop_name).result() != updated_value
 
@@ -152,13 +152,13 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
         raw_response = yield conn.read_message()
         ws_response = WebsocketMessageResponse.from_raw(raw_response)
 
-        assert ws_response.res_id == req_id
+        assert ws_response.id == msg_id
         assert self.exposed_thing_01.get_property(prop_name).result() == updated_value
 
         ws_request_err = WebsocketMessageRequest(
             method=WebsocketMethods.SET_PROPERTY,
             params={"name": prop_name + self.fake.pystr(), "value": updated_value},
-            req_id=req_id)
+            msg_id=msg_id)
 
         conn.write_message(ws_request_err.to_json())
         raw_error = yield conn.read_message()
@@ -178,14 +178,14 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
 
         prop_name = self.prop_init_01.name
 
-        observe_req_id = self.fake.pyint()
+        observe_msg_id = self.fake.pyint()
         subscription_id = None
 
         def _on_message_callback(msg):
             ws_msg = parse_ws_message(msg)
             if isinstance(ws_msg, WebsocketMessageResponse):
                 assert not future_observe.done()
-                assert ws_msg.res_id == observe_req_id
+                assert ws_msg.id == observe_msg_id
                 future_observe.set_result(ws_msg.result)
             elif isinstance(ws_msg, WebsocketMessageEmittedItem):
                 assert subscription_id is not None
@@ -204,7 +204,7 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
         ws_request = WebsocketMessageRequest(
             method=WebsocketMethods.OBSERVE,
             params={"name": prop_name, "request_type": RequestType.PROPERTY},
-            req_id=observe_req_id)
+            msg_id=observe_msg_id)
 
         conn.write_message(ws_request.to_json())
 
