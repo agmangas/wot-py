@@ -17,7 +17,8 @@ from wotpy.protocols.ws.messages import \
 from wotpy.protocols.ws.schemas import \
     SCHEMA_PARAMS_GET_PROPERTY, \
     SCHEMA_PARAMS_SET_PROPERTY, \
-    SCHEMA_PARAMS_OBSERVE
+    SCHEMA_PARAMS_OBSERVE, \
+    SCHEMA_PARAMS_DISPOSE
 
 
 # noinspection PyAbstractClass
@@ -140,13 +141,36 @@ class WebsocketHandler(websocket.WebSocketHandler):
         self._subscriptions[subscription_id] = subscription
 
     @gen.coroutine
+    def _handle_dispose(self, req):
+        """"""
+
+        params = req.params
+
+        try:
+            validate(params, SCHEMA_PARAMS_DISPOSE)
+        except ValidationError as ex:
+            self._write_error(str(ex), WebsocketErrors.INVALID_METHOD_PARAMS, msg_id=req.id)
+            return
+
+        result = None
+        subscription_id = params["subscription"]
+
+        if subscription_id in self._subscriptions:
+            self._dispose_subscription(subscription_id)
+            result = subscription_id
+
+        res = WebsocketMessageResponse(result=result, msg_id=req.id)
+        self.write_message(res.to_json())
+
+    @gen.coroutine
     def _handle(self, req):
         """"""
 
         handler_map = {
             WebsocketMethods.GET_PROPERTY: self._handle_get_property,
             WebsocketMethods.SET_PROPERTY: self._handle_set_property,
-            WebsocketMethods.OBSERVE: self._handle_observe
+            WebsocketMethods.OBSERVE: self._handle_observe,
+            WebsocketMethods.DISPOSE: self._handle_dispose
         }
 
         if req.method not in handler_map:

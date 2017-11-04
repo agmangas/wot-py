@@ -164,3 +164,17 @@ SCHEMA_PARAMS_OBSERVE = {
         "request_type"
     ]
 }
+
+# Schema for the parameters of a "dispose" invocation
+
+SCHEMA_PARAMS_DISPOSE = {
+    "$schema": "http://json-schema.org/schema#",
+    "id": "http://fundacionctic.org/schemas/wotpy-ws-params-dispose.json",
+    "type": "object",
+    "properties": {
+        "subscription": {"type": "string"}
+    },
+    "required": [
+        "subscription"
+    ]
+}

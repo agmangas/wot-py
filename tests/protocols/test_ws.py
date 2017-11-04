@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import datetime
+
+# noinspection PyPackageRequirements
+import pytest
 import tornado.gen
 import tornado.testing
 import tornado.websocket
@@ -234,3 +238,58 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
 
         assert msg_observe_err.code == WebsocketErrors.SUBSCRIPTION_ERROR
         assert msg_observe_err.data["subscription"] == msg_observe_resp.result
+
+    @tornado.testing.gen_test
+    def test_observe_dispose(self):
+        """Observable subscriptions can be disposed using Websockets."""
+
+        observe_msg_id = self.fake.pyint()
+        dispose_msg_id = self.fake.pyint()
+        prop_name = self.prop_init_01.name
+
+        conn = yield tornado.websocket.websocket_connect(self.url_thing_01)
+
+        msg_observe_req = WebsocketMessageRequest(
+            method=WebsocketMethods.OBSERVE,
+            params={"name": prop_name, "request_type": RequestType.PROPERTY},
+            msg_id=observe_msg_id)
+
+        conn.write_message(msg_observe_req.to_json())
+
+        msg_observe_resp_raw = yield conn.read_message()
+        msg_observe_resp = WebsocketMessageResponse.from_raw(msg_observe_resp_raw)
+
+        assert msg_observe_resp.id == observe_msg_id
+
+        subscription_id = msg_observe_resp.result
+
+        assert self.exposed_thing_01.set_property(prop_name, self.fake.pystr()).done()
+
+        msg_emitted_raw = yield conn.read_message()
+        msg_emitted = WebsocketMessageEmittedItem.from_raw(msg_emitted_raw)
+
+        assert msg_emitted.subscription_id == subscription_id
+
+        msg_dispose_req = WebsocketMessageRequest(
+            method=WebsocketMethods.DISPOSE,
+            params={"subscription": subscription_id},
+            msg_id=dispose_msg_id)
+
+        conn.write_message(msg_dispose_req.to_json())
+
+        msg_dispose_resp_raw = yield conn.read_message()
+        msg_dispose_resp = WebsocketMessageResponse.from_raw(msg_dispose_resp_raw)
+
+        assert msg_dispose_resp.result == subscription_id
+
+        conn.write_message(msg_dispose_req.to_json())
+
+        msg_dispose_resp_02_raw = yield conn.read_message()
+        msg_dispose_resp_02 = WebsocketMessageResponse.from_raw(msg_dispose_resp_02_raw)
+
+        assert not msg_dispose_resp_02.result
+
+        with pytest.raises(tornado.gen.TimeoutError):
+            yield tornado.gen.with_timeout(
+                timeout=datetime.timedelta(milliseconds=200),
+                future=conn.read_message())
