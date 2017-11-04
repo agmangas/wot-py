@@ -106,6 +106,11 @@ class WebsocketHandler(websocket.WebSocketHandler):
 
         subscription_id = str(uuid.uuid4())
 
+        def _on_error(err):
+            self._dispose_subscription(subscription_id)
+            data_err = {"subscription": subscription_id}
+            self._write_error(str(err), WebsocketErrors.SUBSCRIPTION_ERROR, data=data_err)
+
         def _on_next(item):
             try:
                 msg = WebsocketMessageEmittedItem(
@@ -114,17 +119,10 @@ class WebsocketHandler(websocket.WebSocketHandler):
                     data=item.data)
                 self.write_message(msg.to_json())
             except WebsocketMessageError as ws_ex:
-                self._dispose_subscription(subscription_id)
-                data_err = {"subscription": subscription_id}
-                self._write_error(str(ws_ex), WebsocketErrors.SUBSCRIPTION_ERROR, data=data_err)
+                _on_error(ws_ex)
 
         def _on_completed():
             self._dispose_subscription(subscription_id)
-
-        def _on_error(err):
-            self._dispose_subscription(subscription_id)
-            data_err = {"subscription": subscription_id}
-            self._write_error(str(err), WebsocketErrors.SUBSCRIPTION_ERROR, data=data_err)
 
         res = WebsocketMessageResponse(result=subscription_id, msg_id=req.id)
         self.write_message(res.to_json())
