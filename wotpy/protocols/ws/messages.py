@@ -152,10 +152,11 @@ class WebsocketMessageError(object):
         except Exception as ex:
             raise WebsocketMessageException(str(ex))
 
-    def __init__(self, message, code=WebsocketErrors.INTERNAL_ERROR, res_id=None):
+    def __init__(self, message, code=WebsocketErrors.INTERNAL_ERROR, data=None, res_id=None):
         self.message = message
         self.res_id = res_id
         self.code = code
+        self.data = data
 
         try:
             validate(self.to_dict(), SCHEMA_ERROR)
@@ -169,7 +170,8 @@ class WebsocketMessageError(object):
             "jsonrpc": JSON_RPC_VERSION,
             "error": {
                 "code": self.code,
-                "message": self.message
+                "message": self.message,
+                "data": self.data
             },
             "id": self.res_id
         }

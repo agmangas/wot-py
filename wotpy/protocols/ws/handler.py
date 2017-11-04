@@ -36,10 +36,10 @@ class WebsocketHandler(websocket.WebSocketHandler):
 
         pass
 
-    def _write_error(self, message, code, res_id=None):
+    def _write_error(self, message, code, res_id=None, data=None):
         """"""
 
-        err = WebsocketMessageError(message=message, code=code, res_id=res_id)
+        err = WebsocketMessageError(message=message, code=code, data=data, res_id=res_id)
         self.write_message(err.to_json())
 
     def _dispose_subscription(self, subscription_id):
@@ -58,13 +58,13 @@ class WebsocketHandler(websocket.WebSocketHandler):
         try:
             validate(params, SCHEMA_PARAMS_GET_PROPERTY)
         except ValidationError as ex:
-            self._write_error(str(ex), WebsocketErrors.INVALID_METHOD_PARAMS, req.req_id)
+            self._write_error(str(ex), WebsocketErrors.INVALID_METHOD_PARAMS, res_id=req.req_id)
             return
 
         try:
             prop_value = yield self._exposed_thing.get_property(name=params["name"])
         except Exception as ex:
-            self._write_error(str(ex), WebsocketErrors.INTERNAL_ERROR, req.req_id)
+            self._write_error(str(ex), WebsocketErrors.INTERNAL_ERROR, res_id=req.req_id)
             return
 
         res = WebsocketMessageResponse(result=prop_value, res_id=req.req_id)
@@ -79,13 +79,13 @@ class WebsocketHandler(websocket.WebSocketHandler):
         try:
             validate(params, SCHEMA_PARAMS_SET_PROPERTY)
         except ValidationError as ex:
-            self._write_error(str(ex), WebsocketErrors.INVALID_METHOD_PARAMS, req.req_id)
+            self._write_error(str(ex), WebsocketErrors.INVALID_METHOD_PARAMS, res_id=req.req_id)
             return
 
         try:
             yield self._exposed_thing.set_property(name=params["name"], value=params["value"])
         except Exception as ex:
-            self._write_error(str(ex), WebsocketErrors.INTERNAL_ERROR, req.req_id)
+            self._write_error(str(ex), WebsocketErrors.INTERNAL_ERROR, res_id=req.req_id)
             return
 
         res = WebsocketMessageResponse(result=None, res_id=req.req_id)
@@ -100,7 +100,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
         try:
             validate(params, SCHEMA_PARAMS_OBSERVE)
         except ValidationError as ex:
-            self._write_error(str(ex), WebsocketErrors.INVALID_METHOD_PARAMS, req.req_id)
+            self._write_error(str(ex), WebsocketErrors.INVALID_METHOD_PARAMS, res_id=req.req_id)
             return
 
         subscription_id = str(uuid.uuid4())
@@ -114,14 +114,16 @@ class WebsocketHandler(websocket.WebSocketHandler):
                 self.write_message(msg.to_json())
             except WebsocketMessageError as ws_ex:
                 self._dispose_subscription(subscription_id)
-                self._write_error(str(ws_ex), WebsocketErrors.INTERNAL_ERROR)
+                data_err = {"subscription": subscription_id}
+                self._write_error(str(ws_ex), WebsocketErrors.SUBSCRIPTION_ERROR, data=data_err)
 
         def _on_completed():
             self._dispose_subscription(subscription_id)
 
         def _on_error(err):
             self._dispose_subscription(subscription_id)
-            self._write_error(str(err), WebsocketErrors.INTERNAL_ERROR)
+            data_err = {"subscription": subscription_id}
+            self._write_error(str(err), WebsocketErrors.SUBSCRIPTION_ERROR, data=data_err)
 
         res = WebsocketMessageResponse(result=subscription_id, res_id=req.req_id)
         self.write_message(res.to_json())
@@ -148,7 +150,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
         }
 
         if req.method not in handler_map:
-            self._write_error("Unimplemented method", WebsocketErrors.INTERNAL_ERROR, req.req_id)
+            self._write_error("Unimplemented method", WebsocketErrors.INTERNAL_ERROR, res_id=req.req_id)
             return
 
         handler = handler_map[req.method]
