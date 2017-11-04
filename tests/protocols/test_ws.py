@@ -289,6 +289,9 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
 
         assert not msg_dispose_resp_02.result
 
+        assert self.exposed_thing_01.set_property(prop_name, self.fake.pystr()).done()
+        assert self.exposed_thing_01.set_property(prop_name, self.fake.pystr()).done()
+
         with pytest.raises(tornado.gen.TimeoutError):
             yield tornado.gen.with_timeout(
                 timeout=datetime.timedelta(milliseconds=200),
