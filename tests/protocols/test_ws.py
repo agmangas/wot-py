@@ -18,7 +18,7 @@ from wotpy.protocols.ws.messages import \
     WebsocketMessageError, \
     WebsocketMessageEmittedItem
 from wotpy.protocols.ws.server import WebsocketServer
-from wotpy.wot.dictionaries import ThingPropertyInit
+from wotpy.wot.dictionaries import ThingPropertyInit, ThingEventInit
 from wotpy.wot.enums import RequestType
 from wotpy.wot.exposed import ExposedThing
 
@@ -55,9 +55,15 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
             value=self.fake.pystr(),
             description={"type": "string"})
 
+        self.event_init_01 = ThingEventInit(
+            name=self.fake.user_name(),
+            data_description={"type": "object"})
+
         self.exposed_thing_01.add_property(self.prop_init_01)
         self.exposed_thing_01.add_property(self.prop_init_02)
         self.exposed_thing_02.add_property(self.prop_init_03)
+
+        self.exposed_thing_01.add_event(self.event_init_01)
 
         self.ws_server = WebsocketServer()
         self.ws_server.add_exposed_thing(self.exposed_thing_01)
@@ -215,6 +221,49 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
         _assert_emitted(updated_val_03)
 
     @tornado.testing.gen_test
+    def test_observe_event(self):
+        """Events can be observed using Websockets."""
+
+        observe_msg_id = self.fake.pyint()
+        event_name = self.event_init_01.name
+        payload_01 = self.fake.pydict(10, True, str, float)
+        payload_02 = self.fake.pydict(10, True, str, float)
+        payload_03 = self.fake.pydict(10, True, int)
+
+        conn = yield tornado.websocket.websocket_connect(self.url_thing_01)
+
+        msg_observe_req = WebsocketMessageRequest(
+            method=WebsocketMethods.OBSERVE,
+            params={"name": event_name, "request_type": RequestType.EVENT},
+            msg_id=observe_msg_id)
+
+        conn.write_message(msg_observe_req.to_json())
+
+        msg_observe_resp_raw = yield conn.read_message()
+        msg_observe_resp = WebsocketMessageResponse.from_raw(msg_observe_resp_raw)
+
+        assert msg_observe_resp.id == observe_msg_id
+
+        subscription_id = msg_observe_resp.result
+
+        def _assert_emitted(expected_payload):
+            msg_emitted_raw = yield conn.read_message()
+            msg_emitted = WebsocketMessageEmittedItem.from_raw(msg_emitted_raw)
+
+            assert msg_emitted.subscription_id == subscription_id
+            assert msg_emitted.data == expected_payload
+
+        self.exposed_thing_01.emit_event(event_name, payload_01)
+
+        _assert_emitted(payload_01)
+
+        self.exposed_thing_01.emit_event(event_name, payload_02)
+        self.exposed_thing_01.emit_event(event_name, payload_03)
+
+        _assert_emitted(payload_02)
+        _assert_emitted(payload_03)
+
+    @tornado.testing.gen_test
     def test_observe_not_found_error(self):
         """Observing an unexisting interaction results in a subscription error message."""
 
@@ -240,7 +289,7 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
         assert msg_observe_err.data["subscription"] == msg_observe_resp.result
 
     @tornado.testing.gen_test
-    def test_observe_dispose(self):
+    def test_dispose(self):
         """Observable subscriptions can be disposed using Websockets."""
 
         observe_msg_id = self.fake.pyint()
