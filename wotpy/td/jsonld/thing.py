@@ -84,3 +84,13 @@ class JsonLDThingDescription(object):
         the interactions contained in this Thing Description."""
 
         return [JsonLDInteraction(item) for item in self._doc.get("interaction", [])]
+
+    @property
+    def meta(self):
+        """Returns a dict containing the metadata for this thing description.
+        This is, all fields that are not part of the expected set."""
+
+        base_keys = list(SCHEMA_THING_DESCRIPTION["properties"].keys())
+        meta_keys = [key for key in list(self._doc.keys()) if key not in base_keys]
+
+        return {key: self._doc[key] for key in meta_keys}

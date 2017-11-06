@@ -63,3 +63,17 @@ def test_thing_description_no_context():
     with pytest.raises(ValidationError):
         td_dict["@context"] = []
         jsonld_thing_descr.validate()
+
+
+def test_thing_description_meta():
+    """Metadata can be defined and retrieved in a thing description document."""
+
+    fake = Faker()
+
+    td_dict = copy.deepcopy(TD_EXAMPLE)
+    meta_dict = fake.pydict(10, True, str)
+    td_dict.update(meta_dict)
+
+    jsonld_thing_descr = JsonLDThingDescription(doc=td_dict, validation=True)
+
+    assert jsonld_thing_descr.meta == meta_dict

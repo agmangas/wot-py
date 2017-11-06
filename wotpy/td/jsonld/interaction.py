@@ -74,3 +74,14 @@ class JsonLDInteraction(object):
         represent the links contained in this interaction."""
 
         return [JsonLDLink(item) for item in self._doc.get("link", [])]
+
+    @property
+    def meta(self):
+        """Returns a dict containing the metadata for this interaction.
+        This is, all fields that are not part of the expected set."""
+
+        schema = interaction_schema_for_type(self.interaction_type)
+        base_keys = list(schema["properties"].keys())
+        meta_keys = [key for key in list(self._doc.keys()) if key not in base_keys]
+
+        return {key: self._doc[key] for key in meta_keys}
