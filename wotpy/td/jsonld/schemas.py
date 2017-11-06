@@ -119,7 +119,8 @@ SCHEMA_THING_DESCRIPTION = {
                     interaction_schema_for_type(InteractionTypes.EVENT)
                 ]
             }
-        }
+        },
+        "security": {"type": "object"}
     },
     "required": [
         "name",
