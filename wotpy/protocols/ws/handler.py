@@ -34,18 +34,18 @@ class WebsocketHandler(websocket.WebSocketHandler):
         super(WebsocketHandler, self).__init__(*args, **kwargs)
 
     def open(self):
-        """"""
+        """Called when the WebSockets connection is opened."""
 
         pass
 
     def _write_error(self, message, code, msg_id=None, data=None):
-        """"""
+        """Builds an error message instance and sends it to the client."""
 
         err = WebsocketMessageError(message=message, code=code, data=data, msg_id=msg_id)
         self.write_message(err.to_json())
 
     def _dispose_subscription(self, subscription_id):
-        """"""
+        """Takes a subscription ID and destroys the related subscription."""
 
         if subscription_id in self._subscriptions:
             subscription = self._subscriptions.pop(subscription_id)
@@ -53,7 +53,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
 
     @gen.coroutine
     def _handle_get_property(self, req):
-        """"""
+        """Handler for the 'get_property' method."""
 
         params = req.params
 
@@ -74,7 +74,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
 
     @gen.coroutine
     def _handle_set_property(self, req):
-        """"""
+        """Handler for the 'set_property' method."""
 
         params = req.params
 
@@ -95,7 +95,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
 
     @gen.coroutine
     def _handle_observe(self, req):
-        """"""
+        """Handler for the 'observe' method."""
 
         params = req.params
 
@@ -141,7 +141,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
 
     @gen.coroutine
     def _handle_dispose(self, req):
-        """"""
+        """Handler for the 'dispose' method."""
 
         params = req.params
 
@@ -163,7 +163,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
 
     @gen.coroutine
     def _handle_invoke_action(self, req):
-        """"""
+        """Handler for the 'invoke_action' method."""
 
         params = req.params
 
@@ -185,7 +185,8 @@ class WebsocketHandler(websocket.WebSocketHandler):
 
     @gen.coroutine
     def _handle(self, req):
-        """"""
+        """Takes a WebsocketMessageRequest instance and routes
+        the request to the required method handler."""
 
         handler_map = {
             WebsocketMethods.GET_PROPERTY: self._handle_get_property,
@@ -204,7 +205,8 @@ class WebsocketHandler(websocket.WebSocketHandler):
 
     @gen.coroutine
     def on_message(self, message):
-        """"""
+        """Called each time the server receives a WebSockets message.
+        All messages that do not conform to the protocol are discarded."""
 
         try:
             req = WebsocketMessageRequest.from_raw(message)
@@ -213,6 +215,6 @@ class WebsocketHandler(websocket.WebSocketHandler):
             self._write_error(str(ex), WebsocketErrors.INTERNAL_ERROR)
 
     def on_close(self):
-        """"""
+        """Called when the WebSockets connection is closed."""
 
         pass
