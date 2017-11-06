@@ -53,7 +53,7 @@ def test_jsonld_doc_from_thing():
     assert len(jsonld_property.link) == 2
     assert jsonld_thing_descr.name == thing_name
     assert jsonld_property.output_data["type"] == prop_output_data["type"]
-    assert jsonld_link_01.href == link_href_01
+    assert jsonld_link_01.doc.get("href") == link_href_01
     assert jsonld_property.doc.get(SCHEMA_ORG_LOCATION_KEY, None) is None
 
     prop_location = fake.address()
