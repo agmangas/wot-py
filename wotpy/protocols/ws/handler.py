@@ -217,4 +217,5 @@ class WebsocketHandler(websocket.WebSocketHandler):
     def on_close(self):
         """Called when the WebSockets connection is closed."""
 
-        pass
+        for subscription_id in list(self._subscriptions.keys()):
+            self._dispose_subscription(subscription_id)

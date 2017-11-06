@@ -189,6 +189,8 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
 
         assert ws_error.code
 
+        yield conn.close()
+
     @tornado.testing.gen_test
     def test_invoke_action(self):
         """Actions can be invoked using Websockets."""
@@ -213,6 +215,8 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
 
         assert msg_invoke_resp.id == msg_id
         assert msg_invoke_resp.result == expected_out
+
+        yield conn.close()
 
     @tornado.testing.gen_test
     def test_observe_property(self):
@@ -259,6 +263,8 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
         _assert_emitted(updated_val_02)
         _assert_emitted(updated_val_03)
 
+        yield conn.close()
+
     @tornado.testing.gen_test
     def test_observe_event(self):
         """Events can be observed using Websockets."""
@@ -301,6 +307,8 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
 
         _assert_emitted(payload_02)
         _assert_emitted(payload_03)
+
+        yield conn.close()
 
     @tornado.testing.gen_test
     def test_observe_not_found_error(self):
