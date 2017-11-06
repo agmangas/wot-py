@@ -3,15 +3,17 @@
 
 from abc import ABCMeta, abstractmethod
 
+from wotpy.protocols.enums import ProtocolSchemes
+
 
 class BaseProtocolServer(object):
     """Base protocol server class."""
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, port, scheme):
+    def __init__(self, port, protocol):
         self._port = port
-        self._scheme = scheme
+        self._protocol = protocol
         self._codecs = []
         self._exposed_things = {}
 
@@ -22,10 +24,16 @@ class BaseProtocolServer(object):
         return self._port
 
     @property
+    def protocol(self):
+        """Protocol property."""
+
+        return self._protocol
+
+    @property
     def scheme(self):
         """Scheme property."""
 
-        return self._scheme
+        return ProtocolSchemes.scheme_for_protocol(self.protocol)
 
     def codec_for_media_type(self, media_type):
         """Returns a BaseCodec to serialize or deserialize content for the given media type."""
@@ -45,12 +53,13 @@ class BaseProtocolServer(object):
 
         self._exposed_things[exposed_thing.thing.name] = exposed_thing
 
-    def remove_exposed_thing(self, exposed_thing):
+    def remove_exposed_thing(self, name):
         """Removes the given exposed thing from this server."""
 
         try:
-            self._exposed_things.pop(exposed_thing.thing.name)
-        except KeyError:
+            exp_thing = next(exp_thing for exp_thing in self._exposed_things if exp_thing.name == name)
+            self._exposed_things.pop(exp_thing)
+        except StopIteration:
             pass
 
     @abstractmethod
