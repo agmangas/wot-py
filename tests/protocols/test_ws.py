@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import time
 import datetime
 
 # noinspection PyPackageRequirements
@@ -10,6 +11,7 @@ import tornado.testing
 import tornado.websocket
 # noinspection PyPackageRequirements
 from faker import Faker
+from concurrent.futures import Future, ThreadPoolExecutor
 
 from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketErrors
 from wotpy.protocols.ws.messages import \
@@ -18,7 +20,7 @@ from wotpy.protocols.ws.messages import \
     WebsocketMessageError, \
     WebsocketMessageEmittedItem
 from wotpy.protocols.ws.server import WebsocketServer
-from wotpy.wot.dictionaries import ThingPropertyInit, ThingEventInit
+from wotpy.wot.dictionaries import ThingPropertyInit, ThingEventInit, ThingActionInit
 from wotpy.wot.enums import RequestType
 from wotpy.wot.exposed import ExposedThing
 
@@ -29,6 +31,11 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
     # noinspection PyAttributeOutsideInit
     def setUp(self):
         self.fake = Faker()
+
+        executor = ThreadPoolExecutor(max_workers=1)
+
+        def _async_lower(val):
+            return executor.submit(lambda x: time.sleep(0.05) or x.lower(), val)
 
         # ToDo: Set the Servient
         self.exposed_thing_01 = ExposedThing.from_name(
@@ -59,11 +66,18 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
             name=self.fake.user_name(),
             data_description={"type": "object"})
 
+        self.action_init_01 = ThingActionInit(
+            name=self.fake.user_name(),
+            input_data_description={"type": "string"},
+            output_data_description={"type": "string"},
+            action=_async_lower)
+
         self.exposed_thing_01.add_property(self.prop_init_01)
         self.exposed_thing_01.add_property(self.prop_init_02)
-        self.exposed_thing_02.add_property(self.prop_init_03)
-
         self.exposed_thing_01.add_event(self.event_init_01)
+        self.exposed_thing_01.add_action(self.action_init_01)
+
+        self.exposed_thing_02.add_property(self.prop_init_03)
 
         self.ws_server = WebsocketServer()
         self.ws_server.add_exposed_thing(self.exposed_thing_01)
@@ -174,6 +188,31 @@ class TestWebsocketServer(tornado.testing.AsyncHTTPTestCase):
         ws_error = WebsocketMessageError.from_raw(raw_error)
 
         assert ws_error.code
+
+    @tornado.testing.gen_test
+    def test_invoke_action(self):
+        """Actions can be invoked using Websockets."""
+
+        conn = yield tornado.websocket.websocket_connect(self.url_thing_01)
+
+        action_name = self.action_init_01.name
+        action_func = self.action_init_01.action
+        input_val = self.fake.pystr()
+        expected_out = action_func(input_val).result()
+        msg_id = self.fake.pyint()
+
+        msg_invoke_req = WebsocketMessageRequest(
+            method=WebsocketMethods.INVOKE_ACTION,
+            params={"name": action_name, "parameters": {"val": input_val}},
+            msg_id=msg_id)
+
+        conn.write_message(msg_invoke_req.to_json())
+
+        msg_invoke_resp_raw = yield conn.read_message()
+        msg_invoke_resp = WebsocketMessageResponse.from_raw(msg_invoke_resp_raw)
+
+        assert msg_invoke_resp.id == msg_id
+        assert msg_invoke_resp.result == expected_out
 
     @tornado.testing.gen_test
     def test_observe_property(self):

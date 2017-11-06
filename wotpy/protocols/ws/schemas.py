@@ -178,3 +178,18 @@ SCHEMA_PARAMS_DISPOSE = {
         "subscription"
     ]
 }
+
+# Schema for the parameters of an "invoke action" invocation
+
+SCHEMA_PARAMS_INVOKE_ACTION = {
+    "$schema": "http://json-schema.org/schema#",
+    "id": "http://fundacionctic.org/schemas/wotpy-ws-params-invoke-action.json",
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"},
+        "parameters": {"type": "object"}
+    },
+    "required": [
+        "name"
+    ]
+}

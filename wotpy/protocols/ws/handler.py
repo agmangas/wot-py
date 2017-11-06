@@ -18,7 +18,8 @@ from wotpy.protocols.ws.schemas import \
     SCHEMA_PARAMS_GET_PROPERTY, \
     SCHEMA_PARAMS_SET_PROPERTY, \
     SCHEMA_PARAMS_OBSERVE, \
-    SCHEMA_PARAMS_DISPOSE
+    SCHEMA_PARAMS_DISPOSE, \
+    SCHEMA_PARAMS_INVOKE_ACTION
 
 
 # noinspection PyAbstractClass
@@ -161,6 +162,28 @@ class WebsocketHandler(websocket.WebSocketHandler):
         self.write_message(res.to_json())
 
     @gen.coroutine
+    def _handle_invoke_action(self, req):
+        """"""
+
+        params = req.params
+
+        try:
+            validate(params, SCHEMA_PARAMS_INVOKE_ACTION)
+        except ValidationError as ex:
+            self._write_error(str(ex), WebsocketErrors.INVALID_METHOD_PARAMS, msg_id=req.id)
+            return
+
+        try:
+            action_kwargs = params.get("parameters", {})
+            action_result = yield self._exposed_thing.invoke_action(params["name"], **action_kwargs)
+        except Exception as ex:
+            self._write_error(str(ex), WebsocketErrors.INTERNAL_ERROR, msg_id=req.id)
+            return
+
+        res = WebsocketMessageResponse(result=action_result, msg_id=req.id)
+        self.write_message(res.to_json())
+
+    @gen.coroutine
     def _handle(self, req):
         """"""
 
@@ -168,7 +191,8 @@ class WebsocketHandler(websocket.WebSocketHandler):
             WebsocketMethods.GET_PROPERTY: self._handle_get_property,
             WebsocketMethods.SET_PROPERTY: self._handle_set_property,
             WebsocketMethods.OBSERVE: self._handle_observe,
-            WebsocketMethods.DISPOSE: self._handle_dispose
+            WebsocketMethods.DISPOSE: self._handle_dispose,
+            WebsocketMethods.INVOKE_ACTION: self._handle_invoke_action
         }
 
         if req.method not in handler_map:
