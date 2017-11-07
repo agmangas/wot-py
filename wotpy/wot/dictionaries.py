@@ -19,13 +19,15 @@ class ThingInit(object):
     """Represents the set of properties required
     to create a locally hosted thing."""
 
-    def __init__(self, name, url=None, description=None):
+    def __init__(self, name=None, url=None, description=None):
         """Constructor. If description is None a basic empty
         thing description document will be used instead."""
 
+        assert name or url or description, "Please define at least one argument"
+
         self.name = name
         self.url = url
-        self.description = description if description else {"name": self.name}
+        self.description = description
 
 
 class SemanticType(object):
