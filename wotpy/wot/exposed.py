@@ -200,12 +200,6 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         action_funcs = self.InteractionStateKeys.ACTION_FUNCTIONS
         return self._interaction_states[action_funcs].get(action, None)
 
-    def _get_handler(self, handler_type, interaction=None):
-        """Returns the currently defined handler for the given handler type."""
-
-        interaction_handler = self._handlers.get(handler_type, {}).get(interaction, None)
-        return interaction_handler or self._handlers_global[handler_type]
-
     def _set_handler(self, handler_type, handler, interaction=None):
         """Sets the currently defined handler for the given handler type."""
 
@@ -213,6 +207,12 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             self._handlers_global[handler_type] = handler
         else:
             self._handlers[handler_type][interaction] = handler
+
+    def _get_handler(self, handler_type, interaction=None):
+        """Returns the currently defined handler for the given handler type."""
+
+        interaction_handler = self._handlers.get(handler_type, {}).get(interaction, None)
+        return interaction_handler or self._handlers_global[handler_type]
 
     def _find_interaction(self, interaction_name, interaction_type):
         """Raises ValueError if the given interaction does not exist in this Thing."""
