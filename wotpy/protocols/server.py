@@ -35,6 +35,12 @@ class BaseProtocolServer(object):
 
         return ProtocolSchemes.scheme_for_protocol(self.protocol)
 
+    @property
+    def exposed_things(self):
+        """Exposed things property."""
+
+        return list(self._exposed_things.values())
+
     def codec_for_media_type(self, media_type):
         """Returns a BaseCodec to serialize or deserialize content for the given media type."""
 
@@ -63,20 +69,6 @@ class BaseProtocolServer(object):
             return
 
         self._exposed_things.pop(name)
-
-    def _clean_protocol_links(self):
-        """Removes all interaction links for the ExposedThings
-        contained in this server that match the server protocol."""
-
-        for exp_thing in self._exposed_things.values():
-            for interaction in exp_thing.thing.interaction:
-                links_to_remove = [
-                    link for link in interaction.link
-                    if link.protocol == self.protocol
-                ]
-
-                for link in links_to_remove:
-                    interaction.remove_link(link)
 
     @abstractmethod
     def regenerate_links(self):

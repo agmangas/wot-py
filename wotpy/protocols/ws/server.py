@@ -43,7 +43,7 @@ class WebsocketServer(BaseProtocolServer):
             for exposed_thing in self._exposed_things.values()
         ]
 
-    def _link_for_exposed_thing(self, interaction, exposed_thing):
+    def _link_for_interaction(self, interaction, exposed_thing):
         """Builds the Link instance that relates to this server for the given interaction."""
 
         return Link(
@@ -60,11 +60,24 @@ class WebsocketServer(BaseProtocolServer):
         """Regenerates all link sub-documents for each interaction
         in the exposed things contained in this server."""
 
-        self._clean_protocol_links()
+        def _clean_protocol_links(the_exposed_thing):
+            """Removes all interaction links related to this
+            server protocol for the given ExposedThing."""
 
-        for exp_thing in self._exposed_things.values():
-            for interaction in exp_thing.thing.interaction:
-                link = self._link_for_exposed_thing(interaction, exp_thing)
+            for the_interaction in the_exposed_thing.thing.interaction:
+                links_to_remove = [
+                    the_link for the_link in the_interaction.link
+                    if the_link.protocol == self.protocol
+                ]
+
+                for the_link in links_to_remove:
+                    the_interaction.remove_link(the_link)
+
+        for exposed_thing in self._exposed_things.values():
+            _clean_protocol_links(exposed_thing)
+
+            for interaction in exposed_thing.thing.interaction:
+                link = self._link_for_interaction(interaction, exposed_thing)
                 interaction.add_link(link)
 
     def start(self):
