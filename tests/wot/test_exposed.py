@@ -10,6 +10,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 # noinspection PyPackageRequirements
 from faker import Faker
 
+from tests.td_examples import TD_EXAMPLE
 # noinspection PyUnresolvedReferences
 from tests.wot.fixtures import \
     exposed_thing, \
@@ -17,6 +18,34 @@ from tests.wot.fixtures import \
     thing_event_init, \
     thing_action_init
 from wotpy.wot.enums import RequestType, TDChangeMethod, TDChangeType
+from wotpy.wot.exposed import ExposedThing
+from wotpy.wot.servient.servient import Servient
+
+
+def test_from_description():
+    """ExposedThings can be created from Thing Description documents."""
+
+    servient = Servient()
+    exp_thing = ExposedThing.from_description(servient=servient, doc=TD_EXAMPLE)
+    thing = exp_thing.thing
+
+    td_expected = copy.deepcopy(TD_EXAMPLE)
+    for item in td_expected["interaction"]:
+        if "link" in item:
+            item.pop("link")
+
+    assert exp_thing.name == td_expected.get("name")
+    assert thing.security == td_expected.get("security")
+    assert thing.base == td_expected.get("base")
+    assert thing.type == td_expected.get("@type")
+
+    for intr_expected in td_expected.get("interaction", []):
+        interaction = thing.find_interaction(intr_expected["name"])
+        assert interaction.type == intr_expected.get("@type")
+        assert getattr(interaction, "output_data", None) == intr_expected.get("outputData", None)
+        assert getattr(interaction, "input_data", None) == intr_expected.get("inputData", None)
+        assert getattr(interaction, "writable", None) == intr_expected.get("writable", None)
+        assert not len(interaction.link)
 
 
 # noinspection PyShadowingNames

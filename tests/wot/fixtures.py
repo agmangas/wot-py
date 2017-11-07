@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# noinspection PyPackageRequirements
 import pytest
+# noinspection PyPackageRequirements
 from faker import Faker
 
 from wotpy.wot.exposed import ExposedThing
