@@ -60,19 +60,12 @@ class WebsocketServer(BaseProtocolServer):
         """Regenerates all link sub-documents for each interaction
         in the exposed things contained in this server."""
 
+        self._clean_protocol_links()
+
         for exp_thing in self._exposed_things.values():
             for interaction in exp_thing.thing.interaction:
-                links_del = []
-
-                for link in interaction.link:
-                    if link.protocol == self.protocol:
-                        links_del.append(link)
-
-                for link in links_del:
-                    interaction.remove_link(link)
-
-                new_link = self._link_for_exposed_thing(interaction, exp_thing)
-                interaction.add_link(new_link)
+                link = self._link_for_exposed_thing(interaction, exp_thing)
+                interaction.add_link(link)
 
     def start(self):
         """Starts the server."""

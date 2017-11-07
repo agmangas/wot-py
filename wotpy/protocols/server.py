@@ -51,16 +51,32 @@ class BaseProtocolServer(object):
     def add_exposed_thing(self, exposed_thing):
         """Adds the given exposed thing to this server."""
 
-        self._exposed_things[exposed_thing.thing.name] = exposed_thing
+        if exposed_thing.name in self._exposed_things:
+            return
+
+        self._exposed_things[exposed_thing.name] = exposed_thing
 
     def remove_exposed_thing(self, name):
         """Removes the given exposed thing from this server."""
 
-        try:
-            exp_thing = next(exp_thing for exp_thing in self._exposed_things if exp_thing.name == name)
-            self._exposed_things.pop(exp_thing)
-        except StopIteration:
-            pass
+        if name not in self._exposed_things:
+            return
+
+        self._exposed_things.pop(name)
+
+    def _clean_protocol_links(self):
+        """Removes all interaction links for the ExposedThings
+        contained in this server that match the server protocol."""
+
+        for exp_thing in self._exposed_things.values():
+            for interaction in exp_thing.thing.interaction:
+                links_to_remove = [
+                    link for link in interaction.link
+                    if link.protocol == self.protocol
+                ]
+
+                for link in links_to_remove:
+                    interaction.remove_link(link)
 
     @abstractmethod
     def regenerate_links(self):
