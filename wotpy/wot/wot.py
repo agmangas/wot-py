@@ -25,7 +25,10 @@ class WoT(object):
         """Takes a URL and returns a Future that resolves to a
         ConsumedThing that has been retrieved from the given URL."""
 
-        raise NotImplementedError()
+        future_consumed = Future()
+        future_consumed.set_exception(NotImplementedError())
+
+        return future_consumed
 
     def expose(self, thing_init):
         """Takes a ThingInit instance and returns a Future that resolves
