@@ -25,6 +25,7 @@ from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.wot.dictionaries import ThingPropertyInit, ThingEventInit, ThingActionInit
 from wotpy.wot.enums import RequestType
 from wotpy.wot.exposed import ExposedThing
+from wotpy.wot.servient import Servient
 
 
 def test_regenerate_links():
@@ -32,9 +33,10 @@ def test_regenerate_links():
 
     fake = Faker()
 
-    # ToDo: Set the Servient
+    servient = Servient()
+
     exposed_thing = ExposedThing.from_name(
-        servient=None,
+        servient=servient,
         name=fake.user_name())
 
     prop_init_01 = ThingPropertyInit(
@@ -86,14 +88,14 @@ class TestWebsocketHandler(tornado.testing.AsyncHTTPTestCase):
         def _async_lower(val):
             return executor.submit(lambda x: time.sleep(0.05) or x.lower(), val)
 
-        # ToDo: Set the Servient
+        servient = Servient()
+
         self.exposed_thing_01 = ExposedThing.from_name(
-            servient=None,
+            servient=servient,
             name=self.fake.user_name())
 
-        # ToDo: Set the Servient
         self.exposed_thing_02 = ExposedThing.from_name(
-            servient=None,
+            servient=servient,
             name=self.fake.user_name())
 
         self.prop_init_01 = ThingPropertyInit(

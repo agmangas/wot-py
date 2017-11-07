@@ -25,7 +25,7 @@ from tests.wot.fixtures import \
     thing_action_init
 from wotpy.wot.enums import RequestType, TDChangeMethod, TDChangeType
 from wotpy.wot.exposed import ExposedThing
-from wotpy.wot.servient.servient import Servient
+from wotpy.wot.servient import Servient
 
 
 def assert_exposed_thing_equal(exp_thing, td_doc):

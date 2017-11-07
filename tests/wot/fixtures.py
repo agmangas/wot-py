@@ -6,6 +6,7 @@ import pytest
 # noinspection PyPackageRequirements
 from faker import Faker
 
+from wotpy.wot.servient import Servient
 from wotpy.wot.exposed import ExposedThing
 from wotpy.wot.dictionaries import \
     ThingPropertyInit, \
@@ -58,7 +59,8 @@ def exposed_thing():
 
     fake = Faker()
 
-    # ToDo: Set the Servient
+    servient = Servient()
+
     return ExposedThing.from_name(
-        servient=None,
+        servient=servient,
         name=fake.user_name())
