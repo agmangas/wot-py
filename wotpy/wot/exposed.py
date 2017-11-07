@@ -86,7 +86,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         return ExposedThing(servient=servient, thing=thing)
 
     @classmethod
-    def from_url(cls, servient, url, timeout_secs=10.0):
+    def from_url(cls, servient, url, name=None, timeout_secs=10.0):
         """Builds an ExposedThing initialized from the data
         retrieved from the Thing Description document at the URL.
         Returns a Future that resolves to the ExposedThing."""
@@ -104,7 +104,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         def build_exposed_thing(ft):
             try:
                 td_doc = ft.result()
-                exp_thing = cls.from_description(servient=servient, doc=td_doc)
+                exp_thing = cls.from_description(servient=servient, doc=td_doc, name=name)
                 future_thing.set_result(exp_thing)
             except Exception as ex:
                 future_thing.set_exception(ex)
@@ -117,13 +117,14 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         return future_thing
 
     @classmethod
-    def from_description(cls, servient, doc):
+    def from_description(cls, servient, doc, name=None):
         """Builds an ExposedThing initialized from
         the given Thing Description document."""
 
         jsonld_td = JsonLDThingDescription(doc=doc, validation=True)
 
-        thing = Thing(name=jsonld_td.name, base=jsonld_td.base, security=jsonld_td.security)
+        name = name or jsonld_td.name
+        thing = Thing(name=name, base=jsonld_td.base, security=jsonld_td.security)
 
         for item in (jsonld_td.context or []):
             if isinstance(item, string_types):
