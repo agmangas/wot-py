@@ -19,7 +19,7 @@ class ThingInit(object):
     """Represents the set of properties required
     to create a locally hosted thing."""
 
-    def __init__(self, name, url, description=None):
+    def __init__(self, name, url=None, description=None):
         """Constructor. If description is None a basic empty
         thing description document will be used instead."""
 

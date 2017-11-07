@@ -1,14 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import json
+
 # noinspection PyCompatibility
-from concurrent.futures import Future
+from concurrent.futures import Future, ThreadPoolExecutor
 from rx import Observable
 from rx.subjects import Subject
+from six import string_types
+from tornado.httpclient import HTTPClient, HTTPRequest
 
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.thing import Thing
+from wotpy.td.jsonld.thing import JsonLDThingDescription
 from wotpy.utils.enums import EnumListMixin
 from wotpy.utils.futures import is_future
 from wotpy.wot.dictionaries import \
@@ -77,21 +82,98 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Builds an empty ExposedThing with the given name."""
 
         thing = Thing(name=name)
+
         return ExposedThing(servient=servient, thing=thing)
 
     @classmethod
-    def from_url(cls, servient, url):
+    def from_url(cls, servient, url, timeout_secs=10.0):
         """Builds an ExposedThing initialized from the data
-        retrieved from the Thing Description document at the URL."""
+        retrieved from the Thing Description document at the URL.
+        Returns a Future that resolves to the ExposedThing."""
 
-        raise NotImplementedError()
+        future_thing = Future()
+
+        def fetch_td():
+            http_client = HTTPClient()
+            http_request = HTTPRequest(url, request_timeout=timeout_secs)
+            http_response = http_client.fetch(http_request)
+            td_doc = json.loads(http_response.body)
+            http_client.close()
+            return td_doc
+
+        def build_exposed_thing(ft):
+            try:
+                td_doc = ft.result()
+                exp_thing = cls.from_description(servient=servient, doc=td_doc)
+                future_thing.set_result(exp_thing)
+            except Exception as ex:
+                future_thing.set_exception(ex)
+
+        executor = ThreadPoolExecutor(max_workers=1)
+        future_td = executor.submit(fetch_td)
+        future_td.add_done_callback(build_exposed_thing)
+        executor.shutdown(wait=False)
+
+        return future_thing
 
     @classmethod
     def from_description(cls, servient, doc):
         """Builds an ExposedThing initialized from
         the given Thing Description document."""
 
-        raise NotImplementedError()
+        jsonld_td = JsonLDThingDescription(doc=doc, validation=True)
+
+        thing = Thing(name=jsonld_td.name, base=jsonld_td.base, security=jsonld_td.security)
+
+        for item in (jsonld_td.context or []):
+            if isinstance(item, string_types):
+                thing.add_context(context_url=item)
+            elif isinstance(item, dict):
+                for key in item:
+                    thing.add_context(context_url=item[key], context_prefix=key)
+
+        for item in (jsonld_td.type or []):
+            thing.add_type(item)
+
+        for key, val in jsonld_td.meta.items():
+            thing.add_meta(key, val)
+
+        def _build_property(jsonld_inter):
+            return Property(
+                thing=thing,
+                name=jsonld_inter.name,
+                output_data=jsonld_inter.output_data,
+                writable=jsonld_inter.writable)
+
+        def _build_action(jsonld_inter):
+            return Action(
+                thing=thing,
+                name=jsonld_inter.name,
+                output_data=jsonld_inter.output_data,
+                input_data=jsonld_inter.input_data)
+
+        def _build_event(jsonld_inter):
+            return Event(
+                thing=thing,
+                name=jsonld_inter.name,
+                output_data=jsonld_inter.output_data)
+
+        builder_map = {
+            InteractionTypes.PROPERTY: _build_property,
+            InteractionTypes.ACTION: _build_action,
+            InteractionTypes.EVENT: _build_event
+        }
+
+        for jsonld_interaction in jsonld_td.interaction:
+            builder_func = builder_map[jsonld_interaction.interaction_type]
+            interaction = builder_func(jsonld_interaction)
+
+            for item in (jsonld_interaction.type or []):
+                interaction.add_type(item)
+
+            thing.add_interaction(interaction)
+
+        return ExposedThing(servient=servient, thing=thing)
 
     def _set_property_value(self, prop, value):
         """Sets a Property value."""
