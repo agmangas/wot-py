@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from wotpy.wot.wot import WoT
+
 
 class Servient(object):
     """An entity that is both a WoT client and server at the same time.
@@ -13,53 +15,49 @@ class Servient(object):
 
     def __init__(self):
         self._servers = []
-        self._things = {}
-        self._resource_listeners = {}
+        self._exposed_things = {}
 
-    @property
-    def servers(self):
-        """Servient servers property."""
-
-        return self._servers
-
-    @property
-    def exposed_things(self):
-        """Servient exposed things property."""
-
-        return self._things
-
-    def add_server(self):
+    def add_server(self, server):
         """Adds a new server under this servient."""
 
-        pass
+        try:
+            next(item for item in self._servers if item.protocol == server.protocol)
+            raise ValueError("Existing protocol")
+        except StopIteration:
+            self._servers.append(server)
+
+    def remove_server(self, protocol):
+        """Removes the server with the given protocol from this servient."""
+
+        try:
+            pop_idx = next(idx for idx, item in enumerate(self._servers) if item.protocol == protocol)
+            self._servers.pop(pop_idx)
+        except StopIteration:
+            pass
 
     def add_exposed_thing(self, exposed_thing):
         """Adds a ExposedThing to this servient."""
 
-        pass
+        self._exposed_things[exposed_thing.name] = exposed_thing
 
     def get_exposed_thing(self, name):
         """Gets a ExposedThing by name."""
 
-        pass
+        if name not in self._exposed_things:
+            raise ValueError("Thing not found: {}".format(name))
 
-    def add_resource_listener(self, path, resource_listener):
-        """Adds a new new resource listener under the given path."""
-
-        pass
-
-    def remove_resource_listener(self, path):
-        """Removes the resource listener for the given path."""
-
-        pass
+        return self._exposed_things[name]
 
     def start(self):
-        """Initializes client factories and starts the server.
-        Returns an instance of the WoT object."""
+        """Starts the servers and returns an instance of the WoT object."""
 
-        pass
+        for server in self._servers:
+            server.start()
+
+        return WoT(servient=self)
 
     def shutdown(self):
-        """Destroys client factories and stops the servers."""
+        """Stops the server configured under this servient."""
 
-        pass
+        for server in self._servers:
+            server.stop()
