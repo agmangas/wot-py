@@ -86,6 +86,12 @@ class JsonLDThingDescription(object):
         return [JsonLDInteraction(item) for item in self._doc.get("interaction", [])]
 
     @property
+    def security(self):
+        """Security property."""
+
+        return self._doc.get("security")
+
+    @property
     def meta(self):
         """Returns a dict containing the metadata for this thing description.
         This is, all fields that are not part of the expected set."""
