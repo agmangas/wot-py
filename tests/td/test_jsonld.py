@@ -7,9 +7,10 @@ import pytest
 from faker import Faker
 from jsonschema import ValidationError
 
-from tests.td.resources import TD_EXAMPLE, INTERACTION_EXAMPLE
+from tests.td_examples import TD_EXAMPLE, INTERACTION_EXAMPLE
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.jsonld.interaction import JsonLDInteraction
+from wotpy.td.jsonld.schemas import SCHEMA_THING_DESCRIPTION
 from wotpy.td.jsonld.thing import JsonLDThingDescription
 
 
@@ -70,7 +71,9 @@ def test_thing_description_meta():
 
     fake = Faker()
 
-    td_dict = copy.deepcopy(TD_EXAMPLE)
+    base_schema_keys = list(SCHEMA_THING_DESCRIPTION["properties"].keys())
+    td_dict = {key: TD_EXAMPLE[key] for key in base_schema_keys}
+
     meta_dict = fake.pydict(10, True, str)
     td_dict.update(meta_dict)
 
