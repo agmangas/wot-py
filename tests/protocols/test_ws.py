@@ -1,18 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import time
 import datetime
+import time
 
 # noinspection PyPackageRequirements
 import pytest
 import tornado.gen
 import tornado.testing
 import tornado.websocket
+# noinspection PyCompatibility
+from concurrent.futures import ThreadPoolExecutor
 # noinspection PyPackageRequirements
 from faker import Faker
-from concurrent.futures import Future, ThreadPoolExecutor
 
+from wotpy.protocols.enums import Protocols
 from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketErrors
 from wotpy.protocols.ws.messages import \
     WebsocketMessageRequest, \
@@ -20,7 +22,6 @@ from wotpy.protocols.ws.messages import \
     WebsocketMessageError, \
     WebsocketMessageEmittedItem
 from wotpy.protocols.ws.server import WebsocketServer
-from wotpy.protocols.enums import Protocols
 from wotpy.wot.dictionaries import ThingPropertyInit, ThingEventInit, ThingActionInit
 from wotpy.wot.enums import RequestType
 from wotpy.wot.exposed import ExposedThing
@@ -68,6 +69,7 @@ def test_regenerate_links():
 
     websockets_server.regenerate_links()
     _assert_websockets_links()
+
     websockets_server.regenerate_links()
     _assert_websockets_links()
 
