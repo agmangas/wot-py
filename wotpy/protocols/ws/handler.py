@@ -36,6 +36,17 @@ class WebsocketHandler(websocket.WebSocketHandler):
         self._exposed_thing = None
         super(WebsocketHandler, self).__init__(*args, **kwargs)
 
+    def check_origin(self, origin):
+        """Should return True to accept the request or False to reject it.
+        The origin argument is the value of the Origin HTTP header,
+        the url responsible for initiating this request"""
+
+        # ToDo: Check this once with add authentication
+        # This is extremely dangerous in case of a cookie-based authentication system.
+        # WS authentication should be handled independently with some kind of token-based system.
+
+        return True
+
     def open(self, name):
         """Called when the WebSockets connection is opened."""
 
