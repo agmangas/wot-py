@@ -36,7 +36,7 @@ class WebsocketServer(BaseProtocolServer):
         return self._app
 
     def _build_app(self):
-        """"""
+        """Builds and returns the Tornado application for the WebSockets server."""
 
         return web.Application([(
             r"/(?P<name>[^\/]+)",
