@@ -79,11 +79,11 @@ class BaseProtocolServer(object):
         return self._exposed_things[name]
 
     @abstractmethod
-    def regenerate_links(self):
-        """Regenerates all link sub-documents for each interaction
-        in the exposed things contained in this server."""
+    def links_for_interaction(self, hostname, exposed_thing, interaction):
+        """Builds and returns a list with all Links that
+        relate to this server for the given Interaction."""
 
-        raise NotImplementedError()
+        pass
 
     @abstractmethod
     def start(self):
