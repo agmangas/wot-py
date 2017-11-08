@@ -3,6 +3,7 @@
 
 import socket
 
+import tornado.web
 from six import string_types
 
 from wotpy.wot.wot import WoT
@@ -15,13 +16,54 @@ class Servient(object):
     be used by other clients.
     WoT clients are entities that are able to understand the WoT Interface to
     send requests and interact with IoT devices exposed by other WoT servients
-    or servers using the capabilities of a Web client such as Web browser. """
+    or servers using the capabilities of a Web client such as Web browser."""
 
     def __init__(self, hostname=None):
         self._hostname = hostname or socket.getfqdn()
         assert isinstance(self._hostname, string_types), "Invalid hostname"
         self._servers = {}
         self._exposed_things = {}
+        self._catalogue_port = None
+        self._catalogue_server = None
+
+    def _build_td_catalogue_app(self):
+        """Returns a Tornado app that provides one endpoint to retrieve the
+        entire catalogue of thing descriptions contained in this servient."""
+
+        servient = self
+
+        # noinspection PyAbstractClass
+        class TDCatalogueHandler(tornado.web.RequestHandler):
+            """Handler that returns a JSON list containing
+            all thing descriptions from this servient."""
+
+            def get(self):
+                descriptions_map = {
+                    name: exp_thing.thing.to_jsonld_dict()
+                    for name, exp_thing in servient._exposed_things.items()
+                }
+
+                self.write(descriptions_map)
+
+        return tornado.web.Application([(r"/", TDCatalogueHandler)])
+
+    def _start_catalogue(self):
+        """Starts the TD catalogue server if enabled."""
+
+        if self._catalogue_server or not self._catalogue_port:
+            return
+
+        catalogue_app = self._build_td_catalogue_app()
+        self._catalogue_server = catalogue_app.listen(self._catalogue_port)
+
+    def _stop_catalogue(self):
+        """Stops the TD catalogue server if running."""
+
+        if not self._catalogue_server:
+            return
+
+        self._catalogue_server.stop()
+        self._catalogue_server = None
 
     def _clean_protocol_links(self, exposed_thing, protocol):
         """Removes all interaction links related to this
@@ -126,11 +168,23 @@ class Servient(object):
 
         return self._exposed_things[name]
 
+    def enable_td_catalogue(self, port):
+        """Enables the servient TD catalogue in the given port."""
+
+        self._catalogue_port = port
+
+    def disable_td_catalogue(self):
+        """Disables the servient TD catalogue."""
+
+        self._catalogue_port = None
+
     def start(self):
         """Starts the servers and returns an instance of the WoT object."""
 
         for server in self._servers.values():
             server.start()
+
+        self._start_catalogue()
 
         return WoT(servient=self)
 
@@ -139,3 +193,5 @@ class Servient(object):
 
         for server in self._servers.values():
             server.stop()
+
+        self._stop_catalogue()
