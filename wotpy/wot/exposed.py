@@ -785,12 +785,12 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
     def start(self):
         """Start serving external requests for the Thing."""
 
-        pass
+        self._servient.enable_exposed_thing(self.name)
 
     def stop(self):
         """Stop serving external requests for the Thing."""
 
-        pass
+        self._servient.disable_exposed_thing(self.name)
 
     def emit_event(self, event_name, payload):
         """Emits an the event initialized with the event name specified by
