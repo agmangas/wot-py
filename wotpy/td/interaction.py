@@ -131,7 +131,7 @@ class Property(InteractionPattern):
         assert not len(self.type)
         self.add_type(InteractionTypes.PROPERTY)
         self.output_data = output_data
-        self.writable = writable
+        self.writable = True if writable else False
 
     def to_jsonld_dict(self):
         """Returns the JSON-LD dict representation for this instance."""
