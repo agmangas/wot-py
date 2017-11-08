@@ -26,17 +26,25 @@ from wotpy.protocols.ws.schemas import \
 class WebsocketHandler(websocket.WebSocketHandler):
     """Tornado handler for Websocket messages."""
 
+    POLICY_VIOLATION_CODE = 1008
+    POLICY_VIOLATION_REASON = "Not found"
+
     def __init__(self, *args, **kwargs):
-        assert "exposed_thing" in kwargs, "Argument 'exposed_thing' required"
-        self._exposed_thing = kwargs.pop("exposed_thing")
+        self._server = kwargs.pop("websocket_server", None)
         self._scheduler = IOLoopScheduler()
         self._subscriptions = {}
+        self._exposed_thing = None
         super(WebsocketHandler, self).__init__(*args, **kwargs)
 
-    def open(self):
+    def open(self, name):
         """Called when the WebSockets connection is opened."""
 
-        pass
+        assert self._exposed_thing is None
+
+        try:
+            self._exposed_thing = next(item for item in self._server.exposed_things if item.name == name)
+        except StopIteration:
+            self.close(self.POLICY_VIOLATION_CODE, self.POLICY_VIOLATION_REASON)
 
     def _write_error(self, message, code, msg_id=None, data=None):
         """Builds an error message instance and sends it to the client."""

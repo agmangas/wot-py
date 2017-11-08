@@ -27,21 +27,22 @@ class WebsocketServer(BaseProtocolServer):
         assert protocol in [Protocols.WEBSOCKETS]
         super(WebsocketServer, self).__init__(port=port, protocol=protocol)
         self._server = None
+        self._app = self._build_app()
 
-    def _build_app_handlers(self):
-        """Builds a list of handlers for a Tornado application."""
+    @property
+    def app(self):
+        """Tornado application property."""
 
-        def _build_url_spec(exp_thng):
-            return (
-                self.path_for_exposed_thing(exp_thng),
-                WebsocketHandler,
-                {"exposed_thing": exp_thng}
-            )
+        return self._app
 
-        return [
-            _build_url_spec(exposed_thing)
-            for exposed_thing in self._exposed_things.values()
-        ]
+    def _build_app(self):
+        """"""
+
+        return web.Application([(
+            r"/(?P<name>[^\/]+)",
+            WebsocketHandler,
+            {"websocket_server": self}
+        )])
 
     def _link_for_interaction(self, interaction, exposed_thing):
         """Builds the Link instance that relates to this server for the given interaction."""
@@ -50,11 +51,6 @@ class WebsocketServer(BaseProtocolServer):
             interaction=interaction,
             protocol=self.protocol,
             href=self.path_for_exposed_thing(exposed_thing=exposed_thing))
-
-    def build_app(self):
-        """Builds an instance of a Tornado application to handle the WoT interface requests."""
-
-        return web.Application(self._build_app_handlers())
 
     def regenerate_links(self):
         """Regenerates all link sub-documents for each interaction
@@ -83,8 +79,7 @@ class WebsocketServer(BaseProtocolServer):
     def start(self):
         """Starts the server."""
 
-        application = self.build_app()
-        self._server = application.listen(self.port)
+        self._server = self.app.listen(self.port)
 
     def stop(self):
         """Stops the server."""

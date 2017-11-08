@@ -143,7 +143,7 @@ class TestWebsocketHandler(tornado.testing.AsyncHTTPTestCase):
         """Should be overridden by subclasses to return a tornado.web.Application
         or other HTTPServer callback. Returns a Websockets WoT server Application."""
 
-        return self.ws_server.build_app()
+        return self.ws_server.app
 
     def _build_root_url(self, exposed_thing):
         """Returns the WS connection URL for the given ExposedThing."""
@@ -151,6 +151,16 @@ class TestWebsocketHandler(tornado.testing.AsyncHTTPTestCase):
         return "ws://localhost:{}{}".format(
             self.get_http_port(),
             WebsocketServer.path_for_exposed_thing(exposed_thing))
+
+    @tornado.testing.gen_test
+    def test_not_found_error(self):
+        """The socket is automatically closed when connecting to an unknown thing."""
+
+        url_unknown = "ws://localhost:{}/{}".format(self.get_http_port(), self.fake.pystr())
+        conn = yield tornado.websocket.websocket_connect(url_unknown)
+        msg = yield conn.read_message()
+
+        assert msg is None
 
     @tornado.testing.gen_test
     def test_get_property(self):
