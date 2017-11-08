@@ -23,6 +23,7 @@ from wotpy.protocols.ws.messages import WebsocketMessageRequest, WebsocketMessag
 from wotpy.protocols.ws.enums import WebsocketMethods
 
 
+@pytest.mark.flaky(reruns=5)
 def test_servient_start_stop():
     """The servient and contained ExposedThings can be started and stopped."""
 

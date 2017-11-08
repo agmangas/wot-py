@@ -83,7 +83,7 @@ class BaseProtocolServer(object):
         """Builds and returns a list with all Links that
         relate to this server for the given Interaction."""
 
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def start(self):
