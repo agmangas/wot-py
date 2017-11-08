@@ -33,8 +33,18 @@ class WebsocketHandler(websocket.WebSocketHandler):
         self._server = kwargs.pop("websocket_server", None)
         self._scheduler = IOLoopScheduler()
         self._subscriptions = {}
-        self._exposed_thing = None
+        self._exposed_thing_name = None
         super(WebsocketHandler, self).__init__(*args, **kwargs)
+
+    @property
+    def exposed_thing(self):
+        """Exposed thing property.
+        Retrieves the ExposedThing from the parent server."""
+
+        try:
+            return self._server.get_exposed_thing(self._exposed_thing_name)
+        except ValueError:
+            self.close(self.POLICY_VIOLATION_CODE, self.POLICY_VIOLATION_REASON)
 
     def check_origin(self, origin):
         """Should return True to accept the request or False to reject it.
@@ -50,10 +60,11 @@ class WebsocketHandler(websocket.WebSocketHandler):
     def open(self, name):
         """Called when the WebSockets connection is opened."""
 
-        assert self._exposed_thing is None
+        assert self._exposed_thing_name is None
 
         try:
-            self._exposed_thing = self._server.get_exposed_thing(name)
+            self._server.get_exposed_thing(name)
+            self._exposed_thing_name = name
         except ValueError:
             self.close(self.POLICY_VIOLATION_CODE, self.POLICY_VIOLATION_REASON)
 
@@ -83,7 +94,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
             return
 
         try:
-            prop_value = yield self._exposed_thing.get_property(name=params["name"])
+            prop_value = yield self.exposed_thing.get_property(name=params["name"])
         except Exception as ex:
             self._write_error(str(ex), WebsocketErrors.INTERNAL_ERROR, msg_id=req.id)
             return
@@ -104,7 +115,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
             return
 
         try:
-            yield self._exposed_thing.set_property(name=params["name"], value=params["value"])
+            yield self.exposed_thing.set_property(name=params["name"], value=params["value"])
         except Exception as ex:
             self._write_error(str(ex), WebsocketErrors.INTERNAL_ERROR, msg_id=req.id)
             return
@@ -147,7 +158,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
         res = WebsocketMessageResponse(result=subscription_id, msg_id=req.id)
         self.write_message(res.to_json())
 
-        observable = self._exposed_thing.observe(
+        observable = self.exposed_thing.observe(
             name=params["name"],
             request_type=params["request_type"])
 
@@ -194,7 +205,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
 
         try:
             action_kwargs = params.get("parameters", {})
-            action_result = yield self._exposed_thing.invoke_action(params["name"], **action_kwargs)
+            action_result = yield self.exposed_thing.invoke_action(params["name"], **action_kwargs)
         except Exception as ex:
             self._write_error(str(ex), WebsocketErrors.INTERNAL_ERROR, msg_id=req.id)
             return
