@@ -138,7 +138,7 @@ SCHEMA_PARAMS_SET_PROPERTY = {
     "type": "object",
     "properties": {
         "name": {"type": "string"},
-        "value": {"type": "string"}
+        "value": {}
     },
     "required": [
         "name",
