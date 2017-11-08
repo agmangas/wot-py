@@ -19,7 +19,7 @@ if sys.version_info[0] == 2:
 
 setup(
     name='wotpy',
-    version='0.0.1',
+    version='0.1.0',
     description='Python implementation of the W3C WoT standards',
     keywords='wot w3c ctic iot',
     author='Andres Garcia Mangas',
