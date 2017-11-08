@@ -70,6 +70,14 @@ class BaseProtocolServer(object):
 
         self._exposed_things.pop(name)
 
+    def get_exposed_thing(self, name):
+        """Gets a ExposedThing by name."""
+
+        if name not in self._exposed_things:
+            raise ValueError("Not found: {}".format(name))
+
+        return self._exposed_things[name]
+
     @abstractmethod
     def regenerate_links(self):
         """Regenerates all link sub-documents for each interaction

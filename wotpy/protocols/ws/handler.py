@@ -42,8 +42,8 @@ class WebsocketHandler(websocket.WebSocketHandler):
         assert self._exposed_thing is None
 
         try:
-            self._exposed_thing = next(item for item in self._server.exposed_things if item.name == name)
-        except StopIteration:
+            self._exposed_thing = self._server.get_exposed_thing(name)
+        except ValueError:
             self.close(self.POLICY_VIOLATION_CODE, self.POLICY_VIOLATION_REASON)
 
     def _write_error(self, message, code, msg_id=None, data=None):
