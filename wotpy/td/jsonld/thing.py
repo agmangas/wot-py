@@ -1,14 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-try:
-    # noinspection PyCompatibility
-    from urllib.parse import urlparse, urlunparse
-except ImportError:
-    # noinspection PyCompatibility
-    from urlparse import urlparse, urlunparse
-
 from jsonschema import validate, ValidationError
+from six.moves.urllib.parse import urlparse, urlunparse
 
 from wotpy.td.jsonld.interaction import JsonLDInteraction
 from wotpy.td.jsonld.schemas import SCHEMA_THING_DESCRIPTION
