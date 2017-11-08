@@ -258,7 +258,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         try:
             assert request.request_type == RequestType.PROPERTY and \
                    request.name and \
-                   request.data
+                   hasattr(request, "data")
 
             prop = self._find_interaction(
                 interaction_name=request.name,
