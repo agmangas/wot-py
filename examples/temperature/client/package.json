@@ -1,0 +1,11 @@
+{
+  "name": "temperature-thing-client",
+  "version": "1.0.0",
+  "description": "Temperature Thing client",
+  "main": "client.js",
+  "dependencies": {
+    "async": "^2.6.0",
+    "axios": "^0.17.0",
+    "ws": "^3.3.1"
+  }
+}
