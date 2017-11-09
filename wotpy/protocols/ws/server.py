@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from tornado import web
-from slugify import slugify
 
-from wotpy.td.link import Link
 from wotpy.protocols.enums import Protocols
 from wotpy.protocols.server import BaseProtocolServer
 from wotpy.protocols.ws.handler import WebsocketHandler
+from wotpy.td.link import Link
 
 
 class WebsocketServer(BaseProtocolServer):
@@ -21,7 +20,7 @@ class WebsocketServer(BaseProtocolServer):
         """Builds and returns the WebSockets endpoint path for the given ExposedThing.
         This method is deterministic and the same thing will always produce the same path."""
 
-        return r"/{}".format(slugify(exposed_thing.thing.name))
+        return r"/{}".format(exposed_thing.thing.name)
 
     def __init__(self, port=DEFAULT_PORT, protocol=DEFAULT_PROTO):
         assert protocol in [Protocols.WEBSOCKETS]

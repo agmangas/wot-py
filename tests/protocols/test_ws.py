@@ -41,13 +41,16 @@ class TestWebsocketHandler(tornado.testing.AsyncHTTPTestCase):
 
         servient = Servient()
 
+        thing_01_name = self.fake.pystr()
+        thing_02_name = self.fake.pystr()
+
         self.exposed_thing_01 = ExposedThing.from_name(
             servient=servient,
-            name=self.fake.user_name())
+            name=thing_01_name)
 
         self.exposed_thing_02 = ExposedThing.from_name(
             servient=servient,
-            name=self.fake.user_name())
+            name=thing_02_name)
 
         self.prop_init_01 = ThingPropertyInit(
             name=self.fake.user_name(),
