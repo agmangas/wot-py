@@ -107,7 +107,7 @@ SCHEMA_EMITTED_ITEM = {
     "properties": {
         "subscription": {"type": "string"},
         "name": {"type": "string"},
-        "data": {"type": "object"}
+        "data": {}
     },
     "required": [
         "subscription",

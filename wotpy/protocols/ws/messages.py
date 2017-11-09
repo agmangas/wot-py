@@ -225,7 +225,12 @@ class WebsocketMessageEmittedItem(object):
     def __init__(self, subscription_id, name, data):
         self.subscription_id = subscription_id
         self.name = name
-        self.data = data if isinstance(data, dict) else data.__dict__
+
+        try:
+            json.dumps(data)
+            self.data = data
+        except TypeError:
+            self.data = data.__dict__
 
         try:
             validate(self.to_dict(), SCHEMA_EMITTED_ITEM)
