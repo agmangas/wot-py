@@ -801,4 +801,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Emits an the event initialized with the event name specified by
         the event_name argument and data specified by the payload argument."""
 
+        if not self.thing.find_interaction(name=event_name, interaction_type=InteractionTypes.EVENT):
+            raise ValueError("Unknown event: {}".format(event_name))
+
         self._events_stream.on_next(EmittedEvent(name=event_name, init=payload))
