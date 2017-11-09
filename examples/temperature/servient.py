@@ -6,6 +6,7 @@ A simple Temperature Thing that serves as an
 example for how to use the WotPy servient.
 """
 
+import time
 import logging
 import multiprocessing
 import random
@@ -84,10 +85,7 @@ def handler_temperature(request):
         """Wait for a while and return a random temperature."""
 
         LOGGER.info("Doing some work to simulate temperature retrieval")
-
-        import time
-        time.sleep(3)
-
+        time.sleep(random.random() * 3.0)
         return GLOBAL_TEMPERATURE
 
     def respond_when_done(ft):
