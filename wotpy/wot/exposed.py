@@ -536,10 +536,15 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         handler(request)
 
-        # noinspection PyUnusedLocal
+        # noinspection PyBroadException
         def _publish_event(ft):
-            event_data = ActionInvocationEventInit(action_name=name, return_value=ft.result())
-            self._events_stream.on_next(ActionInvocationEmittedEvent(init=event_data))
+            try:
+                return_value = ft.result()
+                event_data = ActionInvocationEventInit(action_name=name, return_value=return_value)
+                emitted_event = ActionInvocationEmittedEvent(init=event_data)
+                self._events_stream.on_next(emitted_event)
+            except:
+                pass
 
         future_invoke.add_done_callback(_publish_event)
 
