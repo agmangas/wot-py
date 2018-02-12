@@ -11,12 +11,12 @@ from wotpy.utils.strings import clean_str
 class InteractionPattern(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, thing, name):
-        self._thing = thing
-        self._name = clean_str(name, warn=True)
+    def __init__(self, thing, name, **kwargs):
+        self.thing = thing
+        self.name = clean_str(name, warn=True)
         self._types = []
-        self._links = []
-        self._meta = {}
+        self._forms = []
+        self.metadata = kwargs
 
     def __eq__(self, other):
         return self.thing == other.thing and \
@@ -26,28 +26,16 @@ class InteractionPattern(object):
         return hash((self.thing, self.name))
 
     @property
-    def thing(self):
-        """Thing property."""
-
-        return self._thing
-
-    @property
-    def name(self):
-        """Name property."""
-
-        return self._name
-
-    @property
     def type(self):
         """Type property."""
 
         return self._types
 
     @property
-    def link(self):
-        """Link property."""
+    def form(self):
+        """Indicates the endpoints from which an interaction pattern is accessible."""
 
-        return self._links
+        return self._forms
 
     def add_type(self, val):
         """Add a new type."""
@@ -64,34 +52,21 @@ class InteractionPattern(object):
         except ValueError:
             pass
 
-    def add_link(self, link):
-        """Add a new Link."""
+    def add_form(self, form):
+        """Add a new Form."""
 
-        if link in self._links:
-            raise ValueError("Already existing Link")
+        if form in self._forms:
+            raise ValueError("Already existing Form")
 
-        self._links.append(link)
+        self._forms.append(form)
 
-    def remove_link(self, link):
-        """Remove an existing Link."""
+    def remove_form(self, form):
+        """Remove an existing Form."""
 
         try:
-            pop_idx = self._links.index(link)
-            self._links.pop(pop_idx)
+            pop_idx = self._forms.index(form)
+            self._forms.pop(pop_idx)
         except ValueError:
-            pass
-
-    def add_meta(self, key, val):
-        """Add a new metadata key-value pair."""
-
-        self._meta[key] = val
-
-    def remove_meta(self, key):
-        """Remove an existing metadata key-value pair."""
-
-        try:
-            self._meta.pop(key)
-        except KeyError:
             pass
 
     def _build_base_jsonld_dict(self):
@@ -100,10 +75,10 @@ class InteractionPattern(object):
         doc = {
             "@type": self.type,
             "name": self.name,
-            "link": [item.to_jsonld_dict() for item in self.link]
+            "form": [item.to_jsonld_dict() for item in self.form]
         }
 
-        doc.update(self._meta)
+        doc.update(self.metadata)
 
         return doc
 
@@ -126,11 +101,12 @@ class Property(InteractionPattern):
     that can be static (e.g., supported mode, rated output voltage, etc.) or
     dynamic (e.g., current fill level of water, minimum recorded temperature, etc.)."""
 
-    def __init__(self, thing, name, output_data, writable=True):
+    def __init__(self, thing, name, output_data, observable=False, writable=False):
         super(Property, self).__init__(thing, name)
         assert not len(self.type)
         self.add_type(InteractionTypes.PROPERTY)
         self.output_data = output_data
+        self.observable = True if observable else False
         self.writable = True if writable else False
 
     def to_jsonld_dict(self):
@@ -140,6 +116,7 @@ class Property(InteractionPattern):
 
         doc.update({
             "outputData": self.output_data,
+            "observable": self.observable,
             "writable": self.writable
         })
 
@@ -151,7 +128,7 @@ class Action(InteractionPattern):
     targets changes or processes on a Thing that take a certain time to complete
     (i.e., actions cannot be applied instantaneously like property writes). """
 
-    def __init__(self, thing, name, output_data, input_data):
+    def __init__(self, thing, name, output_data=None, input_data=None):
         super(Action, self).__init__(thing, name)
         assert not len(self.type)
         self.add_type(InteractionTypes.ACTION)
@@ -163,10 +140,11 @@ class Action(InteractionPattern):
 
         doc = self._build_base_jsonld_dict()
 
-        doc.update({
-            "outputData": self.output_data,
-            "inputData": self.input_data
-        })
+        if self.output_data is not None:
+            doc.update({"outputData": self.output_data})
+
+        if self.input_data is not None:
+            doc.update({"inputData": self.input_data})
 
         return doc
 

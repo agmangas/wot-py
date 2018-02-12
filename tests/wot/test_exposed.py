@@ -48,7 +48,7 @@ def assert_exposed_thing_equal(exp_thing, td_doc):
         assert getattr(interaction, "output_data", None) == intr_expected.get("outputData", None)
         assert getattr(interaction, "input_data", None) == intr_expected.get("inputData", None)
         assert getattr(interaction, "writable", None) == intr_expected.get("writable", None)
-        assert not len(interaction.link)
+        assert not len(interaction.form)
 
 
 def test_from_description():

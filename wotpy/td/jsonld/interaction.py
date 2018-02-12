@@ -4,18 +4,16 @@
 from jsonschema import validate
 
 from wotpy.td.enums import InteractionTypes
-from wotpy.td.jsonld.link import JsonLDLink
+from wotpy.td.jsonld.form import JsonLDForm
 from wotpy.td.jsonld.schemas import interaction_schema_for_type
 
 
 class JsonLDInteraction(object):
-    """Wrapper class for an Interaction JSON-LD document."""
+    """Wrapper class for an Interaction document serialized in JSON-LD."""
 
-    def __init__(self, doc, validation=True):
+    def __init__(self, doc):
         self._doc = doc
-
-        if validation:
-            self.validate()
+        self.validate()
 
     def validate(self):
         """Validates this instance agains its JSON schema."""
@@ -69,19 +67,25 @@ class JsonLDInteraction(object):
         return self._doc.get("writable")
 
     @property
-    def link(self):
-        """Returns a list of JsonLDLink instances that
-        represent the links contained in this interaction."""
+    def observable(self):
+        """Observable property."""
 
-        return [JsonLDLink(item) for item in self._doc.get("link", [])]
+        return self._doc.get("observable")
 
     @property
-    def meta(self):
+    def form(self):
+        """Returns a list of JsonLDForm instances that
+        represent the forms contained in this interaction."""
+
+        return [JsonLDForm(item) for item in self._doc.get("form", [])]
+
+    @property
+    def metadata(self):
         """Returns a dict containing the metadata for this interaction.
         This is, all fields that are not part of the expected set."""
 
-        schema = interaction_schema_for_type(self.interaction_type)
-        base_keys = list(schema["properties"].keys())
+        doc_schema = interaction_schema_for_type(self.interaction_type)
+        base_keys = list(doc_schema["properties"].keys())
         meta_keys = [key for key in list(self._doc.keys()) if key not in base_keys]
 
         return {key: self._doc[key] for key in meta_keys}

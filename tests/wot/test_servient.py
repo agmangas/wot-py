@@ -45,7 +45,9 @@ def test_servient_td_catalogue():
         "interaction": [{
             "@type": [InteractionTypes.PROPERTY],
             "name": fake.user_name(),
-            "outputData": {"type": "string"}
+            "outputData": {"type": "string"},
+            "writable": True,
+            "observable": True
         }]
     }
 
@@ -130,11 +132,14 @@ def test_servient_start_stop():
             "@type": [InteractionTypes.PROPERTY],
             "name": name_prop_boolean,
             "outputData": {"type": "boolean"},
-            "writable": True
+            "writable": True,
+            "observable": True
         }, {
             "@type": [InteractionTypes.PROPERTY],
             "name": name_prop_string,
-            "outputData": {"type": "string"}
+            "outputData": {"type": "string"},
+            "writable": True,
+            "observable": True
         }]
     }
 
@@ -158,14 +163,14 @@ def test_servient_start_stop():
 
         prop = exposed_thing.thing.find_interaction(name=prop_name)
 
-        assert len(prop.link)
+        assert len(prop.form)
 
-        prop_protocols = [item.protocol for item in prop.link]
+        prop_protocols = [item.protocol for item in prop.form]
 
         assert Protocols.WEBSOCKETS in prop_protocols
 
-        link = next(item for item in prop.link if item.protocol == Protocols.WEBSOCKETS)
-        conn = yield tornado.websocket.websocket_connect(link.metadata["href"])
+        link = next(item for item in prop.form if item.protocol == Protocols.WEBSOCKETS)
+        conn = yield tornado.websocket.websocket_connect(link.href)
 
         msg_set_req = WebsocketMessageRequest(
             method=WebsocketMethods.GET_PROPERTY,

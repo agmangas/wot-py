@@ -12,26 +12,20 @@ class Thing(object):
     """Describes a physical and/or virtual Thing (may represent one or
     more physical and / or virtual Things) in the Web of Thing context."""
 
-    def __init__(self, name, security=None, base=None):
-        self._name = clean_str(name, warn=True)
+    def __init__(self, name, security=None, base=None, **kwargs):
+        self.name = clean_str(name, warn=True)
         self.security = security
         self.base = base
         self._interactions = []
         self._types = []
-        self._meta = {}
         self._contexts = [WOT_CONTEXT_URL]
+        self.metadata = kwargs
 
     def __eq__(self, other):
         return self.name == other.name
 
     def __hash__(self):
         return hash(self.name)
-
-    @property
-    def name(self):
-        """Name property."""
-
-        return self._name
 
     @property
     def interaction(self):
@@ -113,15 +107,8 @@ class Thing(object):
     def add_meta(self, key, val):
         """Add a new metadata key-value pair."""
 
-        self._meta[key] = val
+        self.metadata[key] = val
 
-    def remove_meta(self, key):
-        """Remove an existing metadata key-value pair."""
-
-        try:
-            self._meta.pop(key)
-        except KeyError:
-            pass
 
     def to_jsonld_dict(self):
         """Returns the JSON-LD dict representation for this instance."""
@@ -139,7 +126,7 @@ class Thing(object):
         if self.security:
             doc.update({"security": self.security})
 
-        doc.update(self._meta)
+        doc.update(self.metadata)
 
         return doc
 

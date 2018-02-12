@@ -19,10 +19,19 @@ def interaction_schema_for_type(interaction_type):
     return type_schema_dict[interaction_type]
 
 
-SCHEMA_INTERACTION_LINK = {
+SCHEMA_FORM = {
     "$schema": "http://json-schema.org/schema#",
-    "id": "http://fundacionctic.org/schemas/interaction-link.json",
-    "type": "object"
+    "id": "http://fundacionctic.org/schemas/form.json",
+    "type": "object",
+    "properties": {
+        "href": {"type": "string"},
+        "mediaType": {"type": "string"},
+        "rel": {"type": "string"}
+    },
+    "required": [
+        "href",
+        "mediaType"
+    ]
 }
 
 SCHEMA_INTERACTION_BASE = {
@@ -30,13 +39,13 @@ SCHEMA_INTERACTION_BASE = {
     "id": "http://fundacionctic.org/schemas/interaction-base.json",
     "type": "object",
     "properties": {
-        "name": {"type": "string"},
         "@type": {"type": "array", "items": {"type": "string"}},
-        "link": {"type": "array", "items": SCHEMA_INTERACTION_LINK}
+        "name": {"type": "string"},
+        "form": {"type": "array", "items": SCHEMA_FORM}
     },
     "required": [
-        "name",
-        "@type"
+        "@type",
+        "name"
     ]
 }
 
@@ -49,10 +58,13 @@ SCHEMA_INTERACTION_PROPERTY = {
             "type": "object",
             "properties": {
                 "outputData": {"type": "object"},
+                "observable": {"type": "boolean"},
                 "writable": {"type": "boolean"}
             },
             "required": [
-                "outputData"
+                "outputData",
+                "observable",
+                "writable"
             ]
         }
     ]

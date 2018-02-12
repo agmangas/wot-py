@@ -51,7 +51,7 @@ def test_interaction_properties():
 
     assert interaction.interaction_type == InteractionTypes.PROPERTY
     assert interaction.name == INTERACTION_EXAMPLE.get('name')
-    assert len(interaction.link) == len(INTERACTION_EXAMPLE.get('link', []))
+    assert len(interaction.form) == len(INTERACTION_EXAMPLE.get('form', []))
 
 
 def test_thing_description_no_context():
@@ -59,24 +59,8 @@ def test_thing_description_no_context():
 
     td_dict = copy.deepcopy(TD_EXAMPLE)
 
-    jsonld_thing_descr = JsonLDThingDescription(doc=td_dict, validation=True)
+    jsonld_thing_descr = JsonLDThingDescription(doc=td_dict)
 
     with pytest.raises(ValidationError):
         td_dict["@context"] = []
         jsonld_thing_descr.validate()
-
-
-def test_thing_description_meta():
-    """Metadata can be defined and retrieved in a thing description document."""
-
-    fake = Faker()
-
-    base_schema_keys = list(SCHEMA_THING_DESCRIPTION["properties"].keys())
-    td_dict = {key: TD_EXAMPLE[key] for key in base_schema_keys}
-
-    meta_dict = fake.pydict(10, True, str)
-    td_dict.update(meta_dict)
-
-    jsonld_thing_descr = JsonLDThingDescription(doc=td_dict, validation=True)
-
-    assert jsonld_thing_descr.meta == meta_dict

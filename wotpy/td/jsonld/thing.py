@@ -4,19 +4,17 @@
 from jsonschema import validate, ValidationError
 from six.moves.urllib.parse import urlparse, urlunparse
 
+from wotpy.td.constants import WOT_CONTEXT_URL
 from wotpy.td.jsonld.interaction import JsonLDInteraction
 from wotpy.td.jsonld.schemas import SCHEMA_THING_DESCRIPTION
-from wotpy.td.constants import WOT_CONTEXT_URL
 
 
 class JsonLDThingDescription(object):
     """Wrapper class for a Thing Description JSON-LD document."""
 
-    def __init__(self, doc, validation=True):
+    def __init__(self, doc):
         self._doc = doc
-
-        if validation:
-            self.validate()
+        self.validate()
 
     def _validate_context(self):
         """Raises a JSON schema validation error if this document lacks the required context."""
@@ -86,7 +84,7 @@ class JsonLDThingDescription(object):
         return self._doc.get("security")
 
     @property
-    def meta(self):
+    def metadata(self):
         """Returns a dict containing the metadata for this thing description.
         This is, all fields that are not part of the expected set."""
 

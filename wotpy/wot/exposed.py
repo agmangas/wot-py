@@ -121,7 +121,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Builds an ExposedThing initialized from
         the given Thing Description document."""
 
-        jsonld_td = JsonLDThingDescription(doc=doc, validation=True)
+        jsonld_td = JsonLDThingDescription(doc=doc)
 
         name = name or jsonld_td.name
         thing = Thing(name=name, base=jsonld_td.base, security=jsonld_td.security)
@@ -135,9 +135,6 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         for item in (jsonld_td.type or []):
             thing.add_type(item)
-
-        for key, val in jsonld_td.meta.items():
-            thing.add_meta(key, val)
 
         def _build_property(jsonld_inter):
             return Property(

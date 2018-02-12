@@ -3,10 +3,11 @@
 
 from tornado import web
 
+from wotpy.codecs.enums import MediaTypes
 from wotpy.protocols.enums import Protocols
 from wotpy.protocols.server import BaseProtocolServer
 from wotpy.protocols.ws.handler import WebsocketHandler
-from wotpy.td.link import Link
+from wotpy.td.form import Form
 
 
 class WebsocketServer(BaseProtocolServer):
@@ -52,8 +53,9 @@ class WebsocketServer(BaseProtocolServer):
         path_url = self.path_for_exposed_thing(exposed_thing=exposed_thing)
         path_url = path_url.lstrip("/")
         href = "{}/{}".format(base_url, path_url)
+        media_type = MediaTypes.JSON
 
-        return [Link(interaction=interaction, protocol=self.protocol, href=href)]
+        return [Form(interaction=interaction, protocol=self.protocol, href=href, media_type=media_type)]
 
     def start(self):
         """Starts the server."""

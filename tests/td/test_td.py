@@ -3,10 +3,10 @@
 
 from faker import Faker
 
-from wotpy.td.interaction import Property
-from wotpy.td.link import Link
-from wotpy.td.thing import Thing
 from wotpy.protocols.enums import Protocols
+from wotpy.td.interaction import Property
+from wotpy.td.form import Form
+from wotpy.td.thing import Thing
 
 SCHEMA_ORG_URL = "http://schema.org/"
 SCHEMA_ORG_PREFIX = "schema"
@@ -23,43 +23,42 @@ def test_jsonld_doc_from_thing():
     thing_location = fake.address()
     thing_name = fake.user_name()
 
-    thing = Thing(name=thing_name)
+    thing = Thing(name=thing_name, SCHEMA_ORG_LOCATION_KEY=thing_location)
     thing.add_context(context_url=SCHEMA_ORG_URL, context_prefix=SCHEMA_ORG_PREFIX)
-    thing.add_meta(key=SCHEMA_ORG_LOCATION_KEY, val=thing_location)
 
     prop_name = fake.user_name()
     prop_output_data = {"type": "number"}
 
     prop = Property(thing=thing, name=prop_name, output_data=prop_output_data, writable=True)
 
-    link_href_01 = "/prop-01"
-    link_media_type_01 = "application/json"
+    form_href_01 = "/prop-01"
+    form_media_type_01 = "application/json"
 
-    link_href_02 = "/prop-02"
-    link_media_type_02 = "application/json"
+    form_href_02 = "/prop-02"
+    form_media_type_02 = "application/json"
 
-    link_01 = Link(interaction=prop, protocol=Protocols.HTTP, href=link_href_01, media_type=link_media_type_01)
-    link_02 = Link(interaction=prop, protocol=Protocols.HTTP, href=link_href_02, media_type=link_media_type_02)
+    form_01 = Form(interaction=prop, protocol=Protocols.HTTP, href=form_href_01, media_type=form_media_type_01)
+    form_02 = Form(interaction=prop, protocol=Protocols.HTTP, href=form_href_02, media_type=form_media_type_02)
 
-    prop.add_link(link_01)
-    prop.add_link(link_02)
+    prop.add_form(form_01)
+    prop.add_form(form_02)
     thing.add_interaction(prop)
 
     jsonld_thing_descr = thing.to_jsonld_thing_description()
     jsonld_property = jsonld_thing_descr.interaction[0]
-    jsonld_link_01 = jsonld_property.link[0]
+    jsonld_form_01 = jsonld_property.form[0]
 
     assert len(jsonld_thing_descr.interaction) == 1
-    assert len(jsonld_property.link) == 2
+    assert len(jsonld_property.form) == 2
     assert jsonld_thing_descr.name == thing_name
     assert jsonld_property.output_data["type"] == prop_output_data["type"]
-    assert jsonld_link_01.doc.get("href") == link_href_01
+    assert jsonld_form_01.doc.get("href") == form_href_01
     assert jsonld_property.doc.get(SCHEMA_ORG_LOCATION_KEY, None) is None
 
     prop_location = fake.address()
 
     prop_after = thing.interaction[0]
-    prop_after.add_meta(key=SCHEMA_ORG_LOCATION_KEY, val=prop_location)
+    prop_after.metadata.update({SCHEMA_ORG_LOCATION_KEY: prop_location})
 
     jsonld_thing_descr_after = thing.to_jsonld_thing_description()
     jsonld_property_after = jsonld_thing_descr_after.interaction[0]
@@ -77,8 +76,7 @@ def test_thing_equality():
     name_02 = fake.user_name()
     location = fake.address()
 
-    thing_01 = Thing(name=name_01)
-    thing_01.add_meta(key=SCHEMA_ORG_LOCATION_KEY, val=location)
+    thing_01 = Thing(name=name_01, SCHEMA_ORG_LOCATION_KEY=location)
     thing_02 = Thing(name=name_01)
     thing_03 = Thing(name=name_02)
 
@@ -98,7 +96,7 @@ def test_interaction_equality():
     location = fake.address()
 
     interaction_01 = Thing(name=name_01)
-    interaction_01.add_meta(key=SCHEMA_ORG_LOCATION_KEY, val=location)
+    interaction_01.metadata.update({SCHEMA_ORG_LOCATION_KEY: location})
     interaction_02 = Thing(name=name_01)
     interaction_03 = Thing(name=name_02)
 
@@ -108,8 +106,8 @@ def test_interaction_equality():
     assert interaction_01 not in [interaction_03]
 
 
-def test_link_equality():
-    """Links with the same media type and href are equal."""
+def test_form_equality():
+    """Forms with the same media type and href are equal."""
 
     fake = Faker()
 
@@ -124,16 +122,16 @@ def test_link_equality():
     thing = Thing(name=thing_name)
     prop = Property(thing=thing, name=prop_name, output_data=prop_output_data)
 
-    link_01 = Link(interaction=prop, protocol=Protocols.HTTP, href=href_01, media_type=media_type_01)
-    link_02 = Link(interaction=prop, protocol=Protocols.HTTP, href=href_01, media_type=media_type_01)
-    link_03 = Link(interaction=prop, protocol=Protocols.HTTP, href=href_01, media_type=media_type_02)
-    link_04 = Link(interaction=prop, protocol=Protocols.HTTP, href=href_02, media_type=media_type_01)
+    form_01 = Form(interaction=prop, protocol=Protocols.HTTP, href=href_01, media_type=media_type_01)
+    form_02 = Form(interaction=prop, protocol=Protocols.HTTP, href=href_01, media_type=media_type_01)
+    form_03 = Form(interaction=prop, protocol=Protocols.HTTP, href=href_01, media_type=media_type_02)
+    form_04 = Form(interaction=prop, protocol=Protocols.HTTP, href=href_02, media_type=media_type_01)
 
-    assert link_01 == link_02
-    assert link_01 != link_03
-    assert link_01 != link_04
-    assert link_01 in [link_02]
-    assert link_01 not in [link_03, link_04]
+    assert form_01 == form_02
+    assert form_01 != form_03
+    assert form_01 != form_04
+    assert form_01 in [form_02]
+    assert form_01 not in [form_03, form_04]
 
 
 def test_thing_duplicated_contexts():

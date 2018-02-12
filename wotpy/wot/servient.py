@@ -74,12 +74,12 @@ class Servient(object):
 
         for interaction in exposed_thing.thing.interaction:
             links_to_remove = [
-                link for link in interaction.link
+                link for link in interaction.form
                 if link.protocol == protocol
             ]
 
             for link in links_to_remove:
-                interaction.remove_link(link)
+                interaction.remove_form(link)
 
     def _server_has_exposed_thing(self, server, exposed_thing):
         """Returns True if the given server contains the ExposedThing."""
@@ -106,7 +106,7 @@ class Servient(object):
                 interaction=interaction)
 
             for link in links:
-                interaction.add_link(link)
+                interaction.add_form(link)
 
     def _regenerate_server_links(self, server):
         """Cleans and regenerates Links for the given server in all ExposedThings."""
