@@ -121,20 +121,12 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Builds an ExposedThing initialized from
         the given Thing Description document."""
 
+        # ToDo: Keep semantic annotations
+
         jsonld_td = JsonLDThingDescription(doc=doc)
 
         name = name or jsonld_td.name
-        thing = Thing(name=name, base=jsonld_td.base, security=jsonld_td.security)
-
-        for item in (jsonld_td.context or []):
-            if isinstance(item, string_types):
-                thing.add_context(context_url=item)
-            elif isinstance(item, dict):
-                for key in item:
-                    thing.add_context(context_url=item[key], context_prefix=key)
-
-        for item in (jsonld_td.type or []):
-            thing.add_type(item)
+        thing = Thing(name=name)
 
         def _build_property(jsonld_inter):
             return Property(

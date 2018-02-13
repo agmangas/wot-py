@@ -89,27 +89,6 @@ class Thing(object):
             item_idx = self._interactions.index(interaction_remove)
             self._interactions.pop(item_idx)
 
-    def add_type(self, val):
-        """Add a new type."""
-
-        if val not in self._types:
-            self._types.append(val)
-
-    def remove_type(self, val):
-        """Remove a type."""
-
-        try:
-            pop_idx = self._types.index(val)
-            self._types.pop(pop_idx)
-        except ValueError:
-            pass
-
-    def add_meta(self, key, val):
-        """Add a new metadata key-value pair."""
-
-        self.metadata[key] = val
-
-
     def to_jsonld_dict(self):
         """Returns the JSON-LD dict representation for this instance."""
 
