@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from wotpy.td.jsonld.form import JsonLDForm
-
 
 class Form(object):
     """Communication metadata where a service can be accessed by a client application."""
@@ -45,12 +43,7 @@ class Form(object):
         if self.protocol_options is not None:
             ret.update(self.protocol_options)
 
-        if len(self.metadata):ret.update(self.metadata)
+        if len(self.metadata):
+            ret.update(self.metadata)
 
         return ret
-
-    def to_jsonld_form(self):
-        """Returns an instance of JsonLDForm that is a wrapper for
-        the JSON-LD dictionary that represents this Form."""
-
-        return JsonLDForm(doc=self.to_jsonld_dict())

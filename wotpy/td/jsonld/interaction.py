@@ -11,8 +11,9 @@ from wotpy.td.jsonld.schemas import interaction_schema_for_type
 class JsonLDInteraction(object):
     """Wrapper class for an Interaction document serialized in JSON-LD."""
 
-    def __init__(self, doc):
+    def __init__(self, doc, jsonld_td):
         self._doc = doc
+        self.jsonld_td = jsonld_td
         self.validate()
 
     def validate(self):
@@ -77,7 +78,7 @@ class JsonLDInteraction(object):
         """Returns a list of JsonLDForm instances that
         represent the forms contained in this interaction."""
 
-        return [JsonLDForm(item) for item in self._doc.get("form", [])]
+        return [JsonLDForm(item, self) for item in self._doc.get("form", [])]
 
     @property
     def metadata(self):

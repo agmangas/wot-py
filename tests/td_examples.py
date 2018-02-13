@@ -59,18 +59,3 @@ TD_EXAMPLE = {
         }]
     }]
 }
-
-INTERACTION_EXAMPLE = {
-    "@type": ["Property", "actuator:onOffStatus"],
-    "name": "status",
-    "outputData": {"type": "boolean"},
-    "writable": True,
-    "observable": True,
-    "form": [{
-        "href": "pwr",
-        "mediaType": "application/exi"
-    }, {
-        "href": "http://mytemp.example.com:8080/status",
-        "mediaType": "application/json"
-    }]
-}

@@ -7,10 +7,9 @@ import pytest
 from faker import Faker
 from jsonschema import ValidationError
 
-from tests.td_examples import TD_EXAMPLE, INTERACTION_EXAMPLE
+from tests.td_examples import TD_EXAMPLE
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.jsonld.interaction import JsonLDInteraction
-from wotpy.td.jsonld.schemas import SCHEMA_THING_DESCRIPTION
 from wotpy.td.jsonld.thing import JsonLDThingDescription
 
 
@@ -47,11 +46,14 @@ def test_thing_description_validate_err():
 def test_interaction_properties():
     """Properties can be retrieved from Interaction objects."""
 
-    interaction = JsonLDInteraction(INTERACTION_EXAMPLE)
+    interaction_doc = TD_EXAMPLE["interaction"][0]
 
-    assert interaction.interaction_type == InteractionTypes.PROPERTY
-    assert interaction.name == INTERACTION_EXAMPLE.get('name')
-    assert len(interaction.form) == len(INTERACTION_EXAMPLE.get('form', []))
+    jsonld_td = JsonLDThingDescription(TD_EXAMPLE)
+    jsonld_interaction = JsonLDInteraction(interaction_doc, jsonld_td)
+
+    assert jsonld_interaction.interaction_type == InteractionTypes.PROPERTY
+    assert jsonld_interaction.name == interaction_doc.get('name')
+    assert len(jsonld_interaction.form) == len(interaction_doc.get('form', []))
 
 
 def test_thing_description_no_context():

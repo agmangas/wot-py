@@ -9,8 +9,9 @@ from wotpy.td.jsonld.schemas import SCHEMA_FORM
 class JsonLDForm(object):
     """Wrapper class for a Form document serialized in JSON-LD."""
 
-    def __init__(self, doc):
+    def __init__(self, doc, jsonld_interaction):
         self._doc = doc
+        self.jsonld_interaction = jsonld_interaction
         self.validate()
 
     def validate(self):

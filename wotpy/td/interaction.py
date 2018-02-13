@@ -4,7 +4,6 @@
 from abc import ABCMeta, abstractmethod
 
 from wotpy.td.enums import InteractionTypes
-from wotpy.td.jsonld.interaction import JsonLDInteraction
 from wotpy.utils.strings import clean_str
 
 
@@ -87,12 +86,6 @@ class InteractionPattern(object):
         """Returns the JSON-LD dict representation for this instance."""
 
         pass
-
-    def to_jsonld_interaction(self):
-        """Returns an instance of JsonLDInteraction that is a wrapper for
-        the JSON-LD dictionary that represents this InteractionPattern."""
-
-        return JsonLDInteraction(doc=self.to_jsonld_dict())
 
 
 class Property(InteractionPattern):

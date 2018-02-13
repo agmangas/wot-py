@@ -75,7 +75,7 @@ class JsonLDThingDescription(object):
         """Returns a list of JsonLDInteraction instances that represent
         the interactions contained in this Thing Description."""
 
-        return [JsonLDInteraction(item) for item in self._doc.get("interaction", [])]
+        return [JsonLDInteraction(item, self) for item in self._doc.get("interaction", [])]
 
     @property
     def security(self):
