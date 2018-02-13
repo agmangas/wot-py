@@ -9,7 +9,8 @@ install_requires = [
     'jsonschema>=2.0,<3.0',
     'six>=1.10.0,<2.0',
     'rx>=1.6.0,<2.0',
-    'python-slugify>=1.2.4,<2.0'
+    'python-slugify>=1.2.4,<2.0',
+    'pyld>=0.8.2,<1.0'
 ]
 
 # concurrent.futures is a built-in in Python 3 but needs a backport in Python 2
