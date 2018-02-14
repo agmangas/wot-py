@@ -4,10 +4,10 @@
 from faker import Faker
 
 from wotpy.protocols.enums import Protocols
-from wotpy.td.interaction import Property, Action, Event
-from wotpy.td.form import Form
-from wotpy.td.thing import Thing
 from wotpy.td.enums import InteractionTypes
+from wotpy.td.form import Form
+from wotpy.td.interaction import Property, Action, Event
+from wotpy.td.thing import Thing
 
 SCHEMA_ORG_URL = "http://schema.org/"
 SCHEMA_ORG_PREFIX = "schema"
