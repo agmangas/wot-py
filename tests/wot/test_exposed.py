@@ -7,6 +7,7 @@ import random
 
 # noinspection PyPackageRequirements
 import pytest
+import six
 import tornado.gen
 import tornado.ioloop
 import tornado.testing
@@ -18,11 +19,8 @@ from faker import Faker
 
 from tests.td_examples import TD_EXAMPLE
 # noinspection PyUnresolvedReferences
-from tests.wot.fixtures import \
-    exposed_thing, \
-    thing_property_init, \
-    thing_event_init, \
-    thing_action_init
+from tests.wot.fixtures import exposed_thing, thing_property_init, thing_event_init, thing_action_init
+from wotpy.td.jsonld.thing import JsonLDThingDescription
 from wotpy.wot.enums import RequestType, TDChangeMethod, TDChangeType
 from wotpy.wot.exposed import ExposedThing
 from wotpy.wot.servient import Servient
@@ -32,38 +30,55 @@ def assert_exposed_thing_equal(exp_thing, td_doc):
     """Asserts that the given ExposedThing is equivalent to the thing description dict."""
 
     td_expected = copy.deepcopy(td_doc)
+    jsonld_td = JsonLDThingDescription(td_expected)
 
     for item in td_expected["interaction"]:
         if "link" in item:
             item.pop("link")
 
     assert exp_thing.name == td_expected.get("name")
-    assert exp_thing.thing.security == td_expected.get("security")
-    assert exp_thing.thing.base == td_expected.get("base")
-    assert exp_thing.thing.type == td_expected.get("@type")
+    assert exp_thing.thing.types == td_expected.get("@type")
 
-    for intr_expected in td_expected.get("interaction", []):
-        interaction = exp_thing.thing.find_interaction(intr_expected["name"])
-        assert interaction.type == intr_expected.get("@type")
-        assert getattr(interaction, "output_data", None) == intr_expected.get("outputData", None)
-        assert getattr(interaction, "input_data", None) == intr_expected.get("inputData", None)
-        assert getattr(interaction, "writable", None) == intr_expected.get("writable", None)
-        assert not len(interaction.form)
+    # Compare semantic context
 
+    ctx_entries = exp_thing.thing.semantic_context.context_entries
 
-def clean_example_td_for_equality_check(the_td):
-    """Cleans the fields that should not be kept from a
-    Thing Description that was retrieved externally."""
+    for item in td_expected.get("@context", []):
+        if isinstance(item, six.string_types):
+            next(ent for ent in ctx_entries if ent.context_url == item and not ent.prefix)
+        elif isinstance(item, dict):
+            for key, val in six.iteritems(item):
+                next(ent for ent in ctx_entries if ent.context_url == val and ent.prefix == key)
 
-    the_td_copy = copy.deepcopy(the_td)
+    # Compare root-level semantic metadata
 
-    the_td_copy.pop("security", None)
-    the_td_copy.pop("base", None)
+    meta_td = jsonld_td.metadata
+    meta_exp_thing = exp_thing.thing.semantic_metadata.items
 
-    # ToDo: Fix ExposedThing and remove this. We should keep the semantic annotations.
-    the_td_copy["@type"] = []
+    for key, val in six.iteritems(meta_exp_thing):
+        assert key in meta_td
+        assert val == meta_td[key]
 
-    return the_td_copy
+    # Compare interactions
+
+    for jsonld_interaction in jsonld_td.interaction:
+        interaction = exp_thing.thing.find_interaction(jsonld_interaction.name)
+
+        assert sorted(interaction.types) == sorted(jsonld_interaction.type)
+        assert getattr(interaction, "output_data", None) == jsonld_interaction.output_data
+        assert getattr(interaction, "input_data", None) == jsonld_interaction.input_data
+        assert getattr(interaction, "writable", None) == jsonld_interaction.writable
+        assert getattr(interaction, "observable", None) == jsonld_interaction.observable
+        assert not len(interaction.forms)
+
+        # Compare interaction-level semantic metadata
+
+        meta_td_interaction = jsonld_interaction.metadata
+        meta_exp_thing_interaction = interaction.semantic_metadata.items
+
+        for key, val in six.iteritems(meta_exp_thing_interaction):
+            assert key in meta_td_interaction
+            assert val == meta_td_interaction[key]
 
 
 def test_from_description():
@@ -71,7 +86,7 @@ def test_from_description():
 
     servient = Servient()
     exp_thing = ExposedThing.from_description(servient=servient, doc=TD_EXAMPLE)
-    assert_exposed_thing_equal(exp_thing, clean_example_td_for_equality_check(TD_EXAMPLE))
+    assert_exposed_thing_equal(exp_thing, TD_EXAMPLE)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -123,7 +138,7 @@ def test_from_url():
     logging.getLogger("tornado.access").disabled = False
 
     assert isinstance(future_error.result(), Exception)
-    assert_exposed_thing_equal(future_valid.result(), clean_example_td_for_equality_check(TD_EXAMPLE))
+    assert_exposed_thing_equal(future_valid.result(), TD_EXAMPLE)
 
 
 # noinspection PyShadowingNames

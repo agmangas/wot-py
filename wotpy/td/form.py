@@ -1,19 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from wotpy.td.semantic import SemanticMetadata
+
 
 class Form(object):
     """Communication metadata where a service can be accessed by a client application."""
 
-    def __init__(self, interaction, protocol, href, media_type,
-                 rel=None, protocol_options=None, **kwargs):
+    def __init__(self, interaction, protocol, href, media_type, rel=None):
         self.interaction = interaction
         self.protocol = protocol
         self.href = href
         self.media_type = media_type
         self.rel = rel
-        self.protocol_options = protocol_options
-        self.metadata = kwargs
+
+        self.semantic_metadata = SemanticMetadata()
 
     def __eq__(self, other):
         return self.interaction == other.interaction and \
@@ -40,10 +41,6 @@ class Form(object):
         if self.rel is not None:
             ret.update({"rel": self.rel})
 
-        if self.protocol_options is not None:
-            ret.update(self.protocol_options)
-
-        if len(self.metadata):
-            ret.update(self.metadata)
+        ret.update(self.semantic_metadata.to_dict())
 
         return ret

@@ -3,17 +3,17 @@
 
 import json
 
+import six
 # noinspection PyCompatibility
 from concurrent.futures import Future, ThreadPoolExecutor
 from rx import Observable
 from rx.subjects import Subject
-from six import string_types
 from tornado.httpclient import HTTPClient, HTTPRequest
 
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.interaction import Property, Action, Event
-from wotpy.td.thing import Thing
 from wotpy.td.jsonld.thing import JsonLDThingDescription
+from wotpy.td.thing import Thing
 from wotpy.utils.enums import EnumListMixin
 from wotpy.utils.futures import is_future
 from wotpy.wot.dictionaries import \
@@ -121,19 +121,31 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Builds an ExposedThing initialized from
         the given Thing Description document."""
 
-        # ToDo: Keep semantic annotations
-
         jsonld_td = JsonLDThingDescription(doc=doc)
 
         name = name or jsonld_td.name
         thing = Thing(name=name)
+
+        for context_item in (jsonld_td.context or []):
+            if isinstance(context_item, six.string_types):
+                thing.semantic_context.add(context_url=context_item)
+            elif isinstance(context_item, dict):
+                for ctx_key, ctx_val in six.iteritems(context_item):
+                    thing.semantic_context.add(context_url=ctx_val, prefix=ctx_key)
+
+        for val_type in (jsonld_td.type or []):
+            thing.semantic_types.add(val_type)
+
+        for meta_key, meta_val in six.iteritems(jsonld_td.metadata):
+            thing.semantic_metadata.add(meta_key, meta_val)
 
         def _build_property(jsonld_inter):
             return Property(
                 thing=thing,
                 name=jsonld_inter.name,
                 output_data=jsonld_inter.output_data,
-                writable=jsonld_inter.writable)
+                writable=jsonld_inter.writable,
+                observable=jsonld_inter.observable)
 
         def _build_action(jsonld_inter):
             return Action(
@@ -158,8 +170,11 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             builder_func = builder_map[jsonld_interaction.interaction_type]
             interaction = builder_func(jsonld_interaction)
 
-            for item in (jsonld_interaction.type or []):
-                interaction.add_type(item)
+            for val_type in (jsonld_interaction.type or []):
+                interaction.semantic_types.add(val_type)
+
+            for meta_key, meta_val in six.iteritems(jsonld_interaction.metadata):
+                interaction.semantic_metadata.add(meta_key, meta_val)
 
             thing.add_interaction(interaction)
 
@@ -588,8 +603,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             writable=property_init.writable)
 
         for item in property_init.semantic_types:
-            self._thing.add_context(context_url=item.context)
-            prop.add_type(item.name)
+            self._thing.semantic_context.add(context_url=item.context)
+            prop.semantic_types.add(item.name)
 
         self._thing.add_interaction(prop)
         self._set_property_value(prop, property_init.value)
@@ -627,8 +642,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             input_data=action_init.input_data_description)
 
         for item in action_init.semantic_types:
-            self._thing.add_context(context_url=item.context)
-            action.add_type(item.name)
+            self._thing.semantic_context.add(context_url=item.context)
+            action.semantic_types.add(item.name)
 
         self._thing.add_interaction(action)
         self._set_action_func(action, action_init.action)
@@ -665,8 +680,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             output_data=event_init.data_description)
 
         for item in event_init.semantic_types:
-            self._thing.add_context(context_url=item.context)
-            event.add_type(item.name)
+            self._thing.semantic_context.add(context_url=item.context)
+            event.semantic_types.add(item.name)
 
         self._thing.add_interaction(event)
 

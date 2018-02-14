@@ -4,11 +4,13 @@
 TD_EXAMPLE = {
     "@context": [
         "https://w3c.github.io/wot/w3c-wot-td-context.jsonld",
-        {"actuator": "http://example.org/actuator#"}
+        {"actuator": "http://example.org/actuator#"},
+        {"schema": "http://schema.org/"}
     ],
     "@type": ["Thing"],
     "name": "MyLEDThing",
     "base": "coap://myled.example.com:5683/",
+    "schema:description": "A LED WoT Thing",
     "security": {
         "cat": "token:jwt",
         "alg": "HS256",
@@ -52,6 +54,7 @@ TD_EXAMPLE = {
     }, {
         "@type": ["Event", "actuator:alert"],
         "name": "criticalCondition",
+        "schema:alternateName": "criticalAlert",
         "outputData": {"type": "string"},
         "form": [{
             "href": "ev",

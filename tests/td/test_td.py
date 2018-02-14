@@ -4,7 +4,7 @@
 from faker import Faker
 
 from wotpy.protocols.enums import Protocols
-from wotpy.td.interaction import Property
+from wotpy.td.interaction import Property, Action
 from wotpy.td.form import Form
 from wotpy.td.thing import Thing
 
@@ -23,8 +23,9 @@ def test_jsonld_doc_from_thing():
     thing_location = fake.address()
     thing_name = fake.user_name()
 
-    thing = Thing(name=thing_name, SCHEMA_ORG_LOCATION_KEY=thing_location)
-    thing.add_context(context_url=SCHEMA_ORG_URL, context_prefix=SCHEMA_ORG_PREFIX)
+    thing = Thing(name=thing_name)
+    thing.semantic_metadata.add(key=SCHEMA_ORG_LOCATION_KEY, val=thing_location)
+    thing.semantic_context.add(context_url=SCHEMA_ORG_URL, prefix=SCHEMA_ORG_PREFIX)
 
     prop_name = fake.user_name()
     prop_output_data = {"type": "number"}
@@ -57,8 +58,8 @@ def test_jsonld_doc_from_thing():
 
     prop_location = fake.address()
 
-    prop_after = thing.interaction[0]
-    prop_after.metadata.update({SCHEMA_ORG_LOCATION_KEY: prop_location})
+    prop_after = thing.interactions[0]
+    prop_after.semantic_metadata.add(key=SCHEMA_ORG_LOCATION_KEY, val=prop_location)
 
     jsonld_thing_descr_after = thing.to_jsonld_thing_description()
     jsonld_property_after = jsonld_thing_descr_after.interaction[0]
@@ -76,7 +77,8 @@ def test_thing_equality():
     name_02 = fake.user_name()
     location = fake.address()
 
-    thing_01 = Thing(name=name_01, SCHEMA_ORG_LOCATION_KEY=location)
+    thing_01 = Thing(name=name_01)
+    thing_01.semantic_metadata.add(key=SCHEMA_ORG_LOCATION_KEY, val=location)
     thing_02 = Thing(name=name_01)
     thing_03 = Thing(name=name_02)
 
@@ -91,14 +93,14 @@ def test_interaction_equality():
 
     fake = Faker()
 
+    name_thing = fake.user_name()
     name_01 = fake.user_name()
     name_02 = fake.user_name()
-    location = fake.address()
 
-    interaction_01 = Thing(name=name_01)
-    interaction_01.metadata.update({SCHEMA_ORG_LOCATION_KEY: location})
-    interaction_02 = Thing(name=name_01)
-    interaction_03 = Thing(name=name_02)
+    thing = Thing(name=name_thing)
+    interaction_01 = Action(thing=thing, name=name_01)
+    interaction_02 = Action(thing=thing, name=name_01)
+    interaction_03 = Action(thing=thing, name=name_02)
 
     assert interaction_01 == interaction_02
     assert interaction_01 != interaction_03
@@ -132,41 +134,3 @@ def test_form_equality():
     assert form_01 != form_04
     assert form_01 in [form_02]
     assert form_01 not in [form_03, form_04]
-
-
-def test_thing_duplicated_contexts():
-    """It is not possible to add duplicated contexts to Things."""
-
-    fake = Faker()
-
-    ctx_url_01 = fake.url()
-    ctx_url_02 = fake.url()
-    ctx_url_03 = fake.url()
-    ctx_prefix_01 = fake.user_name()
-    ctx_prefix_02 = fake.user_name()
-    name = fake.user_name()
-
-    thing = Thing(name=name)
-
-    base_len = len(thing.context)
-
-    thing.add_context(context_url=ctx_url_01)
-    assert len(thing.context) == base_len + 1
-
-    thing.add_context(context_url=ctx_url_01)
-    assert len(thing.context) == base_len + 1
-
-    thing.add_context(context_url=ctx_url_02)
-    assert len(thing.context) == base_len + 2
-
-    thing.add_context(context_url=ctx_url_02, context_prefix=ctx_prefix_01)
-    assert len(thing.context) == base_len + 3
-
-    thing.add_context(context_url=ctx_url_03, context_prefix=ctx_prefix_01)
-    assert len(thing.context) == base_len + 3
-
-    thing.add_context(context_url=ctx_url_03, context_prefix=ctx_prefix_02)
-    assert len(thing.context) == base_len + 4
-
-    thing.add_context(context_url=ctx_url_03)
-    assert len(thing.context) == base_len + 5

@@ -86,7 +86,12 @@ class JsonLDInteraction(object):
         This is, all fields that are not part of the expected set."""
 
         doc_schema = interaction_schema_for_type(self.interaction_type)
-        base_keys = list(doc_schema["properties"].keys())
+
+        base_keys = []
+
+        for sub_schema in doc_schema["allOf"]:
+            base_keys += list(sub_schema["properties"].keys())
+
         meta_keys = [key for key in list(self._doc.keys()) if key not in base_keys]
 
         return {key: self._doc[key] for key in meta_keys}

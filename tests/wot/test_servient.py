@@ -163,13 +163,13 @@ def test_servient_start_stop():
 
         prop = exposed_thing.thing.find_interaction(name=prop_name)
 
-        assert len(prop.form)
+        assert len(prop.forms)
 
-        prop_protocols = [item.protocol for item in prop.form]
+        prop_protocols = [item.protocol for item in prop.forms]
 
         assert Protocols.WEBSOCKETS in prop_protocols
 
-        link = next(item for item in prop.form if item.protocol == Protocols.WEBSOCKETS)
+        link = next(item for item in prop.forms if item.protocol == Protocols.WEBSOCKETS)
         conn = yield tornado.websocket.websocket_connect(link.href)
 
         msg_set_req = WebsocketMessageRequest(

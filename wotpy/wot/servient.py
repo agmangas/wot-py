@@ -72,9 +72,9 @@ class Servient(object):
         assert exposed_thing in self._exposed_things.values()
         assert protocol in self._servers
 
-        for interaction in exposed_thing.thing.interaction:
+        for interaction in exposed_thing.thing.interactions:
             links_to_remove = [
-                link for link in interaction.form
+                link for link in interaction.forms
                 if link.protocol == protocol
             ]
 
@@ -99,7 +99,7 @@ class Servient(object):
         assert server in self._servers.values()
         assert exposed_thing in self._exposed_things.values()
 
-        for interaction in exposed_thing.thing.interaction:
+        for interaction in exposed_thing.thing.interactions:
             links = server.links_for_interaction(
                 hostname=self._hostname,
                 exposed_thing=exposed_thing,

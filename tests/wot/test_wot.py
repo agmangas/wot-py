@@ -30,7 +30,7 @@ def test_expose():
 
     assert servient.get_exposed_thing(name_01)
     assert exp_thing_01.name == name_01
-    assert not len(exp_thing_01.thing.interaction)
+    assert not len(exp_thing_01.thing.interactions)
 
     with pytest.raises(ValueError):
         servient.get_exposed_thing(name_02)
@@ -40,4 +40,4 @@ def test_expose():
     assert servient.get_exposed_thing(name_01)
     assert servient.get_exposed_thing(name_02)
     assert exp_thing_02.name == name_02
-    assert len(exp_thing_02.thing.interaction)
+    assert len(exp_thing_02.thing.interactions)

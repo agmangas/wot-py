@@ -4,18 +4,20 @@
 from abc import ABCMeta, abstractmethod
 
 from wotpy.td.enums import InteractionTypes
+from wotpy.td.semantic import SemanticMetadata, SemanticTypes
 from wotpy.utils.strings import clean_str
 
 
 class InteractionPattern(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, thing, name, **kwargs):
+    def __init__(self, thing, name):
         self.thing = thing
         self.name = clean_str(name, warn=True)
-        self._types = []
         self._forms = []
-        self.metadata = kwargs
+
+        self.semantic_types = SemanticTypes()
+        self.semantic_metadata = SemanticMetadata()
 
     def __eq__(self, other):
         return self.thing == other.thing and \
@@ -25,31 +27,16 @@ class InteractionPattern(object):
         return hash((self.thing, self.name))
 
     @property
-    def type(self):
-        """Type property."""
-
-        return self._types
-
-    @property
-    def form(self):
-        """Indicates the endpoints from which an interaction pattern is accessible."""
+    def forms(self):
+        """Sequence of forms linked to this interaction."""
 
         return self._forms
 
-    def add_type(self, val):
-        """Add a new type."""
+    @property
+    def types(self):
+        """Type property."""
 
-        if val not in self._types:
-            self._types.append(val)
-
-    def remove_type(self, val):
-        """Remove a type."""
-
-        try:
-            pop_idx = self._types.index(val)
-            self._types.pop(pop_idx)
-        except ValueError:
-            pass
+        return self.semantic_types.to_list()
 
     def add_form(self, form):
         """Add a new Form."""
@@ -72,12 +59,12 @@ class InteractionPattern(object):
         """Builds and returns the base InteractionPattern JSON-LD dict."""
 
         doc = {
-            "@type": self.type,
+            "@type": self.semantic_types.to_list(),
             "name": self.name,
-            "form": [item.to_jsonld_dict() for item in self.form]
+            "form": [item.to_jsonld_dict() for item in self.forms]
         }
 
-        doc.update(self.metadata)
+        doc.update(self.semantic_metadata.to_dict())
 
         return doc
 
@@ -96,8 +83,7 @@ class Property(InteractionPattern):
 
     def __init__(self, thing, name, output_data, observable=False, writable=False):
         super(Property, self).__init__(thing, name)
-        assert not len(self.type)
-        self.add_type(InteractionTypes.PROPERTY)
+        self.semantic_types.add(InteractionTypes.PROPERTY)
         self.output_data = output_data
         self.observable = True if observable else False
         self.writable = True if writable else False
@@ -123,8 +109,7 @@ class Action(InteractionPattern):
 
     def __init__(self, thing, name, output_data=None, input_data=None):
         super(Action, self).__init__(thing, name)
-        assert not len(self.type)
-        self.add_type(InteractionTypes.ACTION)
+        self.semantic_types.add(InteractionTypes.ACTION)
         self.output_data = output_data
         self.input_data = input_data
 
@@ -148,8 +133,7 @@ class Event(InteractionPattern):
 
     def __init__(self, thing, name, output_data):
         super(Event, self).__init__(thing, name)
-        assert not len(self.type)
-        self.add_type(InteractionTypes.EVENT)
+        self.semantic_types.add(InteractionTypes.EVENT)
         self.output_data = output_data
 
     def to_jsonld_dict(self):
