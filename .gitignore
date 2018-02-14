@@ -90,6 +90,10 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Pytest
+.pytest_cache
+
 ### Eclipse template
 
 .metadata
