@@ -4,14 +4,17 @@
 from faker import Faker
 
 from wotpy.protocols.enums import Protocols
-from wotpy.td.interaction import Property, Action
+from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.form import Form
 from wotpy.td.thing import Thing
+from wotpy.td.enums import InteractionTypes
 
 SCHEMA_ORG_URL = "http://schema.org/"
 SCHEMA_ORG_PREFIX = "schema"
 SCHEMA_ORG_LOCATION = "location"
+SCHEMA_ORG_ALTERNATE_NAME = "alternateName"
 SCHEMA_ORG_LOCATION_KEY = "{}:{}".format(SCHEMA_ORG_PREFIX, SCHEMA_ORG_LOCATION)
+SCHEMA_ORG_ALTERNATE_NAME_KEY = "{}:{}".format(SCHEMA_ORG_PREFIX, SCHEMA_ORG_ALTERNATE_NAME)
 
 
 def test_jsonld_doc_from_thing():
@@ -66,6 +69,63 @@ def test_jsonld_doc_from_thing():
 
     assert jsonld_thing_descr_after.name == thing_name
     assert jsonld_property_after.doc.get(SCHEMA_ORG_LOCATION_KEY, None) == prop_location
+
+
+def test_semantic_metadata():
+    """Semantic metadata items can be added to all TD hierarchy objects."""
+
+    fake = Faker()
+
+    thing = Thing(name=fake.user_name())
+    property = Property(thing=thing, name=fake.user_name(), output_data={"type": "number"})
+    form = Form(interaction=property, protocol=Protocols.HTTP, href="/prop", media_type="application/json")
+
+    property.add_form(form)
+    thing.add_interaction(property)
+
+    thing_location = fake.address()
+    prop_alt_name = fake.user_name()
+    form_alt_name = fake.user_name()
+
+    thing.semantic_metadata.add(SCHEMA_ORG_LOCATION_KEY, thing_location)
+    property.semantic_metadata.add(SCHEMA_ORG_ALTERNATE_NAME_KEY, prop_alt_name)
+    form.semantic_metadata.add(SCHEMA_ORG_ALTERNATE_NAME_KEY, form_alt_name)
+
+    jsonld_td = thing.to_jsonld_thing_description()
+    jsonld_interaction = jsonld_td.interaction[0]
+    jsonld_form = jsonld_td.interaction[0].form[0]
+
+    assert jsonld_td.metadata.get(SCHEMA_ORG_LOCATION_KEY) == thing_location
+    assert jsonld_interaction.metadata.get(SCHEMA_ORG_ALTERNATE_NAME_KEY) == prop_alt_name
+    assert jsonld_interaction.metadata.get(SCHEMA_ORG_LOCATION_KEY, None) is None
+    assert jsonld_form.metadata.get(SCHEMA_ORG_ALTERNATE_NAME_KEY) == form_alt_name
+
+
+def test_interaction_types():
+    """Interaction objects contain the appropriate types by default."""
+
+    fake = Faker()
+
+    thing = Thing(name=fake.user_name())
+
+    property = Property(thing=thing, name=fake.user_name(), output_data={"type": "number"})
+    action = Action(thing=thing, name=fake.user_name())
+    event = Event(thing=thing, name=fake.user_name(), output_data={"type": "string"})
+
+    assert InteractionTypes.PROPERTY in property.types
+    assert InteractionTypes.ACTION in action.types
+    assert InteractionTypes.EVENT in event.types
+
+
+def test_empty_thing_valid():
+    """An empty Thing initialized by default has a valid JSON-LD serialization."""
+
+    fake = Faker()
+
+    thing = Thing(name=fake.user_name())
+
+    jsonld_td = thing.to_jsonld_thing_description()
+    jsonld_td.validate()
 
 
 def test_thing_equality():

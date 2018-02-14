@@ -11,6 +11,7 @@ from tests.td_examples import TD_EXAMPLE
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.jsonld.interaction import JsonLDInteraction
 from wotpy.td.jsonld.thing import JsonLDThingDescription
+from wotpy.td.constants import WOT_TD_CONTEXT_URL
 
 
 def test_thing_description_validate():
@@ -35,12 +36,26 @@ def test_thing_description_validate_err():
 
     fake = Faker()
 
-    td_dict = copy.deepcopy(TD_EXAMPLE)
-    td_dict["interaction"] = fake.pydict()
+    td_err_01 = copy.deepcopy(TD_EXAMPLE)
+    td_err_01["interaction"] = fake.pydict()
 
     with pytest.raises(ValidationError):
-        thing_description_err = JsonLDThingDescription(doc=td_dict)
-        thing_description_err.validate()
+        jsonld_td_err = JsonLDThingDescription(doc=td_err_01)
+        jsonld_td_err.validate()
+
+    td_err_02 = copy.deepcopy(TD_EXAMPLE)
+    td_err_02.pop("name")
+
+    with pytest.raises(ValidationError):
+        jsonld_td_err = JsonLDThingDescription(doc=td_err_02)
+        jsonld_td_err.validate()
+
+    td_err_03 = copy.deepcopy(TD_EXAMPLE)
+    td_err_03["interaction"][0].pop("@type")
+
+    with pytest.raises(ValidationError):
+        jsonld_td_err = JsonLDThingDescription(doc=td_err_03)
+        jsonld_td_err.validate()
 
 
 def test_interaction_properties():
@@ -57,12 +72,21 @@ def test_interaction_properties():
 
 
 def test_thing_description_no_context():
-    """Thing Descriptions without any context do not validate."""
+    """Thing Descriptions without the required context do not validate."""
 
     td_dict = copy.deepcopy(TD_EXAMPLE)
 
     jsonld_thing_descr = JsonLDThingDescription(doc=td_dict)
 
+    td_dict["@context"] = []
+
     with pytest.raises(ValidationError):
-        td_dict["@context"] = []
         jsonld_thing_descr.validate()
+
+    td_dict["@context"] = [{"schema": "http://schema.org/"}]
+
+    with pytest.raises(ValidationError):
+        jsonld_thing_descr.validate()
+
+    td_dict["@context"] = [WOT_TD_CONTEXT_URL, {"schema": "http://schema.org/"}]
+    jsonld_thing_descr.validate()
