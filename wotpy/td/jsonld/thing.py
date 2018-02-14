@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from jsonschema import validate, ValidationError
-from six.moves.urllib.parse import urlparse, urlunparse
 
-from wotpy.td.constants import WOT_CONTEXT_URL
+from wotpy.td.constants import WOT_TD_CONTEXT_URL
 from wotpy.td.jsonld.interaction import JsonLDInteraction
 from wotpy.td.jsonld.schemas import SCHEMA_THING_DESCRIPTION
 
@@ -16,29 +15,13 @@ class JsonLDThingDescription(object):
         self._doc = doc
         self.validate()
 
-    def _validate_context(self):
-        """Raises a JSON schema validation error if this document lacks the required context."""
-
-        parsed_context_url = urlparse(WOT_CONTEXT_URL)
-
-        parts_http = ["http"] + list(parsed_context_url[1:])
-        parts_https = ["https"] + list(parsed_context_url[1:])
-
-        valid_urls = [
-            urlunparse(parts_http),
-            urlunparse(parts_https)
-        ]
-
-        try:
-            next(item for item in valid_urls if item in self.context)
-        except StopIteration:
-            raise ValidationError("Missing context: {}".format(WOT_CONTEXT_URL))
-
     def validate(self):
         """Validates this instance agains its JSON schema."""
 
         validate(self._doc, SCHEMA_THING_DESCRIPTION)
-        self._validate_context()
+
+        if WOT_TD_CONTEXT_URL not in self._doc.get("@context", []):
+            raise ValidationError("Missing context: {}".format(WOT_TD_CONTEXT_URL))
 
     @property
     def doc(self):

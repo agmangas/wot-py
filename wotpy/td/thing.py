@@ -3,7 +3,7 @@
 
 from six.moves import filter
 
-from wotpy.td.constants import WOT_CONTEXT_URL
+from wotpy.td.constants import WOT_TD_CONTEXT_URL
 from wotpy.td.jsonld.thing import JsonLDThingDescription
 from wotpy.utils.strings import clean_str
 
@@ -18,7 +18,7 @@ class Thing(object):
         self.base = base
         self._interactions = []
         self._types = []
-        self._contexts = [WOT_CONTEXT_URL]
+        self._contexts = [WOT_TD_CONTEXT_URL]
         self.metadata = kwargs
 
     def __eq__(self, other):

@@ -3,7 +3,7 @@
 
 TD_EXAMPLE = {
     "@context": [
-        "http://w3c.github.io/wot/w3c-wot-td-context.jsonld",
+        "https://w3c.github.io/wot/w3c-wot-td-context.jsonld",
         {"actuator": "http://example.org/actuator#"}
     ],
     "@type": ["Thing"],

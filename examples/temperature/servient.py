@@ -16,7 +16,7 @@ from concurrent.futures import ThreadPoolExecutor
 from tornado.ioloop import IOLoop, PeriodicCallback
 
 from wotpy.protocols.ws.server import WebsocketServer
-from wotpy.td.constants import WOT_CONTEXT_URL
+from wotpy.td.constants import WOT_TD_CONTEXT_URL
 from wotpy.td.enums import InteractionTypes
 from wotpy.wot.dictionaries import ThingInit
 from wotpy.wot.servient import Servient
@@ -40,7 +40,7 @@ NAME_PROP_TEMP_THRESHOLD = "high-temperature-threshold"
 NAME_EVENT_TEMP_HIGH = "high-temperature"
 
 DESCRIPTION = {
-    "@context": [WOT_CONTEXT_URL],
+    "@context": [WOT_TD_CONTEXT_URL],
     "name": NAME_THING,
     "interaction": [{
         "@type": [InteractionTypes.PROPERTY],

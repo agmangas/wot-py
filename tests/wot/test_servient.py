@@ -20,7 +20,7 @@ from wotpy.protocols.enums import Protocols
 from wotpy.wot.dictionaries import ThingInit
 from wotpy.wot.servient import Servient
 from wotpy.td.enums import InteractionTypes
-from wotpy.td.constants import WOT_CONTEXT_URL
+from wotpy.td.constants import WOT_TD_CONTEXT_URL
 from wotpy.protocols.ws.messages import WebsocketMessageRequest, WebsocketMessageResponse
 from wotpy.protocols.ws.enums import WebsocketMethods
 
@@ -40,7 +40,7 @@ def test_servient_td_catalogue():
     wot = servient.start()
 
     description_01 = {
-        "@context": [WOT_CONTEXT_URL],
+        "@context": [WOT_TD_CONTEXT_URL],
         "name": fake.user_name(),
         "interaction": [{
             "@type": [InteractionTypes.PROPERTY],
@@ -52,7 +52,7 @@ def test_servient_td_catalogue():
     }
 
     description_02 = {
-        "@context": [WOT_CONTEXT_URL],
+        "@context": [WOT_TD_CONTEXT_URL],
         "name": fake.user_name(),
         "interaction": []
     }
@@ -126,7 +126,7 @@ def test_servient_start_stop():
     name_prop_string = fake.user_name()
 
     description = {
-        "@context": [WOT_CONTEXT_URL],
+        "@context": [WOT_TD_CONTEXT_URL],
         "name": name_thing,
         "interaction": [{
             "@type": [InteractionTypes.PROPERTY],
