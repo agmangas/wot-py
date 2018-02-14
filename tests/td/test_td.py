@@ -77,18 +77,18 @@ def test_semantic_metadata():
     fake = Faker()
 
     thing = Thing(name=fake.user_name())
-    property = Property(thing=thing, name=fake.user_name(), output_data={"type": "number"})
-    form = Form(interaction=property, protocol=Protocols.HTTP, href="/prop", media_type="application/json")
+    proprty = Property(thing=thing, name=fake.user_name(), output_data={"type": "number"})
+    form = Form(interaction=proprty, protocol=Protocols.HTTP, href="/prop", media_type="application/json")
 
-    property.add_form(form)
-    thing.add_interaction(property)
+    proprty.add_form(form)
+    thing.add_interaction(proprty)
 
     thing_location = fake.address()
     prop_alt_name = fake.user_name()
     form_alt_name = fake.user_name()
 
     thing.semantic_metadata.add(SCHEMA_ORG_LOCATION_KEY, thing_location)
-    property.semantic_metadata.add(SCHEMA_ORG_ALTERNATE_NAME_KEY, prop_alt_name)
+    proprty.semantic_metadata.add(SCHEMA_ORG_ALTERNATE_NAME_KEY, prop_alt_name)
     form.semantic_metadata.add(SCHEMA_ORG_ALTERNATE_NAME_KEY, form_alt_name)
 
     jsonld_td = thing.to_jsonld_thing_description()
