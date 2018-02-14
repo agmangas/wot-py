@@ -131,49 +131,6 @@ class SemanticType(object):
     def __hash__(self):
         return hash((self.name, self.context, self.prefix))
 
-    @classmethod
-    def sequence_to_jsonld_context(cls, semantic_types):
-        """Returns an array of semantic contexts that represents the context field of a
-        serialized JSON-LD document. This context is built from a sequence of SemanticTypes."""
-
-        types_unique_ctx = []
-
-        for sem_type in semantic_types:
-            try:
-                next(item for item in types_unique_ctx if item.is_equal_context(sem_type))
-            except StopIteration:
-                types_unique_ctx.append(sem_type)
-
-        ret = []
-
-        for sem_type in types_unique_ctx:
-            if sem_type.prefix:
-                ret.append({sem_type.prefix: sem_type.context})
-            else:
-                ret.append(sem_type.context)
-
-        return ret
-
-    @classmethod
-    def sequence_to_jsonld_types(cls, semantic_types):
-        """Returns an array of semantic types that represents the types field of a
-        serialized JSON-LD document. This context is built from a sequence of SemanticTypes."""
-
-        ret = []
-
-        for sem_type in semantic_types:
-            if sem_type.prefix:
-                ret.append("{}:{}".format(sem_type.prefix, sem_type.name))
-            else:
-                ret.append(sem_type.name)
-
-        return ret
-
-    def is_equal_context(self, other):
-        """Returns True if the context of the given SemanticType is equal to this one."""
-
-        return self.context == other.context and self.prefix == other.prefix
-
 
 class SemanticMetadata(object):
     """Represents a semantic metadata item, containing a
@@ -194,39 +151,13 @@ class SemanticMetadata(object):
 class SemanticAnnotations(object):
     """Represents a tuple of sequences of semantic types and semantic metadata items."""
 
-    def __init__(self, semantic_types=None, metadata=None):
-        self.semantic_types = set(semantic_types) if semantic_types else set()
-        self.metadata = set(metadata) if metadata else set()
+    def __init__(self, semantic_types, metadata):
+        self.semantic_types = semantic_types
+        self.metadata = metadata
 
-    @property
-    def merged_semantic_types(self):
-        """Returns a list containing all SemanticTypes
-        from the internal metadata and types sequences."""
+    def __eq__(self, other):
+        return self.semantic_types == other.semantic_types and \
+               self.metadata == self.metadata
 
-        return list(set([item.semantic_type for item in self.metadata]).union(self.semantic_types))
-
-    def add_semantic_type(self, semantic_type):
-        """Add a new SemanticType item."""
-
-        self.semantic_types.add(semantic_type)
-
-    def remove_semantic_type(self, semantic_type):
-        """Remove an existing SemanticType item."""
-
-        self.semantic_types.discard(semantic_type)
-
-    def add_semantic_metadata(self, semantic_metadata):
-        """Add a new SemanticMetadata item."""
-
-        self.metadata.add(semantic_metadata)
-
-    def remove_semantic_metadata(self, semantic_metadata):
-        """Remove an existing SemanticMetadata item."""
-
-        self.metadata.discard(semantic_metadata)
-
-    def to_jsonld_types(self):
-        """Returns an array of semantic types that represents
-        the types field of a JSON-LD serialized document."""
-
-        return SemanticType.sequence_to_jsonld_types(self.semantic_types)
+    def __hash__(self):
+        return hash((self.semantic_types, self.metadata))
