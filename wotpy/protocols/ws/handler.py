@@ -3,9 +3,9 @@
 
 import uuid
 
-from tornado import websocket, gen
 from jsonschema import validate, ValidationError
 from rx.concurrency import IOLoopScheduler
+from tornado import websocket, gen
 
 from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketErrors
 from wotpy.protocols.ws.messages import \
@@ -15,11 +15,13 @@ from wotpy.protocols.ws.messages import \
     WebsocketMessageResponse, \
     WebsocketMessageEmittedItem
 from wotpy.protocols.ws.schemas import \
-    SCHEMA_PARAMS_GET_PROPERTY, \
-    SCHEMA_PARAMS_SET_PROPERTY, \
-    SCHEMA_PARAMS_OBSERVE, \
+    SCHEMA_PARAMS_READ_PROPERTY, \
+    SCHEMA_PARAMS_WRITE_PROPERTY, \
     SCHEMA_PARAMS_DISPOSE, \
-    SCHEMA_PARAMS_INVOKE_ACTION
+    SCHEMA_PARAMS_INVOKE_ACTION, \
+    SCHEMA_PARAMS_ON_PROPERTY_CHANGE, \
+    SCHEMA_PARAMS_ON_TD_CHANGE, \
+    SCHEMA_PARAMS_ON_EVENT
 
 
 # noinspection PyAbstractClass
@@ -81,6 +83,40 @@ class WebsocketHandler(websocket.WebSocketHandler):
             subscription = self._subscriptions.pop(subscription_id)
             subscription.dispose()
 
+    def _on_subscription_error(self, subscription_id, err):
+        """Default error callback for Observable subscriptions."""
+
+        self._dispose_subscription(subscription_id)
+        data_err = {"subscription": subscription_id}
+        self._write_error(str(err), WebsocketErrors.SUBSCRIPTION_ERROR, data=data_err)
+
+    def _on_subscription_next(self, subscription_id, item):
+        """Default next callback for Observable subscriptions."""
+
+        try:
+            msg = WebsocketMessageEmittedItem(
+                subscription_id=subscription_id,
+                name=item.name,
+                data=item.data)
+            self.write_message(msg.to_json())
+        except WebsocketMessageError as ex:
+            self._on_subscription_error(subscription_id, ex)
+
+    def _on_subscription_completed(self, subscription_id):
+        """Default completed callback for Observable subscriptions."""
+
+        self._dispose_subscription(subscription_id)
+
+    def _subscribe(self, subscription_id, observable):
+        """Subscribe to the given Observable and add the subscription handler to the internal dict."""
+
+        subscription = observable.observe_on(self._scheduler).subscribe(
+            on_next=lambda item: self._on_subscription_next(subscription_id, item),
+            on_error=lambda err: self._on_subscription_error(subscription_id, err),
+            on_completed=lambda: self._on_subscription_completed(subscription_id))
+
+        self._subscriptions[subscription_id] = subscription
+
     @gen.coroutine
     def _handle_get_property(self, req):
         """Handler for the 'get_property' method."""
@@ -88,13 +124,13 @@ class WebsocketHandler(websocket.WebSocketHandler):
         params = req.params
 
         try:
-            validate(params, SCHEMA_PARAMS_GET_PROPERTY)
+            validate(params, SCHEMA_PARAMS_READ_PROPERTY)
         except ValidationError as ex:
             self._write_error(str(ex), WebsocketErrors.INVALID_METHOD_PARAMS, msg_id=req.id)
             return
 
         try:
-            prop_value = yield self.exposed_thing.get_property(name=params["name"])
+            prop_value = yield self.exposed_thing.read_property(name=params["name"])
         except Exception as ex:
             self._write_error(str(ex), WebsocketErrors.INTERNAL_ERROR, msg_id=req.id)
             return
@@ -109,86 +145,18 @@ class WebsocketHandler(websocket.WebSocketHandler):
         params = req.params
 
         try:
-            validate(params, SCHEMA_PARAMS_SET_PROPERTY)
+            validate(params, SCHEMA_PARAMS_WRITE_PROPERTY)
         except ValidationError as ex:
             self._write_error(str(ex), WebsocketErrors.INVALID_METHOD_PARAMS, msg_id=req.id)
             return
 
         try:
-            yield self.exposed_thing.set_property(name=params["name"], value=params["value"])
+            yield self.exposed_thing.write_property(name=params["name"], value=params["value"])
         except Exception as ex:
             self._write_error(str(ex), WebsocketErrors.INTERNAL_ERROR, msg_id=req.id)
             return
 
         res = WebsocketMessageResponse(result=None, msg_id=req.id)
-        self.write_message(res.to_json())
-
-    @gen.coroutine
-    def _handle_observe(self, req):
-        """Handler for the 'observe' method."""
-
-        params = req.params
-
-        try:
-            validate(params, SCHEMA_PARAMS_OBSERVE)
-        except ValidationError as ex:
-            self._write_error(str(ex), WebsocketErrors.INVALID_METHOD_PARAMS, msg_id=req.id)
-            return
-
-        subscription_id = str(uuid.uuid4())
-
-        def _on_error(err):
-            self._dispose_subscription(subscription_id)
-            data_err = {"subscription": subscription_id}
-            self._write_error(str(err), WebsocketErrors.SUBSCRIPTION_ERROR, data=data_err)
-
-        def _on_next(item):
-            try:
-                msg = WebsocketMessageEmittedItem(
-                    subscription_id=subscription_id,
-                    name=item.name,
-                    data=item.data)
-                self.write_message(msg.to_json())
-            except WebsocketMessageError as ws_ex:
-                _on_error(ws_ex)
-
-        def _on_completed():
-            self._dispose_subscription(subscription_id)
-
-        res = WebsocketMessageResponse(result=subscription_id, msg_id=req.id)
-        self.write_message(res.to_json())
-
-        observable = self.exposed_thing.observe(
-            name=params["name"],
-            request_type=params["request_type"])
-
-        subscription = observable.observe_on(self._scheduler).subscribe(
-            on_next=_on_next,
-            on_error=_on_error,
-            on_completed=_on_completed)
-
-        self._subscriptions[subscription_id] = subscription
-
-    @gen.coroutine
-    def _handle_dispose(self, req):
-        """Handler for the 'dispose' method."""
-
-        params = req.params
-
-        try:
-            validate(params, SCHEMA_PARAMS_DISPOSE)
-        except ValidationError as ex:
-            self._write_error(str(ex), WebsocketErrors.INVALID_METHOD_PARAMS, msg_id=req.id)
-            return
-
-        result = None
-        subscription_id = params["subscription"]
-
-        if subscription_id in self._subscriptions:
-            self._dispose_subscription(subscription_id)
-            result = subscription_id
-
-        res = WebsocketMessageResponse(result=result, msg_id=req.id)
         self.write_message(res.to_json())
 
     @gen.coroutine
@@ -214,16 +182,103 @@ class WebsocketHandler(websocket.WebSocketHandler):
         self.write_message(res.to_json())
 
     @gen.coroutine
+    def _handle_on_property_change(self, req):
+        """Handler for the 'on_property_change' subscription method."""
+
+        params = req.params
+
+        try:
+            validate(params, SCHEMA_PARAMS_ON_PROPERTY_CHANGE)
+        except ValidationError as ex:
+            self._write_error(str(ex), WebsocketErrors.INVALID_METHOD_PARAMS, msg_id=req.id)
+            return
+
+        subscription_id = str(uuid.uuid4())
+
+        res = WebsocketMessageResponse(result=subscription_id, msg_id=req.id)
+        self.write_message(res.to_json())
+
+        observable = self.exposed_thing.on_property_change(name=params["name"])
+
+        self._subscribe(subscription_id, observable)
+
+    @gen.coroutine
+    def _handle_on_td_change(self, req):
+        """Handler for the 'on_td_change' subscription method."""
+
+        params = req.params
+
+        try:
+            validate(params, SCHEMA_PARAMS_ON_TD_CHANGE)
+        except ValidationError as ex:
+            self._write_error(str(ex), WebsocketErrors.INVALID_METHOD_PARAMS, msg_id=req.id)
+            return
+
+        subscription_id = str(uuid.uuid4())
+
+        res = WebsocketMessageResponse(result=subscription_id, msg_id=req.id)
+        self.write_message(res.to_json())
+
+        observable = self.exposed_thing.on_td_change()
+
+        self._subscribe(subscription_id, observable)
+
+    @gen.coroutine
+    def _handle_on_event(self, req):
+        """Handler for the 'on_event' subscription method."""
+
+        params = req.params
+
+        try:
+            validate(params, SCHEMA_PARAMS_ON_EVENT)
+        except ValidationError as ex:
+            self._write_error(str(ex), WebsocketErrors.INVALID_METHOD_PARAMS, msg_id=req.id)
+            return
+
+        subscription_id = str(uuid.uuid4())
+
+        res = WebsocketMessageResponse(result=subscription_id, msg_id=req.id)
+        self.write_message(res.to_json())
+
+        observable = self.exposed_thing.on_event(name=params["name"])
+
+        self._subscribe(subscription_id, observable)
+
+    @gen.coroutine
+    def _handle_dispose(self, req):
+        """Handler for the 'dispose' method."""
+
+        params = req.params
+
+        try:
+            validate(params, SCHEMA_PARAMS_DISPOSE)
+        except ValidationError as ex:
+            self._write_error(str(ex), WebsocketErrors.INVALID_METHOD_PARAMS, msg_id=req.id)
+            return
+
+        result = None
+        subscription_id = params["subscription"]
+
+        if subscription_id in self._subscriptions:
+            self._dispose_subscription(subscription_id)
+            result = subscription_id
+
+        res = WebsocketMessageResponse(result=result, msg_id=req.id)
+        self.write_message(res.to_json())
+
+    @gen.coroutine
     def _handle(self, req):
         """Takes a WebsocketMessageRequest instance and routes
         the request to the required method handler."""
 
         handler_map = {
-            WebsocketMethods.GET_PROPERTY: self._handle_get_property,
-            WebsocketMethods.SET_PROPERTY: self._handle_set_property,
-            WebsocketMethods.OBSERVE: self._handle_observe,
+            WebsocketMethods.READ_PROPERTY: self._handle_get_property,
+            WebsocketMethods.WRITE_PROPERTY: self._handle_set_property,
+            WebsocketMethods.INVOKE_ACTION: self._handle_invoke_action,
+            WebsocketMethods.ON_PROPERTY_CHANGE: self._handle_on_property_change,
+            WebsocketMethods.ON_TD_CHANGE: self._handle_on_td_change,
+            WebsocketMethods.ON_EVENT: self._handle_on_event,
             WebsocketMethods.DISPOSE: self._handle_dispose,
-            WebsocketMethods.INVOKE_ACTION: self._handle_invoke_action
         }
 
         if req.method not in handler_map:

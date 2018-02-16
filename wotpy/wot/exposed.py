@@ -15,17 +15,11 @@ from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.jsonld.thing import JsonLDThingDescription
 from wotpy.td.thing import Thing
 from wotpy.utils.enums import EnumListMixin
-from wotpy.utils.futures import is_future
 from wotpy.wot.dictionaries import \
-    Request, \
     PropertyChangeEventInit, \
     ThingDescriptionChangeEventInit, \
     ActionInvocationEventInit
-from wotpy.wot.enums import \
-    RequestType, \
-    DefaultThingEvent, \
-    TDChangeMethod, \
-    TDChangeType
+from wotpy.wot.enums import DefaultThingEvent, TDChangeMethod, TDChangeType
 from wotpy.wot.events import \
     EmittedEvent, \
     PropertyChangeEmittedEvent, \
@@ -51,22 +45,19 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Enumeration of interaction state keys."""
 
         PROPERTY_VALUES = "property_values"
-        ACTION_FUNCTIONS = "action_functions"
 
     def __init__(self, servient, thing):
         self._servient = servient
         self._thing = thing
 
         self._interaction_states = {
-            self.InteractionStateKeys.PROPERTY_VALUES: {},
-            self.InteractionStateKeys.ACTION_FUNCTIONS: {}
+            self.InteractionStateKeys.PROPERTY_VALUES: {}
         }
 
         self._handlers_global = {
             self.HandlerKeys.RETRIEVE_PROPERTY: self._default_retrieve_property_handler,
             self.HandlerKeys.UPDATE_PROPERTY: self._default_update_property_handler,
-            self.HandlerKeys.INVOKE_ACTION: self._default_invoke_action_handler,
-            self.HandlerKeys.OBSERVE: self._default_observe_handler
+            self.HandlerKeys.INVOKE_ACTION: self._default_invoke_action_handler
         }
 
         self._handlers = {
@@ -192,18 +183,6 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         prop_values = self.InteractionStateKeys.PROPERTY_VALUES
         return self._interaction_states[prop_values].get(prop, None)
 
-    def _set_action_func(self, action, func):
-        """Sets the action function of an Action."""
-
-        action_funcs = self.InteractionStateKeys.ACTION_FUNCTIONS
-        self._interaction_states[action_funcs][action] = func
-
-    def _get_action_func(self, action):
-        """Returns the action function of an Action."""
-
-        action_funcs = self.InteractionStateKeys.ACTION_FUNCTIONS
-        return self._interaction_states[action_funcs].get(action, None)
-
     def _set_handler(self, handler_type, handler, interaction=None):
         """Sets the currently defined handler for the given handler type."""
 
@@ -231,182 +210,44 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         return interaction
 
-    def _default_retrieve_property_handler(self, request):
-        """Default handler for onRetrieveProperty."""
+    def _default_retrieve_property_handler(self, property_name):
+        """Default handler for property reads."""
 
-        future_ret = Future()
+        future_read = Future()
 
-        try:
-            assert request.request_type == RequestType.PROPERTY and \
-                   request.name
+        prop = self._find_interaction(
+            interaction_name=property_name,
+            interaction_type=InteractionTypes.PROPERTY)
 
-            prop = self._find_interaction(
-                interaction_name=request.name,
-                interaction_type=InteractionTypes.PROPERTY)
+        prop_value = self._get_property_value(prop)
 
-            prop_value = self._get_property_value(prop)
+        future_read.set_result(prop_value)
 
-            request.respond and request.respond(prop_value)
-            future_ret.set_result(prop_value)
-        except Exception as ex:
-            request.respond_with_error and request.respond_with_error(ex)
-            future_ret.set_exception(ex)
+        return future_read
 
-        return future_ret
-
-    def _default_update_property_handler(self, request):
+    def _default_update_property_handler(self, property_name, value):
         """Default handler for onUpdateProperty."""
 
-        future_ret = Future()
+        future_write = Future()
 
-        try:
-            assert request.request_type == RequestType.PROPERTY and \
-                   request.name and \
-                   hasattr(request, "data")
+        prop = self._find_interaction(
+            interaction_name=property_name,
+            interaction_type=InteractionTypes.PROPERTY)
 
-            prop = self._find_interaction(
-                interaction_name=request.name,
-                interaction_type=InteractionTypes.PROPERTY)
+        self._set_property_value(prop, value)
 
-            self._set_property_value(prop, request.data)
+        future_write.set_result(None)
 
-            request.respond and request.respond()
-            future_ret.set_result(None)
-        except Exception as ex:
-            request.respond_with_error and request.respond_with_error(ex)
-            future_ret.set_exception(ex)
+        return future_write
 
-        return future_ret
-
-    def _default_invoke_action_handler(self, request):
+    # noinspection PyMethodMayBeStatic
+    def _default_invoke_action_handler(self):
         """Default handler for onInvokeAction."""
 
-        future_ret = Future()
+        future_invoke = Future()
+        future_invoke.set_exception(Exception("Undefined action handler"))
 
-        try:
-            assert request.request_type == RequestType.ACTION and \
-                   request.name
-
-            input_kwargs = request.data if hasattr(request, "data") else {}
-
-            assert isinstance(input_kwargs, dict)
-
-            action = self._find_interaction(
-                interaction_name=request.name,
-                interaction_type=InteractionTypes.ACTION)
-
-            action_func = self._get_action_func(action)
-
-            assert callable(action_func), "No action defined for: {}".format(request.name)
-
-            action_result = action_func(**input_kwargs)
-
-            def _respond_callback(ft):
-                completed_result = ft.result()
-                request.respond(completed_result)
-                future_ret.set_result(completed_result)
-
-            if is_future(action_result):
-                action_result.add_done_callback(_respond_callback)
-            else:
-                request.respond and request.respond(action_result)
-                future_ret.set_result(action_result)
-        except Exception as ex:
-            request.respond_with_error and request.respond_with_error(ex)
-            future_ret.set_exception(ex)
-
-        return future_ret
-
-    def _default_observe_handler(self, request):
-        """Default handler for onObserve."""
-
-        def _build_property_filter():
-            """Returns a filter that can be appended to the global events
-            stream to generate an Observable for property update events."""
-
-            prop_name = request.name
-
-            self._find_interaction(
-                interaction_name=prop_name,
-                interaction_type=InteractionTypes.PROPERTY)
-
-            def _filter_func(item):
-                return item.name == DefaultThingEvent.PROPERTY_CHANGE and \
-                       item.data.name == prop_name
-
-            return _filter_func
-
-        def _build_event_filter():
-            """Returns a filter that can be appended to the global events
-            stream to generate an Observable for custom events defined in the TD."""
-
-            event_name = request.name
-
-            self._find_interaction(
-                interaction_name=event_name,
-                interaction_type=InteractionTypes.EVENT)
-
-            def _filter_func(item):
-                return item.name == event_name
-
-            return _filter_func
-
-        def _build_action_filter():
-            """Returns a filter that can be appended to the global events
-            stream to generate an Observable for custom events defined in the TD."""
-
-            action_name = request.name
-
-            self._find_interaction(
-                interaction_name=action_name,
-                interaction_type=InteractionTypes.ACTION)
-
-            def _filter_func(item):
-                return item.name == DefaultThingEvent.ACTION_INVOCATION and \
-                       item.data.action_name == action_name
-
-            return _filter_func
-
-        def _build_td_filter():
-            """Returns a filter that can be appended to the global events
-            stream to generate an Observable for TD change events."""
-
-            def _filter_func(item):
-                return item.name == DefaultThingEvent.DESCRIPTION_CHANGE
-
-            return _filter_func
-
-        try:
-            assert request.request_type == RequestType.EVENT and \
-                   request.options
-
-            observe_type = request.options.get("observeType")
-            subscribe = request.options.get("subscribe", False)
-
-            assert observe_type in RequestType.list()
-
-            filter_builder_map = {
-                RequestType.PROPERTY: _build_property_filter,
-                RequestType.EVENT: _build_event_filter,
-                RequestType.TD: _build_td_filter,
-                RequestType.ACTION: _build_action_filter
-            }
-
-            if observe_type not in filter_builder_map:
-                raise NotImplementedError()
-
-            stream_filter = filter_builder_map[observe_type]()
-
-            # noinspection PyUnresolvedReferences
-            observable = self._events_stream.filter(stream_filter)
-
-            if not subscribe:
-                observable = observable.first()
-
-            return observable
-        except Exception as ex:
-            # noinspection PyUnresolvedReferences
-            return Observable.throw(ex)
+        return future_invoke
 
     @property
     def name(self):
@@ -415,182 +256,182 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         return self._thing.name
 
     @property
-    def url(self):
-        """URL property."""
-
-        return None
-
-    @property
-    def description(self):
-        """Description property."""
-
-        return self._thing.to_jsonld_thing_description().doc
-
-    @property
     def thing(self):
-        """Internal Thing property."""
+        """Returns the object that represents the Thing beneath this ExposedThing."""
 
         return self._thing
 
-    def get_property(self, name):
+    def get_thing_description(self):
+        """Returns the Thing Description of the Thing.
+        Returns a serialized string."""
+
+        return self._thing.to_jsonld_thing_description().to_json_str()
+
+    def read_property(self, name):
         """Takes the Property name as the name argument, then requests from
         the underlying platform and the Protocol Bindings to retrieve the
-        Property on the remote Thing and return the result. Returns a Promise
+        Property on the remote Thing and return the result. Returns a Future
         that resolves with the Property value or rejects with an Error."""
 
-        future_get = Future()
+        try:
+            interaction = self._find_interaction(
+                interaction_name=name,
+                interaction_type=InteractionTypes.PROPERTY)
 
-        # noinspection PyUnusedLocal
-        def _respond(*resp_args, **resp_kwargs):
-            assert len(resp_args), "Must respond with property value"
-            future_get.set_result(resp_args[0])
+            handler = self._get_handler(
+                handler_type=self.HandlerKeys.RETRIEVE_PROPERTY,
+                interaction=interaction)
 
-        def _respond_with_error(err):
-            future_get.set_exception(err)
+            future_read = handler(name)
+        except Exception as ex:
+            future_err = Future()
+            future_err.set_exception(ex)
+            return future_err
 
-        interaction = self._find_interaction(
-            interaction_name=name,
-            interaction_type=InteractionTypes.PROPERTY)
+        return future_read
 
-        handler = self._get_handler(
-            handler_type=self.HandlerKeys.RETRIEVE_PROPERTY,
-            interaction=interaction)
-
-        request = Request(
-            name=name,
-            request_type=RequestType.PROPERTY,
-            respond=_respond,
-            respond_with_error=_respond_with_error)
-
-        handler(request)
-
-        return future_get
-
-    def set_property(self, name, value):
+    def write_property(self, name, value):
         """Takes the Property name as the name argument and the new value as the
         value argument, then requests from the underlying platform and the Protocol
         Bindings to update the Property on the remote Thing and return the result.
-        Returns a Promise that resolves on success or rejects with an Error."""
+        Returns a Future that resolves on success or rejects with an Error."""
 
-        future_set = Future()
+        try:
+            interaction = self._find_interaction(
+                interaction_name=name,
+                interaction_type=InteractionTypes.PROPERTY)
 
-        # noinspection PyUnusedLocal
-        def _respond(*resp_args, **resp_kwargs):
-            future_set.set_result(None)
+            handler = self._get_handler(
+                handler_type=self.HandlerKeys.UPDATE_PROPERTY,
+                interaction=interaction)
 
-        def _respond_with_error(err):
-            future_set.set_exception(err)
-
-        interaction = self._find_interaction(
-            interaction_name=name,
-            interaction_type=InteractionTypes.PROPERTY)
-
-        handler = self._get_handler(
-            handler_type=self.HandlerKeys.UPDATE_PROPERTY,
-            interaction=interaction)
-
-        request = Request(
-            name=name,
-            request_type=RequestType.PROPERTY,
-            respond=_respond,
-            respond_with_error=_respond_with_error,
-            data=value)
-
-        handler(request)
+            future_write = handler(name, value)
+        except Exception as ex:
+            future_err = Future()
+            future_err.set_exception(ex)
+            return future_err
 
         # noinspection PyUnusedLocal
-        def _publish_event(ft):
+        def publish_write_property_event(ft):
             event_data = PropertyChangeEventInit(name=name, value=value)
             self._events_stream.on_next(PropertyChangeEmittedEvent(init=event_data))
 
-        future_set.add_done_callback(_publish_event)
+        future_write.add_done_callback(publish_write_property_event)
 
-        return future_set
+        return future_write
 
-    def invoke_action(self, name, **kwargs):
+    def invoke_action(self, name, *args, **kwargs):
         """Takes the Action name from the name argument and the list of parameters,
         then requests from the underlying platform and the Protocol Bindings to
         invoke the Action on the remote Thing and return the result. Returns a
         Promise that resolves with the return value or rejects with an Error."""
 
-        future_invoke = Future()
+        try:
+            interaction = self._find_interaction(
+                interaction_name=name,
+                interaction_type=InteractionTypes.ACTION)
 
-        # noinspection PyUnusedLocal
-        def _respond(*resp_args, **resp_kwargs):
-            assert len(resp_args), "Must respond with action invocation result"
-            future_invoke.set_result(resp_args[0])
+            handler = self._get_handler(
+                handler_type=self.HandlerKeys.INVOKE_ACTION,
+                interaction=interaction)
 
-        def _respond_with_error(err):
-            future_invoke.set_exception(err)
-
-        interaction = self._find_interaction(
-            interaction_name=name,
-            interaction_type=InteractionTypes.ACTION)
-
-        handler = self._get_handler(
-            handler_type=self.HandlerKeys.INVOKE_ACTION,
-            interaction=interaction)
-
-        request = Request(
-            name=name,
-            request_type=RequestType.ACTION,
-            respond=_respond,
-            respond_with_error=_respond_with_error,
-            data=kwargs)
-
-        handler(request)
+            future_invoke = handler(*args, **kwargs)
+        except Exception as ex:
+            future_err = Future()
+            future_err.set_exception(ex)
+            return future_err
 
         # noinspection PyBroadException
-        def _publish_event(ft):
+        def publish_invoke_action_event(ft):
             try:
                 return_value = ft.result()
                 event_data = ActionInvocationEventInit(action_name=name, return_value=return_value)
                 emitted_event = ActionInvocationEmittedEvent(init=event_data)
                 self._events_stream.on_next(emitted_event)
-            except:
+            except Exception:
                 pass
 
-        future_invoke.add_done_callback(_publish_event)
+        future_invoke.add_done_callback(publish_invoke_action_event)
 
         return future_invoke
 
-    def add_listener(self, event_name, listener):
-        """Adds the listener provided in the argument listener to
-        the Event name provided in the argument event_name."""
+    def on_event(self, name):
+        """Returns an Observable for the Event specified in the name argument,
+        allowing subscribing to and unsubscribing from notifications."""
 
-        raise NotImplementedError("Please use observe() instead")
+        try:
+            self._find_interaction(name, InteractionTypes.EVENT)
+        except ValueError:
+            # noinspection PyUnresolvedReferences
+            return Observable.throw(Exception("Unknown event"))
 
-    def remove_listener(self, event_name, listener):
-        """Removes a listener from the Event identified by
-        the provided event_name and listener argument."""
+        def event_filter(item):
+            return item.name == name
 
-        raise NotImplementedError("Please use observe() instead")
+        # noinspection PyUnresolvedReferences
+        return self._events_stream.filter(event_filter)
 
-    def remove_all_listeners(self, event_name=None):
-        """Removes all listeners for the Event provided by
-        the event_name optional argument, or if that was not
-        provided, then removes all listeners from all Events."""
+    def on_property_change(self, name):
+        """Returns an Observable for the Property specified in the name argument,
+        allowing subscribing to and unsubscribing from notifications."""
 
-        raise NotImplementedError("Please use observe() instead")
+        try:
+            self._find_interaction(name, InteractionTypes.PROPERTY)
+        except ValueError:
+            # noinspection PyUnresolvedReferences
+            return Observable.throw(Exception("Unknown property"))
 
-    def observe(self, name=None, request_type=None):
-        """Returns an Observable for the Property, Event or Action
-        specified in the name argument, allowing subscribing and
-        unsubscribing to notifications. The request_type specifies
-        whether a Property, an Event or an Action is observed."""
+        def property_change_filter(item):
+            return item.name == DefaultThingEvent.PROPERTY_CHANGE and \
+                   item.data.name == name
 
-        if request_type is not RequestType.TD and name is None:
-            raise ValueError("Name required for requests of type: {}".format(request_type))
+        # noinspection PyUnresolvedReferences
+        return self._events_stream.filter(property_change_filter)
 
-        request = Request(
-            name=name,
-            request_type=RequestType.EVENT,
-            options={"observeType": request_type, "subscribe": True})
+    def on_td_change(self):
+        """Returns an Observable, allowing subscribing to and unsubscribing
+        from notifications to the Thing Description."""
 
-        handler = self._get_handler(self.HandlerKeys.OBSERVE)
-        observable = handler(request)
+        def td_change_filter(item):
+            return item.name == DefaultThingEvent.DESCRIPTION_CHANGE
 
-        return observable
+        # noinspection PyUnresolvedReferences
+        return self._events_stream.filter(td_change_filter)
+
+    def start(self):
+        """Start serving external requests for the Thing."""
+
+        self._servient.enable_exposed_thing(self.name)
+
+    def stop(self):
+        """Stop serving external requests for the Thing."""
+
+        self._servient.disable_exposed_thing(self.name)
+
+    def register(self, directory=None):
+        """Generates the Thing Description given the properties, Actions
+        and Event defined for this object. If a directory argument is given,
+        make a request to register the Thing Description with the given WoT
+        repository by invoking its register Action."""
+
+        raise NotImplementedError()
+
+    def unregister(self, directory=None):
+        """If a directory argument is given, make a request to unregister
+        the Thing Description with the given WoT repository by invoking its
+        unregister Action. Then, and in the case no arguments were provided
+        to this function, stop the Thing and remove the Thing Description."""
+
+        raise NotImplementedError()
+
+    def emit_event(self, event_name, payload):
+        """Emits an the event initialized with the event name specified by
+        the event_name argument and data specified by the payload argument."""
+
+        if not self.thing.find_interaction(name=event_name, interaction_type=InteractionTypes.EVENT):
+            raise ValueError("Unknown event: {}".format(event_name))
+
+        self._events_stream.on_next(EmittedEvent(name=event_name, init=payload))
 
     def add_property(self, property_init):
         """Adds a Property defined by the argument and updates the Thing Description.
@@ -599,12 +440,11 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         prop = Property(
             thing=self._thing,
             name=property_init.name,
-            output_data=property_init.description,
-            writable=property_init.writable)
+            output_data=property_init.type,
+            writable=property_init.writable,
+            observable=property_init.observable)
 
-        for item in property_init.semantic_types:
-            self._thing.semantic_context.add(context_url=item.context)
-            prop.semantic_types.add(item.name)
+        property_init.copy_annotations_to_interaction(prop)
 
         self._thing.add_interaction(prop)
         self._set_property_value(prop, property_init.value)
@@ -641,12 +481,9 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             output_data=action_init.output_data_description,
             input_data=action_init.input_data_description)
 
-        for item in action_init.semantic_types:
-            self._thing.semantic_context.add(context_url=item.context)
-            action.semantic_types.add(item.name)
+        action_init.copy_annotations_to_interaction(action)
 
         self._thing.add_interaction(action)
-        self._set_action_func(action, action_init.action)
 
         event_data = ThingDescriptionChangeEventInit(
             td_change_type=TDChangeType.ACTION,
@@ -679,9 +516,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             name=event_init.name,
             output_data=event_init.data_description)
 
-        for item in event_init.semantic_types:
-            self._thing.semantic_context.add(context_url=item.context)
-            event.semantic_types.add(item.name)
+        event_init.copy_annotations_to_interaction(event)
 
         self._thing.add_interaction(event)
 
@@ -707,105 +542,53 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
-    def on_retrieve_property(self, handler, name=None):
-        """Registers the handler function for Property retrieve requests received
-        for the Thing, as defined by the handler property of type RequestHandler.
-        The handler will receive an argument request of type Request where at least
-        request.name is defined and represents the name of the Property to be retrieved."""
+    def set_action_handler(self, action_handler, action_name=None):
+        """Takes an action_name as an optional string argument, and an action handler.
+        Sets the handler function for the specified Action matched by action_name if
+        action_name is specified, otherwise sets it for any action. Throws on error."""
 
         interaction = None
 
-        if name is not None:
+        if action_name is not None:
             interaction = self._find_interaction(
-                interaction_name=name,
-                interaction_type=InteractionTypes.PROPERTY)
-
-        self._set_handler(
-            handler_type=self.HandlerKeys.RETRIEVE_PROPERTY,
-            handler=handler,
-            interaction=interaction)
-
-    def on_update_property(self, handler, name=None):
-        """Defines the handler function for Property update requests received for the Thing,
-        as defined by the handler property of type RequestHandler. The handler will receive
-        an argument request of type Request where request.name defines the name of the
-        Property to be retrieved and request.data defines the new value of the Property."""
-
-        interaction = None
-
-        if name is not None:
-            interaction = self._find_interaction(
-                interaction_name=name,
-                interaction_type=InteractionTypes.PROPERTY)
-
-        self._set_handler(
-            handler_type=self.HandlerKeys.UPDATE_PROPERTY,
-            handler=handler,
-            interaction=interaction)
-
-    def on_invoke_action(self, handler, name=None):
-        """Defines the handler function for Action invocation requests received
-        for the Thing, as defined by the handler property of type RequestHandler.
-        The handler will receive an argument request of type Request where request.name
-        defines the name of the Action to be invoked and request.data defines the input
-        arguments for the Action as defined by the Thing Description."""
-
-        interaction = None
-
-        if name is not None:
-            interaction = self._find_interaction(
-                interaction_name=name,
+                interaction_name=action_name,
                 interaction_type=InteractionTypes.ACTION)
 
         self._set_handler(
             handler_type=self.HandlerKeys.INVOKE_ACTION,
-            handler=handler,
+            handler=action_handler,
             interaction=interaction)
 
-    def on_observe(self, handler):
-        """Defines the handler function for observe requests received for
-        the Thing, as defined by the handler property of type RequestHandler.
-        The handler will receive an argument request of type Request where:
-        * request.name defines the name of the Property or Action or event to be observed.
-        * request.options.observeType is of type RequestType and defines whether a
-        Property change or Action invocation or event emitting is observed, or the
-        changes to the Thing Description are observed.
-        * request.options.subscribe is true if subscription is turned or kept being
-        turned on, and it is false when subscription is turned off."""
+    def set_property_read_handler(self, read_handler, property_name=None):
+        """Takes a property_name as an optional string argument, and a property read handler.
+        Sets the handler function for reading the specified Property matched by property_name if
+        property_name is specified, otherwise sets it for reading any property. Throws on error."""
 
-        self._set_handler(handler_type=self.HandlerKeys.OBSERVE, handler=handler)
+        interaction = None
 
-    def register(self, directory=None):
-        """Generates the Thing Description given the properties, Actions
-        and Event defined for this object. If a directory argument is given,
-        make a request to register the Thing Description with the given WoT
-        repository by invoking its register Action."""
+        if property_name is not None:
+            interaction = self._find_interaction(
+                interaction_name=property_name,
+                interaction_type=InteractionTypes.PROPERTY)
 
-        pass
+        self._set_handler(
+            handler_type=self.HandlerKeys.RETRIEVE_PROPERTY,
+            handler=read_handler,
+            interaction=interaction)
 
-    def unregister(self, directory=None):
-        """If a directory argument is given, make a request to unregister
-        the Thing Description with the given WoT repository by invoking its
-        unregister Action. Then, and in the case no arguments were provided
-        to this function, stop the Thing and remove the Thing Description."""
+    def set_property_write_handler(self, write_handler, property_name=None):
+        """Takes a property_name as an optional string argument, and a property write handler.
+        Sets the handler function for writing the specified Property matched by property_name if the
+        property_name is specified, otherwise sets it for writing any properties. Throws on error."""
 
-        pass
+        interaction = None
 
-    def start(self):
-        """Start serving external requests for the Thing."""
+        if property_name is not None:
+            interaction = self._find_interaction(
+                interaction_name=property_name,
+                interaction_type=InteractionTypes.PROPERTY)
 
-        self._servient.enable_exposed_thing(self.name)
-
-    def stop(self):
-        """Stop serving external requests for the Thing."""
-
-        self._servient.disable_exposed_thing(self.name)
-
-    def emit_event(self, event_name, payload):
-        """Emits an the event initialized with the event name specified by
-        the event_name argument and data specified by the payload argument."""
-
-        if not self.thing.find_interaction(name=event_name, interaction_type=InteractionTypes.EVENT):
-            raise ValueError("Unknown event: {}".format(event_name))
-
-        self._events_stream.on_next(EmittedEvent(name=event_name, init=payload))
+        self._set_handler(
+            handler_type=self.HandlerKeys.UPDATE_PROPERTY,
+            handler=write_handler,
+            interaction=interaction)

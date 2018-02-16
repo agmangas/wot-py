@@ -3,7 +3,7 @@
 
 from wotpy.td.constants import WOT_TD_CONTEXT_URL, WOT_COMMON_CONTEXT_URL
 from wotpy.td.jsonld.thing import JsonLDThingDescription
-from wotpy.td.semantic import SemanticContext, SemanticMetadata, SemanticTypes
+from wotpy.td.semantic import ThingSemanticContext, ThingSemanticMetadata, ThingSemanticTypes
 from wotpy.utils.strings import clean_str
 
 
@@ -17,9 +17,9 @@ class Thing(object):
         self.base = base
         self._interactions = []
 
-        self.semantic_types = SemanticTypes()
-        self.semantic_metadata = SemanticMetadata()
-        self.semantic_context = SemanticContext()
+        self.semantic_types = ThingSemanticTypes()
+        self.semantic_metadata = ThingSemanticMetadata()
+        self.semantic_context = ThingSemanticContext()
         self.semantic_context.add(context_url=WOT_TD_CONTEXT_URL)
         self.semantic_context.add(context_url=WOT_COMMON_CONTEXT_URL)
 
@@ -72,7 +72,7 @@ class Thing(object):
         """Returns the JSON-LD dict representation for this instance."""
 
         doc = {
-            "@context": self.semantic_context.to_list(),
+            "@context": self.semantic_context.to_jsonld_list(),
             "@type": self.semantic_types.to_list(),
             "name": self.name,
             "interaction": [item.to_jsonld_dict() for item in self.interactions]

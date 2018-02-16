@@ -12,6 +12,7 @@ from wotpy.protocols.ws.schemas import \
     SCHEMA_EMITTED_ITEM, \
     SCHEMA_ERROR, \
     JSON_RPC_VERSION
+from wotpy.utils.serialization import to_json_obj
 
 
 def parse_ws_message(raw_msg):
@@ -204,7 +205,7 @@ class WebsocketMessageError(object):
 
 
 class WebsocketMessageEmittedItem(object):
-    """Represents a Websockets message for an items emitted by an Observable."""
+    """Represents a Websockets message for an item emitted by an active subscription."""
 
     @classmethod
     def from_raw(cls, raw_msg):
@@ -225,12 +226,7 @@ class WebsocketMessageEmittedItem(object):
     def __init__(self, subscription_id, name, data):
         self.subscription_id = subscription_id
         self.name = name
-
-        try:
-            json.dumps(data)
-            self.data = data
-        except TypeError:
-            self.data = data.__dict__
+        self.data = to_json_obj(data)
 
         try:
             validate(self.to_dict(), SCHEMA_EMITTED_ITEM)

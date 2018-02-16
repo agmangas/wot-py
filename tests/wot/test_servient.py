@@ -1,28 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import random
 import json
+import random
 
-import tornado.ioloop
-import tornado.gen
-import tornado.websocket
-import tornado.httpclient
 # noinspection PyPackageRequirements
 import pytest
-# noinspection PyPackageRequirements
-from faker import Faker
+import tornado.gen
+import tornado.httpclient
+import tornado.ioloop
+import tornado.websocket
 # noinspection PyCompatibility
 from concurrent.futures import Future
+# noinspection PyPackageRequirements
+from faker import Faker
 
-from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.protocols.enums import Protocols
-from wotpy.wot.dictionaries import ThingInit
-from wotpy.wot.servient import Servient
-from wotpy.td.enums import InteractionTypes
-from wotpy.td.constants import WOT_TD_CONTEXT_URL
-from wotpy.protocols.ws.messages import WebsocketMessageRequest, WebsocketMessageResponse
 from wotpy.protocols.ws.enums import WebsocketMethods
+from wotpy.protocols.ws.messages import WebsocketMessageRequest, WebsocketMessageResponse
+from wotpy.protocols.ws.server import WebsocketServer
+from wotpy.td.constants import WOT_TD_CONTEXT_URL
+from wotpy.td.enums import InteractionTypes
+from wotpy.wot.servient import Servient
 
 
 @pytest.mark.flaky(reruns=5)
@@ -57,11 +56,11 @@ def test_servient_td_catalogue():
         "interaction": []
     }
 
-    thing_init_01 = ThingInit(description=description_01)
-    thing_init_02 = ThingInit(description=description_02)
+    description_01_str = json.dumps(description_01)
+    description_02_str = json.dumps(description_02)
 
-    exposed_thing_01 = wot.expose(thing_init=thing_init_01).result()
-    exposed_thing_02 = wot.expose(thing_init=thing_init_02).result()
+    exposed_thing_01 = wot.produce(description_01_str)
+    exposed_thing_02 = wot.produce(description_02_str)
 
     exposed_thing_01.start()
     exposed_thing_02.start()
@@ -143,15 +142,16 @@ def test_servient_start_stop():
         }]
     }
 
-    thing_init = ThingInit(description=description)
-    exposed_thing = wot.expose(thing_init=thing_init).result()
+    description_str = json.dumps(description)
+
+    exposed_thing = wot.produce(description_str)
     exposed_thing.start()
 
     value_boolean = fake.pybool()
     value_string = fake.pystr()
 
-    assert exposed_thing.set_property(name=name_prop_boolean, value=value_boolean).done()
-    assert exposed_thing.set_property(name=name_prop_string, value=value_string).done()
+    assert exposed_thing.write_property(name=name_prop_boolean, value=value_boolean).done()
+    assert exposed_thing.write_property(name=name_prop_string, value=value_string).done()
 
     io_loop = tornado.ioloop.IOLoop.current()
 
@@ -173,7 +173,7 @@ def test_servient_start_stop():
         conn = yield tornado.websocket.websocket_connect(link.href)
 
         msg_set_req = WebsocketMessageRequest(
-            method=WebsocketMethods.GET_PROPERTY,
+            method=WebsocketMethods.READ_PROPERTY,
             params={"name": prop_name},
             msg_id=fake.pyint())
 

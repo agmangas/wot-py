@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-class SemanticContext(object):
+class ThingSemanticContext(object):
     """A container for the semantic context entries of a Thing."""
 
     def __init__(self):
@@ -17,16 +17,16 @@ class SemanticContext(object):
     def add(self, context_url, prefix=None):
         """Add a new semantic context entry."""
 
-        entry = SemanticContextEntry(context_url=context_url, prefix=prefix)
+        entry = ThingSemanticContextEntry(context_url=context_url, prefix=prefix)
         self._entries.add(entry)
 
     def remove(self, context_url, prefix=None):
         """Remove an existing semantic context entry."""
 
-        entry = SemanticContextEntry(context_url=context_url, prefix=prefix)
+        entry = ThingSemanticContextEntry(context_url=context_url, prefix=prefix)
         self._entries.discard(entry)
 
-    def to_list(self):
+    def to_jsonld_list(self):
         """Returns all context entries as a list, ready to be included
         in the JSON-LD serialization document of the thing."""
 
@@ -41,7 +41,7 @@ class SemanticContext(object):
         return ret
 
 
-class SemanticContextEntry(object):
+class ThingSemanticContextEntry(object):
     """An entry in the semantic context of a Thing."""
 
     def __init__(self, context_url, prefix=None):
@@ -56,7 +56,7 @@ class SemanticContextEntry(object):
         return hash((self.context_url, self.prefix))
 
 
-class SemanticMetadata(object):
+class ThingSemanticMetadata(object):
     """A container for semantic metadata items of Things, Interactions or Forms."""
 
     def __init__(self):
@@ -84,11 +84,17 @@ class SemanticMetadata(object):
         return self._items
 
 
-class SemanticTypes(object):
+class ThingSemanticTypes(object):
     """A container for semantic types of Things or Interactions."""
 
     def __init__(self):
         self._items = set()
+
+    @property
+    def items(self):
+        """List of semantic types."""
+
+        return self._items
 
     def add(self, val):
         """Add a new semantic type."""

@@ -6,10 +6,11 @@ A simple Temperature Thing that serves as an
 example for how to use the WotPy servient.
 """
 
-import time
+import json
 import logging
 import multiprocessing
 import random
+import time
 
 # noinspection PyCompatibility
 from concurrent.futures import ThreadPoolExecutor
@@ -18,7 +19,6 @@ from tornado.ioloop import IOLoop, PeriodicCallback
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.td.constants import WOT_TD_CONTEXT_URL
 from wotpy.td.enums import InteractionTypes
-from wotpy.wot.dictionaries import ThingInit
 from wotpy.wot.servient import Servient
 
 CATALOGUE_PORT = 9292
@@ -71,7 +71,7 @@ def update_temp():
 def emit_temp_high(exp_thing):
     """Emits a 'Temperature High' event if the temperature is over the threshold."""
 
-    temp_threshold = exp_thing.get_property(NAME_PROP_TEMP_THRESHOLD).result()
+    temp_threshold = exp_thing.read_property(NAME_PROP_TEMP_THRESHOLD).result()
 
     if temp_threshold and GLOBAL_TEMPERATURE > temp_threshold:
         LOGGER.info("Emitting high temperature event: {}".format(GLOBAL_TEMPERATURE))
@@ -122,11 +122,9 @@ if __name__ == "__main__":
 
     LOGGER.info("Exposing and configuring Thing")
 
-    thing_init = ThingInit(description=DESCRIPTION)
-
-    exposed_thing = wot.expose(thing_init=thing_init).result()
-    exposed_thing.on_retrieve_property(handler_temperature, name=NAME_PROP_TEMP)
-    exposed_thing.set_property(NAME_PROP_TEMP_THRESHOLD, DEFAULT_TEMP_THRESHOLD)
+    exposed_thing = wot.produce(json.dumps(DESCRIPTION))
+    exposed_thing.set_property_read_handler(read_handler=handler_temperature, property_name=NAME_PROP_TEMP)
+    exposed_thing.write_property(NAME_PROP_TEMP_THRESHOLD, DEFAULT_TEMP_THRESHOLD)
     exposed_thing.start()
 
     periodic_update = PeriodicCallback(update_temp, PERIODIC_MS)

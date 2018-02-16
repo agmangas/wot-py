@@ -8,7 +8,27 @@ class AbstractExposedThing(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def add_property(self, the_property):
+    def start(self):
+        pass
+
+    @abstractmethod
+    def stop(self):
+        pass
+
+    @abstractmethod
+    def register(self, directory=None):
+        pass
+
+    @abstractmethod
+    def unregister(self, directory=None):
+        pass
+
+    @abstractmethod
+    def emit_event(self, event_name, payload):
+        pass
+
+    @abstractmethod
+    def add_property(self, property_init):
         pass
 
     @abstractmethod
@@ -32,37 +52,13 @@ class AbstractExposedThing(object):
         pass
 
     @abstractmethod
-    def on_retrieve_property(self, handler):
+    def set_action_handler(self, action_handler, action_name=None):
         pass
 
     @abstractmethod
-    def on_update_property(self, handler):
+    def set_property_read_handler(self, read_handler, property_name=None):
         pass
 
     @abstractmethod
-    def on_invoke_action(self, handler):
-        pass
-
-    @abstractmethod
-    def on_observe(self, handler):
-        pass
-
-    @abstractmethod
-    def register(self, directory=None):
-        pass
-
-    @abstractmethod
-    def unregister(self, directory=None):
-        pass
-
-    @abstractmethod
-    def start(self):
-        pass
-
-    @abstractmethod
-    def stop(self):
-        pass
-
-    @abstractmethod
-    def emit_event(self, event_name, payload):
+    def set_property_write_handler(self, write_handler, property_name=None):
         pass

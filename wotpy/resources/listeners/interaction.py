@@ -16,13 +16,13 @@ class PropertyResourceListener(BaseResourceListener):
         """Called to handle property reads.
         Returns a future that resolves to the property value."""
 
-        return self._exposed_thing.get_property(self._interaction.name)
+        return self._exposed_thing.read_property(self._interaction.name)
 
     def on_write(self, value):
         """Called to handle property writes.
         Returns a future that resolves to void when the write is finished."""
 
-        return self._exposed_thing.set_property(self._interaction.name, value)
+        return self._exposed_thing.write_property(self._interaction.name, value)
 
     def on_observe(self):
         """Called to handle resource observations.

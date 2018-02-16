@@ -6,12 +6,9 @@ import pytest
 # noinspection PyPackageRequirements
 from faker import Faker
 
-from wotpy.wot.servient import Servient
+from wotpy.wot.dictionaries import ThingPropertyInit, ThingEventInit, ThingActionInit
 from wotpy.wot.exposed import ExposedThing
-from wotpy.wot.dictionaries import \
-    ThingPropertyInit, \
-    ThingEventInit, \
-    ThingActionInit
+from wotpy.wot.servient import Servient
 
 
 @pytest.fixture
@@ -23,7 +20,7 @@ def thing_property_init():
     return ThingPropertyInit(
         name=fake.user_name(),
         value=fake.pystr(),
-        description={"type": "string"})
+        data_type={"type": "string"})
 
 
 @pytest.fixture
@@ -48,7 +45,6 @@ def thing_action_init():
 
     return ThingActionInit(
         name=fake.user_name(),
-        action=_upper,
         input_data_description={"type": "string"},
         output_data_description={"type": "string"})
 

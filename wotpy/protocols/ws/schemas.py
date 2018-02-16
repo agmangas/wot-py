@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from wotpy.protocols.ws.enums import WebsocketMethods
-from wotpy.wot.enums import RequestType
 
 JSON_RPC_VERSION = "2.0"
 
@@ -15,8 +14,6 @@ SCHEMA_ID = {
         {"type": "null"}
     ]
 }
-
-# JSON schema for WS WoT request messages
 
 SCHEMA_REQUEST = {
     "$schema": "http://json-schema.org/schema#",
@@ -45,8 +42,6 @@ SCHEMA_REQUEST = {
     ]
 }
 
-# JSON schema for WS WoT response messages
-
 SCHEMA_RESPONSE = {
     "$schema": "http://json-schema.org/schema#",
     "id": "http://fundacionctic.org/schemas/wotpy-ws-response.json",
@@ -65,8 +60,6 @@ SCHEMA_RESPONSE = {
         "id"
     ]
 }
-
-# JSON schema for WS WoT response messages
 
 SCHEMA_ERROR = {
     "$schema": "http://json-schema.org/schema#",
@@ -98,8 +91,6 @@ SCHEMA_ERROR = {
     ]
 }
 
-# JSON schema for WS WoT emitted items messages
-
 SCHEMA_EMITTED_ITEM = {
     "$schema": "http://json-schema.org/schema#",
     "id": "http://fundacionctic.org/schemas/wotpy-ws-emitted-item.json",
@@ -116,11 +107,9 @@ SCHEMA_EMITTED_ITEM = {
     ]
 }
 
-# Schema for the parameters of a "get property" invocation
-
-SCHEMA_PARAMS_GET_PROPERTY = {
+SCHEMA_PARAMS_READ_PROPERTY = {
     "$schema": "http://json-schema.org/schema#",
-    "id": "http://fundacionctic.org/schemas/wotpy-ws-params-get-property.json",
+    "id": "http://fundacionctic.org/schemas/wotpy-ws-params-read-property.json",
     "type": "object",
     "properties": {
         "name": {"type": "string"}
@@ -130,11 +119,9 @@ SCHEMA_PARAMS_GET_PROPERTY = {
     ]
 }
 
-# Schema for the parameters of a "set property" invocation
-
-SCHEMA_PARAMS_SET_PROPERTY = {
+SCHEMA_PARAMS_WRITE_PROPERTY = {
     "$schema": "http://json-schema.org/schema#",
-    "id": "http://fundacionctic.org/schemas/wotpy-ws-params-set-property.json",
+    "id": "http://fundacionctic.org/schemas/wotpy-ws-params-write-property.json",
     "type": "object",
     "properties": {
         "name": {"type": "string"},
@@ -146,41 +133,6 @@ SCHEMA_PARAMS_SET_PROPERTY = {
     ]
 }
 
-# Schema for the parameters of an "observe" invocation
-
-SCHEMA_PARAMS_OBSERVE = {
-    "$schema": "http://json-schema.org/schema#",
-    "id": "http://fundacionctic.org/schemas/wotpy-ws-params-observe.json",
-    "type": "object",
-    "properties": {
-        "name": {"type": "string"},
-        "request_type": {
-            "type": "string",
-            "enum": RequestType.list()
-        }
-    },
-    "required": [
-        "name",
-        "request_type"
-    ]
-}
-
-# Schema for the parameters of a "dispose" invocation
-
-SCHEMA_PARAMS_DISPOSE = {
-    "$schema": "http://json-schema.org/schema#",
-    "id": "http://fundacionctic.org/schemas/wotpy-ws-params-dispose.json",
-    "type": "object",
-    "properties": {
-        "subscription": {"type": "string"}
-    },
-    "required": [
-        "subscription"
-    ]
-}
-
-# Schema for the parameters of an "invoke action" invocation
-
 SCHEMA_PARAMS_INVOKE_ACTION = {
     "$schema": "http://json-schema.org/schema#",
     "id": "http://fundacionctic.org/schemas/wotpy-ws-params-invoke-action.json",
@@ -191,5 +143,47 @@ SCHEMA_PARAMS_INVOKE_ACTION = {
     },
     "required": [
         "name"
+    ]
+}
+
+SCHEMA_PARAMS_ON_PROPERTY_CHANGE = {
+    "$schema": "http://json-schema.org/schema#",
+    "id": "http://fundacionctic.org/schemas/wotpy-ws-params-on-property-change.json",
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"}
+    },
+    "required": [
+        "name"
+    ]
+}
+
+SCHEMA_PARAMS_ON_TD_CHANGE = {
+    "$schema": "http://json-schema.org/schema#",
+    "id": "http://fundacionctic.org/schemas/wotpy-ws-params-on-td-change.json",
+    "type": "object"
+}
+
+SCHEMA_PARAMS_ON_EVENT = {
+    "$schema": "http://json-schema.org/schema#",
+    "id": "http://fundacionctic.org/schemas/wotpy-ws-params-on-event.json",
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"}
+    },
+    "required": [
+        "name"
+    ]
+}
+
+SCHEMA_PARAMS_DISPOSE = {
+    "$schema": "http://json-schema.org/schema#",
+    "id": "http://fundacionctic.org/schemas/wotpy-ws-params-dispose.json",
+    "type": "object",
+    "properties": {
+        "subscription": {"type": "string"}
+    },
+    "required": [
+        "subscription"
     ]
 }

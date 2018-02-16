@@ -19,7 +19,6 @@ from faker import Faker
 
 from tests.td_examples import TD_EXAMPLE
 # noinspection PyUnresolvedReferences
-from tests.wot.fixtures import exposed_thing, thing_property_init, thing_event_init, thing_action_init
 from wotpy.td.jsonld.thing import JsonLDThingDescription
 from wotpy.wot.enums import RequestType, TDChangeMethod, TDChangeType
 from wotpy.wot.exposed import ExposedThing
@@ -141,178 +140,77 @@ def test_from_url():
     assert_exposed_thing_equal(future_valid.result(), TD_EXAMPLE)
 
 
-# noinspection PyShadowingNames
-def test_get_property(exposed_thing, thing_property_init):
+def test_read_property(exposed_thing, thing_property_init):
     """Properties may be retrieved on ExposedThings."""
 
     exposed_thing.add_property(property_init=thing_property_init)
-    future_get = exposed_thing.get_property(thing_property_init.name)
+    future_get = exposed_thing.read_property(thing_property_init.name)
 
     assert future_get.result() == thing_property_init.value
 
 
-# noinspection PyShadowingNames
-def test_set_property(exposed_thing, thing_property_init):
+def test_write_property(exposed_thing, thing_property_init):
     """Properties may be updated on ExposedThings."""
 
     fake = Faker()
+    updated_val = fake.pystr()
 
     thing_property_init.writable = True
     exposed_thing.add_property(property_init=thing_property_init)
-    updated_val = fake.pystr()
-    future_set = exposed_thing.set_property(thing_property_init.name, updated_val)
+    future_set = exposed_thing.write_property(thing_property_init.name, updated_val)
 
     assert future_set.done()
 
-    future_get = exposed_thing.get_property(thing_property_init.name)
+    future_get = exposed_thing.read_property(thing_property_init.name)
 
     assert future_get.result() == updated_val
 
 
-# noinspection PyShadowingNames
-def test_on_retrieve_property(exposed_thing, thing_property_init):
-    """A custom global handler to retrieve properties can be defined on a ExposedThing."""
-
-    fake = Faker()
-
-    dummy_value = fake.pystr()
-
-    def _handler_dummy(request):
-        request.respond(dummy_value)
-
-    def _handler_error(request):
-        request.respond_with_error(ValueError())
-
-    exposed_thing.add_property(property_init=thing_property_init)
-    exposed_thing.on_retrieve_property(_handler_dummy)
-
-    assert exposed_thing.get_property(thing_property_init.name).result() == dummy_value
-
-    future_set = exposed_thing.set_property(thing_property_init.name, fake.pystr())
-
-    assert future_set.done()
-    assert exposed_thing.get_property(thing_property_init.name).result() == dummy_value
-
-    exposed_thing.on_retrieve_property(_handler_error)
-
-    with pytest.raises(ValueError):
-        exposed_thing.get_property(thing_property_init.name).result()
-
-
-def test_on_retrieve_specific_property(exposed_thing, thing_property_init):
-    """Custom handlers to retrieve specific properties can be defined on a ExposedThing."""
-
-    fake = Faker()
-
-    prop_init_01 = copy.deepcopy(thing_property_init)
-    prop_init_02 = copy.deepcopy(thing_property_init)
-
-    prop_init_01.name = fake.pystr()
-    prop_init_01.value = fake.pystr()
-
-    prop_init_02.name = fake.pystr()
-    prop_init_02.value = fake.pystr()
-
-    dummy_value = fake.pystr()
-
-    def _handler_dummy(request):
-        request.respond(dummy_value)
-
-    exposed_thing.add_property(property_init=prop_init_01)
-    exposed_thing.add_property(property_init=prop_init_02)
-    exposed_thing.on_retrieve_property(handler=_handler_dummy, name=prop_init_01.name)
-
-    assert exposed_thing.get_property(prop_init_01.name).result() == dummy_value
-    assert exposed_thing.get_property(prop_init_01.name).result() != prop_init_01.value
-    assert exposed_thing.get_property(prop_init_02.name).result() == prop_init_02.value
-
-    future_set = exposed_thing.set_property(prop_init_01.name, fake.pystr())
-
-    assert future_set.done()
-    assert exposed_thing.get_property(prop_init_01.name).result() == dummy_value
-
-
-# noinspection PyShadowingNames
-def test_on_invoke_specific_action(exposed_thing, thing_action_init):
-    """Custom handlers to invoke specific actions can be defined on a ExposedThing."""
-
-    fake = Faker()
-
-    action_init_01 = copy.deepcopy(thing_action_init)
-    action_init_02 = copy.deepcopy(thing_action_init)
-
-    executor = ThreadPoolExecutor(max_workers=1)
-
-    def _async_lower(val):
-        return executor.submit(lambda x: x.lower(), val)
-
-    action_init_01.name = fake.pystr()
-    action_init_01.action = _async_lower
-
-    action_init_02.name = fake.pystr()
-    action_init_02.action = _async_lower
-
-    def _handler_dummy(request):
-        request.respond(True)
-
-    exposed_thing.add_action(action_init=action_init_01)
-    exposed_thing.add_action(action_init=action_init_02)
-
-    action_arg = fake.pystr()
-    action_out = _async_lower(action_arg).result()
-
-    assert exposed_thing.invoke_action(action_init_01.name, val=action_arg).result() == action_out
-    assert exposed_thing.invoke_action(action_init_02.name, val=action_arg).result() == action_out
-
-    exposed_thing.on_invoke_action(handler=_handler_dummy, name=action_init_01.name)
-
-    assert exposed_thing.invoke_action(action_init_01.name).result() is True
-    assert exposed_thing.invoke_action(action_init_02.name, val=action_arg).result() == action_out
-
-
-# noinspection PyShadowingNames
-def test_invoke_action_sync(exposed_thing, thing_action_init):
+def test_invoke_action(exposed_thing, thing_action_init):
     """Synchronous actions can be invoked on ExposedThings."""
 
     fake = Faker()
     action_arg = fake.pystr()
 
-    def _upper(val):
-        return str(val).upper()
-
-    thing_action_init.action = _upper
-
-    exposed_thing.add_action(action_init=thing_action_init)
-    future_result = exposed_thing.invoke_action(thing_action_init.name, val=action_arg)
-
-    assert future_result.result() == action_arg.upper()
-
-
-# noinspection PyShadowingNames
-def test_invoke_action_async(exposed_thing, thing_action_init):
-    """Asynchronous actions can be invoked on ExposedThings."""
-
-    fake = Faker()
-    action_arg = fake.pystr()
-
     executor = ThreadPoolExecutor(max_workers=1)
 
-    def _upper(val):
+    def upper(val):
         return str(val).upper()
 
-    def _async_upper(val):
-        return executor.submit(_upper, val)
-
-    thing_action_init.action = _async_upper
+    def upper_async(val):
+        return executor.submit(upper, val)
 
     exposed_thing.add_action(action_init=thing_action_init)
+    exposed_thing.set_action_handler(action_handler=upper_async, action_name=thing_action_init.name)
+
     future_result = exposed_thing.invoke_action(thing_action_init.name, val=action_arg)
 
     assert future_result.result() == action_arg.upper()
 
 
-# noinspection PyShadowingNames
-def test_observe_property_change(exposed_thing, thing_property_init):
+def test_invoke_action_undefined_handler(exposed_thing, thing_action_init):
+    """Actions with undefined handlers return an error."""
+
+    exposed_thing.add_action(action_init=thing_action_init)
+
+    future_result = exposed_thing.invoke_action(thing_action_init.name)
+
+    with pytest.raises(Exception):
+        future_result.result()
+
+    def dummy_func():
+        future = Future()
+        future.set_result(True)
+        return future
+
+    exposed_thing.set_action_handler(action_handler=dummy_func, action_name=thing_action_init.name)
+
+    future_result = exposed_thing.invoke_action(thing_action_init.name)
+
+    assert future_result.result()
+
+
+def test_on_property_change(exposed_thing, thing_property_init):
     """Property changes can be observed."""
 
     fake = Faker()
@@ -320,21 +218,19 @@ def test_observe_property_change(exposed_thing, thing_property_init):
     prop_name = thing_property_init.name
     exposed_thing.add_property(property_init=thing_property_init)
 
-    observable = exposed_thing.observe(
-        name=prop_name,
-        request_type=RequestType.PROPERTY)
+    observable_prop = exposed_thing.on_property_change(prop_name)
 
     property_values = fake.pylist(5, True, *(str,))
 
     emitted_values = []
 
-    def _on_next(ev):
+    def on_next_property_event(ev):
         emitted_values.append(ev.data.value)
 
-    subscription = observable.subscribe(_on_next)
+    subscription = observable_prop.subscribe(on_next_property_event)
 
     for val in property_values:
-        future_set = exposed_thing.set_property(prop_name, val)
+        future_set = exposed_thing.write_property(prop_name, val)
         assert future_set.done()
 
     assert emitted_values == property_values
@@ -342,8 +238,7 @@ def test_observe_property_change(exposed_thing, thing_property_init):
     subscription.dispose()
 
 
-# noinspection PyShadowingNames
-def test_observe_event(exposed_thing, thing_event_init):
+def test_on_event(exposed_thing, thing_event_init):
     """Events defined in the Thing Description can be observed."""
 
     fake = Faker()
@@ -351,18 +246,16 @@ def test_observe_event(exposed_thing, thing_event_init):
     event_name = thing_event_init.name
     exposed_thing.add_event(event_init=thing_event_init)
 
-    observable = exposed_thing.observe(
-        name=event_name,
-        request_type=RequestType.EVENT)
+    observable_event = exposed_thing.on_event(event_name)
 
     event_payloads = fake.pylist(5, True, *(str,))
 
     emitted_payloads = []
 
-    def _on_next(ev):
+    def on_next_event(ev):
         emitted_payloads.append(ev.data)
 
-    subscription = observable.subscribe(_on_next)
+    subscription = observable_event.subscribe(on_next_event)
 
     for val in event_payloads:
         exposed_thing.emit_event(event_name, val)
@@ -372,50 +265,14 @@ def test_observe_event(exposed_thing, thing_event_init):
     subscription.dispose()
 
 
-# noinspection PyShadowingNames
-def test_observe_invoke_action(exposed_thing, thing_action_init):
-    """Events defined in the Thing Description can be observed."""
-
-    fake = Faker()
-
-    executor = ThreadPoolExecutor(max_workers=1)
-
-    def _async_lower(val):
-        return executor.submit(lambda x: x.lower(), val)
-
-    thing_action_init.action = _async_lower
-
-    exposed_thing.add_action(action_init=thing_action_init)
-
-    observable = exposed_thing.observe(
-        name=thing_action_init.name,
-        request_type=RequestType.ACTION)
-
-    future_event_emitted = Future()
-
-    def _on_next(ev):
-        future_event_emitted.set_result(ev.data.action_name)
-
-    subscription = observable.subscribe(_on_next)
-
-    action_arg = fake.pystr()
-    future_result = exposed_thing.invoke_action(thing_action_init.name, val=action_arg)
-
-    assert future_result.result() == action_arg.lower()
-    assert future_event_emitted.result() == thing_action_init.name
-
-    subscription.dispose()
-
-
-# noinspection PyShadowingNames
-def test_observe_td_changes(exposed_thing, thing_property_init, thing_event_init, thing_action_init):
+def test_on_td_change(exposed_thing, thing_property_init, thing_event_init, thing_action_init):
     """Thing Description changes can be observed."""
 
     prop_name = thing_property_init.name
     event_name = thing_event_init.name
     action_name = thing_action_init.name
 
-    observable = exposed_thing.observe(request_type=RequestType.TD)
+    observable_td = exposed_thing.on_td_change()
 
     complete_futures = {
         (TDChangeType.PROPERTY, TDChangeMethod.ADD): Future(),
@@ -426,14 +283,14 @@ def test_observe_td_changes(exposed_thing, thing_property_init, thing_event_init
         (TDChangeType.ACTION, TDChangeMethod.REMOVE): Future()
     }
 
-    def _on_next(ev):
+    def on_next_td_event(ev):
         change_type = ev.data.td_change_type
         change_method = ev.data.method
         interaction_name = ev.data.name
         future_key = (change_type, change_method)
         complete_futures[future_key].set_result(interaction_name)
 
-    subscription = observable.subscribe(_on_next)
+    subscription = observable_td.subscribe(on_next_td_event)
 
     exposed_thing.add_event(event_init=thing_event_init)
 

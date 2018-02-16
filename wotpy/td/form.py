@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from wotpy.td.semantic import SemanticMetadata
+from wotpy.td.semantic import ThingSemanticMetadata
 
 
 class Form(object):
@@ -14,7 +14,7 @@ class Form(object):
         self.media_type = media_type
         self.rel = rel
 
-        self.semantic_metadata = SemanticMetadata()
+        self.semantic_metadata = ThingSemanticMetadata()
 
     def __eq__(self, other):
         return self.interaction == other.interaction and \

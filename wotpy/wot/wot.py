@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# noinspection PyCompatibility
-from concurrent.futures import Future
-from rx import Observable
+import json
+import six
 
 from wotpy.wot.exposed import ExposedThing
+from wotpy.wot.dictionaries import ThingTemplate
 
 
 class WoT(object):
@@ -15,47 +15,36 @@ class WoT(object):
         self._servient = servient
 
     def discover(self, thing_filter):
-        """Takes a ThingFilter instance and returns an Observable
-        that will emit events for each discovered Thing or error."""
+        """Starts the discovery process that will provide ConsumedThing
+        objects that match the optional argument ThingFilter."""
 
-        # noinspection PyUnresolvedReferences
-        return Observable.empty()
+        raise NotImplementedError()
 
-    def consume(self, url):
-        """Takes a URL and returns a Future that resolves to a
-        ConsumedThing that has been retrieved from the given URL."""
+    def fetch(self, url):
+        """Accepts an url argument and returns a Future
+        that resolves with a Thing Description string."""
 
-        future_consumed = Future()
-        future_consumed.set_exception(NotImplementedError())
+        raise NotImplementedError()
 
-        return future_consumed
+    def consume(self, td):
+        """Accepts a thing description string argument and returns a
+        ConsumedThing object instantiated based on that description."""
 
-    def expose(self, thing_init):
-        """Takes a ThingInit instance and returns a Future that resolves
-        to an ExposedThing that will be hosted in the local servient."""
+        raise NotImplementedError()
 
-        future_exposed = Future()
+    def produce(self, model):
+        """Accepts a model argument of type ThingModel and returns an ExposedThing
+        object, locally created based on the provided initialization parameters."""
 
-        if thing_init.description:
-            exp_thing = ExposedThing.from_description(
-                servient=self._servient,
-                doc=thing_init.description,
-                name=thing_init.name)
-            future_exposed.set_result(exp_thing)
-        elif thing_init.url:
-            future_exposed = ExposedThing.from_url(
-                servient=self._servient,
-                url=thing_init.url,
-                name=thing_init.name)
+        assert isinstance(model, six.string_types) or isinstance(model, ThingTemplate)
+
+        if isinstance(model, six.string_types):
+            td_doc = json.loads(model)
+            exposed_thing = ExposedThing.from_description(servient=self._servient, doc=td_doc)
         else:
-            exp_thing = ExposedThing.from_name(
-                servient=self._servient,
-                name=thing_init.name)
-            future_exposed.set_result(exp_thing)
+            exposed_thing = ExposedThing.from_name(servient=self._servient, name=model.name)
+            model.copy_annotations_to_thing(exposed_thing.thing)
 
-        def add_to_servient(ft):
-            self._servient.add_exposed_thing(ft.result())
+        self._servient.add_exposed_thing(exposed_thing)
 
-        future_exposed.add_done_callback(add_to_servient)
-
-        return future_exposed
+        return exposed_thing

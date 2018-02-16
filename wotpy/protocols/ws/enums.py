@@ -7,10 +7,12 @@ from wotpy.utils.enums import EnumListMixin
 class WebsocketMethods(EnumListMixin):
     """Enumeration of available websocket message actions."""
 
-    GET_PROPERTY = "get_property"
-    SET_PROPERTY = "set_property"
+    READ_PROPERTY = "read_property"
+    WRITE_PROPERTY = "write_property"
     INVOKE_ACTION = "invoke_action"
-    OBSERVE = "observe"
+    ON_PROPERTY_CHANGE = "on_property_change"
+    ON_TD_CHANGE = "on_td_change"
+    ON_EVENT = "on_event"
     DISPOSE = "dispose"
 
 

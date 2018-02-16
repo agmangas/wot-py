@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import json
+
 from jsonschema import validate, ValidationError
 
 from wotpy.td.constants import WOT_TD_CONTEXT_URL
@@ -75,3 +77,8 @@ class JsonLDThingDescription(object):
         meta_keys = [key for key in list(self._doc.keys()) if key not in base_keys]
 
         return {key: self._doc[key] for key in meta_keys}
+
+    def to_json_str(self):
+        """Returns the string serialization of this JSON-LD thing description."""
+
+        return json.dumps(self.doc)

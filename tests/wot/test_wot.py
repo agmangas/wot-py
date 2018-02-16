@@ -1,43 +1,60 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# noinspection PyPackageRequirements
-import pytest
+import json
+
 # noinspection PyPackageRequirements
 from faker import Faker
 
-from wotpy.wot.dictionaries import ThingInit
+from tests.td_examples import TD_EXAMPLE
+from wotpy.td.semantic import ThingSemanticContextEntry
+from wotpy.wot.dictionaries import ThingTemplate, SemanticType, SemanticMetadata
 from wotpy.wot.servient import Servient
 from wotpy.wot.wot import WoT
-from tests.td_examples import TD_EXAMPLE
 
 
-def test_expose():
-    """Things can be exposed using the WoT entrypoint."""
+def test_produce_td():
+    """Things can be produced from thing descriptions serialized to JSON-LD string."""
 
-    fake = Faker()
-
-    name_01 = fake.pystr()
-    name_02 = TD_EXAMPLE.get("name")
-
-    thing_init_name = ThingInit(name=name_01)
-    thing_init_desc = ThingInit(description=TD_EXAMPLE)
+    td_str = json.dumps(TD_EXAMPLE)
+    thing_name = TD_EXAMPLE.get("name")
 
     servient = Servient()
     wot = WoT(servient=servient)
 
-    exp_thing_01 = wot.expose(thing_init=thing_init_name).result()
+    exp_thing = wot.produce(td_str)
 
-    assert servient.get_exposed_thing(name_01)
-    assert exp_thing_01.name == name_01
-    assert not len(exp_thing_01.thing.interactions)
+    assert servient.get_exposed_thing(thing_name)
+    assert exp_thing.name == thing_name
+    assert len(exp_thing.thing.interactions) == len(TD_EXAMPLE.get("interaction"))
 
-    with pytest.raises(ValueError):
-        servient.get_exposed_thing(name_02)
 
-    exp_thing_02 = wot.expose(thing_init=thing_init_desc).result()
+def test_produce_thing_template():
+    """Things can be produced from ThingTemplate instances."""
 
-    assert servient.get_exposed_thing(name_01)
-    assert servient.get_exposed_thing(name_02)
-    assert exp_thing_02.name == name_02
-    assert len(exp_thing_02.thing.interactions)
+    fake = Faker()
+
+    thing_name = fake.pystr()
+
+    ctx = fake.url()
+    ctx_type = fake.pystr()
+    ctx_meta_name = fake.pystr()
+    ctx_meta_val = fake.pystr()
+
+    sem_type = SemanticType(name=ctx_type, context=ctx)
+    sem_meta_type = SemanticType(name=ctx_meta_name, context=ctx)
+    sem_meta = SemanticMetadata(semantic_type=sem_meta_type, value=ctx_meta_val)
+
+    thing_template = ThingTemplate(name=thing_name, semantic_types=[sem_type], metadata=[sem_meta])
+
+    servient = Servient()
+    wot = WoT(servient=servient)
+
+    exp_thing = wot.produce(thing_template)
+
+    assert servient.get_exposed_thing(thing_name)
+    assert exp_thing.name == thing_name
+    assert ctx_meta_name in exp_thing.thing.semantic_metadata.items
+    assert exp_thing.thing.semantic_metadata.items[ctx_meta_name] == ctx_meta_val
+    assert ctx_type in exp_thing.thing.semantic_types.items
+    assert ThingSemanticContextEntry(ctx) in exp_thing.thing.semantic_context.context_entries

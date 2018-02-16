@@ -9,47 +9,38 @@ class EmittedEvent(object):
     Represents a generic event defined in a TD."""
 
     def __init__(self, init, name):
-        self._name = name
-        self._data = init
+        self.init = init
+        self.name = name
 
     @property
     def data(self):
         """Data property."""
 
-        return self._data
-
-    @property
-    def name(self):
-        """Event name property."""
-
-        return self._name
+        return self.init
 
 
 class PropertyChangeEmittedEvent(EmittedEvent):
     """Event triggered to indicate a property change.
     Should be initialized with a PropertyChangeEventInit instance."""
 
-    # noinspection PyUnusedLocal
     def __init__(self, init):
-        super(PropertyChangeEmittedEvent, self).__init__(
-            init=init, name=DefaultThingEvent.PROPERTY_CHANGE)
+        name = DefaultThingEvent.PROPERTY_CHANGE
+        super(PropertyChangeEmittedEvent, self).__init__(init=init, name=name)
 
 
 class ActionInvocationEmittedEvent(EmittedEvent):
     """Event triggered to indicate an action invocation.
     Should be initialized with a ActionInvocationEventInit instance."""
 
-    # noinspection PyUnusedLocal
     def __init__(self, init):
-        super(ActionInvocationEmittedEvent, self).__init__(
-            init=init, name=DefaultThingEvent.ACTION_INVOCATION)
+        name = DefaultThingEvent.ACTION_INVOCATION
+        super(ActionInvocationEmittedEvent, self).__init__(init=init, name=name)
 
 
 class ThingDescriptionChangeEmittedEvent(EmittedEvent):
     """Event triggered to indicate a thing description change.
     Should be initialized with a ThingDescriptionChangeEventInit instance."""
 
-    # noinspection PyUnusedLocal
     def __init__(self, init):
-        super(ThingDescriptionChangeEmittedEvent, self).__init__(
-            init=init, name=DefaultThingEvent.DESCRIPTION_CHANGE)
+        name = DefaultThingEvent.DESCRIPTION_CHANGE
+        super(ThingDescriptionChangeEmittedEvent, self).__init__(init=init, name=name)

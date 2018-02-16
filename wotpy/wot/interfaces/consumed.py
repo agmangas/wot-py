@@ -11,12 +11,8 @@ class AbstractConsumedThing(object):
     def name(self):
         pass
 
-    @abstractproperty
-    def url(self):
-        pass
-
-    @abstractproperty
-    def description(self):
+    @abstractmethod
+    def get_thing_description(self):
         pass
 
     @abstractmethod
@@ -24,25 +20,21 @@ class AbstractConsumedThing(object):
         pass
 
     @abstractmethod
-    def set_property(self, name, value):
+    def write_property(self, name, value):
         pass
 
     @abstractmethod
-    def get_property(self, name):
+    def read_property(self, name):
         pass
 
     @abstractmethod
-    def add_listener(self, event_name, listener):
+    def on_event(self, name):
         pass
 
     @abstractmethod
-    def remove_listener(self, event_name, listener):
+    def on_property_change(self, name):
         pass
 
     @abstractmethod
-    def remove_all_listeners(self, event_name=None):
-        pass
-
-    @abstractmethod
-    def observe(self, name, request_type):
+    def on_td_change(self):
         pass

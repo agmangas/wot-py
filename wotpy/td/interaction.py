@@ -4,7 +4,7 @@
 from abc import ABCMeta, abstractmethod
 
 from wotpy.td.enums import InteractionTypes
-from wotpy.td.semantic import SemanticMetadata, SemanticTypes
+from wotpy.td.semantic import ThingSemanticMetadata, ThingSemanticTypes
 from wotpy.utils.strings import clean_str
 
 
@@ -16,8 +16,8 @@ class InteractionPattern(object):
         self.name = clean_str(name, warn=True)
         self._forms = []
 
-        self.semantic_types = SemanticTypes()
-        self.semantic_metadata = SemanticMetadata()
+        self.semantic_types = ThingSemanticTypes()
+        self.semantic_metadata = ThingSemanticMetadata()
 
     def __eq__(self, other):
         return self.thing == other.thing and \
