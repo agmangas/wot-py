@@ -17,15 +17,14 @@ function requestObserveTempHigh(ws) {
   const req = {
     id: id,
     jsonrpc: '2.0',
-    method: 'observe',
+    method: 'on_event',
     params: {
-      name: NAME_EVENT_TEMP_HIGH,
-      request_type: 'event'
+      name: NAME_EVENT_TEMP_HIGH
     }
   };
 
   const reqStr = JSON.stringify(req);
-  console.log('Sending request (observe):', reqStr);
+  console.log('Sending request (on_event):', reqStr);
   ws.send(reqStr);
 
   return id;
@@ -40,7 +39,7 @@ function requestSetThreshold(ws, val) {
   const req = {
     id: id,
     jsonrpc: '2.0',
-    method: 'set_property',
+    method: 'write_property',
     params: {
       name: NAME_PROP_TEMP_THRESHOLD,
       value: val
@@ -63,7 +62,7 @@ function requestGetTemperature(ws) {
   const req = {
     id: id,
     jsonrpc: '2.0',
-    method: 'get_property',
+    method: 'read_property',
     params: {
       name: NAME_PROP_TEMP
     }
@@ -88,6 +87,8 @@ function requestGetTemperature(ws) {
   return returnPromise;
 }
 
+console.log('GET', CATALOGUE_URL);
+
 const tdPromise = axios.get(CATALOGUE_URL)
     .then(function (response) {
       return response.data[NAME_THING];
@@ -101,9 +102,11 @@ tdPromise.then(function (td) {
     return interaction.name === NAME_PROP_TEMP;
   });
 
-  const wsLink = propTemp.link.find(function (link) {
-    return link.href && link.href.startsWith('ws://');
+  const wsLink = propTemp.form.find(function (form) {
+    return form.href && form.href.startsWith('ws://');
   });
+
+  console.log('Connecting to:', wsLink.href);
 
   const ws = new WebSocket(wsLink.href);
 

@@ -32,7 +32,8 @@ logging.basicConfig()
 LOGGER = logging.getLogger("temp-servient")
 LOGGER.setLevel(logging.INFO)
 
-EXECUTOR = ThreadPoolExecutor(max_workers=multiprocessing.cpu_count() * 2)
+max_workers = multiprocessing.cpu_count() * 2
+EXECUTOR = ThreadPoolExecutor(max_workers=max_workers)
 
 NAME_THING = "TemperatureThing"
 NAME_PROP_TEMP = "temperature"
@@ -46,12 +47,14 @@ DESCRIPTION = {
         "@type": [InteractionTypes.PROPERTY],
         "name": NAME_PROP_TEMP,
         "outputData": {"type": "number"},
-        "writable": False
+        "writable": False,
+        "observable": True,
     }, {
         "@type": [InteractionTypes.PROPERTY],
         "name": NAME_PROP_TEMP_THRESHOLD,
         "outputData": {"type": "number"},
-        "writable": True
+        "writable": True,
+        "observable": True
     }, {
         "@type": [InteractionTypes.EVENT],
         "name": NAME_EVENT_TEMP_HIGH,
@@ -78,8 +81,10 @@ def emit_temp_high(exp_thing):
         exp_thing.emit_event(NAME_EVENT_TEMP_HIGH, GLOBAL_TEMPERATURE)
 
 
-def handler_temperature(request):
+def temp_read_handler(property_name):
     """Custom handler for the 'Temperature' property."""
+
+    assert property_name == NAME_PROP_TEMP
 
     def sleep_and_get_temp():
         """Wait for a while and return a random temperature."""
@@ -88,19 +93,7 @@ def handler_temperature(request):
         time.sleep(random.random() * 3.0)
         return GLOBAL_TEMPERATURE
 
-    def respond_when_done(ft):
-        """Respond the request when the temperature future is done."""
-
-        try:
-            temperature_val = ft.result()
-            LOGGER.info("Responding with temperature: {}".format(temperature_val))
-            request.respond(temperature_val)
-        except Exception as ex:
-            LOGGER.info("Responding with temperature error: {}".format(ex))
-            request.respond_with_error(ex)
-
-    future_temp = EXECUTOR.submit(sleep_and_get_temp)
-    future_temp.add_done_callback(respond_when_done)
+    return EXECUTOR.submit(sleep_and_get_temp)
 
 
 if __name__ == "__main__":
@@ -123,7 +116,7 @@ if __name__ == "__main__":
     LOGGER.info("Exposing and configuring Thing")
 
     exposed_thing = wot.produce(json.dumps(DESCRIPTION))
-    exposed_thing.set_property_read_handler(read_handler=handler_temperature, property_name=NAME_PROP_TEMP)
+    exposed_thing.set_property_read_handler(read_handler=temp_read_handler, property_name=NAME_PROP_TEMP)
     exposed_thing.write_property(NAME_PROP_TEMP_THRESHOLD, DEFAULT_TEMP_THRESHOLD)
     exposed_thing.start()
 
