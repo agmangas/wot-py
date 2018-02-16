@@ -270,6 +270,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
                 interaction_name=name,
                 interaction_type=InteractionTypes.PROPERTY)
 
+            assert interaction.writable, "Property is not writable"
+
             handler = self._get_handler(
                 handler_type=self.HandlerKeys.UPDATE_PROPERTY,
                 interaction=interaction)
@@ -345,10 +347,14 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         allowing subscribing to and unsubscribing from notifications."""
 
         try:
-            self._find_interaction(name, InteractionTypes.PROPERTY)
+            interaction = self._find_interaction(name, InteractionTypes.PROPERTY)
         except ValueError:
             # noinspection PyUnresolvedReferences
             return Observable.throw(Exception("Unknown property"))
+
+        if not interaction.observable:
+            # noinspection PyUnresolvedReferences
+            return Observable.throw(Exception("Property is not observable"))
 
         def property_change_filter(item):
             return item.name == DefaultThingEvent.PROPERTY_CHANGE and \

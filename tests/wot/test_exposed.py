@@ -49,6 +49,20 @@ def test_write_property(exposed_thing, thing_property_init):
     assert future_get.result() == updated_val
 
 
+def test_write_non_writable_property(exposed_thing, thing_property_init):
+    """Attempts to write a non-writable property should return an error."""
+
+    fake = Faker()
+
+    thing_property_init.writable = False
+    exposed_thing.add_property(property_init=thing_property_init)
+
+    future_write = exposed_thing.write_property(thing_property_init.name, fake.pystr())
+
+    with pytest.raises(Exception):
+        future_write.result()
+
+
 def test_invoke_action(exposed_thing, thing_action_init):
     """Synchronous actions can be invoked on ExposedThings."""
 
@@ -99,6 +113,7 @@ def test_on_property_change(exposed_thing, thing_property_init):
     fake = Faker()
 
     prop_name = thing_property_init.name
+    thing_property_init.observable = True
     exposed_thing.add_property(property_init=thing_property_init)
 
     observable_prop = exposed_thing.on_property_change(prop_name)
@@ -113,10 +128,42 @@ def test_on_property_change(exposed_thing, thing_property_init):
     subscription = observable_prop.subscribe(on_next_property_event)
 
     for val in property_values:
-        future_set = exposed_thing.write_property(prop_name, val)
-        assert future_set.done()
+        future_write = exposed_thing.write_property(prop_name, val)
+        assert future_write.done()
 
     assert emitted_values == property_values
+
+    subscription.dispose()
+
+
+def test_on_property_change_non_observable(exposed_thing, thing_property_init):
+    """Observe requests to non-observable properties are rejected."""
+
+    fake = Faker()
+
+    thing_property_init.observable = False
+    exposed_thing.add_property(property_init=thing_property_init)
+
+    observable_prop = exposed_thing.on_property_change(thing_property_init.name)
+
+    future_next = Future()
+    future_error = Future()
+
+    def on_next(item):
+        future_next.set_result(item)
+
+    def on_error(err):
+        future_error.set_exception(err)
+
+    subscription = observable_prop.subscribe(on_next=on_next, on_error=on_error)
+
+    future_write = exposed_thing.write_property(thing_property_init.name, fake.pystr())
+    assert future_write.done()
+
+    with pytest.raises(Exception):
+        future_error.result()
+
+    assert not future_next.done()
 
     subscription.dispose()
 
