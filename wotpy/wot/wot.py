@@ -2,10 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import json
-import six
 
-from wotpy.wot.exposed import ExposedThing
+import six
+# noinspection PyCompatibility
+from concurrent.futures import ThreadPoolExecutor, Future
+from tornado.httpclient import HTTPClient, HTTPRequest
+
+from wotpy.td.jsonld.thing import JsonLDThingDescription
 from wotpy.wot.dictionaries import ThingTemplate
+from wotpy.wot.exposed import ExposedThing
+
+DEFAULT_FETCH_TIMEOUT_SECS = 20.0
 
 
 class WoT(object):
@@ -20,11 +27,27 @@ class WoT(object):
 
         raise NotImplementedError()
 
-    def fetch(self, url):
+    @classmethod
+    def fetch(cls, url, timeout_secs=None):
         """Accepts an url argument and returns a Future
         that resolves with a Thing Description string."""
 
-        raise NotImplementedError()
+        timeout_secs = timeout_secs or DEFAULT_FETCH_TIMEOUT_SECS
+
+        def fetch_td():
+            http_client = HTTPClient()
+            http_request = HTTPRequest(url, request_timeout=timeout_secs)
+            http_response = http_client.fetch(http_request)
+            td_doc = json.loads(http_response.body)
+            jsonld_td = JsonLDThingDescription(td_doc)
+            http_client.close()
+            return jsonld_td.to_json_str()
+
+        executor = ThreadPoolExecutor(max_workers=1)
+        future_td = executor.submit(fetch_td)
+        executor.shutdown(wait=False)
+
+        return future_td
 
     def consume(self, td):
         """Accepts a thing description string argument and returns a
@@ -48,3 +71,23 @@ class WoT(object):
         self._servient.add_exposed_thing(exposed_thing)
 
         return exposed_thing
+
+    def produce_from_url(self, url, timeout_secs=None):
+        """Return a Future that resolves to an ExposedThing created
+        from the thing description retrieved from the given URL."""
+
+        future_thing = Future()
+
+        def build_exposed_thing(ft):
+            try:
+                td_str = ft.result()
+                td_doc = json.loads(td_str)
+                exp_thing = ExposedThing.from_description(servient=self._servient, doc=td_doc)
+                future_thing.set_result(exp_thing)
+            except Exception as ex:
+                future_thing.set_exception(ex)
+
+        future_td = self.fetch(url, timeout_secs=timeout_secs)
+        future_td.add_done_callback(build_exposed_thing)
+
+        return future_thing

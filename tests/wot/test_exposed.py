@@ -1,83 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import copy
-import logging
-import random
-
 # noinspection PyPackageRequirements
 import pytest
-import six
-import tornado.gen
-import tornado.ioloop
-import tornado.testing
-import tornado.web
 # noinspection PyCompatibility
 from concurrent.futures import Future, ThreadPoolExecutor
 # noinspection PyPackageRequirements
 from faker import Faker
 
 from tests.td_examples import TD_EXAMPLE
-# noinspection PyUnresolvedReferences
-from wotpy.td.jsonld.thing import JsonLDThingDescription
-from wotpy.wot.enums import RequestType, TDChangeMethod, TDChangeType
+from tests.wot.utils import assert_exposed_thing_equal
+from wotpy.wot.enums import TDChangeMethod, TDChangeType
 from wotpy.wot.exposed import ExposedThing
 from wotpy.wot.servient import Servient
-
-
-def assert_exposed_thing_equal(exp_thing, td_doc):
-    """Asserts that the given ExposedThing is equivalent to the thing description dict."""
-
-    td_expected = copy.deepcopy(td_doc)
-    jsonld_td = JsonLDThingDescription(td_expected)
-
-    for item in td_expected["interaction"]:
-        if "link" in item:
-            item.pop("link")
-
-    assert exp_thing.name == td_expected.get("name")
-    assert exp_thing.thing.types == td_expected.get("@type")
-
-    # Compare semantic context
-
-    ctx_entries = exp_thing.thing.semantic_context.context_entries
-
-    for item in td_expected.get("@context", []):
-        if isinstance(item, six.string_types):
-            next(ent for ent in ctx_entries if ent.context_url == item and not ent.prefix)
-        elif isinstance(item, dict):
-            for key, val in six.iteritems(item):
-                next(ent for ent in ctx_entries if ent.context_url == val and ent.prefix == key)
-
-    # Compare root-level semantic metadata
-
-    meta_td = jsonld_td.metadata
-    meta_exp_thing = exp_thing.thing.semantic_metadata.items
-
-    for key, val in six.iteritems(meta_exp_thing):
-        assert key in meta_td
-        assert val == meta_td[key]
-
-    # Compare interactions
-
-    for jsonld_interaction in jsonld_td.interaction:
-        interaction = exp_thing.thing.find_interaction(jsonld_interaction.name)
-
-        assert sorted(interaction.types) == sorted(jsonld_interaction.type)
-        assert getattr(interaction, "output_data", None) == jsonld_interaction.output_data
-        assert getattr(interaction, "input_data", None) == jsonld_interaction.input_data
-        assert getattr(interaction, "writable", None) == jsonld_interaction.writable
-        assert getattr(interaction, "observable", None) == jsonld_interaction.observable
-        assert not len(interaction.forms)
-
-        # Compare interaction-level semantic metadata
-
-        meta_td_interaction = jsonld_interaction.metadata
-        meta_exp_thing_interaction = interaction.semantic_metadata.items
-
-        for key, val in six.iteritems(meta_exp_thing_interaction):
-            assert key in meta_td_interaction
-            assert val == meta_td_interaction[key]
 
 
 def test_from_description():
@@ -86,58 +21,6 @@ def test_from_description():
     servient = Servient()
     exp_thing = ExposedThing.from_description(servient=servient, doc=TD_EXAMPLE)
     assert_exposed_thing_equal(exp_thing, TD_EXAMPLE)
-
-
-@pytest.mark.flaky(reruns=5)
-def test_from_url():
-    """ExposedThings can be created from URLs that provide Thing Description documents."""
-
-    fake = Faker()
-
-    # noinspection PyAbstractClass
-    class TDHandler(tornado.web.RequestHandler):
-        """Dummy handler to fetch a JSON-serialized TD document."""
-
-        def get(self):
-            self.write(TD_EXAMPLE)
-
-    app = tornado.web.Application([(r"/", TDHandler)])
-    app_port = random.randint(20000, 40000)
-    app.listen(app_port)
-
-    url_valid = "http://localhost:{}/".format(app_port)
-    url_error = "http://localhost:{}/{}".format(app_port, fake.pystr())
-
-    future_valid = Future()
-    future_error = Future()
-
-    servient = Servient()
-    io_loop = tornado.ioloop.IOLoop.current()
-
-    @tornado.gen.coroutine
-    def from_url(url, fut, timeout_secs=2.0):
-        try:
-            exp_thing = yield ExposedThing.from_url(servient, url, timeout_secs=timeout_secs)
-            fut.set_result(exp_thing)
-        except Exception as ex:
-            fut.set_result(ex)
-
-    @tornado.gen.coroutine
-    def stop_loop():
-        yield [future_valid, future_error]
-        io_loop.stop()
-
-    logging.getLogger("tornado.access").disabled = True
-
-    io_loop.add_callback(from_url, url=url_valid, fut=future_valid)
-    io_loop.add_callback(from_url, url=url_error, fut=future_error)
-    io_loop.add_callback(stop_loop)
-    io_loop.start()
-
-    logging.getLogger("tornado.access").disabled = False
-
-    assert isinstance(future_error.result(), Exception)
-    assert_exposed_thing_equal(future_valid.result(), TD_EXAMPLE)
 
 
 def test_read_property(exposed_thing, thing_property_init):

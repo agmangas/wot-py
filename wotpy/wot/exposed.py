@@ -77,37 +77,6 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         return ExposedThing(servient=servient, thing=thing)
 
     @classmethod
-    def from_url(cls, servient, url, name=None, timeout_secs=10.0):
-        """Builds an ExposedThing initialized from the data
-        retrieved from the Thing Description document at the URL.
-        Returns a Future that resolves to the ExposedThing."""
-
-        future_thing = Future()
-
-        def fetch_td():
-            http_client = HTTPClient()
-            http_request = HTTPRequest(url, request_timeout=timeout_secs)
-            http_response = http_client.fetch(http_request)
-            td_doc = json.loads(http_response.body)
-            http_client.close()
-            return td_doc
-
-        def build_exposed_thing(ft):
-            try:
-                td_doc = ft.result()
-                exp_thing = cls.from_description(servient=servient, doc=td_doc, name=name)
-                future_thing.set_result(exp_thing)
-            except Exception as ex:
-                future_thing.set_exception(ex)
-
-        executor = ThreadPoolExecutor(max_workers=1)
-        future_td = executor.submit(fetch_td)
-        future_td.add_done_callback(build_exposed_thing)
-        executor.shutdown(wait=False)
-
-        return future_thing
-
-    @classmethod
     def from_description(cls, servient, doc, name=None):
         """Builds an ExposedThing initialized from
         the given Thing Description document."""
