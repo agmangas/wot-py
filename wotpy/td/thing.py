@@ -11,10 +11,9 @@ class Thing(object):
     """Describes a physical and/or virtual Thing (may represent one or
     more physical and / or virtual Things) in the Web of Thing context."""
 
-    def __init__(self, name, security=None, base=None):
+    def __init__(self, name):
         self.name = clean_str(name, warn=True)
-        self.security = security
-        self.base = base
+        self.base = None
         self._interactions = []
 
         self.semantic_types = ThingSemanticTypes()
@@ -80,9 +79,6 @@ class Thing(object):
 
         if self.base:
             doc.update({"base": self.base})
-
-        if self.security:
-            doc.update({"security": self.security})
 
         doc.update(self.semantic_metadata.to_dict())
 
