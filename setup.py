@@ -46,7 +46,9 @@ setup(
             'pytest-rerunfailures',
             'mock',
             'tox',
-            'faker'
+            'faker',
+            'Sphinx',
+            'sphinx-rtd-theme'
         ]
     }
 )

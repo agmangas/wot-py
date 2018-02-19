@@ -94,6 +94,9 @@ ENV/
 # Pytest
 .pytest_cache
 
+# Sphinx
+docs/_autosummary
+
 ### Eclipse template
 
 .metadata
