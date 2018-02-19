@@ -13,7 +13,6 @@ class Thing(object):
 
     def __init__(self, name):
         self.name = clean_str(name, warn=True)
-        self.base = None
         self._interactions = []
 
         self.semantic_types = ThingSemanticTypes()
@@ -67,7 +66,7 @@ class Thing(object):
             item_idx = self._interactions.index(interaction_remove)
             self._interactions.pop(item_idx)
 
-    def to_jsonld_dict(self):
+    def to_jsonld_dict(self, base=None):
         """Returns the JSON-LD dict representation for this instance."""
 
         doc = {
@@ -77,15 +76,15 @@ class Thing(object):
             "interaction": [item.to_jsonld_dict() for item in self.interactions]
         }
 
-        if self.base:
-            doc.update({"base": self.base})
+        if base is not None:
+            doc.update({"base": base})
 
         doc.update(self.semantic_metadata.to_dict())
 
         return doc
 
-    def to_jsonld_thing_description(self):
+    def to_jsonld_thing_description(self, base=None):
         """Returns an instance of JsonLDThingDescription that is a
         wrapper for the JSON-LD dictionary that represents this Thing."""
 
-        return JsonLDThingDescription(doc=self.to_jsonld_dict())
+        return JsonLDThingDescription(doc=self.to_jsonld_dict(base=base))
