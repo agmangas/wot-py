@@ -86,6 +86,12 @@ class BaseProtocolServer(object):
         raise NotImplementedError()
 
     @abstractmethod
+    def get_thing_base_url(self, hostname, exposed_thing):
+        """Returns the base URL for the given ExposedThing in the context of this server."""
+
+        raise NotImplementedError()
+
+    @abstractmethod
     def start(self):
         """Starts the server."""
 

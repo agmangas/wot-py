@@ -16,13 +16,6 @@ class WebsocketServer(BaseProtocolServer):
     DEFAULT_PORT = 81
     DEFAULT_PROTO = Protocols.WEBSOCKETS
 
-    @classmethod
-    def path_for_exposed_thing(cls, exposed_thing):
-        """Builds and returns the WebSockets endpoint path for the given ExposedThing.
-        This method is deterministic and the same thing will always produce the same path."""
-
-        return r"/{}".format(exposed_thing.thing.name)
-
     def __init__(self, port=DEFAULT_PORT, protocol=DEFAULT_PROTO):
         assert protocol in [Protocols.WEBSOCKETS]
         super(WebsocketServer, self).__init__(port=port, protocol=protocol)
@@ -48,14 +41,18 @@ class WebsocketServer(BaseProtocolServer):
         """Builds and returns a list with all Links that
         relate to this server for the given Interaction."""
 
-        hostname = hostname.rstrip("/")
-        base_url = "ws://{}:{}".format(hostname, self.port)
-        path_url = self.path_for_exposed_thing(exposed_thing=exposed_thing)
-        path_url = path_url.lstrip("/")
-        href = "{}/{}".format(base_url, path_url)
+        base_url = self.get_thing_base_url(hostname=hostname, exposed_thing=exposed_thing)
         media_type = MediaTypes.JSON
 
-        return [Form(interaction=interaction, protocol=self.protocol, href=href, media_type=media_type)]
+        return [Form(interaction=interaction, protocol=self.protocol, href=base_url, media_type=media_type)]
+
+    def get_thing_base_url(self, hostname, exposed_thing):
+        """Returns the base URL for the given ExposedThing in the context of this server."""
+
+        hostname = hostname.rstrip("/")
+        thing_path = "{}".format(exposed_thing.thing.name)
+
+        return "ws://{}:{}/{}".format(hostname, self.port, thing_path)
 
     def start(self):
         """Starts the server."""

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import re
 import time
 
 # noinspection PyPackageRequirements
@@ -13,6 +14,7 @@ import tornado.websocket
 from concurrent.futures import ThreadPoolExecutor
 # noinspection PyPackageRequirements
 from faker import Faker
+from six.moves.urllib.parse import urlparse, urlunparse
 
 from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketErrors
 from wotpy.protocols.ws.messages import \
@@ -101,9 +103,15 @@ class TestWebsocketHandler(tornado.testing.AsyncHTTPTestCase):
     def _build_root_url(self, exposed_thing):
         """Returns the WS connection URL for the given ExposedThing."""
 
-        return "ws://localhost:{}{}".format(
-            self.get_http_port(),
-            WebsocketServer.path_for_exposed_thing(exposed_thing))
+        base_url = self.ws_server.get_thing_base_url(hostname="localhost", exposed_thing=exposed_thing)
+        parsed_url = urlparse(base_url)
+        server_port = self.get_http_port()
+        test_netloc = re.sub(r':(\d+)$', ':{}'.format(server_port), parsed_url.netloc)
+
+        test_url_parts = list(parsed_url)
+        test_url_parts[1] = test_netloc
+
+        return urlunparse(test_url_parts)
 
     @tornado.testing.gen_test
     def test_not_found_error(self):
