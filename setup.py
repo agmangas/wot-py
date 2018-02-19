@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import sys
+
 from setuptools import setup, find_packages
+
+from wotpy.__version__ import __version__
 
 install_requires = [
     'tornado>=4.0,<5.0',
@@ -19,7 +22,7 @@ if sys.version_info[0] == 2:
 
 setup(
     name='wotpy',
-    version='0.2.0',
+    version=__version__,
     description='Python implementation of the W3C WoT standards',
     keywords='wot w3c ctic iot',
     author='Andres Garcia Mangas',
