@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Class that represents the JSON-LD serialization of an Interaction document.
+"""
+
 from jsonschema import validate
 
 from wotpy.td.enums import InteractionTypes

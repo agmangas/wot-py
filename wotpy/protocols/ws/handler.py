@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Class that handles incoming WebSockets messages.
+"""
+
 import uuid
 
 from jsonschema import validate, ValidationError
@@ -26,7 +30,9 @@ from wotpy.protocols.ws.schemas import \
 
 # noinspection PyAbstractClass
 class WebsocketHandler(websocket.WebSocketHandler):
-    """Tornado handler for Websocket messages."""
+    """Tornado handler for Websocket messages.
+    This class processes all incoming WebSocket messages and
+    translates them to actions executed on ExposedThing objects."""
 
     POLICY_VIOLATION_CODE = 1008
     POLICY_VIOLATION_REASON = "Not found"

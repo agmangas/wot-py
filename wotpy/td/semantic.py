@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Classes that act as containers for semantic information attached to objects in the Thing hierarchy.
+"""
+
 
 class ThingSemanticContext(object):
     """A container for the semantic context entries of a Thing."""

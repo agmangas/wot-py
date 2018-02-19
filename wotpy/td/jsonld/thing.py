@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Class that represents the JSON-LD serialization of a Thing Description document.
+"""
+
 import json
 
 from jsonschema import validate, ValidationError

@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Enumeration classes related to codecs.
+"""
+
 from wotpy.utils.enums import EnumListMixin
 
 

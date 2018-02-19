@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Classes that represent Scripting API dictionaries.
+"""
+
 from wotpy.wot.enums import DiscoveryMethod, TDChangeType, TDChangeMethod
 
 

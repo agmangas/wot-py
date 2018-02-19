@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Abstract interface for exposed Things.
+"""
+
 from abc import ABCMeta, abstractmethod
 
 
 class AbstractExposedThing(object):
+    """Interface for exposed Things."""
+
     __metaclass__ = ABCMeta
 
     @abstractmethod

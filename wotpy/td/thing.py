@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Class that represents a Thing.
+"""
+
 from wotpy.td.constants import WOT_TD_CONTEXT_URL, WOT_COMMON_CONTEXT_URL
 from wotpy.td.jsonld.thing import JsonLDThingDescription
 from wotpy.td.semantic import ThingSemanticContext, ThingSemanticMetadata, ThingSemanticTypes
@@ -8,8 +12,8 @@ from wotpy.utils.strings import clean_str
 
 
 class Thing(object):
-    """Describes a physical and/or virtual Thing (may represent one or
-    more physical and / or virtual Things) in the Web of Thing context."""
+    """An abstraction of a physical or virtual entity whose metadata
+    and interfaces are described by a WoT Thing Description."""
 
     def __init__(self, name):
         self.name = clean_str(name, warn=True)

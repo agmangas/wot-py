@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Class that represents the JSON-LD serialization of a Form document.
+"""
+
 from jsonschema import validate
 
 from wotpy.td.jsonld.schemas import SCHEMA_FORM

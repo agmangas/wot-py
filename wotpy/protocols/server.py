@@ -1,13 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Class that represents the abstract server interface.
+"""
+
 from abc import ABCMeta, abstractmethod
 
 from wotpy.protocols.enums import ProtocolSchemes
 
 
 class BaseProtocolServer(object):
-    """Base protocol server class."""
+    """Base protocol server class.
+    This is the interface that must be implemented by all server classes."""
 
     __metaclass__ = ABCMeta
 

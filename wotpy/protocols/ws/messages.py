@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Classes that represent JSON-RPC messages exchanged over WebSockets.
+"""
+
 import json
 
 from jsonschema import validate, ValidationError

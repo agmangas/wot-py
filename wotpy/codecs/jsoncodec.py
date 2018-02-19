@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Class that implements the JSON codec.
+"""
+
 import json
 
 from wotpy.codecs.base import BaseCodec

@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Class that represents a Thing consumed by a servient.
+"""
+
 from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 
 
 class ConsumedThing(AbstractConsumedThing):
     """An entity that serves to interact with a Thing.
-    An application uses this class when it acts as a 'client' of the Thing."""
+    An application uses this class when it acts as a *client* of the Thing."""
 
     def __init__(self, servient, jsonld_td):
         self.servient = servient

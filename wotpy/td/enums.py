@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Enumerations related to objects in the Thing hierarchy.
+"""
+
 from wotpy.utils.enums import EnumListMixin
 
 

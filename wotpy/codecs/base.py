@@ -1,9 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Class that represents the codec interface.
+"""
+
 
 class BaseCodec(object):
-    """Base codec class."""
+    """Base codec abstract class.
+    All codecs must implement this interface."""
 
     @property
     def media_types(self):

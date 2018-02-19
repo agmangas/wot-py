@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Classes that represent all interaction patterns.
+"""
+
 from abc import ABCMeta, abstractmethod
 
 from wotpy.td.enums import InteractionTypes
@@ -9,6 +13,8 @@ from wotpy.utils.strings import clean_str
 
 
 class InteractionPattern(object):
+    """A functionality exposed by Thing that is defined by the TD Interaction Model."""
+
     __metaclass__ = ABCMeta
 
     def __init__(self, thing, name):

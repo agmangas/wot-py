@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Classes that represent events that are emitted by Things.
+"""
+
 from wotpy.wot.enums import DefaultThingEvent
 
 

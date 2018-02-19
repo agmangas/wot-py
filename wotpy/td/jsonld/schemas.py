@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Schemas following the JSON Schema specification used to validate the shape of Thing Description documents.
+"""
+
 from wotpy.td.enums import InteractionTypes
 
 

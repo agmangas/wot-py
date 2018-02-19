@@ -1,10 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Abstract interface for consumed Things.
+"""
+
 from abc import ABCMeta, abstractmethod, abstractproperty
 
 
 class AbstractConsumedThing(object):
+    """Interface for consumed Things.
+    All Things (both consumed and exposed) implement this."""
+
     __metaclass__ = ABCMeta
 
     @abstractproperty

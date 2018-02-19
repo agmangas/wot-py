@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Class that represents an Thing exposed by a servient.
+"""
+
 import six
 # noinspection PyCompatibility
 from concurrent.futures import Future

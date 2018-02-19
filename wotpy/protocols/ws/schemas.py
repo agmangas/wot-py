@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Schemas following the JSON Schema specification used to validate the shape of WebSockets messages.
+"""
+
 from wotpy.protocols.ws.enums import WebsocketMethods
 
 JSON_RPC_VERSION = "2.0"

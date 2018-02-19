@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Class that implements the WebSockets server.
+"""
+
 from tornado import web
 
 from wotpy.codecs.enums import MediaTypes
@@ -11,7 +15,10 @@ from wotpy.td.form import Form
 
 
 class WebsocketServer(BaseProtocolServer):
-    """Websockets binding server implementation."""
+    """WebSockets binding server implementation.
+    Builds a Tornado application that uses the
+    :py:class:`wotpy.protocols.ws.handler.WebsocketHandler`
+    handler to process WebSockets messages."""
 
     DEFAULT_PORT = 81
     DEFAULT_PROTO = Protocols.WEBSOCKETS
@@ -29,6 +36,7 @@ class WebsocketServer(BaseProtocolServer):
         return self._app
 
     def _build_app(self):
+
         """Builds and returns the Tornado application for the WebSockets server."""
 
         return web.Application([(

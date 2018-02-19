@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Utilities related to strings.
+"""
+
 import warnings
 import string
 

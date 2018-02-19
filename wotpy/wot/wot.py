@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Class that serves as the WoT entrypoint.
+"""
+
 import json
 
 import six
@@ -16,7 +20,9 @@ DEFAULT_FETCH_TIMEOUT_SECS = 20.0
 
 
 class WoT(object):
-    """WoT entrypoint."""
+    """The WoT object is the API entry point and it is exposed by an
+    implementation of the WoT Runtime. The WoT object does not expose
+    properties, only methods for discovering, consuming and exposing a Thing."""
 
     def __init__(self, servient):
         self._servient = servient

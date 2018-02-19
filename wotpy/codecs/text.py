@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Class that implements the text codec.
+"""
+
 from wotpy.codecs.base import BaseCodec
 from wotpy.codecs.enums import MediaTypes
 

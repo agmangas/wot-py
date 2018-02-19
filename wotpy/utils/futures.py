@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Utilities related to Futures and Promise-like objects.
+"""
+
 import tornado.concurrent
 # noinspection PyCompatibility
 import concurrent.futures

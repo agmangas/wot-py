@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Class that represents the form entities exposed by interactions.
+"""
+
 from wotpy.td.semantic import ThingSemanticMetadata
 
 

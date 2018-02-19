@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Classes that contain various enumerations.
+"""
+
 from wotpy.utils.enums import EnumListMixin
 
 
@@ -35,7 +39,7 @@ class TDChangeType(EnumListMixin):
 
 class TDChangeMethod(EnumListMixin):
     """This attribute tells what operation has been
-    applied, addition, removal or change.."""
+    applied to the TD: addition, removal or change."""
 
     ADD = "add"
     REMOVE = "remove"
