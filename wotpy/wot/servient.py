@@ -3,8 +3,8 @@
 
 import socket
 
+import six
 import tornado.web
-from six import string_types
 
 from wotpy.wot.wot import WoT
 
@@ -20,11 +20,25 @@ class Servient(object):
 
     def __init__(self, hostname=None):
         self._hostname = hostname or socket.getfqdn()
-        assert isinstance(self._hostname, string_types), "Invalid hostname"
+        assert isinstance(self._hostname, six.string_types), "Invalid hostname"
         self._servers = {}
         self._exposed_things = {}
         self._catalogue_port = None
         self._catalogue_server = None
+
+    def _get_base_url(self, exposed_thing):
+        """Return the base URL for the given ExposedThing
+        for one of the currently active servers."""
+
+        assert exposed_thing.name in self._exposed_things
+
+        if not len(self._servers):
+            return None
+
+        protocol = sorted(list(self._servers.keys()))[0]
+        server = self._servers[protocol]
+
+        return server.get_thing_base_url(hostname=self._hostname, exposed_thing=exposed_thing)
 
     def _build_td_catalogue_app(self):
         """Returns a Tornado app that provides one endpoint to retrieve the
@@ -38,12 +52,13 @@ class Servient(object):
             all thing descriptions from this servient."""
 
             def get(self):
-                descriptions_map = {
-                    name: exp_thing.thing.to_jsonld_dict()
-                    for name, exp_thing in servient._exposed_things.items()
-                }
+                descriptions = {}
 
-                self.write(descriptions_map)
+                for name, exp_thing in six.iteritems(servient._exposed_things):
+                    base = servient._get_base_url(exp_thing)
+                    descriptions[name] = exp_thing.thing.to_jsonld_dict(base=base)
+
+                self.write(descriptions)
 
         return tornado.web.Application([(r"/", TDCatalogueHandler)])
 
