@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import json
-
 import six
 # noinspection PyCompatibility
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import Future
 from rx import Observable
 from rx.subjects import Subject
-from tornado.httpclient import HTTPClient, HTTPRequest
 
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.interaction import Property, Action, Event
@@ -270,7 +267,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
                 interaction_name=name,
                 interaction_type=InteractionTypes.PROPERTY)
 
-            assert interaction.writable, "Property is not writable"
+            if not interaction.writable:
+                raise TypeError("Property is non-writable")
 
             handler = self._get_handler(
                 handler_type=self.HandlerKeys.UPDATE_PROPERTY,
@@ -284,10 +282,11 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         # noinspection PyUnusedLocal
         def publish_write_property_event(ft):
-            event_data = PropertyChangeEventInit(name=name, value=value)
-            self._events_stream.on_next(PropertyChangeEmittedEvent(init=event_data))
+            event_init = PropertyChangeEventInit(name=name, value=value)
+            self._events_stream.on_next(PropertyChangeEmittedEvent(init=event_init))
 
-        future_write.add_done_callback(publish_write_property_event)
+        if interaction.observable:
+            future_write.add_done_callback(publish_write_property_event)
 
         return future_write
 
@@ -315,12 +314,13 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         # noinspection PyBroadException
         def publish_invoke_action_event(ft):
             try:
-                return_value = ft.result()
-                event_data = ActionInvocationEventInit(action_name=name, return_value=return_value)
-                emitted_event = ActionInvocationEmittedEvent(init=event_data)
-                self._events_stream.on_next(emitted_event)
+                result = ft.result()
             except Exception:
-                pass
+                return
+
+            event_init = ActionInvocationEventInit(action_name=name, return_value=result)
+            emitted_event = ActionInvocationEmittedEvent(init=event_init)
+            self._events_stream.on_next(emitted_event)
 
         future_invoke.add_done_callback(publish_invoke_action_event)
 

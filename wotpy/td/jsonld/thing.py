@@ -22,7 +22,7 @@ class JsonLDThingDescription(object):
 
         validate(self._doc, SCHEMA_THING_DESCRIPTION)
 
-        if WOT_TD_CONTEXT_URL not in self._doc.get("@context", []):
+        if WOT_TD_CONTEXT_URL not in (self.context or []):
             raise ValidationError("Missing context: {}".format(WOT_TD_CONTEXT_URL))
 
     @property
