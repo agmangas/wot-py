@@ -19,15 +19,6 @@ class DiscoveryMethod(EnumListMixin):
     OTHER = "other"
 
 
-class RequestType(EnumListMixin):
-    """Enumeration of request types."""
-
-    PROPERTY = "property"
-    ACTION = "action"
-    EVENT = "event"
-    TD = "td"
-
-
 class TDChangeType(EnumListMixin):
     """Represents the change type, whether has it been
     applied on properties, Actions or Events."""
