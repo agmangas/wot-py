@@ -7,7 +7,7 @@ Table of Contents
 .. toctree::
     :maxdepth: 2
 
-    api-toctree
+    api
 
 Indices and tables
 ------------------
