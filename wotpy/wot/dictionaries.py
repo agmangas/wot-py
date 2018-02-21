@@ -215,7 +215,12 @@ class ThingEventInit(SemanticAnnotations):
 
 
 class PropertyChangeEventInit(object):
-    """Represents the data contained in a property update event."""
+    """Represents the data contained in a property update event.
+
+    Args:
+        name (str): Name of the property
+        value (int): Value of the property
+    """
 
     def __init__(self, name, value):
         self.name = name
@@ -223,7 +228,12 @@ class PropertyChangeEventInit(object):
 
 
 class ActionInvocationEventInit(object):
-    """Represents the data contained in an action invocation event."""
+    """Represents the data contained in an action invocation event.
+
+    Args:
+        action_name (str): Name of the property
+        return_value: Result returned by the action invocation
+    """
 
     def __init__(self, action_name, return_value):
         self.action_name = action_name
@@ -231,7 +241,16 @@ class ActionInvocationEventInit(object):
 
 
 class ThingDescriptionChangeEventInit(object):
-    """Represents the data contained in a thing description update event."""
+    """Represents the data contained in a thing description update event.
+
+    Args:
+        td_change_type (str): An item of enumeration :py:class:`.TDChangeType`
+        method (str): An item of enumeration :py:class:`.TDChangeMethod`
+        name (str): Name of the Interaction
+        data (int): An instance of :py:class:`.ThingPropertyInit`, :py:class:`.ThingActionInit`
+            or :py:class:`.ThingEventInit` (or ``None`` if no interaction was added to the TD)
+        description (object): A dict that represents a TD serialized to JSON-LD
+    """
 
     def __init__(self, td_change_type, method, name, data=None, description=None):
         assert td_change_type in TDChangeType.list()
