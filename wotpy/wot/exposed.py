@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Class that represents an Thing exposed by a servient.
+Classes that represent Things exposed by a servient.
 """
 
 import six
@@ -75,6 +75,22 @@ class ExposedThingGroup(object):
 
         def is_match(exp_thing):
             return exp_thing.name == name or exp_thing.url_name == name
+
+        return next((item for item in self._exposed_things.values() if is_match(item)), None)
+
+    def find_by_interaction(self, interaction):
+        """Finds the ExposedThing whose Thing contains the given Interaction."""
+
+        def is_match(exp_thing):
+            return exp_thing.thing is interaction.thing
+
+        return next((item for item in self._exposed_things.values() if is_match(item)), None)
+
+    def find_by_thing(self, thing):
+        """Finds the ExposedThing that is linked to the given Thing."""
+
+        def is_match(exp_thing):
+            return exp_thing.thing is thing
 
         return next((item for item in self._exposed_things.values() if is_match(item)), None)
 
