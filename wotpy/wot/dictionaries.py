@@ -249,7 +249,7 @@ class ThingDescriptionChangeEventInit(object):
         name (str): Name of the Interaction
         data (int): An instance of :py:class:`.ThingPropertyInit`, :py:class:`.ThingActionInit`
             or :py:class:`.ThingEventInit` (or ``None`` if no interaction was added to the TD)
-        description (object): A dict that represents a TD serialized to JSON-LD
+        description (dict): A dict that represents a TD serialized to JSON-LD
     """
 
     def __init__(self, td_change_type, method, name, data=None, description=None):
