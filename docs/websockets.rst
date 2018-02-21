@@ -13,7 +13,7 @@ Form elements associated with the WebSockets binding that are found in Thing Des
 JSON-LD have the following format::
 
     {
-        "href": "ws://agmangas-macpro.fundacionctic.org:9393/TemperatureThing",
+        "href": "ws://host.fundacionctic.org:9393/temperaturething",
         "mediaType": "application/json"
     }
 
@@ -110,7 +110,9 @@ Request::
     {
         "jsonrpc": "2.0",
         "method": "read_property",
-        "params": {"name": "property_name"},
+        "params": {
+            "name": <property_name>
+        },
         "id": "09bca9be-7e78-4106-bf4e-e3d503290191"
     }
 
@@ -118,7 +120,7 @@ Response::
 
     {
         "jsonrpc": "2.0",
-        "result": "property_value",
+        "result": <property_value>,
         "id": "09bca9be-7e78-4106-bf4e-e3d503290191"
     }
 
@@ -131,8 +133,8 @@ Request::
         "jsonrpc": "2.0",
         "method": "write_property",
         "params": {
-            "name": "property_name",
-            "value": "property_value"
+            "name": <property_name>,
+            "value": <property_value>
         },
         "id": "77b06e1f-02dd-4f17-a551-f86045d07099"
     }
@@ -145,14 +147,154 @@ Response::
         "id": "77b06e1f-02dd-4f17-a551-f86045d07099"
     }
 
+The value of ``result`` will always contain ``null`` to indicate that the property update was successfully applied.
+
 Invoke Action
 ^^^^^^^^^^^^^
+
+Request::
+
+    {
+        "jsonrpc": "2.0",
+        "method": "invoke_action",
+        "params": {
+            "name": <action_name>,
+            "parameters": <invocation_parameters>
+        },
+        "id": "ec7455c4-f08a-4e8f-85c1-8b944ad9dc0e"
+    }
+
+Response::
+
+    {
+        "jsonrpc": "2.0",
+        "result": <action_result>,
+        "id": "ec7455c4-f08a-4e8f-85c1-8b944ad9dc0e"
+    }
 
 Observe Property changes
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
+Request::
+
+    {
+        "jsonrpc": "2.0",
+        "method": "on_property_change",
+        "params": {
+            "name": <property_name>
+        },
+        "id": "dcd518b1-97d6-4b4b-9483-f26907734165"
+    }
+
+Response::
+
+    {
+        "jsonrpc": "2.0",
+        "result": <subscription_id>,
+        "id": "dcd518b1-97d6-4b4b-9483-f26907734165"
+    }
+
+Message sent by the server for each property change::
+
+    {
+        "subscription": <subscription_id>,
+        "name": "propertychange",
+        "data": {
+            "name": <property_name>,
+            "value": <property_value>
+        }
+    }
+
+The value of ``data`` contains a JSON object that is the dict representation of an instance of
+:py:class:`.PropertyChangeEventInit`.
+
 Observe Event
 ^^^^^^^^^^^^^
 
+Request::
+
+    {
+        "jsonrpc": "2.0",
+        "method": "on_event",
+        "params": {
+            "name": <event_name>
+        },
+        "id": "7fc84fa6-ef83-474c-8c91-06965bde3749"
+    }
+
+Response::
+
+    {
+        "jsonrpc": "2.0",
+        "result": <subscription_id>,
+        "id": "7fc84fa6-ef83-474c-8c91-06965bde3749"
+    }
+
+Message sent by the server for each event emission::
+
+    {
+        "subscription": <subscription_id>,
+        "name": <event_name>,
+        "data": <event_payload>
+    }
+
 Observe TD changes
 ^^^^^^^^^^^^^^^^^^
+
+Request::
+
+    {
+        "jsonrpc": "2.0",
+        "method": "on_td_change",
+        "params": {},
+        "id": "d52636f1-0c45-4603-8b7b-326937891917"
+    }
+
+Response::
+
+    {
+        "jsonrpc": "2.0",
+        "result": <subscription_id>,
+        "id": "d52636f1-0c45-4603-8b7b-326937891917"
+    }
+
+Message sent by the server for each Thing Description change::
+
+    {
+        "subscription": <subscription_id>,
+        "name": "descriptionchange",
+        "data": {
+            "td_change_type": <td_change_type>,
+            "method": <method>,
+            "name": <name>,
+            "data": <data>,
+            "description": <description>
+        }
+    }
+
+The value of ``data`` contains a JSON object that is the dict representation of an instance of
+:py:class:`.ThingDescriptionChangeEventInit`.
+
+Dispose subscription
+^^^^^^^^^^^^^^^^^^^^
+
+Request::
+
+    {
+        "jsonrpc": "2.0",
+        "method": "dispose",
+        "params": {
+            "subscription": <subscription_id>
+        },
+        "id": "e02de075-7d5f-4466-b901-2ffd96437939"
+    }
+
+Response::
+
+    {
+        "jsonrpc": "2.0",
+        "result": <subscription_id>,
+        "id": "e02de075-7d5f-4466-b901-2ffd96437939"
+    }
+
+The value of ``result`` may contain ``null`` if an active subscription for the given ID could not be found.
