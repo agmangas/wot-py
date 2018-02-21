@@ -50,7 +50,7 @@ class Servient(object):
         protocol = sorted(list(self._servers.keys()))[0]
         server = self._servers[protocol]
 
-        return server.get_thing_base_url(hostname=self._hostname, exposed_thing=exposed_thing)
+        return server.build_base_url(hostname=self._hostname, thing=exposed_thing.thing)
 
     def _build_td_catalogue_app(self):
         """Returns a Tornado app that provides one endpoint to retrieve the
@@ -67,8 +67,9 @@ class Servient(object):
                 descriptions = {}
 
                 for exp_thing in servient._exposed_thing_group.exposed_things:
-                    base = servient._get_base_url(exp_thing)
-                    descriptions[exp_thing.url_name] = exp_thing.thing.to_jsonld_dict(base=base)
+                    base_url = servient._get_base_url(exp_thing)
+                    td_key = exp_thing.url_name
+                    descriptions[td_key] = exp_thing.thing.to_jsonld_dict(base=base_url)
 
                 self.write(descriptions)
 
@@ -92,21 +93,21 @@ class Servient(object):
         self._catalogue_server.stop()
         self._catalogue_server = None
 
-    def _clean_protocol_links(self, exposed_thing, protocol):
-        """Removes all interaction links related to this
+    def _clean_protocol_forms(self, exposed_thing, protocol):
+        """Removes all interaction forms linked to this
         server protocol for the given ExposedThing."""
 
         assert self._exposed_thing_group.contains(exposed_thing)
         assert protocol in self._servers
 
         for interaction in exposed_thing.thing.interactions:
-            links_to_remove = [
-                link for link in interaction.forms
-                if link.protocol == protocol
+            forms_to_remove = [
+                form for form in interaction.forms
+                if form.protocol == protocol
             ]
 
-            for link in links_to_remove:
-                interaction.remove_form(link)
+            for form in forms_to_remove:
+                interaction.remove_form(form)
 
     def _server_has_exposed_thing(self, server, exposed_thing):
         """Returns True if the given server contains the ExposedThing."""
@@ -116,30 +117,27 @@ class Servient(object):
 
         return server.exposed_thing_group.contains(exposed_thing)
 
-    def _add_interaction_links(self, server, exposed_thing):
+    def _add_interaction_forms(self, server, exposed_thing):
         """Builds and adds to the ExposedThing the Links related to the given server."""
 
         assert server in self._servers.values()
         assert self._exposed_thing_group.contains(exposed_thing)
 
         for interaction in exposed_thing.thing.interactions:
-            links = server.links_for_interaction(
-                hostname=self._hostname,
-                exposed_thing=exposed_thing,
-                interaction=interaction)
+            forms = server.build_forms(hostname=self._hostname, interaction=interaction)
 
-            for link in links:
-                interaction.add_form(link)
+            for form in forms:
+                interaction.add_form(form)
 
-    def _regenerate_server_links(self, server):
+    def _regenerate_server_forms(self, server):
         """Cleans and regenerates Links for the given server in all ExposedThings."""
 
         assert server in self._servers.values()
 
         for exp_thing in self._exposed_thing_group.exposed_things:
-            self._clean_protocol_links(exp_thing, server.protocol)
+            self._clean_protocol_forms(exp_thing, server.protocol)
             if self._server_has_exposed_thing(server, exp_thing):
-                self._add_interaction_links(server, exp_thing)
+                self._add_interaction_forms(server, exp_thing)
 
     def add_server(self, server):
         """Adds a new server under this servient."""
@@ -162,7 +160,7 @@ class Servient(object):
 
         for server in self._servers.values():
             server.add_exposed_thing(exposed_thing)
-            self._regenerate_server_links(server)
+            self._regenerate_server_forms(server)
 
     def disable_exposed_thing(self, name):
         """Disables the ExposedThing with the given name.
@@ -172,7 +170,7 @@ class Servient(object):
 
         for server in self._servers.values():
             server.remove_exposed_thing(exposed_thing.name)
-            self._regenerate_server_links(server)
+            self._regenerate_server_forms(server)
 
     def add_exposed_thing(self, exposed_thing):
         """Adds a ExposedThing to this servient.

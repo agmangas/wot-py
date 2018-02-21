@@ -103,7 +103,7 @@ class TestWebsocketHandler(tornado.testing.AsyncHTTPTestCase):
     def _build_root_url(self, exposed_thing):
         """Returns the WS connection URL for the given ExposedThing."""
 
-        base_url = self.ws_server.get_thing_base_url(hostname="localhost", exposed_thing=exposed_thing)
+        base_url = self.ws_server.build_base_url(hostname="localhost", thing=exposed_thing.thing)
         parsed_url = urlparse(base_url)
         server_port = self.get_http_port()
         test_netloc = re.sub(r':(\d+)$', ':{}'.format(server_port), parsed_url.netloc)

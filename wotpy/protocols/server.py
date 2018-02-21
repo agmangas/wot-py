@@ -83,15 +83,15 @@ class BaseProtocolServer(object):
         return exposed_thing
 
     @abstractmethod
-    def links_for_interaction(self, hostname, exposed_thing, interaction):
-        """Builds and returns a list with all Links that
-        relate to this server for the given Interaction."""
+    def build_forms(self, hostname, interaction):
+        """Builds and returns a list with all Form that are
+        linked to this server for the given Interaction."""
 
         raise NotImplementedError()
 
     @abstractmethod
-    def get_thing_base_url(self, hostname, exposed_thing):
-        """Returns the base URL for the given ExposedThing in the context of this server."""
+    def build_base_url(self, hostname, thing):
+        """Returns the base URL for the given Thing in the context of this server."""
 
         raise NotImplementedError()
 

@@ -15,10 +15,8 @@ from wotpy.td.form import Form
 
 
 class WebsocketServer(BaseProtocolServer):
-    """WebSockets binding server implementation.
-    Builds a Tornado application that uses the
-    :py:class:`wotpy.protocols.ws.handler.WebsocketHandler`
-    handler to process WebSockets messages."""
+    """WebSockets binding server implementation. Builds a Tornado application
+    that uses the WebsocketHandler handler to process WebSockets messages."""
 
     DEFAULT_PORT = 81
     DEFAULT_PROTO = Protocols.WEBSOCKETS
@@ -44,20 +42,26 @@ class WebsocketServer(BaseProtocolServer):
             {"websocket_server": self}
         )])
 
-    def links_for_interaction(self, hostname, exposed_thing, interaction):
-        """Builds and returns a list with all Links that
-        relate to this server for the given Interaction."""
+    def build_forms(self, hostname, interaction):
+        """Builds and returns a list with all Form that are
+        linked to this server for the given Interaction."""
 
-        base_url = self.get_thing_base_url(hostname=hostname, exposed_thing=exposed_thing)
+        exposed_thing = self.exposed_thing_group.find_by_interaction(interaction)
+
+        assert exposed_thing
+
+        base_url = self.build_base_url(hostname=hostname, thing=exposed_thing.thing)
         media_type = MediaTypes.JSON
 
         return [Form(interaction=interaction, protocol=self.protocol, href=base_url, media_type=media_type)]
 
-    def get_thing_base_url(self, hostname, exposed_thing):
-        """Returns the base URL for the given ExposedThing in the context of this server."""
+    def build_base_url(self, hostname, thing):
+        """Returns the base URL for the given Thing in the context of this server."""
+
+        assert self.exposed_thing_group.find_by_thing(thing)
 
         hostname = hostname.rstrip("/")
-        thing_path = "{}".format(exposed_thing.thing.url_name)
+        thing_path = "{}".format(thing.url_name)
 
         return "ws://{}:{}/{}".format(hostname, self.port, thing_path)
 
