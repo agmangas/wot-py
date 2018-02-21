@@ -141,7 +141,7 @@ Response::
 
     {
         "jsonrpc": "2.0",
-        "result": None,
+        "result": null,
         "id": "77b06e1f-02dd-4f17-a551-f86045d07099"
     }
 
