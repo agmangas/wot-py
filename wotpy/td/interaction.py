@@ -7,9 +7,12 @@ Classes that represent all interaction patterns.
 
 from abc import ABCMeta, abstractmethod
 
+# noinspection PyPackageRequirements
+from slugify import slugify
+
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.semantic import ThingSemanticMetadata, ThingSemanticTypes
-from wotpy.utils.strings import clean_str
+from wotpy.utils.strings import is_safe_name
 
 
 class InteractionPattern(object):
@@ -18,25 +21,35 @@ class InteractionPattern(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, thing, name):
+        if not is_safe_name(name):
+            raise ValueError("Unsafe Interaction name: {}".format(name))
+
         self.thing = thing
-        self.name = clean_str(name, warn=True)
+        self.name = name
         self._forms = []
 
         self.semantic_types = ThingSemanticTypes()
         self.semantic_metadata = ThingSemanticMetadata()
 
-    def __eq__(self, other):
-        return self.thing == other.thing and \
-               self.name == other.name
+    @property
+    def id(self):
+        """Returns the ID of this Interaction.
+        The ID is a hash that is based on its URL-safe name and the ID of its Thing.
+        No two Interactions with the same ID may exist within the same Thing."""
 
-    def __hash__(self):
-        return hash((self.thing, self.name))
+        return hash((self.thing.id, self.url_name))
+
+    @property
+    def url_name(self):
+        """URL-safe version of the name."""
+
+        return slugify(self.name)
 
     @property
     def forms(self):
         """Sequence of forms linked to this interaction."""
 
-        return self._forms
+        return self._forms[:]
 
     @property
     def types(self):
@@ -47,8 +60,12 @@ class InteractionPattern(object):
     def add_form(self, form):
         """Add a new Form."""
 
-        if form in self._forms:
-            raise ValueError("Already existing Form")
+        assert form.interaction is self
+
+        exists_id = next((True for item in self._forms if item.id == form.id), False)
+
+        if exists_id:
+            raise ValueError("Duplicated Form: {}".format(form))
 
         self._forms.append(form)
 

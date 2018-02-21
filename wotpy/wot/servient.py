@@ -10,6 +10,7 @@ import socket
 import six
 import tornado.web
 
+from wotpy.wot.exposed import ExposedThingGroup
 from wotpy.wot.wot import WoT
 
 
@@ -26,15 +27,22 @@ class Servient(object):
         self._hostname = hostname or socket.getfqdn()
         assert isinstance(self._hostname, six.string_types), "Invalid hostname"
         self._servers = {}
-        self._exposed_things = {}
         self._catalogue_port = None
         self._catalogue_server = None
+        self._exposed_thing_group = ExposedThingGroup()
+
+    @property
+    def exposed_thing_group(self):
+        """Returns the ExposedThingGroup instance that
+        contains the ExposedThings of this servient."""
+
+        return self._exposed_thing_group
 
     def _get_base_url(self, exposed_thing):
         """Return the base URL for the given ExposedThing
         for one of the currently active servers."""
 
-        assert exposed_thing.name in self._exposed_things
+        assert self._exposed_thing_group.contains(exposed_thing)
 
         if not len(self._servers):
             return None
@@ -58,9 +66,9 @@ class Servient(object):
             def get(self):
                 descriptions = {}
 
-                for name, exp_thing in six.iteritems(servient._exposed_things):
+                for exp_thing in servient._exposed_thing_group.exposed_things:
                     base = servient._get_base_url(exp_thing)
-                    descriptions[name] = exp_thing.thing.to_jsonld_dict(base=base)
+                    descriptions[exp_thing.url_name] = exp_thing.thing.to_jsonld_dict(base=base)
 
                 self.write(descriptions)
 
@@ -88,7 +96,7 @@ class Servient(object):
         """Removes all interaction links related to this
         server protocol for the given ExposedThing."""
 
-        assert exposed_thing in self._exposed_things.values()
+        assert self._exposed_thing_group.contains(exposed_thing)
         assert protocol in self._servers
 
         for interaction in exposed_thing.thing.interactions:
@@ -104,19 +112,15 @@ class Servient(object):
         """Returns True if the given server contains the ExposedThing."""
 
         assert server in self._servers.values()
-        assert exposed_thing in self._exposed_things.values()
+        assert self._exposed_thing_group.contains(exposed_thing)
 
-        try:
-            server.get_exposed_thing(exposed_thing.name)
-            return True
-        except ValueError:
-            return False
+        return server.exposed_thing_group.contains(exposed_thing)
 
     def _add_interaction_links(self, server, exposed_thing):
         """Builds and adds to the ExposedThing the Links related to the given server."""
 
         assert server in self._servers.values()
-        assert exposed_thing in self._exposed_things.values()
+        assert self._exposed_thing_group.contains(exposed_thing)
 
         for interaction in exposed_thing.thing.interactions:
             links = server.links_for_interaction(
@@ -132,10 +136,10 @@ class Servient(object):
 
         assert server in self._servers.values()
 
-        for exposed_thing in self._exposed_things.values():
-            self._clean_protocol_links(exposed_thing, server.protocol)
-            if self._server_has_exposed_thing(server, exposed_thing):
-                self._add_interaction_links(server, exposed_thing)
+        for exp_thing in self._exposed_thing_group.exposed_things:
+            self._clean_protocol_links(exp_thing, server.protocol)
+            if self._server_has_exposed_thing(server, exp_thing):
+                self._add_interaction_links(server, exp_thing)
 
     def add_server(self, server):
         """Adds a new server under this servient."""
@@ -154,11 +158,9 @@ class Servient(object):
         """Enables the ExposedThing with the given name.
         This is, the servers will listen for requests for this thing."""
 
-        if name not in self._exposed_things:
-            raise ValueError("Unknown thing: {}".format(name))
+        exposed_thing = self.get_exposed_thing(name)
 
         for server in self._servers.values():
-            exposed_thing = self._exposed_things[name]
             server.add_exposed_thing(exposed_thing)
             self._regenerate_server_links(server)
 
@@ -166,26 +168,28 @@ class Servient(object):
         """Disables the ExposedThing with the given name.
         This is, the servers will not listen for requests for this thing."""
 
-        if name not in self._exposed_things:
-            raise ValueError("Unknown thing: {}".format(name))
+        exposed_thing = self.get_exposed_thing(name)
 
         for server in self._servers.values():
-            server.remove_exposed_thing(name)
+            server.remove_exposed_thing(exposed_thing.name)
             self._regenerate_server_links(server)
 
     def add_exposed_thing(self, exposed_thing):
         """Adds a ExposedThing to this servient.
         ExposedThings are disabled by default."""
 
-        self._exposed_things[exposed_thing.name] = exposed_thing
+        self._exposed_thing_group.add(exposed_thing)
 
     def get_exposed_thing(self, name):
-        """Gets a ExposedThing by name."""
+        """Finds and returns an ExposedThing contained in this servient by name.
+        Raises ValueError if the ExposedThing is not present."""
 
-        if name not in self._exposed_things:
-            raise ValueError("Unknown thing: {}".format(name))
+        exp_thing = self._exposed_thing_group.find(name)
 
-        return self._exposed_things[name]
+        if exp_thing is None:
+            raise ValueError("Unknown Exposed Thing: {}".format(name))
+
+        return exp_thing
 
     def enable_td_catalogue(self, port):
         """Enables the servient TD catalogue in the given port."""

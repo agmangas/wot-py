@@ -30,6 +30,55 @@ from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 from wotpy.wot.interfaces.exposed import AbstractExposedThing
 
 
+class ExposedThingGroup(object):
+    """Represents a group of ExposedThing objects.
+    A group cannot contain two ExposedThing with the same Thing ID."""
+
+    def __init__(self):
+        self._exposed_things = {}
+
+    @property
+    def exposed_things(self):
+        """A generator that yields all the ExposedThing contained in this group."""
+
+        for exposed_thing in self._exposed_things.values():
+            yield exposed_thing
+
+    def contains(self, exposed_thing):
+        """Returns True if this group contains the given ExposedThing."""
+
+        return exposed_thing in self._exposed_things.values()
+
+    def add(self, exposed_thing):
+        """Add a new ExposedThing to this set."""
+
+        if exposed_thing.thing.id in self._exposed_things:
+            raise ValueError("Duplicated Exposed Thing: {}".format(exposed_thing.name))
+
+        self._exposed_things[exposed_thing.thing.id] = exposed_thing
+
+    def remove(self, name):
+        """Removes an existing ExposedThing by name.
+        The name argument may be the original name or the URL-safe version."""
+
+        exposed_thing = self.find(name)
+
+        if exposed_thing is None:
+            raise ValueError("Unknown Exposed Thing: {}".format(name))
+
+        assert exposed_thing.thing.id in self._exposed_things
+        self._exposed_things.pop(exposed_thing.thing.id)
+
+    def find(self, name):
+        """Finds an existing ExposedThing by name.
+        The name argument may be the original name or the URL-safe version."""
+
+        def is_match(exp_thing):
+            return exp_thing.name == name or exp_thing.url_name == name
+
+        return next((item for item in self._exposed_things.values() if is_match(item)), None)
+
+
 class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
     """An entity that serves to define the behavior of a Thing.
     An application uses this class when it acts as the Thing 'server'."""
@@ -68,6 +117,12 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         }
 
         self._events_stream = Subject()
+
+    def __eq__(self, other):
+        return self.servient == other.servient and self.thing == other.thing
+
+    def __hash__(self):
+        return hash((self.servient, self.thing))
 
     @classmethod
     def from_name(cls, servient, name):
@@ -167,16 +222,13 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         interaction_handler = self._handlers.get(handler_type, {}).get(interaction, None)
         return interaction_handler or self._handlers_global[handler_type]
 
-    def _find_interaction(self, interaction_name, interaction_type):
+    def _find_interaction(self, name):
         """Raises ValueError if the given interaction does not exist in this Thing."""
 
-        interaction = self._thing.find_interaction(
-            name=interaction_name,
-            interaction_type=interaction_type)
+        interaction = self._thing.find_interaction(name=name)
 
         if not interaction:
-            raise ValueError("Interaction ({}) not found: {}".format(
-                interaction_type, interaction_name))
+            raise ValueError("Interaction not found: {}".format(name))
 
         return interaction
 
@@ -184,13 +236,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Default handler for property reads."""
 
         future_read = Future()
-
-        prop = self._find_interaction(
-            interaction_name=property_name,
-            interaction_type=InteractionTypes.PROPERTY)
-
+        prop = self._find_interaction(name=property_name)
         prop_value = self._get_property_value(prop)
-
         future_read.set_result(prop_value)
 
         return future_read
@@ -199,13 +246,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Default handler for onUpdateProperty."""
 
         future_write = Future()
-
-        prop = self._find_interaction(
-            interaction_name=property_name,
-            interaction_type=InteractionTypes.PROPERTY)
-
+        prop = self._find_interaction(name=property_name)
         self._set_property_value(prop, value)
-
         future_write.set_result(None)
 
         return future_write
@@ -218,6 +260,18 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         future_invoke.set_exception(Exception("Undefined action handler"))
 
         return future_invoke
+
+    @property
+    def servient(self):
+        """Servient that contains this ExposedThing."""
+
+        return self._servient
+
+    @property
+    def url_name(self):
+        """Slug version (URL-safe) of the ExposedThing name."""
+
+        return self._thing.url_name
 
     @property
     def name(self):
@@ -244,9 +298,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         that resolves with the Property value or rejects with an Error."""
 
         try:
-            interaction = self._find_interaction(
-                interaction_name=name,
-                interaction_type=InteractionTypes.PROPERTY)
+            interaction = self._find_interaction(name=name)
 
             handler = self._get_handler(
                 handler_type=self.HandlerKeys.RETRIEVE_PROPERTY,
@@ -267,9 +319,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         Returns a Future that resolves on success or rejects with an Error."""
 
         try:
-            interaction = self._find_interaction(
-                interaction_name=name,
-                interaction_type=InteractionTypes.PROPERTY)
+            interaction = self._find_interaction(name=name)
 
             if not interaction.writable:
                 raise TypeError("Property is non-writable")
@@ -301,9 +351,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         Promise that resolves with the return value or rejects with an Error."""
 
         try:
-            interaction = self._find_interaction(
-                interaction_name=name,
-                interaction_type=InteractionTypes.ACTION)
+            interaction = self._find_interaction(name=name)
 
             handler = self._get_handler(
                 handler_type=self.HandlerKeys.INVOKE_ACTION,
@@ -335,7 +383,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         allowing subscribing to and unsubscribing from notifications."""
 
         try:
-            self._find_interaction(name, InteractionTypes.EVENT)
+            self._find_interaction(name=name)
         except ValueError:
             # noinspection PyUnresolvedReferences
             return Observable.throw(Exception("Unknown event"))
@@ -351,7 +399,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         allowing subscribing to and unsubscribing from notifications."""
 
         try:
-            interaction = self._find_interaction(name, InteractionTypes.PROPERTY)
+            interaction = self._find_interaction(name=name)
         except ValueError:
             # noinspection PyUnresolvedReferences
             return Observable.throw(Exception("Unknown property"))
@@ -407,7 +455,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Emits an the event initialized with the event name specified by
         the event_name argument and data specified by the payload argument."""
 
-        if not self.thing.find_interaction(name=event_name, interaction_type=InteractionTypes.EVENT):
+        if not self.thing.find_interaction(name=event_name):
             raise ValueError("Unknown event: {}".format(event_name))
 
         self._events_stream.on_next(EmittedEvent(name=event_name, init=payload))
@@ -441,7 +489,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Removes the Property specified by the name argument,
         updates the Thing Description and returns the object."""
 
-        self._thing.remove_interaction(name, interaction_type=InteractionTypes.PROPERTY)
+        self._thing.remove_interaction(name=name)
 
         event_data = ThingDescriptionChangeEventInit(
             td_change_type=TDChangeType.PROPERTY,
@@ -477,7 +525,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Removes the Action specified by the name argument,
         updates the Thing Description and returns the object."""
 
-        self._thing.remove_interaction(name, interaction_type=InteractionTypes.ACTION)
+        self._thing.remove_interaction(name=name)
 
         event_data = ThingDescriptionChangeEventInit(
             td_change_type=TDChangeType.ACTION,
@@ -512,7 +560,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Removes the event specified by the name argument,
         updates the Thing Description and returns the object."""
 
-        self._thing.remove_interaction(name, interaction_type=InteractionTypes.EVENT)
+        self._thing.remove_interaction(name=name)
 
         event_data = ThingDescriptionChangeEventInit(
             td_change_type=TDChangeType.EVENT,
@@ -529,9 +577,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         interaction = None
 
         if action_name is not None:
-            interaction = self._find_interaction(
-                interaction_name=action_name,
-                interaction_type=InteractionTypes.ACTION)
+            interaction = self._find_interaction(name=action_name)
 
         self._set_handler(
             handler_type=self.HandlerKeys.INVOKE_ACTION,
@@ -546,9 +592,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         interaction = None
 
         if property_name is not None:
-            interaction = self._find_interaction(
-                interaction_name=property_name,
-                interaction_type=InteractionTypes.PROPERTY)
+            interaction = self._find_interaction(name=property_name)
 
         self._set_handler(
             handler_type=self.HandlerKeys.RETRIEVE_PROPERTY,
@@ -563,9 +607,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         interaction = None
 
         if property_name is not None:
-            interaction = self._find_interaction(
-                interaction_name=property_name,
-                interaction_type=InteractionTypes.PROPERTY)
+            interaction = self._find_interaction(name=property_name)
 
         self._set_handler(
             handler_type=self.HandlerKeys.UPDATE_PROPERTY,

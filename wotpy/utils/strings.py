@@ -5,18 +5,15 @@
 Utilities related to strings.
 """
 
-import warnings
-import string
+import re
 
 
-def clean_str(val, warn=False):
-    """Returns a copy of the str argument keeping only
-    ASCII letters, numbers, hyphens and underscores."""
+def is_safe_name(val):
+    """Returns True if the given value is a safe name for an object
+    in the Thing hierarchy.  A name is considered safe when it only
+    contains ASCII letters, numbers, hyphens and underscores."""
 
-    valid_chars = set(string.ascii_letters + string.digits + "_-")
-    val_clean = "".join(item for item in val if item in valid_chars)
+    pattern_safe = r"^[a-zA-Z0-9_-]+$"
+    match_result = re.match(pattern_safe, val)
 
-    if warn and val_clean != val:
-        warnings.warn("Unsafe str \"{}\" (using: \"{}\")".format(val, val_clean))
-
-    return val_clean
+    return False if match_result is None else True

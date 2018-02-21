@@ -36,7 +36,6 @@ class WebsocketServer(BaseProtocolServer):
         return self._app
 
     def _build_app(self):
-
         """Builds and returns the Tornado application for the WebSockets server."""
 
         return web.Application([(
@@ -58,7 +57,7 @@ class WebsocketServer(BaseProtocolServer):
         """Returns the base URL for the given ExposedThing in the context of this server."""
 
         hostname = hostname.rstrip("/")
-        thing_path = "{}".format(exposed_thing.thing.name)
+        thing_path = "{}".format(exposed_thing.thing.url_name)
 
         return "ws://{}:{}/{}".format(hostname, self.port, thing_path)
 

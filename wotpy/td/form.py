@@ -20,18 +20,18 @@ class Form(object):
 
         self.semantic_metadata = ThingSemanticMetadata()
 
-    def __eq__(self, other):
-        return self.interaction == other.interaction and \
-               self.protocol == other.protocol and \
-               self.href == other.href and \
-               self.media_type == other.media_type
+    @property
+    def id(self):
+        """Returns the ID of this Form.
+        The ID is a hash that is based on its attributes and the ID of its Interaction.
+        No two Forms with the same ID may exist within the same Interaction."""
 
-    def __hash__(self):
         return hash((
-            self.interaction,
+            self.interaction.id,
             self.protocol,
             self.href,
-            self.media_type
+            self.media_type,
+            self.rel
         ))
 
     def to_jsonld_dict(self):

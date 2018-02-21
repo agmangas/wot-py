@@ -239,3 +239,37 @@ def test_servient_start_stop():
     io_loop.start()
 
     assert future_result.result() is True
+
+
+def test_duplicated_thing_names():
+    """A Servient rejects Things with duplicated names."""
+
+    fake = Faker()
+
+    description_01 = {
+        "@context": [WOT_TD_CONTEXT_URL],
+        "name": fake.user_name()
+    }
+
+    description_02 = {
+        "@context": [WOT_TD_CONTEXT_URL],
+        "name": fake.user_name()
+    }
+
+    description_03 = {
+        "@context": [WOT_TD_CONTEXT_URL],
+        "name": description_02["name"]
+    }
+
+    description_01_str = json.dumps(description_01)
+    description_02_str = json.dumps(description_02)
+    description_03_str = json.dumps(description_03)
+
+    servient = Servient()
+    wot = servient.start()
+
+    wot.produce(description_01_str)
+    wot.produce(description_02_str)
+
+    with pytest.raises(ValueError):
+        wot.produce(description_03_str)

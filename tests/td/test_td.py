@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# noinspection PyPackageRequirements
+import pytest
+# noinspection PyPackageRequirements
 from faker import Faker
+# noinspection PyPackageRequirements
+from slugify import slugify
 
 from wotpy.protocols.enums import Protocols
 from wotpy.td.enums import InteractionTypes
@@ -108,11 +113,11 @@ def test_interaction_types():
 
     thing = Thing(name=fake.user_name())
 
-    property = Property(thing=thing, name=fake.user_name(), output_data={"type": "number"})
+    proprty = Property(thing=thing, name=fake.user_name(), output_data={"type": "number"})
     action = Action(thing=thing, name=fake.user_name())
     event = Event(thing=thing, name=fake.user_name(), output_data={"type": "string"})
 
-    assert InteractionTypes.PROPERTY in property.types
+    assert InteractionTypes.PROPERTY in proprty.types
     assert InteractionTypes.ACTION in action.types
     assert InteractionTypes.EVENT in event.types
 
@@ -120,77 +125,134 @@ def test_interaction_types():
 def test_empty_thing_valid():
     """An empty Thing initialized by default has a valid JSON-LD serialization."""
 
-    fake = Faker()
-
-    thing = Thing(name=fake.user_name())
-
+    thing = Thing(name="MyThing")
     jsonld_td = thing.to_jsonld_thing_description()
     jsonld_td.validate()
 
 
-def test_thing_equality():
-    """Things with the same name are equal."""
+def test_unsafe_names():
+    """Unsafe names for Thing or Interaction objects are rejected."""
 
-    fake = Faker()
+    names_safe = [
+        "safename",
+        "safename02",
+        "SafeName_03",
+        "Safe_Name-04"
+    ]
 
-    name_01 = fake.user_name()
-    name_02 = fake.user_name()
-    location = fake.address()
+    names_unsafe = [
+        "!unsafename",
+        "unsafe_name_ñ",
+        "unsafe name",
+        "?"
+    ]
 
-    thing_01 = Thing(name=name_01)
-    thing_01.semantic_metadata.add(key=SCHEMA_ORG_LOCATION_KEY, val=location)
-    thing_02 = Thing(name=name_01)
-    thing_03 = Thing(name=name_02)
+    for name in names_safe:
+        thing = Thing(name=name)
+        Action(thing=thing, name=name)
 
-    assert thing_01 == thing_02
-    assert thing_01 != thing_03
-    assert thing_01 in [thing_02]
-    assert thing_01 not in [thing_03]
+    thing_name = names_safe[0]
 
+    for name in names_unsafe:
+        with pytest.raises(ValueError):
+            Thing(name=name)
 
-def test_interaction_equality():
-    """Interactions with the same name are equal."""
+        thing = Thing(name=thing_name)
 
-    fake = Faker()
-
-    name_thing = fake.user_name()
-    name_01 = fake.user_name()
-    name_02 = fake.user_name()
-
-    thing = Thing(name=name_thing)
-    interaction_01 = Action(thing=thing, name=name_01)
-    interaction_02 = Action(thing=thing, name=name_01)
-    interaction_03 = Action(thing=thing, name=name_02)
-
-    assert interaction_01 == interaction_02
-    assert interaction_01 != interaction_03
-    assert interaction_01 in [interaction_02]
-    assert interaction_01 not in [interaction_03]
+        with pytest.raises(ValueError):
+            Action(thing=thing, name=name)
 
 
-def test_form_equality():
-    """Forms with the same media type and href are equal."""
+def test_find_interaction():
+    """Interactions may be retrieved by name on a Thing."""
 
-    fake = Faker()
+    thing = Thing(name="my_thing")
 
-    thing_name = fake.user_name()
-    href_01 = fake.url()
-    href_02 = fake.url()
+    interaction_01 = Action(thing=thing, name="my_interaction")
+    interaction_02 = Action(thing=thing, name="AnotherInteraction")
+
+    thing.add_interaction(interaction_01)
+    thing.add_interaction(interaction_02)
+
+    assert thing.find_interaction(interaction_01.name) is interaction_01
+    assert thing.find_interaction(interaction_02.name) is interaction_02
+    assert thing.find_interaction(slugify(interaction_01.name)) is interaction_01
+    assert thing.find_interaction(slugify(interaction_02.name)) is interaction_02
+
+
+def test_remove_interaction():
+    """Interactions may be removed from a Thing by name."""
+
+    thing = Thing(name="my_thing")
+
+    interaction_01 = Action(thing=thing, name="my_interaction")
+    interaction_02 = Action(thing=thing, name="AnotherInteraction")
+    interaction_03 = Action(thing=thing, name="YetAnother_interaction")
+
+    thing.add_interaction(interaction_01)
+    thing.add_interaction(interaction_02)
+    thing.add_interaction(interaction_03)
+
+    assert thing.find_interaction(interaction_01.name) is not None
+    assert thing.find_interaction(interaction_02.name) is not None
+    assert thing.find_interaction(interaction_03.name) is not None
+
+    thing.remove_interaction(interaction_01.name)
+    thing.remove_interaction(slugify(interaction_03.name))
+
+    assert thing.find_interaction(interaction_01.name) is None
+    assert thing.find_interaction(interaction_02.name) is not None
+    assert thing.find_interaction(interaction_03.name) is None
+
+
+def test_duplicated_interactions():
+    """Duplicated Interactions are rejected on a Thing."""
+
+    thing = Thing(name="my_thing")
+
+    interaction_01 = Action(thing=thing, name="my_interaction")
+    interaction_02 = Action(thing=thing, name="AnotherInteraction")
+    interaction_03 = Action(thing=thing, name="my_interaction")
+    interaction_04 = Action(thing=thing, name="My-Interaction")
+
+    thing.add_interaction(interaction_01)
+    thing.add_interaction(interaction_02)
+
+    with pytest.raises(ValueError):
+        thing.add_interaction(interaction_03)
+
+    with pytest.raises(ValueError):
+        thing.add_interaction(interaction_04)
+
+
+def test_duplicated_forms():
+    """Duplicated Forms are rejected on an Interaction."""
+
+    thing = Thing(name="my_thing")
+    interaction = Action(thing=thing, name="my_interaction")
+    thing.add_interaction(interaction)
+
+    href_01 = "/href-01"
+    href_02 = "/href-02"
+
     media_type_01 = "application/json"
     media_type_02 = "text/html"
-    prop_name = fake.user_name()
-    prop_output_data = {"type": "number"}
 
-    thing = Thing(name=thing_name)
-    prop = Property(thing=thing, name=prop_name, output_data=prop_output_data)
+    form_01 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_01, media_type=media_type_01)
+    form_02 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_01, media_type=media_type_01)
+    form_03 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_01, media_type=media_type_02)
+    form_04 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_02, media_type=media_type_01)
+    form_05 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_02, media_type=media_type_02)
+    form_06 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_02, media_type=media_type_02)
 
-    form_01 = Form(interaction=prop, protocol=Protocols.HTTP, href=href_01, media_type=media_type_01)
-    form_02 = Form(interaction=prop, protocol=Protocols.HTTP, href=href_01, media_type=media_type_01)
-    form_03 = Form(interaction=prop, protocol=Protocols.HTTP, href=href_01, media_type=media_type_02)
-    form_04 = Form(interaction=prop, protocol=Protocols.HTTP, href=href_02, media_type=media_type_01)
+    interaction.add_form(form_01)
 
-    assert form_01 == form_02
-    assert form_01 != form_03
-    assert form_01 != form_04
-    assert form_01 in [form_02]
-    assert form_01 not in [form_03, form_04]
+    with pytest.raises(ValueError):
+        interaction.add_form(form_02)
+
+    interaction.add_form(form_03)
+    interaction.add_form(form_04)
+    interaction.add_form(form_05)
+
+    with pytest.raises(ValueError):
+        interaction.add_form(form_06)
