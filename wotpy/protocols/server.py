@@ -21,7 +21,6 @@ class BaseProtocolServer(object):
         self._port = port
         self._protocol = protocol
         self._codecs = []
-        self._exposed_things = {}
         self._exposed_thing_group = ExposedThingGroup()
 
     @property
