@@ -3,7 +3,7 @@ const axios = require('axios');
 const async = require('async');
 
 const CATALOGUE_URL = 'http://localhost:9292';
-const NAME_THING = 'TemperatureThing';
+const NAME_THING = 'temperaturething';
 const NAME_PROP_TEMP = 'temperature';
 const NAME_PROP_TEMP_THRESHOLD = 'high-temperature-threshold';
 const NAME_EVENT_TEMP_HIGH = 'high-temperature';
@@ -90,12 +90,12 @@ function requestGetTemperature(ws) {
 console.log('GET', CATALOGUE_URL);
 
 const tdPromise = axios.get(CATALOGUE_URL)
-    .then(function (response) {
-      return response.data[NAME_THING];
-    })
-    .catch(function (error) {
-      console.error('Error connecting to:', CATALOGUE_URL);
-    });
+  .then(function (response) {
+    return response.data[NAME_THING];
+  })
+  .catch(function (error) {
+    console.error('Error connecting to:', CATALOGUE_URL);
+  });
 
 tdPromise.then(function (td) {
   const propTemp = td.interaction.find(function (interaction) {
@@ -120,12 +120,12 @@ tdPromise.then(function (td) {
     requestSetThreshold(ws, threshold);
 
     async.forever(
-        function (next) {
-          requestGetTemperature(ws).then(next);
-        },
-        function (err) {
-          console.error('Error in forever:', err)
-        }
+      function (next) {
+        requestGetTemperature(ws).then(next);
+      },
+      function (err) {
+        console.error('Error in forever:', err)
+      }
     );
   });
 
