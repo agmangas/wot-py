@@ -5,7 +5,35 @@
 Schemas following the JSON Schema specification used to validate the shape of Thing Description documents.
 """
 
+from jsonschema import validate, ValidationError
+
+from wotpy.td.constants import WOT_TD_CONTEXT_URL
 from wotpy.td.enums import InteractionTypes
+from wotpy.td.jsonld.utils import get_interaction_type
+
+
+def validate_thing_description(doc):
+    """Validates the given Thing Description document against its schema.
+    Raises ValidationError if validation fails."""
+
+    validate(doc, SCHEMA_THING_DESCRIPTION)
+
+    if WOT_TD_CONTEXT_URL not in (doc.get("@context", [])):
+        raise ValidationError("Missing context: {}".format(WOT_TD_CONTEXT_URL))
+
+
+def validate_interaction(doc):
+    """Validates the given Interaction document against its schema.
+    Raises ValidationError if validation fails."""
+
+    validate(doc, interaction_schema_for_type(get_interaction_type(doc)))
+
+
+def validate_form(doc):
+    """Validates the given Form document against its schema.
+    Raises ValidationError if validation fails."""
+
+    validate(doc, SCHEMA_FORM)
 
 
 def interaction_schema_for_type(interaction_type):
