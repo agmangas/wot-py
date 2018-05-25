@@ -487,7 +487,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             writable=property_init.writable,
             observable=property_init.observable)
 
-        property_init.copy_annotations_to_interaction(prop)
+        property_init.copy_annotations(prop)
 
         self._thing.add_interaction(prop)
         self._set_property_value(prop, property_init.value)
@@ -524,7 +524,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             output_data=action_init.output_data_description,
             input_data=action_init.input_data_description)
 
-        action_init.copy_annotations_to_interaction(action)
+        action_init.copy_annotations(action)
 
         self._thing.add_interaction(action)
 
@@ -559,7 +559,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             name=event_init.name,
             output_data=event_init.data_description)
 
-        event_init.copy_annotations_to_interaction(event)
+        event_init.copy_annotations(event)
 
         self._thing.add_interaction(event)
 

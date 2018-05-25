@@ -86,19 +86,27 @@ class SemanticAnnotations(object):
             key = "{}:{}".format(sem_type.prefix, sem_type.name) if sem_type.prefix else sem_type.name
             thing_sem_metadata.add(key=key, val=sem_meta.value)
 
-    def copy_annotations_to_interaction(self, interaction):
+    def _copy_to_interaction(self, interaction):
         """Copy these semantic annotations to the given Interaction object."""
 
         self._copy_contexts(interaction.thing.semantic_context)
         self._copy_types(interaction.semantic_types)
         self._copy_metadata(interaction.semantic_metadata)
 
-    def copy_annotations_to_thing(self, thing):
+    def _copy_to_thing(self, thing):
         """Copy these semantic annotations to the given Thing object."""
 
         self._copy_contexts(thing.semantic_context)
         self._copy_types(thing.semantic_types)
         self._copy_metadata(thing.semantic_metadata)
+
+    def copy_annotations(self, td_item):
+        """Copy these semantic annotations to the given Interaction or Thing object."""
+
+        if hasattr(td_item, "thing"):
+            self._copy_to_interaction(td_item)
+        else:
+            self._copy_to_thing(td_item)
 
 
 class ThingFilter(object):

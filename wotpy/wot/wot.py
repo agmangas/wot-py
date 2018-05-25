@@ -72,7 +72,7 @@ class WoT(object):
             exposed_thing = ExposedThing.from_description(servient=self._servient, doc=td_doc)
         else:
             exposed_thing = ExposedThing.from_name(servient=self._servient, name=model.name)
-            model.copy_annotations_to_thing(exposed_thing.thing)
+            model.copy_annotations(exposed_thing.thing)
 
         self._servient.add_exposed_thing(exposed_thing)
 
