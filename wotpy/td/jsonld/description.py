@@ -11,7 +11,7 @@ from jsonschema import validate, ValidationError
 from wotpy.td.constants import WOT_TD_CONTEXT_URL
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.interaction import Action, Event, Property
-from wotpy.td.jsonld.schemas import SCHEMA_THING_DESCRIPTION, SCHEMA_FORM, interaction_schema_for_type
+from wotpy.td.jsonld.schemas import SCHEMA_THING_DESCRIPTION
 from wotpy.td.thing import Thing
 
 
@@ -45,43 +45,6 @@ class ThingDescription(object):
         if WOT_TD_CONTEXT_URL not in (doc.get("@context", [])):
             raise InvalidDescription("Missing context: {}".format(WOT_TD_CONTEXT_URL))
 
-    @classmethod
-    def filter_metadata_td(cls, doc):
-        """Returns a dict with the metadata of a Thing Description document."""
-
-        base_keys = list(SCHEMA_THING_DESCRIPTION["properties"].keys())
-        meta_keys = [key for key in list(doc.keys()) if key not in base_keys]
-
-        return {key: doc[key] for key in meta_keys}
-
-    @classmethod
-    def filter_metadata_interaction(cls, doc):
-        """Returns a dict with the metadata of an Interaction document."""
-
-        interaction_type = next(
-            item for item in doc.get("@type", [])
-            if item in InteractionTypes.list())
-
-        doc_schema = interaction_schema_for_type(interaction_type)
-
-        base_keys = []
-
-        for sub_schema in doc_schema["allOf"]:
-            base_keys += list(sub_schema["properties"].keys())
-
-        meta_keys = [key for key in list(doc.keys()) if key not in base_keys]
-
-        return {key: doc[key] for key in meta_keys}
-
-    @classmethod
-    def filter_metadata_form(cls, doc):
-        """Returns a dict with the metadata of a Form document."""
-
-        base_keys = list(SCHEMA_FORM["properties"].keys())
-        meta_keys = [key for key in list(doc.keys()) if key not in base_keys]
-
-        return {key: doc[key] for key in meta_keys}
-
     def build_thing(self):
         """Builds a new Thing object from the serialized JSON-LD Thing Description."""
 
@@ -96,9 +59,6 @@ class ThingDescription(object):
 
         for val_type in self._doc.get("@type", []):
             thing.semantic_types.add(val_type)
-
-        for meta_key, meta_val in six.iteritems(self.filter_metadata_td(self._doc)):
-            thing.semantic_metadata.add(meta_key, meta_val)
 
         def _build_property(doc_intrct):
             return Property(
@@ -137,9 +97,6 @@ class ThingDescription(object):
 
             for val_type in item.get("@type", []):
                 interaction.semantic_types.add(val_type)
-
-            for meta_key, meta_val in six.iteritems(self.filter_metadata_interaction(item)):
-                interaction.semantic_metadata.add(meta_key, meta_val)
 
             thing.add_interaction(interaction)
 
