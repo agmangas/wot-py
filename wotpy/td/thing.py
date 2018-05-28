@@ -5,11 +5,12 @@
 Class that represents a Thing.
 """
 
+import json
+
 # noinspection PyPackageRequirements
 from slugify import slugify
 
 from wotpy.td.constants import WOT_TD_CONTEXT_URL, WOT_COMMON_CONTEXT_URL
-from wotpy.td.jsonld.thing import JsonLDThingDescription
 from wotpy.td.semantic import ThingSemanticContext, ThingSemanticMetadata, ThingSemanticTypes
 from wotpy.utils.strings import is_safe_name
 
@@ -105,8 +106,7 @@ class Thing(object):
 
         return doc
 
-    def to_jsonld_thing_description(self, base=None):
-        """Returns an instance of JsonLDThingDescription that is a
-        wrapper for the JSON-LD dictionary that represents this Thing."""
+    def to_jsonld_str(self, base=None):
+        """Returns the JSON-LD serialization of this Things as a string."""
 
-        return JsonLDThingDescription(doc=self.to_jsonld_dict(base=base))
+        return json.dumps(self.to_jsonld_dict(base=base))

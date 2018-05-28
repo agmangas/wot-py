@@ -5,15 +5,13 @@
 Classes that represent Things exposed by a servient.
 """
 
-import six
 # noinspection PyCompatibility
 from concurrent.futures import Future
 from rx import Observable
 from rx.subjects import Subject
 
-from wotpy.td.enums import InteractionTypes
 from wotpy.td.interaction import Property, Action, Event
-from wotpy.td.jsonld.thing import JsonLDThingDescription
+from wotpy.td.jsonld.description import ThingDescription
 from wotpy.td.thing import Thing
 from wotpy.utils.enums import EnumListMixin
 from wotpy.wot.dictionaries import \
@@ -149,66 +147,12 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         return ExposedThing(servient=servient, thing=thing)
 
     @classmethod
-    def from_description(cls, servient, doc, name=None):
+    def from_description(cls, servient, doc):
         """Builds an ExposedThing initialized from
         the given Thing Description document."""
 
-        jsonld_td = JsonLDThingDescription(doc=doc)
-
-        name = name or jsonld_td.name
-        thing = Thing(name=name)
-
-        for context_item in (jsonld_td.context or []):
-            if isinstance(context_item, six.string_types):
-                thing.semantic_context.add(context_url=context_item)
-            elif isinstance(context_item, dict):
-                for ctx_key, ctx_val in six.iteritems(context_item):
-                    thing.semantic_context.add(context_url=ctx_val, prefix=ctx_key)
-
-        for val_type in (jsonld_td.type or []):
-            thing.semantic_types.add(val_type)
-
-        for meta_key, meta_val in six.iteritems(jsonld_td.metadata):
-            thing.semantic_metadata.add(meta_key, meta_val)
-
-        def _build_property(jsonld_inter):
-            return Property(
-                thing=thing,
-                name=jsonld_inter.name,
-                output_data=jsonld_inter.output_data,
-                writable=jsonld_inter.writable,
-                observable=jsonld_inter.observable)
-
-        def _build_action(jsonld_inter):
-            return Action(
-                thing=thing,
-                name=jsonld_inter.name,
-                output_data=jsonld_inter.output_data,
-                input_data=jsonld_inter.input_data)
-
-        def _build_event(jsonld_inter):
-            return Event(
-                thing=thing,
-                name=jsonld_inter.name,
-                output_data=jsonld_inter.output_data)
-
-        builder_map = {
-            InteractionTypes.PROPERTY: _build_property,
-            InteractionTypes.ACTION: _build_action,
-            InteractionTypes.EVENT: _build_event
-        }
-
-        for jsonld_interaction in jsonld_td.interaction:
-            builder_func = builder_map[jsonld_interaction.interaction_type]
-            interaction = builder_func(jsonld_interaction)
-
-            for val_type in (jsonld_interaction.type or []):
-                interaction.semantic_types.add(val_type)
-
-            for meta_key, meta_val in six.iteritems(jsonld_interaction.metadata):
-                interaction.semantic_metadata.add(meta_key, meta_val)
-
-            thing.add_interaction(interaction)
+        thing_description = ThingDescription(doc=doc)
+        thing = thing_description.build_thing()
 
         return ExposedThing(servient=servient, thing=thing)
 
@@ -305,7 +249,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Returns the Thing Description of the Thing.
         Returns a serialized string."""
 
-        return self._thing.to_jsonld_thing_description().to_json_str()
+        return self._thing.to_jsonld_str()
 
     def read_property(self, name):
         """Takes the Property name as the name argument, then requests from

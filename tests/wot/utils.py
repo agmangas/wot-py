@@ -5,14 +5,13 @@ import copy
 
 import six
 
-from wotpy.td.jsonld.thing import JsonLDThingDescription
+from wotpy.td.jsonld.description import ThingDescription
 
 
 def assert_exposed_thing_equal(exp_thing, td_doc):
     """Asserts that the given ExposedThing is equivalent to the thing description dict."""
 
     td_expected = copy.deepcopy(td_doc)
-    jsonld_td = JsonLDThingDescription(td_expected)
 
     for item in td_expected["interaction"]:
         if "link" in item:
@@ -34,7 +33,7 @@ def assert_exposed_thing_equal(exp_thing, td_doc):
 
     # Compare root-level semantic metadata
 
-    meta_td = jsonld_td.metadata
+    meta_td = ThingDescription.filter_metadata_td(td_expected)
     meta_exp_thing = exp_thing.thing.semantic_metadata.items
 
     for key, val in six.iteritems(meta_exp_thing):
@@ -43,19 +42,19 @@ def assert_exposed_thing_equal(exp_thing, td_doc):
 
     # Compare interactions
 
-    for jsonld_interaction in jsonld_td.interaction:
-        interaction = exp_thing.thing.find_interaction(jsonld_interaction.name)
+    for item in td_expected.get("interaction", []):
+        interaction = exp_thing.thing.find_interaction(item.get("name"))
 
-        assert sorted(interaction.types) == sorted(jsonld_interaction.type)
-        assert getattr(interaction, "output_data", None) == jsonld_interaction.output_data
-        assert getattr(interaction, "input_data", None) == jsonld_interaction.input_data
-        assert getattr(interaction, "writable", None) == jsonld_interaction.writable
-        assert getattr(interaction, "observable", None) == jsonld_interaction.observable
+        assert sorted(interaction.types) == sorted(item.get("@type"))
+        assert getattr(interaction, "output_data", None) == item.get("outputData")
+        assert getattr(interaction, "input_data", None) == item.get("inputData")
+        assert getattr(interaction, "writable", None) == item.get("writable")
+        assert getattr(interaction, "observable", None) == item.get("observable")
         assert not len(interaction.forms)
 
         # Compare interaction-level semantic metadata
 
-        meta_td_interaction = jsonld_interaction.metadata
+        meta_td_interaction = ThingDescription.filter_metadata_interaction(item)
         meta_exp_thing_interaction = interaction.semantic_metadata.items
 
         for key, val in six.iteritems(meta_exp_thing_interaction):
