@@ -1,48 +1,83 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+
+import uuid
+
 # noinspection PyPackageRequirements
 import pytest
+# noinspection PyPackageRequirements
+from faker import Faker
 # noinspection PyPackageRequirements
 from slugify import slugify
 
 from wotpy.protocols.enums import Protocols
+from wotpy.td.description import JSONThingDescription
 from wotpy.td.form import Form
 from wotpy.td.interaction import Action
-from wotpy.td.description import JSONThingDescription
 from wotpy.td.thing import Thing
 
 
 def test_empty_thing_valid():
     """An empty Thing initialized by default has a valid JSON-LD serialization."""
 
-    thing = Thing(id="urn:mything")
+    thing = Thing(id=uuid.uuid4().urn)
     JSONThingDescription.from_thing(thing)
 
 
-def test_interaction_unsafe_names():
-    """Unsafe names for Interaction objects are rejected."""
+def test_thing_invalid_id():
+    """Invalid IDs for Thing objects are rejected."""
 
-    names_safe = [
+    fake = Faker()
+
+    ids_valid = [
+        uuid.uuid4().urn,
+        fake.url(),
+        fake.uri(),
+        "../{}".format(fake.uri_path(deep=2)),
+        "../{}#{}".format(fake.uri_path(deep=2), uuid.uuid4().hex)
+    ]
+
+    ids_invalid = [
+        fake.email(),
+        fake.ipv4_private(),
+        fake.uri_extension(),
+        fake.sentence(),
+        str(uuid.uuid4()),
+        uuid.uuid4().hex
+    ]
+
+    for thing_id in ids_valid:
+        Thing(id=thing_id)
+
+    for thing_id in ids_invalid:
+        with pytest.raises(ValueError):
+            Thing(id=thing_id)
+
+
+def test_interaction_invalid_name():
+    """Invalid names for Interaction objects are rejected."""
+
+    names_valid = [
         "safename",
         "safename02",
         "SafeName_03",
         "Safe_Name-04"
     ]
 
-    names_unsafe = [
+    names_invalid = [
         "!unsafename",
         "unsafe_name_ñ",
         "unsafe name",
         "?"
     ]
 
-    thing = Thing(id="urn:mything")
+    thing = Thing(id=uuid.uuid4().urn)
 
-    for name in names_safe:
+    for name in names_valid:
         Action(thing=thing, id=name)
 
-    for name in names_unsafe:
+    for name in names_invalid:
         with pytest.raises(ValueError):
             Action(thing=thing, id=name)
 
@@ -50,7 +85,7 @@ def test_interaction_unsafe_names():
 def test_find_interaction():
     """Interactions may be retrieved by name on a Thing."""
 
-    thing = Thing(id="urn:mything")
+    thing = Thing(id=uuid.uuid4().urn)
 
     interaction_01 = Action(thing=thing, id="my_interaction")
     interaction_02 = Action(thing=thing, id="AnotherInteraction")
@@ -67,7 +102,7 @@ def test_find_interaction():
 def test_remove_interaction():
     """Interactions may be removed from a Thing by name."""
 
-    thing = Thing(id="urn:mything")
+    thing = Thing(id=uuid.uuid4().urn)
 
     interaction_01 = Action(thing=thing, id="my_interaction")
     interaction_02 = Action(thing=thing, id="AnotherInteraction")
@@ -92,7 +127,7 @@ def test_remove_interaction():
 def test_duplicated_interactions():
     """Duplicated Interactions are rejected on a Thing."""
 
-    thing = Thing(id="urn:mything")
+    thing = Thing(id=uuid.uuid4().urn)
 
     interaction_01 = Action(thing=thing, id="my_interaction")
     interaction_02 = Action(thing=thing, id="AnotherInteraction")
@@ -108,7 +143,7 @@ def test_duplicated_interactions():
 def test_duplicated_forms():
     """Duplicated Forms are rejected on an Interaction."""
 
-    thing = Thing(id="urn:mything")
+    thing = Thing(id=uuid.uuid4().urn)
     interaction = Action(thing=thing, id="my_interaction")
     thing.add_interaction(interaction)
 

@@ -10,7 +10,7 @@ import re
 from wotpy.td.enums import InteractionTypes
 
 REGEX_SAFE_NAME = r"^[a-zA-Z0-9_-]+$"
-REGEX_ANY_URI = r"^\w+:(\/?\/?)[^\s]+$"
+REGEX_ANY_URI = r"^((\w+:(\/?\/?)[^\s]+)|((..\/)+)[^\s]*)$"
 
 DATA_TYPES_ENUM = [
     "array",
