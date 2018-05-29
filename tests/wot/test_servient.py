@@ -3,6 +3,7 @@
 
 import json
 import random
+import uuid
 
 # noinspection PyPackageRequirements
 import pytest
@@ -20,7 +21,6 @@ from wotpy.protocols.ws.enums import WebsocketMethods
 from wotpy.protocols.ws.messages import WebsocketMessageRequest, WebsocketMessageResponse
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.td.constants import WOT_TD_CONTEXT_URL
-from wotpy.td.enums import InteractionTypes
 from wotpy.wot.servient import Servient
 
 
@@ -39,21 +39,21 @@ def test_servient_td_catalogue():
     wot = servient.start()
 
     description_01 = {
-        "@context": [WOT_TD_CONTEXT_URL],
-        "name": fake.user_name(),
-        "interaction": [{
-            "@type": [InteractionTypes.PROPERTY],
-            "name": fake.user_name(),
-            "outputData": {"type": "string"},
-            "writable": True,
-            "observable": True
-        }]
+        "id": uuid.uuid4().urn,
+        "label": fake.sentence(),
+        "properties": {
+            "status": {
+                "description": "Shows the current status of the lamp",
+                "type": "string",
+                "forms": [{
+                    "href": "coaps://mylamp.example.com:5683/status"
+                }]
+            }
+        }
     }
 
     description_02 = {
-        "@context": [WOT_TD_CONTEXT_URL],
-        "name": fake.user_name(),
-        "interaction": []
+        "id": uuid.uuid4().urn
     }
 
     description_01_str = json.dumps(description_01)
@@ -78,10 +78,12 @@ def test_servient_td_catalogue():
             catalogue_result = yield http_client.fetch(catalogue_url)
             descriptions_map = json.loads(catalogue_result.body)
 
+            num_props = len(description_01.get("properties", {}).keys())
+
             assert len(descriptions_map) == 2
-            assert description_01["name"] in descriptions_map
-            assert description_02["name"] in descriptions_map
-            assert len(descriptions_map[description_01["name"]]["interaction"]) == 1
+            assert description_01["id"] in descriptions_map
+            assert description_02["id"] in descriptions_map
+            assert len(descriptions_map[description_01["id"]]["properties"]) == num_props
 
             future_result.set_result(True)
         except Exception as ex:
@@ -94,7 +96,7 @@ def test_servient_td_catalogue():
         # noinspection PyBroadException
         try:
             yield future_result
-        except:
+        except Exception:
             pass
 
         io_loop.stop()
@@ -120,26 +122,24 @@ def test_servient_start_stop():
 
     wot = servient.start()
 
-    name_thing = fake.user_name()
-    name_prop_boolean = fake.user_name()
+    thing_id = uuid.uuid4().urn
     name_prop_string = fake.user_name()
+    name_prop_boolean = fake.user_name()
 
     description = {
-        "@context": [WOT_TD_CONTEXT_URL],
-        "name": name_thing,
-        "interaction": [{
-            "@type": [InteractionTypes.PROPERTY],
-            "name": name_prop_boolean,
-            "outputData": {"type": "boolean"},
-            "writable": True,
-            "observable": True
-        }, {
-            "@type": [InteractionTypes.PROPERTY],
-            "name": name_prop_string,
-            "outputData": {"type": "string"},
-            "writable": True,
-            "observable": True
-        }]
+        "id": thing_id,
+        "properties": {
+            name_prop_string: {
+                "writable": True,
+                "observable": True,
+                "type": "string"
+            },
+            name_prop_boolean: {
+                "writable": True,
+                "observable": True,
+                "type": "boolean"
+            }
+        }
     }
 
     description_str = json.dumps(description)
@@ -229,7 +229,7 @@ def test_servient_start_stop():
         # noinspection PyBroadException
         try:
             yield future_result
-        except:
+        except Exception:
             pass
 
         io_loop.stop()
@@ -244,21 +244,19 @@ def test_servient_start_stop():
 def test_duplicated_thing_names():
     """A Servient rejects Things with duplicated names."""
 
-    fake = Faker()
-
     description_01 = {
         "@context": [WOT_TD_CONTEXT_URL],
-        "name": fake.user_name()
+        "id": uuid.uuid4().urn
     }
 
     description_02 = {
         "@context": [WOT_TD_CONTEXT_URL],
-        "name": fake.user_name()
+        "id": uuid.uuid4().urn
     }
 
     description_03 = {
         "@context": [WOT_TD_CONTEXT_URL],
-        "name": description_02["name"]
+        "id": description_01.get("id")
     }
 
     description_01_str = json.dumps(description_01)

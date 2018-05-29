@@ -5,79 +5,113 @@
 Class that represents a Thing.
 """
 
-import json
+import hashlib
+import itertools
+import uuid
 
 # noinspection PyPackageRequirements
 from slugify import slugify
 
-from wotpy.td.constants import WOT_TD_CONTEXT_URL, WOT_COMMON_CONTEXT_URL
-from wotpy.td.semantic import ThingSemanticContext, ThingSemanticMetadata, ThingSemanticTypes
-from wotpy.utils.strings import is_safe_name
+from wotpy.td.interaction import Property, Action, Event
+from wotpy.td.validation import is_valid_uri
 
 
 class Thing(object):
     """An abstraction of a physical or virtual entity whose metadata
     and interfaces are described by a WoT Thing Description."""
 
-    def __init__(self, name):
-        if not is_safe_name(name):
-            raise ValueError("Unsafe Thing name: {}".format(name))
+    def __init__(self, **kwargs):
+        self.id = kwargs.pop("id")
+        self.label = kwargs.get("label")
+        self.description = kwargs.get("description")
+        self.support = kwargs.get("support")
+        self._properties = {}
+        self._actions = {}
+        self._events = {}
 
-        self.name = name
-        self._interactions = []
-
-        self.semantic_types = ThingSemanticTypes()
-        self.semantic_metadata = ThingSemanticMetadata()
-        self.semantic_context = ThingSemanticContext()
-        self.semantic_context.add(context_url=WOT_TD_CONTEXT_URL)
-        self.semantic_context.add(context_url=WOT_COMMON_CONTEXT_URL)
+        if not is_valid_uri(self.id):
+            raise ValueError("Invalid Thing ID: {}".format(self.id))
 
     @property
-    def id(self):
-        """Returns the ID of this Thing.
-        The ID is a hash that is based on its URL-safe name.
-        No two Things with the same ID may exist within the same servient."""
+    def name(self):
+        """Thing name."""
 
-        return hash(self.url_name)
+        return self.id
+
+    @property
+    def uuid(self):
+        """Thing UUID in hex string format (e.g. a5220c5f-6bcb-4675-9c67-a2b1adc280b7).
+        This value is deterministic and derived from the Thing ID.
+        It may be of use in places where chars that can appear in an URI could be a problem."""
+
+        hasher = hashlib.md5()
+        hasher.update(self.id.encode())
+        bytes_id_hash = hasher.digest()
+
+        return str(uuid.UUID(bytes=bytes_id_hash))
 
     @property
     def url_name(self):
-        """URL-safe version of the name."""
+        """Returns the URL-safe name of this Thing."""
 
-        return slugify(self.name)
+        return slugify("{}-{}".format(self.label, self.uuid)) if self.label else self.uuid
+
+    @property
+    def properties(self):
+        """Properties interactions."""
+
+        return self._properties
+
+    @property
+    def actions(self):
+        """Actions interactions."""
+
+        return self._actions
+
+    @property
+    def events(self):
+        """Events interactions."""
+
+        return self._events
 
     @property
     def interactions(self):
         """Sequence of interactions linked to this thing."""
 
-        return self._interactions[:]
-
-    @property
-    def types(self):
-        """Types of this Thing."""
-
-        return self.semantic_types.to_list()
+        return list(itertools.chain(
+            self._properties.values(),
+            self._actions.values(),
+            self._events.values()))
 
     def find_interaction(self, name):
         """Finds an existing Interaction by name.
         The name argument may be the original name or the URL-safe version."""
 
         def is_match(intrct):
-            return intrct.name == name or intrct.url_name == name
+            return intrct.id == name or intrct.url_name == name
 
-        return next((item for item in self._interactions if is_match(item)), None)
+        return next((item for item in self.interactions if is_match(item)), None)
 
     def add_interaction(self, interaction):
         """Add a new Interaction."""
 
+        assert isinstance(interaction, (Property, Event, Action))
         assert interaction.thing is self
 
-        exists_id = next((True for item in self._interactions if item.id == interaction.id), False)
+        if self.find_interaction(interaction.id) is not None:
+            raise ValueError("Duplicate Interaction: {}".format(interaction.id))
 
-        if exists_id:
-            raise ValueError("Duplicated Interaction: {}".format(interaction.name))
+        interaction_dict_map = {
+            Property: self._properties,
+            Action: self._actions,
+            Event: self._events
+        }
 
-        self._interactions.append(interaction)
+        interaction_class = next(
+            klass for klass in [Property, Action, Event]
+            if isinstance(interaction, klass))
+
+        interaction_dict_map[interaction_class][interaction.id] = interaction
 
     def remove_interaction(self, name):
         """Removes an existing Interaction by name.
@@ -85,28 +119,9 @@ class Thing(object):
 
         interaction = self.find_interaction(name)
 
-        if interaction:
-            pop_idx = self._interactions.index(interaction)
-            self._interactions.pop(pop_idx)
+        if interaction is None:
+            return
 
-    def to_jsonld_dict(self, base=None):
-        """Returns the JSON-LD dict representation for this instance."""
-
-        doc = {
-            "@context": self.semantic_context.to_jsonld_list(),
-            "@type": self.semantic_types.to_list(),
-            "name": self.name,
-            "interaction": [item.to_jsonld_dict() for item in self.interactions]
-        }
-
-        if base is not None:
-            doc.update({"base": base})
-
-        doc.update(self.semantic_metadata.to_dict())
-
-        return doc
-
-    def to_jsonld_str(self, base=None):
-        """Returns the JSON-LD serialization of this Things as a string."""
-
-        return json.dumps(self.to_jsonld_dict(base=base))
+        self._properties.pop(interaction.id, None)
+        self._actions.pop(interaction.id, None)
+        self._events.pop(interaction.id, None)

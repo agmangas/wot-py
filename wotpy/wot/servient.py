@@ -10,6 +10,7 @@ import socket
 import six
 import tornado.web
 
+from wotpy.td.serialization import JSONThingDescription
 from wotpy.wot.exposed import ExposedThingGroup
 from wotpy.wot.wot import WoT
 
@@ -68,8 +69,10 @@ class Servient(object):
 
                 for exp_thing in servient._exposed_thing_group.exposed_things:
                     base_url = servient._get_base_url(exp_thing)
-                    td_key = exp_thing.url_name
-                    descriptions[td_key] = exp_thing.thing.to_jsonld_dict(base=base_url)
+                    td_key = exp_thing.thing.id
+                    td_doc = JSONThingDescription.from_thing(exp_thing.thing).to_dict()
+                    td_doc.update({"base": base_url})
+                    descriptions[td_key] = td_doc
 
                 self.write(descriptions)
 

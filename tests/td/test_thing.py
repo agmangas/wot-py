@@ -4,50 +4,24 @@
 # noinspection PyPackageRequirements
 import pytest
 # noinspection PyPackageRequirements
-from faker import Faker
-# noinspection PyPackageRequirements
 from slugify import slugify
 
 from wotpy.protocols.enums import Protocols
-from wotpy.td.enums import InteractionTypes
 from wotpy.td.form import Form
-from wotpy.td.interaction import Property, Action, Event
-from wotpy.td.jsonld.description import ThingDescription
+from wotpy.td.interaction import Action
+from wotpy.td.serialization import JSONThingDescription
 from wotpy.td.thing import Thing
-
-SCHEMA_ORG_URL = "http://schema.org/"
-SCHEMA_ORG_PREFIX = "schema"
-SCHEMA_ORG_LOCATION = "location"
-SCHEMA_ORG_ALTERNATE_NAME = "alternateName"
-SCHEMA_ORG_LOCATION_KEY = "{}:{}".format(SCHEMA_ORG_PREFIX, SCHEMA_ORG_LOCATION)
-SCHEMA_ORG_ALTERNATE_NAME_KEY = "{}:{}".format(SCHEMA_ORG_PREFIX, SCHEMA_ORG_ALTERNATE_NAME)
-
-
-def test_interaction_types():
-    """Interaction objects contain the appropriate types by default."""
-
-    fake = Faker()
-
-    thing = Thing(name=fake.user_name())
-
-    proprty = Property(thing=thing, name=fake.user_name(), output_data={"type": "number"})
-    action = Action(thing=thing, name=fake.user_name())
-    event = Event(thing=thing, name=fake.user_name(), output_data={"type": "string"})
-
-    assert InteractionTypes.PROPERTY in proprty.types
-    assert InteractionTypes.ACTION in action.types
-    assert InteractionTypes.EVENT in event.types
 
 
 def test_empty_thing_valid():
     """An empty Thing initialized by default has a valid JSON-LD serialization."""
 
-    thing = Thing(name="MyThing")
-    ThingDescription.validate(thing.to_jsonld_dict())
+    thing = Thing(id="urn:mything")
+    JSONThingDescription.from_thing(thing)
 
 
-def test_unsafe_names():
-    """Unsafe names for Thing or Interaction objects are rejected."""
+def test_interaction_unsafe_names():
+    """Unsafe names for Interaction objects are rejected."""
 
     names_safe = [
         "safename",
@@ -63,29 +37,23 @@ def test_unsafe_names():
         "?"
     ]
 
-    for name in names_safe:
-        thing = Thing(name=name)
-        Action(thing=thing, name=name)
+    thing = Thing(id="urn:mything")
 
-    thing_name = names_safe[0]
+    for name in names_safe:
+        Action(thing=thing, id=name)
 
     for name in names_unsafe:
         with pytest.raises(ValueError):
-            Thing(name=name)
-
-        thing = Thing(name=thing_name)
-
-        with pytest.raises(ValueError):
-            Action(thing=thing, name=name)
+            Action(thing=thing, id=name)
 
 
 def test_find_interaction():
     """Interactions may be retrieved by name on a Thing."""
 
-    thing = Thing(name="my_thing")
+    thing = Thing(id="urn:mything")
 
-    interaction_01 = Action(thing=thing, name="my_interaction")
-    interaction_02 = Action(thing=thing, name="AnotherInteraction")
+    interaction_01 = Action(thing=thing, id="my_interaction")
+    interaction_02 = Action(thing=thing, id="AnotherInteraction")
 
     thing.add_interaction(interaction_01)
     thing.add_interaction(interaction_02)
@@ -99,11 +67,11 @@ def test_find_interaction():
 def test_remove_interaction():
     """Interactions may be removed from a Thing by name."""
 
-    thing = Thing(name="my_thing")
+    thing = Thing(id="urn:mything")
 
-    interaction_01 = Action(thing=thing, name="my_interaction")
-    interaction_02 = Action(thing=thing, name="AnotherInteraction")
-    interaction_03 = Action(thing=thing, name="YetAnother_interaction")
+    interaction_01 = Action(thing=thing, id="my_interaction")
+    interaction_02 = Action(thing=thing, id="AnotherInteraction")
+    interaction_03 = Action(thing=thing, id="YetAnother_interaction")
 
     thing.add_interaction(interaction_01)
     thing.add_interaction(interaction_02)
@@ -124,12 +92,11 @@ def test_remove_interaction():
 def test_duplicated_interactions():
     """Duplicated Interactions are rejected on a Thing."""
 
-    thing = Thing(name="my_thing")
+    thing = Thing(id="urn:mything")
 
-    interaction_01 = Action(thing=thing, name="my_interaction")
-    interaction_02 = Action(thing=thing, name="AnotherInteraction")
-    interaction_03 = Action(thing=thing, name="my_interaction")
-    interaction_04 = Action(thing=thing, name="My-Interaction")
+    interaction_01 = Action(thing=thing, id="my_interaction")
+    interaction_02 = Action(thing=thing, id="AnotherInteraction")
+    interaction_03 = Action(thing=thing, id="my_interaction")
 
     thing.add_interaction(interaction_01)
     thing.add_interaction(interaction_02)
@@ -137,15 +104,12 @@ def test_duplicated_interactions():
     with pytest.raises(ValueError):
         thing.add_interaction(interaction_03)
 
-    with pytest.raises(ValueError):
-        thing.add_interaction(interaction_04)
-
 
 def test_duplicated_forms():
     """Duplicated Forms are rejected on an Interaction."""
 
-    thing = Thing(name="my_thing")
-    interaction = Action(thing=thing, name="my_interaction")
+    thing = Thing(id="urn:mything")
+    interaction = Action(thing=thing, id="my_interaction")
     thing.add_interaction(interaction)
 
     href_01 = "/href-01"

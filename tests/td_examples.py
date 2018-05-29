@@ -2,63 +2,33 @@
 # -*- coding: utf-8 -*-
 
 TD_EXAMPLE = {
-    "@context": [
-        "https://w3c.github.io/wot/w3c-wot-td-context.jsonld",
-        {"actuator": "http://example.org/actuator#"},
-        {"schema": "http://schema.org/"}
-    ],
-    "@type": ["Thing"],
-    "name": "MyLEDThing",
-    "base": "coap://myled.example.com:5683/",
-    "schema:description": "A LED WoT Thing",
-    "security": {
-        "cat": "token:jwt",
-        "alg": "HS256",
-        "as": "https://authority-issuing.example.org"
+    "id": "urn:dev:wot:com:example:servient:lamp",
+    "label": "MyLampThing",
+    "description": "MyLampThing uses JSON-LD 1.1 serialization",
+    "properties": {
+        "status": {
+            "description": "Shows the current status of the lamp",
+            "type": "string",
+            "forms": [{
+                "href": "coaps://mylamp.example.com:5683/status"
+            }]
+        }
     },
-    "interaction": [{
-        "@type": ["Property", "actuator:onOffStatus"],
-        "name": "status",
-        "outputData": {"type": "boolean"},
-        "writable": True,
-        "observable": True,
-        "form": [{
-            "href": "pwr",
-            "mediaType": "application/exi"
-        }, {
-            "href": "http://mytemp.example.com:8080/status",
-            "mediaType": "application/json"
-        }]
-    }, {
-        "@type": ["Action", "actuator:fadeIn"],
-        "name": "fadeIn",
-        "inputData": {"type": "integer"},
-        "form": [{
-            "href": "in",
-            "mediaType": "application/exi"
-        }, {
-            "href": "http://mytemp.example.com:8080/in",
-            "mediaType": "application/json"
-        }]
-    }, {
-        "@type": ["Action", "actuator:fadeOut"],
-        "name": "fadeOut",
-        "inputData": {"type": "integer"},
-        "form": [{
-            "href": "out",
-            "mediaType": "application/exi"
-        }, {
-            "href": "http://mytemp.example.com:8080/out",
-            "mediaType": "application/json"
-        }]
-    }, {
-        "@type": ["Event", "actuator:alert"],
-        "name": "criticalCondition",
-        "schema:alternateName": "criticalAlert",
-        "outputData": {"type": "string"},
-        "form": [{
-            "href": "ev",
-            "mediaType": "application/exi"
-        }]
-    }]
+    "actions": {
+        "toggle": {
+            "description": "Turn on or off the lamp.",
+            "forms": [{
+                "href": "coaps://mylamp.example.com:5683/toggle"
+            }]
+        }
+    },
+    "events": {
+        "overheating": {
+            "description": "Lamp reaches a critical temperature (overheating).",
+            "type": "string",
+            "forms": [{
+                "href": "coaps://mylamp.example.com:5683/oh"
+            }]
+        }
+    }
 }

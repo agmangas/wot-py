@@ -40,9 +40,6 @@ def thing_action_init():
 
     fake = Faker()
 
-    def _upper(val):
-        return val.upper()
-
     return ThingActionInit(
         name=fake.user_name(),
         input_data_description={"type": "string"},
@@ -59,4 +56,4 @@ def exposed_thing():
 
     return ExposedThing.from_name(
         servient=servient,
-        name=fake.user_name())
+        name=fake.url())

@@ -3,8 +3,8 @@
 
 import json
 
-from wotpy.codecs.jsoncodec import JsonCodec
 from tests.utils import assert_equal_dict
+from wotpy.codecs.jsoncodec import JsonCodec
 
 
 def test_json_codec():

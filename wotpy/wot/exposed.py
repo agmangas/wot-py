@@ -11,7 +11,7 @@ from rx import Observable
 from rx.subjects import Subject
 
 from wotpy.td.interaction import Property, Action, Event
-from wotpy.td.jsonld.description import ThingDescription
+from wotpy.td.serialization import JSONThingDescription
 from wotpy.td.thing import Thing
 from wotpy.utils.enums import EnumListMixin
 from wotpy.wot.dictionaries import \
@@ -51,7 +51,7 @@ class ExposedThingGroup(object):
         """Add a new ExposedThing to this set."""
 
         if exposed_thing.thing.id in self._exposed_things:
-            raise ValueError("Duplicated Exposed Thing: {}".format(exposed_thing.name))
+            raise ValueError("Duplicate Exposed Thing: {}".format(exposed_thing.name))
 
         self._exposed_things[exposed_thing.thing.id] = exposed_thing
 
@@ -142,7 +142,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
     def from_name(cls, servient, name):
         """Builds an empty ExposedThing with the given name."""
 
-        thing = Thing(name=name)
+        thing = Thing(id=name)
 
         return ExposedThing(servient=servient, thing=thing)
 
@@ -151,7 +151,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Builds an ExposedThing initialized from
         the given Thing Description document."""
 
-        thing_description = ThingDescription(doc=doc)
+        thing_description = JSONThingDescription(doc=doc)
         thing = thing_description.build_thing()
 
         return ExposedThing(servient=servient, thing=thing)
@@ -426,12 +426,10 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         prop = Property(
             thing=self._thing,
-            name=property_init.name,
-            output_data=property_init.type,
+            id=property_init.name,
+            type=property_init.type,
             writable=property_init.writable,
             observable=property_init.observable)
-
-        property_init.copy_annotations(prop)
 
         self._thing.add_interaction(prop)
         self._set_property_value(prop, property_init.value)
@@ -441,7 +439,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             method=TDChangeMethod.ADD,
             name=property_init.name,
             data=property_init,
-            description=self._thing.to_jsonld_dict())
+            description=JSONThingDescription.from_thing(self.thing).to_dict())
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
@@ -464,11 +462,9 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         action = Action(
             thing=self._thing,
-            name=action_init.name,
-            output_data=action_init.output_data_description,
-            input_data=action_init.input_data_description)
-
-        action_init.copy_annotations(action)
+            id=action_init.name,
+            output=action_init.output_data_description,
+            input=action_init.input_data_description)
 
         self._thing.add_interaction(action)
 
@@ -477,7 +473,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             method=TDChangeMethod.ADD,
             name=action_init.name,
             data=action_init,
-            description=self._thing.to_jsonld_dict())
+            description=JSONThingDescription.from_thing(self.thing).to_dict())
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
@@ -500,10 +496,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         event = Event(
             thing=self._thing,
-            name=event_init.name,
-            output_data=event_init.data_description)
-
-        event_init.copy_annotations(event)
+            id=event_init.name,
+            type=event_init.data_description)
 
         self._thing.add_interaction(event)
 
@@ -512,7 +506,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             method=TDChangeMethod.ADD,
             name=event_init.name,
             data=event_init,
-            description=self._thing.to_jsonld_dict())
+            description=JSONThingDescription.from_thing(self.thing).to_dict())
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 

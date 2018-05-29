@@ -12,7 +12,7 @@ import six
 from concurrent.futures import ThreadPoolExecutor, Future
 from tornado.httpclient import HTTPClient, HTTPRequest
 
-from wotpy.td.jsonld.description import ThingDescription
+from wotpy.td.serialization import JSONThingDescription
 from wotpy.wot.dictionaries import ThingTemplate
 from wotpy.wot.exposed import ExposedThing
 
@@ -45,7 +45,7 @@ class WoT(object):
             http_request = HTTPRequest(url, request_timeout=timeout_secs)
             http_response = http_client.fetch(http_request)
             td_doc = json.loads(http_response.body)
-            ThingDescription.validate(td_doc)
+            JSONThingDescription.validate(td_doc)
             http_client.close()
             return json.dumps(td_doc)
 
@@ -72,7 +72,6 @@ class WoT(object):
             exposed_thing = ExposedThing.from_description(servient=self._servient, doc=td_doc)
         else:
             exposed_thing = ExposedThing.from_name(servient=self._servient, name=model.name)
-            model.copy_annotations(exposed_thing.thing)
 
         self._servient.add_exposed_thing(exposed_thing)
 

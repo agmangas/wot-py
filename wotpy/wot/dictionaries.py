@@ -66,48 +66,6 @@ class SemanticAnnotations(object):
 
         return [{"context": item.context, "prefix": item.prefix} for item in sem_types_all]
 
-    def _copy_contexts(self, thing_sem_context):
-        """Copy the local context to the given ThingSemanticContext."""
-
-        for item in self.contexts:
-            thing_sem_context.add(context_url=item["context"], prefix=item["prefix"])
-
-    def _copy_types(self, thing_sem_types):
-        """Copy the local types to the given ThingSemanticTypes."""
-
-        for sem_type in self.semantic_types:
-            thing_sem_types.add(sem_type.name)
-
-    def _copy_metadata(self, thing_sem_metadata):
-        """Copy the local metadata to the given ThingSemanticMetadata."""
-
-        for sem_meta in self.metadata:
-            sem_type = sem_meta.semantic_type
-            key = "{}:{}".format(sem_type.prefix, sem_type.name) if sem_type.prefix else sem_type.name
-            thing_sem_metadata.add(key=key, val=sem_meta.value)
-
-    def _copy_to_interaction(self, interaction):
-        """Copy these semantic annotations to the given Interaction object."""
-
-        self._copy_contexts(interaction.thing.semantic_context)
-        self._copy_types(interaction.semantic_types)
-        self._copy_metadata(interaction.semantic_metadata)
-
-    def _copy_to_thing(self, thing):
-        """Copy these semantic annotations to the given Thing object."""
-
-        self._copy_contexts(thing.semantic_context)
-        self._copy_types(thing.semantic_types)
-        self._copy_metadata(thing.semantic_metadata)
-
-    def copy_annotations(self, td_item):
-        """Copy these semantic annotations to the given Interaction or Thing object."""
-
-        if hasattr(td_item, "thing"):
-            self._copy_to_interaction(td_item)
-        else:
-            self._copy_to_thing(td_item)
-
 
 class ThingFilter(object):
     """Represents a filter that may be applied
