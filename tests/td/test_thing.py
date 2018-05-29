@@ -9,7 +9,7 @@ from slugify import slugify
 from wotpy.protocols.enums import Protocols
 from wotpy.td.form import Form
 from wotpy.td.interaction import Action
-from wotpy.td.serialization import JSONThingDescription
+from wotpy.td.description import JSONThingDescription
 from wotpy.td.thing import Thing
 
 

@@ -12,7 +12,7 @@ import six
 from concurrent.futures import ThreadPoolExecutor, Future
 from tornado.httpclient import HTTPClient, HTTPRequest
 
-from wotpy.td.serialization import JSONThingDescription
+from wotpy.td.description import JSONThingDescription
 from wotpy.wot.dictionaries import ThingTemplate
 from wotpy.wot.exposed import ExposedThing
 

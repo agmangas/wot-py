@@ -10,7 +10,7 @@ import socket
 import six
 import tornado.web
 
-from wotpy.td.serialization import JSONThingDescription
+from wotpy.td.description import JSONThingDescription
 from wotpy.wot.exposed import ExposedThingGroup
 from wotpy.wot.wot import WoT
 

@@ -6,7 +6,7 @@ import copy
 import pytest
 
 from tests.td_examples import TD_EXAMPLE
-from wotpy.td.serialization import JSONThingDescription
+from wotpy.td.description import JSONThingDescription
 from wotpy.td.validation import InvalidDescription
 
 

@@ -11,7 +11,7 @@ from rx import Observable
 from rx.subjects import Subject
 
 from wotpy.td.interaction import Property, Action, Event
-from wotpy.td.serialization import JSONThingDescription
+from wotpy.td.description import JSONThingDescription
 from wotpy.td.thing import Thing
 from wotpy.utils.enums import EnumListMixin
 from wotpy.wot.dictionaries import \
