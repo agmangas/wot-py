@@ -18,13 +18,13 @@ from wotpy.td.thing import Thing
 from wotpy.td.validation import InvalidDescription
 
 
-def test_thing_description_validate():
+def test_validate():
     """Example TD from the W3C Thing Description page validates correctly."""
 
     JSONThingDescription.validate(doc=TD_EXAMPLE)
 
 
-def test_thing_description_validate_err():
+def test_validate_err():
     """An erroneous Thing Description raises error on validation."""
 
     update_funcs = [
@@ -67,3 +67,21 @@ def test_from_thing():
     assert len(td_dict["actions"]) == 1
     assert len(td_dict["actions"][action_id]["forms"]) == 1
     assert td_dict["actions"][action_id]["forms"][0]["href"] == form_href
+
+
+def test_build_thing():
+    """Thing instances can be built from JSON TD instances."""
+
+    json_td = JSONThingDescription(TD_EXAMPLE)
+    thing = json_td.build_thing()
+    td_dict = json_td.to_dict()
+
+    def assert_same_keys(dict_a, dict_b):
+        assert sorted(list(dict_a.keys())) == sorted(list(dict_b.keys()))
+
+    assert thing.id == td_dict.get("id")
+    assert thing.label == td_dict.get("label")
+    assert thing.description == td_dict.get("description")
+    assert_same_keys(thing.properties, td_dict.get("properties", {}))
+    assert_same_keys(thing.actions, td_dict.get("actions", {}))
+    assert_same_keys(thing.events, td_dict.get("events", {}))
