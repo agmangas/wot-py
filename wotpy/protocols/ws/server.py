@@ -48,17 +48,24 @@ class WebsocketServer(BaseProtocolServer):
 
         exposed_thing = self.exposed_thing_group.find_by_interaction(interaction)
 
-        assert exposed_thing
+        if not exposed_thing:
+            raise ValueError("Unknown Interaction")
 
         base_url = self.build_base_url(hostname=hostname, thing=exposed_thing.thing)
-        media_type = MediaTypes.JSON
 
-        return [Form(interaction=interaction, protocol=self.protocol, href=base_url, media_type=media_type)]
+        form_ws = Form(
+            interaction=interaction,
+            protocol=self.protocol,
+            href=base_url,
+            media_type=MediaTypes.JSON)
+
+        return [form_ws]
 
     def build_base_url(self, hostname, thing):
         """Returns the base URL for the given Thing in the context of this server."""
 
-        assert self.exposed_thing_group.find_by_thing(thing)
+        if not self.exposed_thing_group.find_by_thing(thing):
+            raise ValueError("Unknown Thing")
 
         hostname = hostname.rstrip("/")
         thing_path = "{}".format(thing.url_name)

@@ -59,8 +59,8 @@ class WebsocketHandler(websocket.WebSocketHandler):
         The origin argument is the value of the Origin HTTP header,
         the url responsible for initiating this request"""
 
-        # ToDo: Check this once with add authentication
-        # This is extremely dangerous in case of a cookie-based authentication system.
+        # ToDo: Check this once we add authentication
+        # This is extretemely dangerous in case of a cookie-based authentication system.
         # WS authentication should be handled independently with some kind of token-based system.
 
         return True
