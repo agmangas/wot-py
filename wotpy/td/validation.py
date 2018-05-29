@@ -5,7 +5,6 @@
 Schemas following the JSON Schema specification used to validate the shape of Thing Description documents.
 """
 
-import copy
 import re
 
 from wotpy.td.enums import InteractionTypes
