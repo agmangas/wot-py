@@ -33,7 +33,7 @@ class JSONThingDescription(object):
 
         try:
             jsonschema.validate(doc, SCHEMA_THING)
-        except jsonschema.ValidationError as ex:
+        except (jsonschema.ValidationError, TypeError) as ex:
             raise InvalidDescription(str(ex))
 
     @classmethod

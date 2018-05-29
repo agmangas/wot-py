@@ -11,7 +11,7 @@ from wotpy.td.validation import InvalidDescription
 
 
 def test_thing_description_validate():
-    """Example Thing Description from W3C GitHub page validates correctly."""
+    """Example TD from the W3C Thing Description page validates correctly."""
 
     JSONThingDescription.validate(doc=TD_EXAMPLE)
 
@@ -19,30 +19,17 @@ def test_thing_description_validate():
 def test_thing_description_validate_err():
     """An erroneous Thing Description raises error on validation."""
 
-    td_err_01 = copy.deepcopy(TD_EXAMPLE)
-    td_err_01["properties"] = [1, 2, 3]
+    update_funcs = [
+        lambda x: x.update({"properties": [1, 2, 3]}) or x,
+        lambda x: x.update({"actions": "hello-interactions"}) or x,
+        lambda x: x.update({"events": {"overheating": {"forms": 0.5}}}) or x,
+        lambda x: x.update({"id": "this is not an URI"}) or x,
+        lambda x: x.update({"events": {"Invalid Name": {}}}) or x,
+        lambda x: x.update({"events": {100: {"label": "Invalid Name"}}}) or x
+    ]
 
-    with pytest.raises(InvalidDescription):
-        JSONThingDescription.validate(doc=td_err_01)
+    for update_func in update_funcs:
+        td_err = update_func(copy.deepcopy(TD_EXAMPLE))
 
-    td_err_02 = copy.deepcopy(TD_EXAMPLE)
-    td_err_02["actions"] = "hello-interactions"
-
-    with pytest.raises(InvalidDescription):
-        JSONThingDescription.validate(doc=td_err_02)
-
-    td_err_03 = copy.deepcopy(TD_EXAMPLE)
-    td_err_03["events"] = {
-        "overheating": {
-            "forms": 0.5
-        }
-    }
-
-    with pytest.raises(InvalidDescription):
-        JSONThingDescription.validate(doc=td_err_03)
-
-    td_err_04 = copy.deepcopy(TD_EXAMPLE)
-    td_err_04["id"] = "this is not a URI"
-
-    with pytest.raises(InvalidDescription):
-        JSONThingDescription.validate(doc=td_err_04)
+        with pytest.raises(InvalidDescription):
+            JSONThingDescription.validate(doc=td_err)

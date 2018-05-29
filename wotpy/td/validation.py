@@ -159,15 +159,18 @@ SCHEMA_THING = {
         "base": {"type": "string"},
         "properties": {
             "type": "object",
-            "patternProperties": {REGEX_SAFE_NAME: SCHEMA_PROPERTY}
+            "patternProperties": {REGEX_SAFE_NAME: SCHEMA_PROPERTY},
+            "additionalProperties": False
         },
         "actions": {
             "type": "object",
-            "patternProperties": {REGEX_SAFE_NAME: SCHEMA_ACTION}
+            "patternProperties": {REGEX_SAFE_NAME: SCHEMA_ACTION},
+            "additionalProperties": False
         },
         "events": {
             "type": "object",
-            "patternProperties": {REGEX_SAFE_NAME: SCHEMA_EVENT}
+            "patternProperties": {REGEX_SAFE_NAME: SCHEMA_EVENT},
+            "additionalProperties": False
         },
         "links": {
             "type": "array",
