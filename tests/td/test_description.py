@@ -2,11 +2,19 @@
 # -*- coding: utf-8 -*-
 
 import copy
+import uuid
 
+# noinspection PyPackageRequirements
 import pytest
+# noinspection PyPackageRequirements
+from faker import Faker
 
 from tests.td_examples import TD_EXAMPLE
+from wotpy.protocols.enums import Protocols
 from wotpy.td.description import JSONThingDescription
+from wotpy.td.form import Form
+from wotpy.td.interaction import Action
+from wotpy.td.thing import Thing
 from wotpy.td.validation import InvalidDescription
 
 
@@ -33,3 +41,29 @@ def test_thing_description_validate_err():
 
         with pytest.raises(InvalidDescription):
             JSONThingDescription.validate(doc=td_err)
+
+
+def test_from_thing():
+    """Thing instances can be serialized to JSON format."""
+
+    fake = Faker()
+
+    thing_id = uuid.uuid4().urn
+    action_id = uuid.uuid4().hex
+    form_href = fake.url()
+
+    thing = Thing(id=thing_id)
+    action = Action(thing=thing, id=action_id)
+    form = Form(interaction=action, protocol=Protocols.HTTP, href=form_href)
+
+    action.add_form(form)
+    thing.add_interaction(action)
+
+    json_td = JSONThingDescription.from_thing(thing)
+    td_dict = json_td.to_dict()
+
+    assert td_dict["id"] == thing_id
+    assert len(td_dict["properties"]) == 0
+    assert len(td_dict["actions"]) == 1
+    assert len(td_dict["actions"][action_id]["forms"]) == 1
+    assert td_dict["actions"][action_id]["forms"][0]["href"] == form_href
