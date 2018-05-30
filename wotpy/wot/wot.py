@@ -13,6 +13,7 @@ from concurrent.futures import ThreadPoolExecutor, Future
 from tornado.httpclient import HTTPClient, HTTPRequest
 
 from wotpy.td.description import JSONThingDescription
+from wotpy.td.thing import Thing
 from wotpy.wot.dictionaries import ThingTemplate
 from wotpy.wot.exposed import ExposedThing
 
@@ -68,10 +69,12 @@ class WoT(object):
         assert isinstance(model, six.string_types) or isinstance(model, ThingTemplate)
 
         if isinstance(model, six.string_types):
-            td_doc = json.loads(model)
-            exposed_thing = ExposedThing.from_description(servient=self._servient, doc=td_doc)
+            json_td = JSONThingDescription(doc=model)
+            thing = json_td.build_thing()
+            exposed_thing = ExposedThing(servient=self._servient, thing=thing)
         else:
-            exposed_thing = ExposedThing.from_name(servient=self._servient, name=model.name)
+            thing = Thing(id=model.name)
+            exposed_thing = ExposedThing(servient=self._servient, thing=thing)
 
         self._servient.add_exposed_thing(exposed_thing)
 
@@ -85,9 +88,9 @@ class WoT(object):
 
         def build_exposed_thing(ft):
             try:
-                td_str = ft.result()
-                td_doc = json.loads(td_str)
-                exp_thing = ExposedThing.from_description(servient=self._servient, doc=td_doc)
+                json_td = JSONThingDescription(doc=ft.result())
+                thing = json_td.build_thing()
+                exp_thing = ExposedThing(servient=self._servient, thing=thing)
                 future_thing.set_result(exp_thing)
             except Exception as ex:
                 future_thing.set_exception(ex)

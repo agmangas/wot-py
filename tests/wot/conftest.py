@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import uuid
+
 # noinspection PyPackageRequirements
 import pytest
 # noinspection PyPackageRequirements
 from faker import Faker
 
+from wotpy.td.thing import Thing
 from wotpy.wot.dictionaries import ThingPropertyInit, ThingEventInit, ThingActionInit
 from wotpy.wot.exposed import ExposedThing
 from wotpy.wot.servient import Servient
@@ -50,10 +53,6 @@ def thing_action_init():
 def exposed_thing():
     """Builds and returns a random ExposedThing."""
 
-    fake = Faker()
-
-    servient = Servient()
-
-    return ExposedThing.from_name(
-        servient=servient,
-        name=fake.url())
+    return ExposedThing(
+        servient=Servient(),
+        thing=Thing(id=uuid.uuid4().urn))

@@ -8,19 +8,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 # noinspection PyPackageRequirements
 from faker import Faker
 
-from tests.td_examples import TD_EXAMPLE
-from tests.wot.utils import assert_exposed_thing_equal
 from wotpy.wot.enums import TDChangeMethod, TDChangeType
-from wotpy.wot.exposed import ExposedThing
-from wotpy.wot.servient import Servient
-
-
-def test_from_description():
-    """ExposedThings can be created from Thing Description documents."""
-
-    servient = Servient()
-    exp_thing = ExposedThing.from_description(servient=servient, doc=TD_EXAMPLE)
-    assert_exposed_thing_equal(exp_thing, TD_EXAMPLE)
 
 
 def test_read_property(exposed_thing, thing_property_init):

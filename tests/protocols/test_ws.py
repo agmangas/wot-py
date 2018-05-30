@@ -24,6 +24,7 @@ from wotpy.protocols.ws.messages import \
     WebsocketMessageError, \
     WebsocketMessageEmittedItem
 from wotpy.protocols.ws.server import WebsocketServer
+from wotpy.td.thing import Thing
 from wotpy.wot.dictionaries import ThingPropertyInit, ThingEventInit, ThingActionInit
 from wotpy.wot.exposed import ExposedThing
 from wotpy.wot.servient import Servient
@@ -41,13 +42,13 @@ class TestWebsocketHandler(tornado.testing.AsyncHTTPTestCase):
         thing_01_id = uuid.uuid4().urn
         thing_02_id = uuid.uuid4().urn
 
-        self.exposed_thing_01 = ExposedThing.from_name(
+        self.exposed_thing_01 = ExposedThing(
             servient=servient,
-            name=thing_01_id)
+            thing=Thing(id=thing_01_id))
 
-        self.exposed_thing_02 = ExposedThing.from_name(
+        self.exposed_thing_02 = ExposedThing(
             servient=servient,
-            name=thing_02_id)
+            thing=Thing(id=thing_02_id))
 
         self.prop_init_01 = ThingPropertyInit(
             name=self.fake.user_name(),

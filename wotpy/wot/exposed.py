@@ -10,9 +10,8 @@ from concurrent.futures import Future
 from rx import Observable
 from rx.subjects import Subject
 
-from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.description import JSONThingDescription
-from wotpy.td.thing import Thing
+from wotpy.td.interaction import Property, Action, Event
 from wotpy.utils.enums import EnumListMixin
 from wotpy.wot.dictionaries import \
     PropertyChangeEventInit, \
@@ -137,24 +136,6 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
     def __hash__(self):
         return hash((self.servient, self.thing))
-
-    @classmethod
-    def from_name(cls, servient, name):
-        """Builds an empty ExposedThing with the given name."""
-
-        thing = Thing(id=name)
-
-        return ExposedThing(servient=servient, thing=thing)
-
-    @classmethod
-    def from_description(cls, servient, doc):
-        """Builds an ExposedThing initialized from
-        the given Thing Description document."""
-
-        thing_description = JSONThingDescription(doc=doc)
-        thing = thing_description.build_thing()
-
-        return ExposedThing(servient=servient, thing=thing)
 
     def _set_property_value(self, prop, value):
         """Sets a Property value."""
