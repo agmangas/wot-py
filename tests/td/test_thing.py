@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
+import string
 import uuid
 
 # noinspection PyPackageRequirements
@@ -16,6 +17,21 @@ from wotpy.td.description import JSONThingDescription
 from wotpy.td.form import Form
 from wotpy.td.interaction import Action
 from wotpy.td.thing import Thing
+
+
+def test_unique_url_name():
+    """URL names are always unique as long as the IDs are."""
+
+    thing_id_base = uuid.uuid4().urn
+    thing_ids = [thing_id_base]
+
+    for ch in string.punctuation.replace("-", ""):
+        thing_ids.append(thing_id_base.replace("-", ch))
+
+    things = [Thing(id=item) for item in thing_ids]
+    url_names = [item.url_name for item in things]
+
+    assert len(url_names) == len(set(url_names))
 
 
 def test_empty_thing_valid():
