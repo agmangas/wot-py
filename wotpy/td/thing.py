@@ -78,10 +78,10 @@ class Thing(object):
     def interactions(self):
         """Sequence of interactions linked to this thing."""
 
-        return list(itertools.chain(
+        return itertools.chain(
             self._properties.values(),
             self._actions.values(),
-            self._events.values()))
+            self._events.values())
 
     def find_interaction(self, name):
         """Finds an existing Interaction by name.
@@ -90,7 +90,7 @@ class Thing(object):
         def is_match(intrct):
             return intrct.id == name or intrct.url_name == name
 
-        return next((item for item in self.interactions if is_match(item)), None)
+        return next((intrct for intrct in self.interactions if is_match(intrct)), None)
 
     def add_interaction(self, interaction):
         """Add a new Interaction."""
