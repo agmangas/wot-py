@@ -13,7 +13,7 @@ from faker import Faker
 from slugify import slugify
 
 from wotpy.protocols.enums import Protocols
-from wotpy.td.description import JSONThingDescription
+from wotpy.td.description import ThingDescription
 from wotpy.td.form import Form
 from wotpy.td.interaction import Action
 from wotpy.td.thing import Thing
@@ -38,8 +38,8 @@ def test_empty_thing_valid():
     """An empty Thing initialized by default has a valid JSON-LD serialization."""
 
     thing = Thing(id=uuid.uuid4().urn)
-    json_td = JSONThingDescription.from_thing(thing)
-    JSONThingDescription.validate(json_td.to_dict())
+    json_td = ThingDescription.from_thing(thing)
+    ThingDescription.validate(json_td.to_dict())
 
 
 def test_thing_invalid_id():

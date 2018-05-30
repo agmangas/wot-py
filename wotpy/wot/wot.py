@@ -12,7 +12,7 @@ import six
 from concurrent.futures import ThreadPoolExecutor, Future
 from tornado.httpclient import HTTPClient, HTTPRequest
 
-from wotpy.td.description import JSONThingDescription
+from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
 from wotpy.wot.dictionaries import ThingTemplate
 from wotpy.wot.exposed import ExposedThing
@@ -46,7 +46,7 @@ class WoT(object):
             http_request = HTTPRequest(url, request_timeout=timeout_secs)
             http_response = http_client.fetch(http_request)
             td_doc = json.loads(http_response.body)
-            JSONThingDescription.validate(td_doc)
+            ThingDescription.validate(td_doc)
             http_client.close()
             return json.dumps(td_doc)
 
@@ -69,7 +69,7 @@ class WoT(object):
         assert isinstance(model, six.string_types) or isinstance(model, ThingTemplate)
 
         if isinstance(model, six.string_types):
-            json_td = JSONThingDescription(doc=model)
+            json_td = ThingDescription(doc=model)
             thing = json_td.build_thing()
             exposed_thing = ExposedThing(servient=self._servient, thing=thing)
         else:
@@ -88,7 +88,7 @@ class WoT(object):
 
         def build_exposed_thing(ft):
             try:
-                json_td = JSONThingDescription(doc=ft.result())
+                json_td = ThingDescription(doc=ft.result())
                 thing = json_td.build_thing()
                 exp_thing = ExposedThing(servient=self._servient, thing=thing)
                 future_thing.set_result(exp_thing)

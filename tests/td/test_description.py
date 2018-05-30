@@ -11,7 +11,7 @@ from faker import Faker
 
 from tests.td_examples import TD_EXAMPLE
 from wotpy.protocols.enums import Protocols
-from wotpy.td.description import JSONThingDescription
+from wotpy.td.description import ThingDescription
 from wotpy.td.form import Form
 from wotpy.td.interaction import Action
 from wotpy.td.thing import Thing
@@ -21,7 +21,7 @@ from wotpy.td.validation import InvalidDescription
 def test_validate():
     """Example TD from the W3C Thing Description page validates correctly."""
 
-    JSONThingDescription.validate(doc=TD_EXAMPLE)
+    ThingDescription.validate(doc=TD_EXAMPLE)
 
 
 def test_validate_err():
@@ -40,7 +40,7 @@ def test_validate_err():
         td_err = update_func(copy.deepcopy(TD_EXAMPLE))
 
         with pytest.raises(InvalidDescription):
-            JSONThingDescription.validate(doc=td_err)
+            ThingDescription.validate(doc=td_err)
 
 
 def test_from_thing():
@@ -59,7 +59,7 @@ def test_from_thing():
     action.add_form(form)
     thing.add_interaction(action)
 
-    json_td = JSONThingDescription.from_thing(thing)
+    json_td = ThingDescription.from_thing(thing)
     td_dict = json_td.to_dict()
 
     assert td_dict["id"] == thing_id
@@ -72,7 +72,7 @@ def test_from_thing():
 def test_build_thing():
     """Thing instances can be built from JSON TD instances."""
 
-    json_td = JSONThingDescription(TD_EXAMPLE)
+    json_td = ThingDescription(TD_EXAMPLE)
     thing = json_td.build_thing()
     td_dict = json_td.to_dict()
 

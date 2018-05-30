@@ -10,7 +10,7 @@ from concurrent.futures import Future
 from rx import Observable
 from rx.subjects import Subject
 
-from wotpy.td.description import JSONThingDescription
+from wotpy.td.description import ThingDescription
 from wotpy.td.interaction import Property, Action, Event
 from wotpy.utils.enums import EnumListMixin
 from wotpy.wot.dictionaries import \
@@ -420,7 +420,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             method=TDChangeMethod.ADD,
             name=property_init.name,
             data=property_init,
-            description=JSONThingDescription.from_thing(self.thing).to_dict())
+            description=ThingDescription.from_thing(self.thing).to_dict())
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
@@ -454,7 +454,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             method=TDChangeMethod.ADD,
             name=action_init.name,
             data=action_init,
-            description=JSONThingDescription.from_thing(self.thing).to_dict())
+            description=ThingDescription.from_thing(self.thing).to_dict())
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
@@ -487,7 +487,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             method=TDChangeMethod.ADD,
             name=event_init.name,
             data=event_init,
-            description=JSONThingDescription.from_thing(self.thing).to_dict())
+            description=ThingDescription.from_thing(self.thing).to_dict())
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 

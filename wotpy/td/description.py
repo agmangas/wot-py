@@ -16,8 +16,9 @@ from wotpy.td.thing import Thing
 from wotpy.td.validation import SCHEMA_THING, InvalidDescription
 
 
-class JSONThingDescription(object):
-    """Wrapper class for a Thing Description JSON document."""
+class ThingDescription(object):
+    """Class that represents a Thing Description document.
+    Contains logic to validate and transform a Thing to a serialized TD and vice versa."""
 
     def __init__(self, doc):
         """Constructor.
@@ -121,7 +122,13 @@ class JSONThingDescription(object):
 
         doc = filter_dict(doc)
 
-        return JSONThingDescription(doc)
+        return ThingDescription(doc)
+
+    @property
+    def name(self):
+        """Name (ID) of the Thing."""
+
+        return self._doc.get("id")
 
     def to_dict(self):
         """Returns the JSON Thing Description as a dict."""
