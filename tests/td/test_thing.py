@@ -22,7 +22,8 @@ def test_empty_thing_valid():
     """An empty Thing initialized by default has a valid JSON-LD serialization."""
 
     thing = Thing(id=uuid.uuid4().urn)
-    JSONThingDescription.from_thing(thing)
+    json_td = JSONThingDescription.from_thing(thing)
+    JSONThingDescription.validate(json_td.to_dict())
 
 
 def test_thing_invalid_id():
@@ -34,8 +35,13 @@ def test_thing_invalid_id():
         uuid.uuid4().urn,
         fake.url(),
         fake.uri(),
-        "../{}".format(fake.uri_path(deep=2)),
-        "../{}#{}".format(fake.uri_path(deep=2), uuid.uuid4().hex)
+        "http://datypic.com",
+        "mailto:info@datypic.com",
+        "../%C3%A9dition.html",
+        "../édition.html",
+        "http://datypic.com/prod.html#shirt",
+        "../prod.html#shirt",
+        "urn:example:org"
     ]
 
     ids_invalid = [
@@ -44,7 +50,8 @@ def test_thing_invalid_id():
         fake.uri_extension(),
         fake.sentence(),
         str(uuid.uuid4()),
-        uuid.uuid4().hex
+        uuid.uuid4().hex,
+        "http://datypic.com#f% rag"
     ]
 
     for thing_id in ids_valid:
