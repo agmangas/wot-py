@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-
 from setuptools import setup, find_packages
 
 from wotpy.__version__ import __version__
@@ -15,15 +13,10 @@ install_requires = [
     'python-slugify>=1.2.4,<2.0'
 ]
 
-# concurrent.futures is a built-in in Python 3 but needs a backport in Python 2
-
-if sys.version_info[0] == 2:
-    install_requires.append('futures>=3.0,<4.0')
-
 setup(
     name='wotpy',
     version=__version__,
-    description='Python implementation of the W3C WoT standards',
+    description='Python implementation of the W3C WoT Scripting API',
     keywords='wot w3c ctic iot',
     author='Andres Garcia Mangas',
     author_email='andres.garcia@fundacionctic.org',
@@ -48,7 +41,8 @@ setup(
             'tox',
             'faker',
             'Sphinx',
-            'sphinx-rtd-theme'
+            'sphinx-rtd-theme',
+            'futures'
         ]
     }
 )

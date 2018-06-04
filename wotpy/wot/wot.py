@@ -8,9 +8,9 @@ Class that serves as the WoT entrypoint.
 import json
 
 import six
+import tornado.gen
 # noinspection PyCompatibility
-from concurrent.futures import ThreadPoolExecutor, Future
-from tornado.httpclient import HTTPClient, HTTPRequest
+from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 
 from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
@@ -35,26 +35,22 @@ class WoT(object):
         raise NotImplementedError()
 
     @classmethod
+    @tornado.gen.coroutine
     def fetch(cls, url, timeout_secs=None):
         """Accepts an url argument and returns a Future
         that resolves with a Thing Description string."""
 
         timeout_secs = timeout_secs or DEFAULT_FETCH_TIMEOUT_SECS
 
-        def fetch_td():
-            http_client = HTTPClient()
-            http_request = HTTPRequest(url, request_timeout=timeout_secs)
-            http_response = http_client.fetch(http_request)
-            td_doc = json.loads(http_response.body)
-            ThingDescription.validate(td_doc)
-            http_client.close()
-            return json.dumps(td_doc)
+        http_client = AsyncHTTPClient()
+        http_request = HTTPRequest(url, request_timeout=timeout_secs)
 
-        executor = ThreadPoolExecutor(max_workers=1)
-        future_td = executor.submit(fetch_td)
-        executor.shutdown(wait=False)
+        http_response = yield http_client.fetch(http_request)
 
-        return future_td
+        td_doc = json.loads(http_response.body)
+        td = ThingDescription(td_doc)
+
+        raise tornado.gen.Return(td.to_str())
 
     def consume(self, td):
         """Accepts a thing description string argument and returns a
@@ -80,22 +76,15 @@ class WoT(object):
 
         return exposed_thing
 
+    @tornado.gen.coroutine
     def produce_from_url(self, url, timeout_secs=None):
         """Return a Future that resolves to an ExposedThing created
         from the thing description retrieved from the given URL."""
 
-        future_thing = Future()
+        td_str = yield self.fetch(url, timeout_secs=timeout_secs)
 
-        def build_exposed_thing(ft):
-            try:
-                json_td = ThingDescription(doc=ft.result())
-                thing = json_td.build_thing()
-                exp_thing = ExposedThing(servient=self._servient, thing=thing)
-                future_thing.set_result(exp_thing)
-            except Exception as ex:
-                future_thing.set_exception(ex)
+        td = ThingDescription(td_str)
+        thing = td.build_thing()
+        exp_thing = ExposedThing(servient=self._servient, thing=thing)
 
-        future_td = self.fetch(url, timeout_secs=timeout_secs)
-        future_td.add_done_callback(build_exposed_thing)
-
-        return future_thing
+        raise tornado.gen.Return(exp_thing)

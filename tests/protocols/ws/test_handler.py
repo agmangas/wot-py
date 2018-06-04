@@ -9,10 +9,9 @@ import uuid
 # noinspection PyPackageRequirements
 import pytest
 import tornado.gen
+import tornado.ioloop
 import tornado.testing
 import tornado.websocket
-# noinspection PyCompatibility
-from concurrent.futures import ThreadPoolExecutor
 # noinspection PyPackageRequirements
 from faker import Faker
 from six.moves.urllib.parse import urlparse, urlunparse
@@ -74,10 +73,9 @@ class TestWebsocketHandler(tornado.testing.AsyncHTTPTestCase):
             input_data_description={"type": "string"},
             output_data_description={"type": "string"})
 
-        executor = ThreadPoolExecutor(max_workers=1)
-
         def async_lower(val):
-            return executor.submit(lambda x: time.sleep(0.05) or x.lower(), val)
+            loop = tornado.ioloop.IOLoop.current()
+            return loop.run_in_executor(None, lambda x: time.sleep(0.1) or x.lower(), val)
 
         self.exposed_thing_01.add_property(self.prop_init_01)
         self.exposed_thing_01.add_property(self.prop_init_02)
@@ -223,7 +221,9 @@ class TestWebsocketHandler(tornado.testing.AsyncHTTPTestCase):
 
         input_val = self.fake.pystr()
         action_name = self.action_init_01.name
-        expected_out = self.exposed_thing_01.invoke_action(action_name, input_val).result()
+
+        expected_out = yield self.exposed_thing_01.invoke_action(action_name, input_val)
+
         msg_id = self.fake.pyint()
 
         msg_invoke_req = WebsocketMessageRequest(

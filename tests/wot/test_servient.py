@@ -11,8 +11,7 @@ import tornado.gen
 import tornado.httpclient
 import tornado.ioloop
 import tornado.websocket
-# noinspection PyCompatibility
-from concurrent.futures import Future
+from tornado.concurrent import Future
 # noinspection PyPackageRequirements
 from faker import Faker
 

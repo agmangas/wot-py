@@ -5,10 +5,10 @@
 Classes that represent Things exposed by a servient.
 """
 
-# noinspection PyCompatibility
-from concurrent.futures import Future
+import tornado.gen
 from rx import Observable
 from rx.subjects import Subject
+from tornado.concurrent import Future
 
 from wotpy.td.description import ThingDescription
 from wotpy.td.interaction import Property, Action, Event
@@ -232,92 +232,64 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         return self._thing.to_jsonld_str()
 
+    @tornado.gen.coroutine
     def read_property(self, name):
         """Takes the Property name as the name argument, then requests from
         the underlying platform and the Protocol Bindings to retrieve the
         Property on the remote Thing and return the result. Returns a Future
         that resolves with the Property value or rejects with an Error."""
 
-        try:
-            interaction = self._find_interaction(name=name)
+        interaction = self._find_interaction(name=name)
 
-            handler = self._get_handler(
-                handler_type=self.HandlerKeys.RETRIEVE_PROPERTY,
-                interaction=interaction)
+        handler = self._get_handler(
+            handler_type=self.HandlerKeys.RETRIEVE_PROPERTY,
+            interaction=interaction)
 
-            future_read = handler(name)
-        except Exception as ex:
-            future_err = Future()
-            future_err.set_exception(ex)
-            return future_err
+        value = yield handler(name)
 
-        return future_read
+        raise tornado.gen.Return(value)
 
+    @tornado.gen.coroutine
     def write_property(self, name, value):
         """Takes the Property name as the name argument and the new value as the
         value argument, then requests from the underlying platform and the Protocol
         Bindings to update the Property on the remote Thing and return the result.
         Returns a Future that resolves on success or rejects with an Error."""
 
-        try:
-            interaction = self._find_interaction(name=name)
+        interaction = self._find_interaction(name=name)
 
-            if not interaction.writable:
-                raise TypeError("Property is non-writable")
+        if not interaction.writable:
+            raise TypeError("Property is non-writable")
 
-            handler = self._get_handler(
-                handler_type=self.HandlerKeys.UPDATE_PROPERTY,
-                interaction=interaction)
+        handler = self._get_handler(
+            handler_type=self.HandlerKeys.UPDATE_PROPERTY,
+            interaction=interaction)
 
-            future_write = handler(name, value)
-        except Exception as ex:
-            future_err = Future()
-            future_err.set_exception(ex)
-            return future_err
+        yield handler(name, value)
 
-        # noinspection PyUnusedLocal
-        def publish_write_property_event(ft):
-            event_init = PropertyChangeEventInit(name=name, value=value)
-            self._events_stream.on_next(PropertyChangeEmittedEvent(init=event_init))
+        event_init = PropertyChangeEventInit(name=name, value=value)
+        self._events_stream.on_next(PropertyChangeEmittedEvent(init=event_init))
 
-        if interaction.observable:
-            future_write.add_done_callback(publish_write_property_event)
-
-        return future_write
-
+    @tornado.gen.coroutine
     def invoke_action(self, name, *args, **kwargs):
         """Takes the Action name from the name argument and the list of parameters,
         then requests from the underlying platform and the Protocol Bindings to
         invoke the Action on the remote Thing and return the result. Returns a
         Promise that resolves with the return value or rejects with an Error."""
 
-        try:
-            interaction = self._find_interaction(name=name)
+        interaction = self._find_interaction(name=name)
 
-            handler = self._get_handler(
-                handler_type=self.HandlerKeys.INVOKE_ACTION,
-                interaction=interaction)
+        handler = self._get_handler(
+            handler_type=self.HandlerKeys.INVOKE_ACTION,
+            interaction=interaction)
 
-            future_invoke = handler(*args, **kwargs)
-        except Exception as ex:
-            future_err = Future()
-            future_err.set_exception(ex)
-            return future_err
+        result = yield handler(*args, **kwargs)
 
-        # noinspection PyBroadException
-        def publish_invoke_action_event(ft):
-            try:
-                result = ft.result()
-            except Exception:
-                return
+        event_init = ActionInvocationEventInit(action_name=name, return_value=result)
+        emitted_event = ActionInvocationEmittedEvent(init=event_init)
+        self._events_stream.on_next(emitted_event)
 
-            event_init = ActionInvocationEventInit(action_name=name, return_value=result)
-            emitted_event = ActionInvocationEmittedEvent(init=event_init)
-            self._events_stream.on_next(emitted_event)
-
-        future_invoke.add_done_callback(publish_invoke_action_event)
-
-        return future_invoke
+        raise tornado.gen.Return(result)
 
     def on_event(self, name):
         """Returns an Observable for the Event specified in the name argument,

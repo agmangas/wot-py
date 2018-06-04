@@ -6,14 +6,12 @@ Utilities related to Futures and Promise-like objects.
 """
 
 import tornado.concurrent
-# noinspection PyCompatibility
-import concurrent.futures
 
 
 def is_future(obj):
     """Returns True if the given object looks like a Future."""
 
-    if isinstance(obj, (tornado.concurrent.Future, concurrent.futures.Future)):
+    if isinstance(obj, tornado.concurrent.Future):
         return True
 
     return hasattr(obj, "result") and \

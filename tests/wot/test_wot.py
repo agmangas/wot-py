@@ -11,10 +11,9 @@ import tornado.gen
 import tornado.ioloop
 import tornado.testing
 import tornado.web
-# noinspection PyCompatibility
-from concurrent.futures import Future
 # noinspection PyPackageRequirements
 from faker import Faker
+from tornado.concurrent import Future
 
 from tests.td_examples import TD_EXAMPLE
 from tests.wot.utils import assert_exposed_thing_equal
