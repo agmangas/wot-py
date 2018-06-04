@@ -12,30 +12,23 @@ class ConsumedThing(AbstractConsumedThing):
     """An entity that serves to interact with a Thing.
     An application uses this class when it acts as a *client* of the Thing."""
 
-    def __init__(self, servient, jsonld_td):
+    def __init__(self, servient, td):
         self.servient = servient
-        self._jsonld_td = jsonld_td
+        self.td = td
 
     @property
     def name(self):
         """User-given name of the Thing."""
 
-        return self._jsonld_td.name
-
-    @property
-    def jsonld_td(self):
-        """Returns the object that wraps the JSON-LD
-        serialization of the TD that describes this Thing."""
-
-        return self._jsonld_td
+        return self.td.name
 
     def get_thing_description(self):
         """Returns the Thing Description of the Thing.
         Returns a serialized string."""
 
-        raise NotImplementedError()
+        return self.td.to_str()
 
-    def invoke_action(self, name, *args):
+    def invoke_action(self, name, *args, **kwargs):
         """Takes the Action name from the name argument and the list of parameters,
         then requests from the underlying platform and the Protocol Bindings to invoke
         the Action on the remote Thing and return the result.
