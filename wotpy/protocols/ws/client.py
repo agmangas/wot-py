@@ -5,7 +5,6 @@
 Classes that contain the client logic for the Websocket protocol.
 """
 
-import datetime
 import uuid
 
 import tornado.gen
@@ -92,11 +91,26 @@ class WebsocketClient(BaseProtocolClient):
 
         raise tornado.gen.Return(result)
 
+    @tornado.gen.coroutine
     def invoke_action(self, td, name, *args, **kwargs):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
 
-        raise NotImplementedError()
+        form = self._pick_form(td, td.get_action_forms(name))
+
+        if not form:
+            raise ProtocolClientException()
+
+        ws_url = td.resolve_form_uri(form)
+
+        msg_req = WebsocketMessageRequest(
+            method=WebsocketMethods.INVOKE_ACTION,
+            params={"name": name, "parameters": kwargs},
+            msg_id=uuid.uuid4().hex)
+
+        result = yield self._send_websocket_message(ws_url, msg_req)
+
+        raise tornado.gen.Return(result)
 
     @tornado.gen.coroutine
     def write_property(self, td, name, value):

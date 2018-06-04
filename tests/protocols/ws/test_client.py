@@ -60,57 +60,26 @@ def build_websocket_servient():
     exposed_thing = wot.produce(td.to_str())
     exposed_thing.start()
 
-    return servient, exposed_thing
+    @tornado.gen.coroutine
+    def action_handler(arg_a, arg_b=None):
+        arg_b = arg_b or uuid.uuid4().hex
+        raise tornado.gen.Return(arg_a + arg_b)
 
+    exposed_thing.set_action_handler(action_handler=action_handler, action_name=action_name)
 
-def run_websocket_client_test(test_coroutine):
-    """Runs the given test coroutine in the context of a Servient with a Websockets server."""
-
-    servient, exposed_thing = build_websocket_servient()
-
-    io_loop = tornado.ioloop.IOLoop.current()
-    future_result = tornado.concurrent.Future()
     td = ThingDescription.from_thing(exposed_thing.thing)
 
-    # noinspection PyBroadException
-    @tornado.gen.coroutine
-    def test_coroutine_wrapper(*args, **kwargs):
-        try:
-            yield test_coroutine(*args, **kwargs)
-        except Exception as ex:
-            future_result.set_exception(ex)
-
-    # noinspection PyBroadException
-    @tornado.gen.coroutine
-    def stop_loop():
-        """Stops the IOLoop when the result Future completes."""
-
-        try:
-            yield future_result
-        except Exception:
-            pass
-
-        io_loop.stop()
-
-    test_coroutine_kwargs = {
-        "future_result": future_result,
-        "exposed_thing": exposed_thing,
-        "td": td
-    }
-
-    io_loop.add_callback(test_coroutine_wrapper, **test_coroutine_kwargs)
-    io_loop.add_callback(stop_loop)
-    io_loop.start()
-
-    assert future_result.result()
+    return servient, exposed_thing, td
 
 
 @pytest.mark.flaky(reruns=5)
 def test_read_property():
-    """The Websockets client is able to read properties."""
+    """The Websockets client can read properties."""
+
+    servient, exposed_thing, td = build_websocket_servient()
 
     @tornado.gen.coroutine
-    def test_coroutine(future_result, exposed_thing, td):
+    def test_coroutine():
         ws_client = WebsocketClient()
 
         prop_name = next(six.iterkeys(td.properties))
@@ -122,33 +91,33 @@ def test_read_property():
 
         assert result == prop_value
 
-        future_result.set_result(True)
-
-    run_websocket_client_test(test_coroutine)
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
 @pytest.mark.flaky(reruns=5)
 def test_read_property_unknown():
     """The Websockets client raises an error when attempting to read an unknown property."""
 
+    servient, exposed_thing, td = build_websocket_servient()
+
     @tornado.gen.coroutine
-    def test_coroutine(future_result, exposed_thing, td):
+    def test_coroutine():
         ws_client = WebsocketClient()
 
         with pytest.raises(ProtocolClientException):
             yield ws_client.read_property(td, uuid.uuid4().hex)
 
-        future_result.set_result(True)
-
-    run_websocket_client_test(test_coroutine)
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
 @pytest.mark.flaky(reruns=5)
 def test_write_property():
-    """The Websockets client is able to write properties."""
+    """The Websockets client can write properties."""
+
+    servient, exposed_thing, td = build_websocket_servient()
 
     @tornado.gen.coroutine
-    def test_coroutine(future_result, exposed_thing, td):
+    def test_coroutine():
         ws_client = WebsocketClient()
 
         prop_name = next(six.iterkeys(td.properties))
@@ -160,6 +129,26 @@ def test_write_property():
 
         assert curr_value == prop_value
 
-        future_result.set_result(True)
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
-    run_websocket_client_test(test_coroutine)
+
+@pytest.mark.flaky(reruns=5)
+def test_invoke_action():
+    """The Websockets client can invoke actions."""
+
+    servient, exposed_thing, td = build_websocket_servient()
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        ws_client = WebsocketClient()
+
+        action_name = next(six.iterkeys(td.actions))
+
+        arg_a = uuid.uuid4().hex
+        arg_b = uuid.uuid4().hex
+
+        result = yield ws_client.invoke_action(td, action_name, arg_a=arg_a, arg_b=arg_b)
+
+        assert result == arg_a + arg_b
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
