@@ -80,15 +80,13 @@ class WebsocketClient(BaseProtocolClient):
             parse_error(raw_res)
 
     @tornado.gen.coroutine
-    def _send_websocket_message(self, ws_url, msg_req, timeout_secs=15):
+    def _send_websocket_message(self, ws_url, msg_req):
         """Sends a WebSocket request message, waits for the response and returns the result."""
 
         ws_conn = yield tornado.websocket.websocket_connect(ws_url)
         ws_conn.write_message(msg_req.to_json())
 
-        result = yield tornado.gen.with_timeout(
-            datetime.timedelta(seconds=timeout_secs),
-            self._wait_for_response(ws_conn, msg_req.id))
+        result = yield self._wait_for_response(ws_conn, msg_req.id)
 
         yield ws_conn.close()
 
