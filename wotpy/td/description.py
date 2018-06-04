@@ -9,6 +9,7 @@ import json
 
 import jsonschema
 import six
+from six.moves import urllib
 
 from wotpy.td.constants import WOT_TD_CONTEXT_URL, WOT_COMMON_CONTEXT_URL
 from wotpy.td.interaction import Property, Action, Event
@@ -130,6 +131,30 @@ class ThingDescription(object):
 
         return self._doc.get("id")
 
+    @property
+    def base(self):
+        """Base URI that is valid for all defined local interaction resources."""
+
+        return self._doc.get("base")
+
+    @property
+    def properties(self):
+        """Property interactions."""
+
+        return self._doc.get("properties", {})
+
+    @property
+    def actions(self):
+        """Action interactions."""
+
+        return self._doc.get("actions", {})
+
+    @property
+    def events(self):
+        """Event interactions."""
+
+        return self._doc.get("events", {})
+
     def to_dict(self):
         """Returns the JSON Thing Description as a dict."""
 
@@ -160,3 +185,33 @@ class ThingDescription(object):
             thing.add_interaction(event)
 
         return thing
+
+    def resolve_form_uri(self, form):
+        """Resolves the given Form URI.
+        Basically, if the form href does not include a full URL it uses the base to build the URL."""
+
+        href = form.get("href")
+        href_parsed = urllib.parse.urlparse(href)
+
+        if self.base and not href_parsed.scheme:
+            return urllib.parse.urljoin(self.base, href)
+
+        if href_parsed.scheme:
+            return href
+
+        return None
+
+    def get_property_forms(self, name):
+        """Returns the Form objects for the given Property."""
+
+        return self._doc.get("properties", {}).get(name, {}).get("forms", [])
+
+    def get_action_forms(self, name):
+        """Returns the Form objects for the given Action."""
+
+        return self._doc.get("actions", {}).get(name, {}).get("forms", [])
+
+    def get_event_forms(self, name):
+        """Returns the Form objects for the given Event."""
+
+        return self._doc.get("events", {}).get(name, {}).get("forms", [])
