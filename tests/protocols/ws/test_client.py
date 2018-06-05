@@ -11,6 +11,7 @@ import tornado.concurrent
 import tornado.gen
 import tornado.ioloop
 import tornado.websocket
+from rx.concurrency import IOLoopScheduler
 
 from wotpy.protocols.ws.client import WebsocketClient, ProtocolClientException
 from wotpy.protocols.ws.server import WebsocketServer
@@ -150,5 +151,48 @@ def test_invoke_action():
         result = yield ws_client.invoke_action(td, action_name, arg_a=arg_a, arg_b=arg_b)
 
         assert result == arg_a + arg_b
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+@pytest.mark.flaky(reruns=5)
+def test_on_property_change():
+    """The Websockets client can observe property changes."""
+
+    servient, exposed_thing, td = build_websocket_servient()
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        ws_client = WebsocketClient()
+
+        prop_name = next(six.iterkeys(td.properties))
+
+        observable = ws_client.on_property_change(td, prop_name)
+
+        prop_values = [uuid.uuid4().hex for _ in range(10)]
+        future_values = {key: tornado.concurrent.Future() for key in prop_values}
+        future_conn = tornado.concurrent.Future()
+
+        def on_next(ev):
+            if not future_conn.done():
+                future_conn.set_result(True)
+
+            new_prop_value = ev.data.value
+
+            if new_prop_value in future_values:
+                future_values[new_prop_value].set_result(True)
+
+        subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
+
+        while not future_conn.done():
+            yield exposed_thing.write_property(prop_name, uuid.uuid4().hex)
+            yield tornado.gen.sleep(0.1)
+
+        for val in prop_values:
+            yield exposed_thing.write_property(prop_name, val)
+
+        yield list(future_values.values())
+
+        subscription.dispose()
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)

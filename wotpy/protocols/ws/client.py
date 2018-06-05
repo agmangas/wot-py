@@ -9,7 +9,10 @@ import uuid
 
 import tornado.gen
 import tornado.websocket
+from rx.internal import DisposedException
+from rx.subjects import Subject
 from six.moves import urllib
+from tornado.concurrent import Future
 
 from wotpy.protocols.client import BaseProtocolClient, ProtocolClientException
 from wotpy.protocols.enums import Protocols, ProtocolSchemes
@@ -17,8 +20,11 @@ from wotpy.protocols.ws.enums import WebsocketMethods
 from wotpy.protocols.ws.messages import \
     WebsocketMessageRequest, \
     WebsocketMessageResponse, \
+    WebsocketMessageEmittedItem, \
     WebsocketMessageError, \
     WebsocketMessageException
+from wotpy.wot.dictionaries import PropertyChangeEventInit
+from wotpy.wot.events import PropertyChangeEmittedEvent
 
 
 class WebsocketClient(BaseProtocolClient):
@@ -47,36 +53,67 @@ class WebsocketClient(BaseProtocolClient):
 
         return forms_ws[0]
 
+    @classmethod
+    def _parse_response(cls, raw_msg, msg_id):
+        """Returns a parsed WS response message instance if
+        the raw message format is valid and has the given ID."""
+
+        try:
+            msg = WebsocketMessageResponse.from_raw(raw_msg)
+
+            if msg.id == msg_id:
+                return msg
+        except WebsocketMessageException:
+            pass
+
+        try:
+            err = WebsocketMessageError.from_raw(raw_msg)
+
+            if err.id == msg_id:
+                raise Exception(err.message)
+        except WebsocketMessageException:
+            pass
+
+        return None
+
+    @classmethod
+    def _parse_emitted_item(cls, raw_msg, sub_id):
+        """Returns a parsed WS emitted item message instance if
+        the raw message format is valid and has the given ID."""
+
+        try:
+            msg = WebsocketMessageEmittedItem.from_raw(raw_msg)
+
+            if msg.subscription_id == sub_id:
+                return msg
+        except WebsocketMessageException:
+            pass
+
+        try:
+            err = WebsocketMessageError.from_raw(raw_msg)
+            err_sub_id = err.data is not None and err.data.get("subscription")
+
+            if err_sub_id == sub_id:
+                raise Exception(err.message)
+        except WebsocketMessageException:
+            pass
+
+        return None
+
     @tornado.gen.coroutine
     def _wait_for_response(self, ws_conn, msg_id):
         """Waits for the WebSocket response message that matches the given ID."""
 
-        def parse_response(raw):
-            """Attempts to parse the raw message as a WS response."""
-
-            try:
-                resp = WebsocketMessageResponse.from_raw(raw)
-
-                if resp.id == msg_id:
-                    raise tornado.gen.Return(resp.result)
-            except WebsocketMessageException:
-                pass
-
-        def parse_error(raw):
-            """Attempts to parse the raw message as a WS error."""
-
-            try:
-                err = WebsocketMessageError.from_raw(raw)
-
-                if err.id == msg_id:
-                    raise Exception(err.message)
-            except WebsocketMessageException:
-                pass
-
         while True:
             raw_res = yield ws_conn.read_message()
-            parse_response(raw_res)
-            parse_error(raw_res)
+
+            if raw_res is None:
+                raise Exception("WS connection closed")
+
+            msg_res = self._parse_response(raw_res, msg_id)
+
+            if msg_res is not None:
+                raise tornado.gen.Return(msg_res.result)
 
     @tornado.gen.coroutine
     def _send_websocket_message(self, ws_url, msg_req):
@@ -162,9 +199,77 @@ class WebsocketClient(BaseProtocolClient):
 
     def on_property_change(self, td, name):
         """Subscribes to property changes on a remote Thing.
-        Returns an Observable"""
+        Returns an Observable."""
 
-        raise NotImplementedError()
+        form = self._pick_form(td, td.get_property_forms(name))
+
+        if not form:
+            raise ProtocolClientException()
+
+        ws_url = td.resolve_form_uri(form)
+
+        msg_req = WebsocketMessageRequest(
+            method=WebsocketMethods.ON_PROPERTY_CHANGE,
+            params={"name": name},
+            msg_id=uuid.uuid4().hex)
+
+        subject = Subject()
+        future_sub_id = Future()
+        future_ws_conn = Future()
+
+        def on_error(ex):
+            try:
+                subject.on_error(ex)
+                subject.dispose()
+            except DisposedException:
+                pass
+
+            if future_ws_conn.done():
+                future_ws_conn.result().close()
+
+        def on_connect(future):
+            ws_conn = future.result()
+            future_ws_conn.set_result(ws_conn)
+            ws_conn.write_message(msg_req.to_json())
+
+        def emit_event(raw_msg):
+            sub_id = future_sub_id.result()
+
+            try:
+                msg_item = self._parse_emitted_item(raw_msg, sub_id)
+            except Exception as ex:
+                return on_error(ex)
+
+            if msg_item is None:
+                return
+
+            init = PropertyChangeEventInit(name=msg_item.data["name"], value=msg_item.data["value"])
+            subject.on_next(PropertyChangeEmittedEvent(init=init))
+
+        def parse_subscription_id(raw_msg):
+            try:
+                msg_res = self._parse_response(raw_msg, msg_req.id)
+            except Exception as ex:
+                return on_error(ex)
+
+            if msg_res is None:
+                return
+
+            sub_id = msg_res.result
+            future_sub_id.set_result(sub_id)
+
+        def on_message(raw_msg):
+            if raw_msg is None:
+                return on_error(Exception("WS connection closed"))
+
+            if future_sub_id.done():
+                emit_event(raw_msg)
+            else:
+                parse_subscription_id(raw_msg)
+
+        tornado.websocket.websocket_connect(ws_url, callback=on_connect, on_message_callback=on_message)
+
+        return subject
 
     def on_td_change(self, td):
         """Subscribes to Thing Description changes on a remote Thing.
