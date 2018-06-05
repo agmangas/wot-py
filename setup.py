@@ -38,7 +38,7 @@ setup(
             'pytest-cov',
             'pytest-rerunfailures',
             'mock',
-            'tox',
+            'tox>=2.0,<3.0',
             'faker',
             'Sphinx',
             'sphinx-rtd-theme',
