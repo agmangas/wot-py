@@ -9,8 +9,7 @@ import uuid
 
 import tornado.gen
 import tornado.websocket
-from rx.internal import DisposedException
-from rx.subjects import Subject
+from rx import Observable
 from six.moves import urllib
 from tornado.concurrent import Future
 
@@ -213,63 +212,67 @@ class WebsocketClient(BaseProtocolClient):
             params={"name": name},
             msg_id=uuid.uuid4().hex)
 
-        subject = Subject()
-        future_sub_id = Future()
-        future_ws_conn = Future()
+        def subscribe(observer):
+            """Connect to the WS server and start passing the received events to the Observer."""
 
-        def on_error(ex):
-            try:
-                subject.on_error(ex)
-                subject.dispose()
-            except DisposedException:
-                pass
+            future_sub_id = Future()
+            future_ws_conn = Future()
 
-            if future_ws_conn.done():
-                future_ws_conn.result().close()
+            def on_error(ex):
+                observer.on_error(ex)
+                observer.on_complete()
 
-        def on_connect(future):
-            ws_conn = future.result()
-            future_ws_conn.set_result(ws_conn)
-            ws_conn.write_message(msg_req.to_json())
+            def on_next_event(raw_msg):
+                sub_id = future_sub_id.result()
 
-        def emit_event(raw_msg):
-            sub_id = future_sub_id.result()
+                try:
+                    msg_item = self._parse_emitted_item(raw_msg, sub_id)
+                except Exception as ex:
+                    return on_error(ex)
 
-            try:
-                msg_item = self._parse_emitted_item(raw_msg, sub_id)
-            except Exception as ex:
-                return on_error(ex)
+                if msg_item is None:
+                    return
 
-            if msg_item is None:
-                return
+                init = PropertyChangeEventInit(name=msg_item.data["name"], value=msg_item.data["value"])
+                observer.on_next(PropertyChangeEmittedEvent(init=init))
 
-            init = PropertyChangeEventInit(name=msg_item.data["name"], value=msg_item.data["value"])
-            subject.on_next(PropertyChangeEmittedEvent(init=init))
+            def parse_subscription_id(raw_msg):
+                try:
+                    msg_res = self._parse_response(raw_msg, msg_req.id)
+                except Exception as ex:
+                    return on_error(ex)
 
-        def parse_subscription_id(raw_msg):
-            try:
-                msg_res = self._parse_response(raw_msg, msg_req.id)
-            except Exception as ex:
-                return on_error(ex)
+                if msg_res is None:
+                    return
 
-            if msg_res is None:
-                return
+                sub_id = msg_res.result
+                future_sub_id.set_result(sub_id)
 
-            sub_id = msg_res.result
-            future_sub_id.set_result(sub_id)
+            def on_message(raw_msg):
+                if raw_msg is None:
+                    return on_error(Exception("WS connection closed"))
 
-        def on_message(raw_msg):
-            if raw_msg is None:
-                return on_error(Exception("WS connection closed"))
+                if future_sub_id.done():
+                    on_next_event(raw_msg)
+                else:
+                    parse_subscription_id(raw_msg)
 
-            if future_sub_id.done():
-                emit_event(raw_msg)
-            else:
-                parse_subscription_id(raw_msg)
+            def on_connect(ft):
+                ws_conn = ft.result()
+                future_ws_conn.set_result(ws_conn)
+                ws_conn.write_message(msg_req.to_json())
 
-        tornado.websocket.websocket_connect(ws_url, callback=on_connect, on_message_callback=on_message)
+            tornado.websocket.websocket_connect(ws_url, callback=on_connect, on_message_callback=on_message)
 
-        return subject
+            def unsubscribe():
+                if future_ws_conn.done():
+                    ws_conn = future_ws_conn.result()
+                    ws_conn.close()
+
+            return unsubscribe
+
+        # noinspection PyUnresolvedReferences
+        return Observable.create(subscribe)
 
     def on_td_change(self, td):
         """Subscribes to Thing Description changes on a remote Thing.

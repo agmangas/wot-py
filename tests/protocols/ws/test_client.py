@@ -169,7 +169,7 @@ def test_on_property_change():
 
         observable = ws_client.on_property_change(td, prop_name)
 
-        prop_values = [uuid.uuid4().hex for _ in range(10)]
+        prop_values = [uuid.uuid4().hex for _ in range(20)]
         future_values = {key: tornado.concurrent.Future() for key in prop_values}
         future_conn = tornado.concurrent.Future()
 
