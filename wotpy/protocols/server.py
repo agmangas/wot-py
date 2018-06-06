@@ -7,7 +7,6 @@ Class that represents the abstract server interface.
 
 from abc import ABCMeta, abstractmethod
 
-from wotpy.protocols.enums import ProtocolSchemes
 from wotpy.wot.exposed import ExposedThingGroup
 
 
@@ -34,12 +33,6 @@ class BaseProtocolServer(object):
         """Protocol property."""
 
         return self._protocol
-
-    @property
-    def scheme(self):
-        """Scheme property."""
-
-        return ProtocolSchemes.scheme_for_protocol(self.protocol)
 
     @property
     def exposed_thing_group(self):

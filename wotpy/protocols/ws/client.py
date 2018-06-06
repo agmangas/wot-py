@@ -14,7 +14,7 @@ from six.moves import urllib
 from tornado.concurrent import Future
 
 from wotpy.protocols.client import BaseProtocolClient, ProtocolClientException
-from wotpy.protocols.enums import Protocols, ProtocolSchemes
+from wotpy.protocols.enums import ProtocolSchemes
 from wotpy.protocols.ws.enums import WebsocketMethods
 from wotpy.protocols.ws.messages import \
     WebsocketMessageRequest, \
@@ -42,24 +42,31 @@ class WebsocketClient(BaseProtocolClient):
     def _pick_form(cls, td, forms):
         """Picks the Form that will be used to connect to the remote Thing."""
 
-        def is_websocket(form):
-            """Returns True if the given Form belongs to the Websocket binding."""
-
+        def is_form_for_scheme(form, scheme):
             resolved_url = td.resolve_form_uri(form)
 
             if not resolved_url:
                 return False
 
-            valid_schemes = [ProtocolSchemes.scheme_for_protocol(Protocols.WEBSOCKETS)]
+            return urllib.parse.urlparse(resolved_url).scheme == scheme
 
-            return urllib.parse.urlparse(resolved_url).scheme in valid_schemes
+        def is_ws_form(form):
+            return is_form_for_scheme(form, ProtocolSchemes.WS)
 
-        forms_ws = [item for item in forms if is_websocket(item)]
+        def is_wss_form(form):
+            return is_form_for_scheme(form, ProtocolSchemes.WSS)
 
-        if not len(forms_ws):
-            return None
+        forms_wss = [item for item in forms if is_wss_form(item)]
 
-        return forms_ws[0]
+        if len(forms_wss):
+            return forms_wss[0]
+
+        forms_ws = [item for item in forms if is_ws_form(item)]
+
+        if len(forms_ws):
+            return forms_ws[0]
+
+        return None
 
     @classmethod
     def _parse_response(cls, raw_msg, msg_id):
@@ -336,7 +343,7 @@ class WebsocketClient(BaseProtocolClient):
 
         parsed_base_url = urllib.parse.urlparse(base_url)
         # noinspection PyProtectedMember
-        ws_url = parsed_base_url._replace(scheme=ProtocolSchemes.WEBSOCKETS).geturl()
+        ws_url = parsed_base_url._replace(scheme=ProtocolSchemes.WS).geturl()
 
         msg_req = WebsocketMessageRequest(
             method=WebsocketMethods.ON_TD_CHANGE,

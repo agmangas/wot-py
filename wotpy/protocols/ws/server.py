@@ -6,9 +6,10 @@ Class that implements the WebSockets server.
 """
 
 from tornado import web
+from tornado.httpserver import HTTPServer
 
 from wotpy.codecs.enums import MediaTypes
-from wotpy.protocols.enums import Protocols
+from wotpy.protocols.enums import Protocols, ProtocolSchemes
 from wotpy.protocols.server import BaseProtocolServer
 from wotpy.protocols.ws.handler import WebsocketHandler
 from wotpy.td.form import Form
@@ -19,13 +20,24 @@ class WebsocketServer(BaseProtocolServer):
     that uses the WebsocketHandler handler to process WebSockets messages."""
 
     DEFAULT_PORT = 81
-    DEFAULT_PROTO = Protocols.WEBSOCKETS
 
-    def __init__(self, port=DEFAULT_PORT, protocol=DEFAULT_PROTO):
-        assert protocol in [Protocols.WEBSOCKETS]
-        super(WebsocketServer, self).__init__(port=port, protocol=protocol)
+    def __init__(self, port=DEFAULT_PORT, ssl_context=None):
+        super(WebsocketServer, self).__init__(port=port, protocol=Protocols.WEBSOCKETS)
         self._server = None
         self._app = self._build_app()
+        self._ssl_context = ssl_context
+
+    @property
+    def scheme(self):
+        """Returns the URL scheme for this server."""
+
+        return ProtocolSchemes.WSS if self.is_secure else ProtocolSchemes.WS
+
+    @property
+    def is_secure(self):
+        """Returns True if this server is configured to use SSL encryption."""
+
+        return self._ssl_context is not None
 
     @property
     def app(self):
@@ -68,14 +80,14 @@ class WebsocketServer(BaseProtocolServer):
             raise ValueError("Unknown Thing")
 
         hostname = hostname.rstrip("/")
-        thing_path = "{}".format(thing.url_name)
 
-        return "ws://{}:{}/{}".format(hostname, self.port, thing_path)
+        return "{}://{}:{}/{}".format(self.scheme, hostname, self.port, thing.url_name)
 
     def start(self):
         """Starts the server."""
 
-        self._server = self.app.listen(self.port)
+        self._server = HTTPServer(self.app, ssl_options=self._ssl_context)
+        self._server.listen(self.port)
 
     def stop(self):
         """Stops the server."""
