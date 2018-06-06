@@ -22,8 +22,17 @@ from wotpy.protocols.ws.messages import \
     WebsocketMessageEmittedItem, \
     WebsocketMessageError, \
     WebsocketMessageException
-from wotpy.wot.dictionaries import PropertyChangeEventInit
-from wotpy.wot.events import PropertyChangeEmittedEvent
+from wotpy.wot.dictionaries import \
+    PropertyChangeEventInit, \
+    ThingDescriptionChangeEventInit, \
+    ThingActionInit, \
+    ThingPropertyInit, \
+    ThingEventInit
+from wotpy.wot.enums import TDChangeType
+from wotpy.wot.events import \
+    PropertyChangeEmittedEvent, \
+    EmittedEvent, \
+    ThingDescriptionChangeEmittedEvent
 
 
 class WebsocketClient(BaseProtocolClient):
@@ -54,8 +63,9 @@ class WebsocketClient(BaseProtocolClient):
 
     @classmethod
     def _parse_response(cls, raw_msg, msg_id):
-        """Returns a parsed WS response message instance if
-        the raw message format is valid and has the given ID."""
+        """Returns a parsed WS Response message instance if
+        the raw message format is valid and has the given ID.
+        Raises Exception if the WS message is an error."""
 
         try:
             msg = WebsocketMessageResponse.from_raw(raw_msg)
@@ -77,8 +87,9 @@ class WebsocketClient(BaseProtocolClient):
 
     @classmethod
     def _parse_emitted_item(cls, raw_msg, sub_id):
-        """Returns a parsed WS emitted item message instance if
-        the raw message format is valid and has the given ID."""
+        """Returns a parsed WS Emitted Item message instance if
+        the raw message format is valid and has the given ID.
+        Raises Exception if the WS message is an error."""
 
         try:
             msg = WebsocketMessageEmittedItem.from_raw(raw_msg)
@@ -90,7 +101,7 @@ class WebsocketClient(BaseProtocolClient):
 
         try:
             err = WebsocketMessageError.from_raw(raw_msg)
-            err_sub_id = err.data is not None and err.data.get("subscription")
+            err_sub_id = err.data and err.data.get("subscription")
 
             if err_sub_id == sub_id:
                 raise Exception(err.message)
@@ -98,6 +109,76 @@ class WebsocketClient(BaseProtocolClient):
             pass
 
         return None
+
+    def _build_subscribe(self, ws_url, msg_req, on_next):
+        """Builds the subscribe function that is passed
+        as an argument on the creation of an Observable."""
+
+        def subscribe(observer):
+            """Connect to the WS server and start passing the received events to the Observer."""
+
+            future_sub_id = Future()
+            future_ws_conn = Future()
+
+            def on_error(ex):
+                observer.on_error(ex)
+
+            def on_next_event(raw_msg):
+                sub_id = future_sub_id.result()
+
+                try:
+                    msg_item = self._parse_emitted_item(raw_msg, sub_id)
+                except Exception as ex:
+                    return on_error(ex)
+
+                if msg_item is None:
+                    return
+
+                try:
+                    on_next(observer, msg_item)
+                except Exception as ex:
+                    return on_error(ex)
+
+            def parse_subscription_id(raw_msg):
+                try:
+                    msg_res = self._parse_response(raw_msg, msg_req.id)
+                except Exception as ex:
+                    return on_error(ex)
+
+                if msg_res is None:
+                    return
+
+                sub_id = msg_res.result
+                future_sub_id.set_result(sub_id)
+
+            def on_msg(raw_msg):
+                if raw_msg is None:
+                    return on_error(Exception("WS connection closed"))
+
+                if future_sub_id.done():
+                    on_next_event(raw_msg)
+                else:
+                    parse_subscription_id(raw_msg)
+
+            def on_conn(ft):
+                try:
+                    ws_conn = ft.result()
+                except Exception as ex:
+                    return on_error(ex)
+
+                future_ws_conn.set_result(ws_conn)
+                ws_conn.write_message(msg_req.to_json())
+
+            tornado.websocket.websocket_connect(ws_url, callback=on_conn, on_message_callback=on_msg)
+
+            def unsubscribe():
+                if future_ws_conn.done():
+                    ws_conn = future_ws_conn.result()
+                    ws_conn.close()
+
+            return unsubscribe
+
+        return subscribe
 
     @tornado.gen.coroutine
     def _wait_for_response(self, ws_conn, msg_id):
@@ -194,7 +275,26 @@ class WebsocketClient(BaseProtocolClient):
         """Subscribes to an event on a remote Thing.
         Returns an Observable."""
 
-        raise NotImplementedError()
+        form = self._pick_form(td, td.get_event_forms(name))
+
+        if not form:
+            # noinspection PyUnresolvedReferences
+            return Observable.throw(ProtocolClientException())
+
+        ws_url = td.resolve_form_uri(form)
+
+        msg_req = WebsocketMessageRequest(
+            method=WebsocketMethods.ON_EVENT,
+            params={"name": name},
+            msg_id=uuid.uuid4().hex)
+
+        def on_next(observer, msg_item):
+            observer.on_next(EmittedEvent(init=msg_item.data, name=name))
+
+        subscribe = self._build_subscribe(ws_url, msg_req, on_next)
+
+        # noinspection PyUnresolvedReferences
+        return Observable.create(subscribe)
 
     def on_property_change(self, td, name):
         """Subscribes to property changes on a remote Thing.
@@ -203,7 +303,8 @@ class WebsocketClient(BaseProtocolClient):
         form = self._pick_form(td, td.get_property_forms(name))
 
         if not form:
-            raise ProtocolClientException()
+            # noinspection PyUnresolvedReferences
+            return Observable.throw(ProtocolClientException())
 
         ws_url = td.resolve_form_uri(form)
 
@@ -212,64 +313,13 @@ class WebsocketClient(BaseProtocolClient):
             params={"name": name},
             msg_id=uuid.uuid4().hex)
 
-        def subscribe(observer):
-            """Connect to the WS server and start passing the received events to the Observer."""
+        def on_next(observer, msg_item):
+            init_name = msg_item.data["name"]
+            init_value = msg_item.data["value"]
+            init = PropertyChangeEventInit(name=init_name, value=init_value)
+            observer.on_next(PropertyChangeEmittedEvent(init=init))
 
-            future_sub_id = Future()
-            future_ws_conn = Future()
-
-            def on_error(ex):
-                observer.on_error(ex)
-                observer.on_complete()
-
-            def on_next_event(raw_msg):
-                sub_id = future_sub_id.result()
-
-                try:
-                    msg_item = self._parse_emitted_item(raw_msg, sub_id)
-                except Exception as ex:
-                    return on_error(ex)
-
-                if msg_item is None:
-                    return
-
-                init = PropertyChangeEventInit(name=msg_item.data["name"], value=msg_item.data["value"])
-                observer.on_next(PropertyChangeEmittedEvent(init=init))
-
-            def parse_subscription_id(raw_msg):
-                try:
-                    msg_res = self._parse_response(raw_msg, msg_req.id)
-                except Exception as ex:
-                    return on_error(ex)
-
-                if msg_res is None:
-                    return
-
-                sub_id = msg_res.result
-                future_sub_id.set_result(sub_id)
-
-            def on_message(raw_msg):
-                if raw_msg is None:
-                    return on_error(Exception("WS connection closed"))
-
-                if future_sub_id.done():
-                    on_next_event(raw_msg)
-                else:
-                    parse_subscription_id(raw_msg)
-
-            def on_connect(ft):
-                ws_conn = ft.result()
-                future_ws_conn.set_result(ws_conn)
-                ws_conn.write_message(msg_req.to_json())
-
-            tornado.websocket.websocket_connect(ws_url, callback=on_connect, on_message_callback=on_message)
-
-            def unsubscribe():
-                if future_ws_conn.done():
-                    ws_conn = future_ws_conn.result()
-                    ws_conn.close()
-
-            return unsubscribe
+        subscribe = self._build_subscribe(ws_url, msg_req, on_next)
 
         # noinspection PyUnresolvedReferences
         return Observable.create(subscribe)
@@ -278,4 +328,48 @@ class WebsocketClient(BaseProtocolClient):
         """Subscribes to Thing Description changes on a remote Thing.
         Returns an Observable."""
 
-        raise NotImplementedError()
+        base_url = td.base
+
+        if not base_url:
+            # noinspection PyUnresolvedReferences
+            return Observable.throw(ProtocolClientException("Undefined base URI"))
+
+        parsed_base_url = urllib.parse.urlparse(base_url)
+        # noinspection PyProtectedMember
+        ws_url = parsed_base_url._replace(scheme=ProtocolSchemes.WEBSOCKETS).geturl()
+
+        msg_req = WebsocketMessageRequest(
+            method=WebsocketMethods.ON_TD_CHANGE,
+            params={},
+            msg_id=uuid.uuid4().hex)
+
+        type_init_map = {
+            TDChangeType.PROPERTY: ThingPropertyInit,
+            TDChangeType.ACTION: ThingActionInit,
+            TDChangeType.EVENT: ThingEventInit
+        }
+
+        def on_next(observer, msg_item):
+            item_data = msg_item.data or {}
+            change_type = item_data.get("td_change_type")
+
+            init_kwargs = {
+                "td_change_type": change_type,
+                "method": item_data.get("method"),
+                "name": item_data.get("name"),
+                "description": item_data.get("description")
+            }
+
+            if change_type in type_init_map:
+                interaction_init_klass = type_init_map[change_type]
+                init_data = interaction_init_klass(**item_data.get("data", {}))
+                init_kwargs.update({"data": init_data})
+
+            init = ThingDescriptionChangeEventInit(**init_kwargs)
+
+            observer.on_next(ThingDescriptionChangeEmittedEvent(init=init))
+
+        subscribe = self._build_subscribe(ws_url, msg_req, on_next)
+
+        # noinspection PyUnresolvedReferences
+        return Observable.create(subscribe)
