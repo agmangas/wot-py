@@ -5,6 +5,7 @@
 Classes that represent the JSON and JSON-LD serialization formats of a Thing Description document.
 """
 
+import copy
 import json
 
 import jsonschema
@@ -126,6 +127,12 @@ class ThingDescription(object):
         return ThingDescription(doc)
 
     @property
+    def doc(self):
+        """Thing Description document as a dict."""
+
+        return self._doc
+
+    @property
     def name(self):
         """Name (ID) of the Thing."""
 
@@ -158,7 +165,7 @@ class ThingDescription(object):
     def to_dict(self):
         """Returns the JSON Thing Description as a dict."""
 
-        return self._doc
+        return copy.deepcopy(self.doc)
 
     def to_str(self):
         """Returns the JSON Thing Description as a string."""
