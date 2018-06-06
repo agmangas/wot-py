@@ -274,6 +274,29 @@ def test_on_property_change():
 
 
 @pytest.mark.flaky(reruns=5)
+def test_on_td_change_undefined_base_url():
+    """Attempting to observe changes using the Websockets
+    client on a TD without a base URL throws an error."""
+
+    servient, exposed_thing, td = build_websocket_servient()
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        future_err = Future()
+
+        def on_error(err):
+            assert isinstance(err, ProtocolClientException)
+            future_err.set_result(True)
+
+        ws_client = WebsocketClient()
+        ws_client.on_td_change(td).subscribe(on_error=on_error)
+
+        yield future_err
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+@pytest.mark.flaky(reruns=5)
 def test_on_td_change():
     """The Websockets client can observe Thing Description changes."""
 
