@@ -37,7 +37,10 @@ class ConsumedThing(AbstractConsumedThing):
         the Action on the remote Thing and return the result.
         Returns a Future that resolves with the return value or rejects with an Error."""
 
-        raise NotImplementedError()
+        client = self.servient.select_client(self.td, name)
+        result = yield client.invoke_action(self.td, name, *args, **kwargs)
+
+        raise tornado.gen.Return(result)
 
     @tornado.gen.coroutine
     def write_property(self, name, value):
@@ -46,7 +49,8 @@ class ConsumedThing(AbstractConsumedThing):
         to update the Property on the remote Thing and return the result.
         Returns a Future that resolves on success or rejects with an Error."""
 
-        raise NotImplementedError()
+        client = self.servient.select_client(self.td, name)
+        yield client.write_property(self.td, name, value)
 
     @tornado.gen.coroutine
     def read_property(self, name):
@@ -64,13 +68,15 @@ class ConsumedThing(AbstractConsumedThing):
         """Returns an Observable for the Event specified in the name argument,
         allowing subscribing to and unsubscribing from notifications."""
 
-        raise NotImplementedError()
+        client = self.servient.select_client(self.td, name)
+        return client.on_event(self.td, name)
 
     def on_property_change(self, name):
         """Returns an Observable for the Property specified in the name argument,
         allowing subscribing to and unsubscribing from notifications."""
 
-        raise NotImplementedError()
+        client = self.servient.select_client(self.td, name)
+        return client.on_property_change(self.td, name)
 
     def on_td_change(self):
         """Returns an Observable, allowing subscribing to and unsubscribing
