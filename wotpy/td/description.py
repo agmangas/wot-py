@@ -13,6 +13,7 @@ import six
 from six.moves import urllib
 
 from wotpy.td.constants import WOT_TD_CONTEXT_URL, WOT_COMMON_CONTEXT_URL
+from wotpy.td.enums import InteractionTypes
 from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.thing import Thing
 from wotpy.td.validation import SCHEMA_THING, InvalidDescription
@@ -207,6 +208,20 @@ class ThingDescription(object):
             return href
 
         return None
+
+    def get_forms(self, name):
+        """Returns the Form objects for the interaction with the given name."""
+
+        if name in self.properties:
+            return self.get_property_forms(name)
+
+        if name in self.actions:
+            return self.get_action_forms(name)
+
+        if name in self.events:
+            return self.get_event_forms(name)
+
+        return []
 
     def get_property_forms(self, name):
         """Returns the Form objects for the given Property."""
