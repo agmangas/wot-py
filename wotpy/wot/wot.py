@@ -14,6 +14,7 @@ from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 
 from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
+from wotpy.wot.consumed import ConsumedThing
 from wotpy.wot.dictionaries import ThingTemplate
 from wotpy.wot.exposed import ExposedThing
 
@@ -52,11 +53,13 @@ class WoT(object):
 
         raise tornado.gen.Return(td.to_str())
 
-    def consume(self, td):
+    def consume(self, td_str):
         """Accepts a thing description string argument and returns a
         ConsumedThing object instantiated based on that description."""
 
-        raise NotImplementedError()
+        td = ThingDescription(td_str)
+
+        return ConsumedThing(servient=self._servient, td=td)
 
     def produce(self, model):
         """Accepts a model argument of type ThingModel and returns an ExposedThing
