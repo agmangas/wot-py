@@ -55,7 +55,10 @@ class ConsumedThing(AbstractConsumedThing):
         on the remote Thing and return the result.
         Returns a Future that resolves with the Property value or rejects with an Error."""
 
-        raise NotImplementedError()
+        client = self.servient.select_client(self.td, name)
+        value = yield client.read_property(self.td, name)
+
+        raise tornado.gen.Return(value)
 
     def on_event(self, name):
         """Returns an Observable for the Event specified in the name argument,
