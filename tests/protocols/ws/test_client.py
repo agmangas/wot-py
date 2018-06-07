@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import random
 import uuid
 
 # noinspection PyPackageRequirements
@@ -15,77 +14,16 @@ from rx.concurrency import IOLoopScheduler
 from tornado.concurrent import Future
 
 from wotpy.protocols.ws.client import WebsocketClient, ProtocolClientException
-from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.td.description import ThingDescription
 from wotpy.wot.dictionaries import ThingActionInit
-from wotpy.wot.servient import Servient
-
-
-def build_websocket_servient():
-    """Builds, starts and returns an ExposedThing and the Servient that contains it."""
-
-    ws_port = random.randint(20000, 40000)
-    ws_server = WebsocketServer(port=ws_port)
-
-    servient = Servient()
-    servient.add_server(ws_server)
-
-    wot = servient.start()
-
-    property_name_01 = uuid.uuid4().hex
-    property_name_02 = uuid.uuid4().hex
-    action_name_01 = uuid.uuid4().hex
-    event_name_01 = uuid.uuid4().hex
-
-    td = ThingDescription(doc={
-        "id": uuid.uuid4().urn,
-        "properties": {
-            property_name_01: {
-                "writable": True,
-                "observable": True,
-                "type": "string"
-            },
-            property_name_02: {
-                "writable": True,
-                "observable": True,
-                "type": "string"
-            }
-        },
-        "actions": {
-            action_name_01: {
-                "writable": True,
-                "observable": True,
-                "input": "string",
-                "output": "string"
-            }
-        },
-        "events": {
-            event_name_01: {
-                "type": "string"
-            }
-        },
-    })
-
-    exposed_thing = wot.produce(td.to_str())
-    exposed_thing.start()
-
-    @tornado.gen.coroutine
-    def action_handler(arg_a, arg_b=None):
-        arg_b = arg_b or uuid.uuid4().hex
-        raise tornado.gen.Return(arg_a + arg_b)
-
-    exposed_thing.set_action_handler(action_handler=action_handler, action_name=action_name_01)
-
-    td = ThingDescription.from_thing(exposed_thing.thing)
-
-    return servient, exposed_thing, td
 
 
 @pytest.mark.flaky(reruns=5)
-def test_read_property():
+def test_read_property(websocket_servient):
     """The Websockets client can read properties."""
 
-    servient, exposed_thing, td = build_websocket_servient()
+    exposed_thing = websocket_servient.pop("exposed_thing")
+    td = ThingDescription.from_thing(exposed_thing.thing)
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -104,10 +42,11 @@ def test_read_property():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_read_property_unknown():
+def test_read_property_unknown(websocket_servient):
     """The Websockets client raises an error when attempting to read an unknown property."""
 
-    servient, exposed_thing, td = build_websocket_servient()
+    exposed_thing = websocket_servient.pop("exposed_thing")
+    td = ThingDescription.from_thing(exposed_thing.thing)
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -120,10 +59,11 @@ def test_read_property_unknown():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_write_property():
+def test_write_property(websocket_servient):
     """The Websockets client can write properties."""
 
-    servient, exposed_thing, td = build_websocket_servient()
+    exposed_thing = websocket_servient.pop("exposed_thing")
+    td = ThingDescription.from_thing(exposed_thing.thing)
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -142,10 +82,11 @@ def test_write_property():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_invoke_action():
+def test_invoke_action(websocket_servient):
     """The Websockets client can invoke actions."""
 
-    servient, exposed_thing, td = build_websocket_servient()
+    exposed_thing = websocket_servient.pop("exposed_thing")
+    td = ThingDescription.from_thing(exposed_thing.thing)
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -164,10 +105,11 @@ def test_invoke_action():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_on_event():
+def test_on_event(websocket_servient):
     """The Websockets client can observe events."""
 
-    servient, exposed_thing, td = build_websocket_servient()
+    exposed_thing = websocket_servient.pop("exposed_thing")
+    td = ThingDescription.from_thing(exposed_thing.thing)
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -205,10 +147,11 @@ def test_on_event():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_on_property_change():
+def test_on_property_change(websocket_servient):
     """The Websockets client can observe property changes."""
 
-    servient, exposed_thing, td = build_websocket_servient()
+    exposed_thing = websocket_servient.pop("exposed_thing")
+    td = ThingDescription.from_thing(exposed_thing.thing)
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -274,11 +217,12 @@ def test_on_property_change():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_on_td_change_undefined_base_url():
+def test_on_td_change_undefined_base_url(websocket_servient):
     """Attempting to observe changes using the Websockets
     client on a TD without a base URL throws an error."""
 
-    servient, exposed_thing, td = build_websocket_servient()
+    exposed_thing = websocket_servient.pop("exposed_thing")
+    td = ThingDescription.from_thing(exposed_thing.thing)
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -297,10 +241,11 @@ def test_on_td_change_undefined_base_url():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_on_td_change():
+def test_on_td_change(websocket_servient):
     """The Websockets client can observe Thing Description changes."""
 
-    servient, exposed_thing, td = build_websocket_servient()
+    exposed_thing = websocket_servient.pop("exposed_thing")
+    td = ThingDescription.from_thing(exposed_thing.thing)
 
     @tornado.gen.coroutine
     def test_coroutine():
