@@ -5,7 +5,7 @@
 Class that represents the abstract server interface.
 """
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 
 from wotpy.wot.exposed import ExposedThingGroup
 
@@ -16,23 +16,22 @@ class BaseProtocolServer(object):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, port, protocol):
+    def __init__(self, port):
         self._port = port
-        self._protocol = protocol
         self._codecs = []
         self._exposed_thing_group = ExposedThingGroup()
+
+    @abstractproperty
+    def protocol(self):
+        """Server protocol."""
+
+        raise NotImplementedError()
 
     @property
     def port(self):
         """Port property."""
 
         return self._port
-
-    @property
-    def protocol(self):
-        """Protocol property."""
-
-        return self._protocol
 
     @property
     def exposed_thing_group(self):

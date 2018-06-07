@@ -22,10 +22,17 @@ class WebsocketServer(BaseProtocolServer):
     DEFAULT_PORT = 81
 
     def __init__(self, port=DEFAULT_PORT, ssl_context=None):
-        super(WebsocketServer, self).__init__(port=port, protocol=Protocols.WEBSOCKETS)
+        super(WebsocketServer, self).__init__(port=port)
         self._server = None
         self._app = self._build_app()
         self._ssl_context = ssl_context
+
+    @property
+    def protocol(self):
+        """Protocol of this server instance.
+        A member of the Protocols enum."""
+
+        return Protocols.WEBSOCKETS
 
     @property
     def scheme(self):

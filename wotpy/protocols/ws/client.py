@@ -14,7 +14,7 @@ from six.moves import urllib
 from tornado.concurrent import Future
 
 from wotpy.protocols.client import BaseProtocolClient, ProtocolClientException
-from wotpy.protocols.enums import ProtocolSchemes
+from wotpy.protocols.enums import ProtocolSchemes, Protocols
 from wotpy.protocols.ws.enums import WebsocketMethods
 from wotpy.protocols.ws.messages import \
     WebsocketMessageRequest, \
@@ -116,6 +116,13 @@ class WebsocketClient(BaseProtocolClient):
             pass
 
         return None
+
+    @property
+    def protocol(self):
+        """Protocol of this client instance.
+        A member of the Protocols enum."""
+
+        return Protocols.WEBSOCKETS
 
     def _build_subscribe(self, ws_url, msg_req, on_next):
         """Builds the subscribe function that is passed

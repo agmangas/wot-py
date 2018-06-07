@@ -5,7 +5,7 @@
 Class that represents the abstract client interface.
 """
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 
 
 class ProtocolClientException(Exception):
@@ -19,6 +19,13 @@ class BaseProtocolClient(object):
     This is the interface that must be implemented by all client classes."""
 
     __metaclass__ = ABCMeta
+
+    @abstractproperty
+    def protocol(self):
+        """Protocol of this client instance.
+        A member of the Protocols enum."""
+
+        raise NotImplementedError()
 
     @abstractmethod
     def invoke_action(self, td, name, *args, **kwargs):
