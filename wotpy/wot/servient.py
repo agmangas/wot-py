@@ -10,6 +10,8 @@ import socket
 import six
 import tornado.web
 
+from wotpy.protocols.enums import Protocols
+from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.td.description import ThingDescription
 from wotpy.wot.exposed import ExposedThingGroup
 from wotpy.wot.wot import WoT
@@ -28,9 +30,12 @@ class Servient(object):
         self._hostname = hostname or socket.getfqdn()
         assert isinstance(self._hostname, six.string_types), "Invalid hostname"
         self._servers = {}
+        self._clients = {}
         self._catalogue_port = None
         self._catalogue_server = None
         self._exposed_thing_group = ExposedThingGroup()
+
+        self._build_default_clients()
 
     @property
     def exposed_thing_group(self):
@@ -38,6 +43,19 @@ class Servient(object):
         contains the ExposedThings of this servient."""
 
         return self._exposed_thing_group
+
+    @property
+    def clients(self):
+        """Returns the dict of Protocol Binding clients attached to this servient."""
+
+        return self._clients
+
+    def _build_default_clients(self):
+        """Builds the default Protocol Binding clients."""
+
+        self._clients.update({
+            Protocols.WEBSOCKETS: WebsocketClient()
+        })
 
     def _get_base_url(self, exposed_thing):
         """Return the base URL for the given ExposedThing
@@ -142,18 +160,25 @@ class Servient(object):
             if self._server_has_exposed_thing(server, exp_thing):
                 self._add_interaction_forms(server, exp_thing)
 
+    def add_client(self, client):
+        """Adds a new Protocol Binding client to this servient."""
+
+        self._clients[client.protocol] = client
+
+    def remove_client(self, protocol):
+        """Removes the Protocol Binding client with the given protocol from this servient."""
+
+        self._clients.pop(protocol, None)
+
     def add_server(self, server):
-        """Adds a new server under this servient."""
+        """Adds a new Protocol Binding server to this servient."""
 
         self._servers[server.protocol] = server
 
     def remove_server(self, protocol):
-        """Removes the server with the given protocol from this servient."""
+        """Removes the Protocol Binding server with the given protocol from this servient."""
 
-        if protocol not in self._servers:
-            raise ValueError("Unknown protocol: {}".format(protocol))
-
-        self._servers.pop(protocol)
+        self._servers.pop(protocol, None)
 
     def enable_exposed_thing(self, name):
         """Enables the ExposedThing with the given name.
