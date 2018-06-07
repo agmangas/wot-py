@@ -5,6 +5,8 @@
 Class that represents a Thing consumed by a servient.
 """
 
+import tornado.gen
+
 from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 
 
@@ -28,6 +30,7 @@ class ConsumedThing(AbstractConsumedThing):
 
         return self.td.to_str()
 
+    @tornado.gen.coroutine
     def invoke_action(self, name, *args, **kwargs):
         """Takes the Action name from the name argument and the list of parameters,
         then requests from the underlying platform and the Protocol Bindings to invoke
@@ -36,6 +39,7 @@ class ConsumedThing(AbstractConsumedThing):
 
         raise NotImplementedError()
 
+    @tornado.gen.coroutine
     def write_property(self, name, value):
         """Takes the Property name as the name argument and the new value as the value
         argument, then requests from the underlying platform and the Protocol Bindings
@@ -44,6 +48,7 @@ class ConsumedThing(AbstractConsumedThing):
 
         raise NotImplementedError()
 
+    @tornado.gen.coroutine
     def read_property(self, name):
         """Takes the Property name as the name argument, then requests from the
         underlying platform and the Protocol Bindings to retrieve the Property
