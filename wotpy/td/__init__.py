@@ -8,10 +8,10 @@ Classes that represent the objects in the Thing hierarchy.
     :toctree: _td
 
     wotpy.td.constants
+    wotpy.td.description
     wotpy.td.enums
     wotpy.td.form
     wotpy.td.interaction
-    wotpy.td.semantic
     wotpy.td.thing
-    wotpy.td.jsonld
+    wotpy.td.validation
 """

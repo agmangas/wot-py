@@ -7,6 +7,7 @@ WebSockets Protocol Binding implementation.
 .. autosummary::
     :toctree: _ws
 
+    wotpy.protocols.ws.client
     wotpy.protocols.ws.enums
     wotpy.protocols.ws.handler
     wotpy.protocols.ws.messages

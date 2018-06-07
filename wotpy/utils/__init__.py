@@ -10,5 +10,4 @@ Utility functions and classes.
     wotpy.utils.enums
     wotpy.utils.futures
     wotpy.utils.serialization
-    wotpy.utils.strings
 """
