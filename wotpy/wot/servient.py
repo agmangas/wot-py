@@ -15,6 +15,7 @@ from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.td.description import ThingDescription
 from wotpy.wot.exposed import ExposedThingGroup
 from wotpy.wot.wot import WoT
+from wotpy.td.enums import InteractionTypes
 
 
 class Servient(object):
@@ -28,7 +29,10 @@ class Servient(object):
 
     def __init__(self, hostname=None):
         self._hostname = hostname or socket.getfqdn()
-        assert isinstance(self._hostname, six.string_types), "Invalid hostname"
+
+        if not isinstance(self._hostname, six.string_types):
+            raise ValueError("Invalid hostname")
+
         self._servers = {}
         self._clients = {}
         self._catalogue_port = None
@@ -36,6 +40,43 @@ class Servient(object):
         self._exposed_thing_group = ExposedThingGroup()
 
         self._build_default_clients()
+
+    @staticmethod
+    def _default_select_client(clients, td, name):
+        """Default implementation of the function to select
+        a Protocol Binding client for an Interaction."""
+
+        protocol_preference_map = {
+            InteractionTypes.PROPERTY: [],
+            InteractionTypes.ACTION: [Protocols.WEBSOCKETS],
+            InteractionTypes.EVENT: [Protocols.WEBSOCKETS]
+        }
+
+        supported_protocols = [
+            client.protocol for client in clients
+            if client.is_supported_interaction(td, name)
+        ]
+
+        intrct_names = {
+            InteractionTypes.PROPERTY: six.iterkeys(td.properties),
+            InteractionTypes.ACTION: six.iterkeys(td.actions),
+            InteractionTypes.EVENT: six.iterkeys(td.events)
+        }
+
+        try:
+            intrct_type = next(key for key, names in six.iteritems(intrct_names) if name in names)
+        except StopIteration:
+            raise ValueError("Unknown interaction: {}".format(name))
+
+        protocol_prefs = protocol_preference_map[intrct_type]
+        protocol_choices = set(protocol_prefs).intersection(set(supported_protocols))
+
+        if not len(protocol_choices):
+            return list(clients)[0]
+
+        protocol = next(proto for proto in protocol_prefs if proto in protocol_choices)
+
+        return next(client for client in clients if client.protocol == protocol)
 
     @property
     def exposed_thing_group(self):
@@ -159,6 +200,12 @@ class Servient(object):
             self._clean_protocol_forms(exp_thing, server.protocol)
             if self._server_has_exposed_thing(server, exp_thing):
                 self._add_interaction_forms(server, exp_thing)
+
+    def select_client(self, td, name):
+        """Returns the Protocol Binding client instance to
+        communicate with the given Interaction."""
+
+        return Servient._default_select_client(self.clients.values(), td, name)
 
     def add_client(self, client):
         """Adds a new Protocol Binding client to this servient."""
