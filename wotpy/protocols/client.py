@@ -28,6 +28,13 @@ class BaseProtocolClient(object):
         raise NotImplementedError()
 
     @abstractmethod
+    def is_supported_interaction(self, td, name):
+        """Returns True if the any of the Forms for the Interaction
+        with the given name is supported in this Protocol Binding client."""
+
+        raise NotImplementedError()
+
+    @abstractmethod
     def invoke_action(self, td, name, *args, **kwargs):
         """Invokes an Action on a remote Thing.
         Returns a Future."""

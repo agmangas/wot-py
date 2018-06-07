@@ -39,29 +39,33 @@ class WebsocketClient(BaseProtocolClient):
     """Implementation of the protocol client interface for the Websocket protocol."""
 
     @classmethod
-    def _pick_form(cls, td, forms):
+    def _is_scheme_form(cls, td, form, scheme):
+        """Returns True if the scheme of the URI for
+        the given Form matches the scheme argument."""
+
+        resolved_url = td.resolve_form_uri(form)
+
+        if not resolved_url:
+            return False
+
+        return urllib.parse.urlparse(resolved_url).scheme == scheme
+
+    @classmethod
+    def _select_form(cls, td, forms):
         """Picks the Form that will be used to connect to the remote Thing."""
 
-        def is_form_for_scheme(form, scheme):
-            resolved_url = td.resolve_form_uri(form)
-
-            if not resolved_url:
-                return False
-
-            return urllib.parse.urlparse(resolved_url).scheme == scheme
-
-        def is_ws_form(form):
-            return is_form_for_scheme(form, ProtocolSchemes.WS)
-
-        def is_wss_form(form):
-            return is_form_for_scheme(form, ProtocolSchemes.WSS)
-
-        forms_wss = [item for item in forms if is_wss_form(item)]
+        forms_wss = [
+            form for form in forms
+            if cls._is_scheme_form(td, form, ProtocolSchemes.WSS)
+        ]
 
         if len(forms_wss):
             return forms_wss[0]
 
-        forms_ws = [item for item in forms if is_ws_form(item)]
+        forms_ws = [
+            form for form in forms
+            if cls._is_scheme_form(td, form, ProtocolSchemes.WS)
+        ]
 
         if len(forms_ws):
             return forms_ws[0]
@@ -222,12 +226,30 @@ class WebsocketClient(BaseProtocolClient):
 
         raise tornado.gen.Return(result)
 
+    def is_supported_interaction(self, td, name):
+        """Returns True if the any of the Forms for the Interaction
+        with the given name is supported in this Protocol Binding client."""
+
+        forms = td.get_forms(name)
+
+        forms_wss = [
+            form for form in forms
+            if self._is_scheme_form(td, form, ProtocolSchemes.WSS)
+        ]
+
+        forms_ws = [
+            form for form in forms
+            if self._is_scheme_form(td, form, ProtocolSchemes.WS)
+        ]
+
+        return len(forms_wss) or len(forms_ws)
+
     @tornado.gen.coroutine
     def invoke_action(self, td, name, *args, **kwargs):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
 
-        form = self._pick_form(td, td.get_action_forms(name))
+        form = self._select_form(td, td.get_action_forms(name))
 
         if not form:
             raise ProtocolClientException()
@@ -248,7 +270,7 @@ class WebsocketClient(BaseProtocolClient):
         """Updates the value of a Property on a remote Thing.
         Returns a Future."""
 
-        form = self._pick_form(td, td.get_property_forms(name))
+        form = self._select_form(td, td.get_property_forms(name))
 
         if not form:
             raise ProtocolClientException()
@@ -269,7 +291,7 @@ class WebsocketClient(BaseProtocolClient):
         """Reads the value of a Property on a remote Thing.
         Returns a Future."""
 
-        form = self._pick_form(td, td.get_property_forms(name))
+        form = self._select_form(td, td.get_property_forms(name))
 
         if not form:
             raise ProtocolClientException()
@@ -289,7 +311,7 @@ class WebsocketClient(BaseProtocolClient):
         """Subscribes to an event on a remote Thing.
         Returns an Observable."""
 
-        form = self._pick_form(td, td.get_event_forms(name))
+        form = self._select_form(td, td.get_event_forms(name))
 
         if not form:
             # noinspection PyUnresolvedReferences
@@ -314,7 +336,7 @@ class WebsocketClient(BaseProtocolClient):
         """Subscribes to property changes on a remote Thing.
         Returns an Observable."""
 
-        form = self._pick_form(td, td.get_property_forms(name))
+        form = self._select_form(td, td.get_property_forms(name))
 
         if not form:
             # noinspection PyUnresolvedReferences
