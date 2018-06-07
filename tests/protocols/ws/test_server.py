@@ -2,9 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import random
-import re
-import time
 import uuid
 
 # noinspection PyPackageRequirements
@@ -15,7 +12,6 @@ import tornado.testing
 import tornado.websocket
 # noinspection PyPackageRequirements
 from faker import Faker
-from six.moves.urllib.parse import urlparse, urlunparse
 
 from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketErrors
 from wotpy.protocols.ws.messages import \
@@ -23,106 +19,14 @@ from wotpy.protocols.ws.messages import \
     WebsocketMessageResponse, \
     WebsocketMessageError, \
     WebsocketMessageEmittedItem
-from wotpy.protocols.ws.server import WebsocketServer
-from wotpy.td.thing import Thing
-from wotpy.wot.dictionaries import ThingPropertyInit, ThingEventInit, ThingActionInit
-from wotpy.wot.exposed import ExposedThing
-from wotpy.wot.servient import Servient
-
-
-def build_websocket_url(exposed_thing, ws_server, server_port):
-    """Returns the WS connection URL for the given ExposedThing."""
-
-    base_url = ws_server.build_base_url(hostname="localhost", thing=exposed_thing.thing)
-    parsed_url = urlparse(base_url)
-    test_netloc = re.sub(r':(\d+)$', ':{}'.format(server_port), parsed_url.netloc)
-
-    test_url_parts = list(parsed_url)
-    test_url_parts[1] = test_netloc
-
-    return urlunparse(test_url_parts)
-
-
-def build_websocket_server():
-    """Builds a WebsocketServer instance with some ExposedThings."""
-
-    fake = Faker()
-
-    servient = Servient()
-
-    thing_01_id = uuid.uuid4().urn
-    thing_02_id = uuid.uuid4().urn
-
-    exposed_thing_01 = ExposedThing(servient=servient, thing=Thing(id=thing_01_id))
-    exposed_thing_02 = ExposedThing(servient=servient, thing=Thing(id=thing_02_id))
-
-    prop_init_01 = ThingPropertyInit(
-        name=uuid.uuid4().hex,
-        value=fake.pystr(),
-        data_type={"type": "string"})
-
-    prop_init_02 = ThingPropertyInit(
-        name=uuid.uuid4().hex,
-        value=fake.pystr(),
-        data_type={"type": "string"})
-
-    prop_init_03 = ThingPropertyInit(
-        name=uuid.uuid4().hex,
-        value=fake.pystr(),
-        data_type={"type": "string"})
-
-    event_init_01 = ThingEventInit(
-        name=uuid.uuid4().hex,
-        data_description={"type": "object"})
-
-    action_init_01 = ThingActionInit(
-        name=uuid.uuid4().hex,
-        input_data_description={"type": "string"},
-        output_data_description={"type": "string"})
-
-    def async_lower(val):
-        loop = tornado.ioloop.IOLoop.current()
-        return loop.run_in_executor(None, lambda x: time.sleep(0.1) or x.lower(), val)
-
-    exposed_thing_01.add_property(prop_init_01)
-    exposed_thing_01.add_property(prop_init_02)
-    exposed_thing_01.add_event(event_init_01)
-    exposed_thing_01.add_action(action_init_01)
-    exposed_thing_01.set_action_handler(async_lower, action_init_01.name)
-
-    exposed_thing_02.add_property(prop_init_03)
-
-    ws_port = random.randint(20000, 40000)
-
-    ws_server = WebsocketServer(port=ws_port)
-    ws_server.add_exposed_thing(exposed_thing_01)
-    ws_server.add_exposed_thing(exposed_thing_02)
-    ws_server.start()
-
-    url_thing_01 = build_websocket_url(exposed_thing_01, ws_server, ws_port)
-    url_thing_02 = build_websocket_url(exposed_thing_02, ws_server, ws_port)
-
-    return {
-        "exposed_thing_01": exposed_thing_01,
-        "exposed_thing_02": exposed_thing_02,
-        "prop_init_01": prop_init_01,
-        "prop_init_02": prop_init_02,
-        "prop_init_03": prop_init_03,
-        "event_init_01": event_init_01,
-        "action_init_01": action_init_01,
-        "ws_server": ws_server,
-        "url_thing_01": url_thing_01,
-        "url_thing_02": url_thing_02,
-        "ws_port": ws_port
-    }
+from wotpy.wot.dictionaries import ThingPropertyInit
 
 
 @pytest.mark.flaky(reruns=5)
-def test_thing_not_found():
+def test_thing_not_found(websocket_server):
     """The socket is automatically closed when connecting to an unknown thing."""
 
-    ws_fixtures = build_websocket_server()
-    ws_port = ws_fixtures.pop("ws_port")
+    ws_port = websocket_server.pop("ws_port")
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -136,15 +40,14 @@ def test_thing_not_found():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_read_property():
+def test_read_property(websocket_server):
     """Properties can be retrieved using Websockets."""
 
-    ws_fixtures = build_websocket_server()
-    url_thing_01 = ws_fixtures.pop("url_thing_01")
-    url_thing_02 = ws_fixtures.pop("url_thing_02")
-    prop_init_01 = ws_fixtures.pop("prop_init_01")
-    prop_init_02 = ws_fixtures.pop("prop_init_02")
-    prop_init_03 = ws_fixtures.pop("prop_init_03")
+    url_thing_01 = websocket_server.pop("url_thing_01")
+    url_thing_02 = websocket_server.pop("url_thing_02")
+    prop_init_01 = websocket_server.pop("prop_init_01")
+    prop_init_02 = websocket_server.pop("prop_init_02")
+    prop_init_03 = websocket_server.pop("prop_init_03")
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -201,13 +104,12 @@ def test_read_property():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_write_property():
+def test_write_property(websocket_server):
     """Properties can be updated using Websockets."""
 
-    ws_fixtures = build_websocket_server()
-    url_thing_01 = ws_fixtures.pop("url_thing_01")
-    prop_init_01 = ws_fixtures.pop("prop_init_01")
-    exposed_thing_01 = ws_fixtures.pop("exposed_thing_01")
+    url_thing_01 = websocket_server.pop("url_thing_01")
+    prop_init_01 = websocket_server.pop("prop_init_01")
+    exposed_thing_01 = websocket_server.pop("exposed_thing_01")
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -253,13 +155,12 @@ def test_write_property():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_invoke_action():
+def test_invoke_action(websocket_server):
     """Actions can be invoked using Websockets."""
 
-    ws_fixtures = build_websocket_server()
-    url_thing_01 = ws_fixtures.pop("url_thing_01")
-    action_init_01 = ws_fixtures.pop("action_init_01")
-    exposed_thing_01 = ws_fixtures.pop("exposed_thing_01")
+    url_thing_01 = websocket_server.pop("url_thing_01")
+    action_init_01 = websocket_server.pop("action_init_01")
+    exposed_thing_01 = websocket_server.pop("exposed_thing_01")
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -291,13 +192,12 @@ def test_invoke_action():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_on_property_change():
+def test_on_property_change(websocket_server):
     """Property changes can be observed using Websockets."""
 
-    ws_fixtures = build_websocket_server()
-    url_thing_01 = ws_fixtures.pop("url_thing_01")
-    prop_init_01 = ws_fixtures.pop("prop_init_01")
-    exposed_thing_01 = ws_fixtures.pop("exposed_thing_01")
+    url_thing_01 = websocket_server.pop("url_thing_01")
+    prop_init_01 = websocket_server.pop("prop_init_01")
+    exposed_thing_01 = websocket_server.pop("exposed_thing_01")
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -351,11 +251,10 @@ def test_on_property_change():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_on_undefined_property_change():
+def test_on_undefined_property_change(websocket_server):
     """Observing an undefined property results in a subscription error message."""
 
-    ws_fixtures = build_websocket_server()
-    url_thing_01 = ws_fixtures.pop("url_thing_01")
+    url_thing_01 = websocket_server.pop("url_thing_01")
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -384,13 +283,12 @@ def test_on_undefined_property_change():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_on_event():
+def test_on_event(websocket_server):
     """Events can be observed using Websockets."""
 
-    ws_fixtures = build_websocket_server()
-    url_thing_01 = ws_fixtures.pop("url_thing_01")
-    event_init_01 = ws_fixtures.pop("event_init_01")
-    exposed_thing_01 = ws_fixtures.pop("exposed_thing_01")
+    url_thing_01 = websocket_server.pop("url_thing_01")
+    event_init_01 = websocket_server.pop("event_init_01")
+    exposed_thing_01 = websocket_server.pop("exposed_thing_01")
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -442,11 +340,10 @@ def test_on_event():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_on_undefined_event():
+def test_on_undefined_event(websocket_server):
     """Observing an undefined event results in a subscription error message."""
 
-    ws_fixtures = build_websocket_server()
-    url_thing_01 = ws_fixtures.pop("url_thing_01")
+    url_thing_01 = websocket_server.pop("url_thing_01")
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -475,12 +372,11 @@ def test_on_undefined_event():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_on_td_change():
+def test_on_td_change(websocket_server):
     """Thing description changes can be observed using Websockets."""
 
-    ws_fixtures = build_websocket_server()
-    url_thing_01 = ws_fixtures.pop("url_thing_01")
-    exposed_thing_01 = ws_fixtures.pop("exposed_thing_01")
+    url_thing_01 = websocket_server.pop("url_thing_01")
+    exposed_thing_01 = websocket_server.pop("exposed_thing_01")
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -522,13 +418,12 @@ def test_on_td_change():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_dispose():
+def test_dispose(websocket_server):
     """Observable subscriptions can be disposed using Websockets."""
 
-    ws_fixtures = build_websocket_server()
-    url_thing_01 = ws_fixtures.pop("url_thing_01")
-    prop_init_01 = ws_fixtures.pop("prop_init_01")
-    exposed_thing_01 = ws_fixtures.pop("exposed_thing_01")
+    url_thing_01 = websocket_server.pop("url_thing_01")
+    prop_init_01 = websocket_server.pop("prop_init_01")
+    exposed_thing_01 = websocket_server.pop("exposed_thing_01")
 
     @tornado.gen.coroutine
     def test_coroutine():
