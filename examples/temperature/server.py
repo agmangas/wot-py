@@ -8,17 +8,12 @@ example for how to use the WotPy servient.
 
 import json
 import logging
-import multiprocessing
 import random
-import time
 
-# noinspection PyCompatibility
-from concurrent.futures import ThreadPoolExecutor
+import tornado.gen
 from tornado.ioloop import IOLoop, PeriodicCallback
 
 from wotpy.protocols.ws.server import WebsocketServer
-from wotpy.td.constants import WOT_TD_CONTEXT_URL
-from wotpy.td.enums import InteractionTypes
 from wotpy.wot.servient import Servient
 
 CATALOGUE_PORT = 9292
@@ -32,34 +27,30 @@ logging.basicConfig()
 LOGGER = logging.getLogger("temp-servient")
 LOGGER.setLevel(logging.INFO)
 
-max_workers = multiprocessing.cpu_count() * 2
-EXECUTOR = ThreadPoolExecutor(max_workers=max_workers)
-
-NAME_THING = "TemperatureThing"
+NAME_THING = "urn:temperaturething"
 NAME_PROP_TEMP = "temperature"
 NAME_PROP_TEMP_THRESHOLD = "high-temperature-threshold"
 NAME_EVENT_TEMP_HIGH = "high-temperature"
 
 DESCRIPTION = {
-    "@context": [WOT_TD_CONTEXT_URL],
-    "name": NAME_THING,
-    "interaction": [{
-        "@type": [InteractionTypes.PROPERTY],
-        "name": NAME_PROP_TEMP,
-        "outputData": {"type": "number"},
-        "writable": False,
-        "observable": True,
-    }, {
-        "@type": [InteractionTypes.PROPERTY],
-        "name": NAME_PROP_TEMP_THRESHOLD,
-        "outputData": {"type": "number"},
-        "writable": True,
-        "observable": True
-    }, {
-        "@type": [InteractionTypes.EVENT],
-        "name": NAME_EVENT_TEMP_HIGH,
-        "outputData": {"type": "number"}
-    }]
+    "id": NAME_THING,
+    "properties": {
+        NAME_PROP_TEMP: {
+            "type": "number",
+            "writable": False,
+            "observable": True
+        },
+        NAME_PROP_TEMP_THRESHOLD: {
+            "type": "number",
+            "writable": True,
+            "observable": True
+        }
+    },
+    "events": {
+        NAME_EVENT_TEMP_HIGH: {
+            "type": "number"
+        }
+    }
 }
 
 
@@ -71,29 +62,27 @@ def update_temp():
     LOGGER.info("Current temperature: {}".format(GLOBAL_TEMPERATURE))
 
 
+@tornado.gen.coroutine
 def emit_temp_high(exp_thing):
     """Emits a 'Temperature High' event if the temperature is over the threshold."""
 
-    temp_threshold = exp_thing.read_property(NAME_PROP_TEMP_THRESHOLD).result()
+    temp_threshold = yield exp_thing.read_property(NAME_PROP_TEMP_THRESHOLD)
 
     if temp_threshold and GLOBAL_TEMPERATURE > temp_threshold:
         LOGGER.info("Emitting high temperature event: {}".format(GLOBAL_TEMPERATURE))
         exp_thing.emit_event(NAME_EVENT_TEMP_HIGH, GLOBAL_TEMPERATURE)
 
 
+@tornado.gen.coroutine
 def temp_read_handler(property_name):
     """Custom handler for the 'Temperature' property."""
 
     assert property_name == NAME_PROP_TEMP
 
-    def sleep_and_get_temp():
-        """Wait for a while and return a random temperature."""
+    LOGGER.info("Doing some work to simulate temperature retrieval")
+    yield tornado.gen.sleep(random.random() * 3.0)
 
-        LOGGER.info("Doing some work to simulate temperature retrieval")
-        time.sleep(random.random() * 3.0)
-        return GLOBAL_TEMPERATURE
-
-    return EXECUTOR.submit(sleep_and_get_temp)
+    raise tornado.gen.Return(GLOBAL_TEMPERATURE)
 
 
 if __name__ == "__main__":
@@ -123,7 +112,13 @@ if __name__ == "__main__":
     periodic_update = PeriodicCallback(update_temp, PERIODIC_MS)
     periodic_update.start()
 
-    periodic_emit = PeriodicCallback(lambda: emit_temp_high(exposed_thing), PERIODIC_MS)
+
+    @tornado.gen.coroutine
+    def emit_for_exposed_thing():
+        yield emit_temp_high(exposed_thing)
+
+
+    periodic_emit = PeriodicCallback(emit_for_exposed_thing, PERIODIC_MS)
     periodic_emit.start()
 
     LOGGER.info("Starting loop")
