@@ -13,13 +13,11 @@ import tornado.ioloop
 import tornado.websocket
 # noinspection PyPackageRequirements
 from faker import Faker
-from tornado.concurrent import Future
 
-from wotpy.protocols.enums import Protocols
-from wotpy.protocols.ws.enums import WebsocketMethods
-from wotpy.protocols.ws.messages import WebsocketMessageRequest, WebsocketMessageResponse
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.td.constants import WOT_TD_CONTEXT_URL
+from wotpy.td.description import ThingDescription
+from wotpy.wot.consumed import ConsumedThing
 from wotpy.wot.servient import Servient
 
 
@@ -112,7 +110,7 @@ def test_servient_start_stop():
     name_prop_string = fake.user_name()
     name_prop_boolean = fake.user_name()
 
-    description = {
+    td_doc = {
         "id": thing_id,
         "properties": {
             name_prop_string: {
@@ -128,52 +126,27 @@ def test_servient_start_stop():
         }
     }
 
-    description_str = json.dumps(description)
+    td_str = json.dumps(td_doc)
 
-    exposed_thing = wot.produce(description_str)
+    exposed_thing = wot.produce(td_str)
     exposed_thing.start()
 
     value_boolean = fake.pybool()
     value_string = fake.pystr()
 
-    assert exposed_thing.write_property(name=name_prop_boolean, value=value_boolean).done()
-    assert exposed_thing.write_property(name=name_prop_string, value=value_string).done()
-
-    io_loop = tornado.ioloop.IOLoop.current()
-
-    future_result = Future()
-
     @tornado.gen.coroutine
     def get_property(prop_name):
         """Gets the given property using the WS Link contained in the thing description."""
 
-        prop = exposed_thing.thing.find_interaction(name=prop_name)
+        td = ThingDescription.from_thing(exposed_thing.thing)
+        consumed_thing = ConsumedThing(servient, td=td)
 
-        assert len(prop.forms)
+        value = yield consumed_thing.read_property(prop_name)
 
-        prop_protocols = [item.protocol for item in prop.forms]
-
-        assert Protocols.WEBSOCKETS in prop_protocols
-
-        link = next(item for item in prop.forms if item.protocol == Protocols.WEBSOCKETS)
-        conn = yield tornado.websocket.websocket_connect(link.href)
-
-        msg_set_req = WebsocketMessageRequest(
-            method=WebsocketMethods.READ_PROPERTY,
-            params={"name": prop_name},
-            msg_id=fake.pyint())
-
-        conn.write_message(msg_set_req.to_json())
-
-        msg_get_resp_raw = yield conn.read_message()
-        msg_get_resp = WebsocketMessageResponse.from_raw(msg_get_resp_raw)
-
-        assert msg_get_resp.msg_id == msg_set_req.msg_id
-
-        raise tornado.gen.Return(msg_get_resp.result)
+        raise tornado.gen.Return(value)
 
     @tornado.gen.coroutine
-    def assert_get_properties():
+    def assert_thing_active():
         """Asserts that the retrieved property values are as expected."""
 
         retrieved_boolean = yield get_property(name_prop_boolean)
@@ -183,48 +156,27 @@ def test_servient_start_stop():
         assert retrieved_string == value_string
 
     @tornado.gen.coroutine
-    def run_test_coroutines():
-        """Gets the properties under multiple conditions
-        to verify servient behaviour on start and stop."""
+    def test_coroutine():
+        yield exposed_thing.write_property(name=name_prop_boolean, value=value_boolean)
+        yield exposed_thing.write_property(name=name_prop_string, value=value_string)
 
-        try:
-            yield assert_get_properties()
+        yield assert_thing_active()
 
-            exposed_thing.stop()
+        exposed_thing.stop()
 
-            with pytest.raises(Exception):
-                yield assert_get_properties()
+        with pytest.raises(Exception):
+            yield assert_thing_active()
 
-            exposed_thing.start()
+        exposed_thing.start()
 
-            yield assert_get_properties()
+        yield assert_thing_active()
 
-            servient.shutdown()
+        servient.shutdown()
 
-            with pytest.raises(Exception):
-                yield assert_get_properties()
+        with pytest.raises(Exception):
+            yield assert_thing_active()
 
-            future_result.set_result(True)
-        except Exception as ex:
-            future_result.set_exception(ex)
-
-    @tornado.gen.coroutine
-    def stop_loop():
-        """Stops the IOLoop when the result Future completes."""
-
-        # noinspection PyBroadException
-        try:
-            yield future_result
-        except Exception:
-            pass
-
-        io_loop.stop()
-
-    io_loop.add_callback(run_test_coroutines)
-    io_loop.add_callback(stop_loop)
-    io_loop.start()
-
-    assert future_result.result() is True
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
 def test_duplicated_thing_names():
