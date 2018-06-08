@@ -11,9 +11,9 @@ import tornado.gen
 import tornado.httpclient
 import tornado.ioloop
 import tornado.websocket
-from tornado.concurrent import Future
 # noinspection PyPackageRequirements
 from faker import Faker
+from tornado.concurrent import Future
 
 from wotpy.protocols.enums import Protocols
 from wotpy.protocols.ws.enums import WebsocketMethods
@@ -27,19 +27,16 @@ from wotpy.wot.servient import Servient
 def test_servient_td_catalogue():
     """The servient provides a Thing Description catalogue HTTP endpoint."""
 
-    fake = Faker()
-
     catalogue_port = random.randint(20000, 40000)
-    catalogue_url = "http://localhost:{}/".format(catalogue_port)
 
     servient = Servient()
     servient.enable_td_catalogue(port=catalogue_port)
 
     wot = servient.start()
 
-    description_01 = {
+    td_doc_01 = {
         "id": uuid.uuid4().urn,
-        "label": fake.sentence(),
+        "label": Faker().sentence(),
         "properties": {
             "status": {
                 "description": "Shows the current status of the lamp",
@@ -51,60 +48,50 @@ def test_servient_td_catalogue():
         }
     }
 
-    description_02 = {
+    td_doc_02 = {
         "id": uuid.uuid4().urn
     }
 
-    description_01_str = json.dumps(description_01)
-    description_02_str = json.dumps(description_02)
+    td_01_str = json.dumps(td_doc_01)
+    td_02_str = json.dumps(td_doc_02)
 
-    exposed_thing_01 = wot.produce(description_01_str)
-    exposed_thing_02 = wot.produce(description_02_str)
+    exposed_thing_01 = wot.produce(td_01_str)
+    exposed_thing_02 = wot.produce(td_02_str)
 
     exposed_thing_01.start()
     exposed_thing_02.start()
 
-    io_loop = tornado.ioloop.IOLoop.current()
-
-    future_result = Future()
-
     @tornado.gen.coroutine
-    def get_catalogue():
-        """Fetches the TD catalogue and verifies its contents."""
+    def test_coroutine():
+        http_client = tornado.httpclient.AsyncHTTPClient()
 
-        try:
-            http_client = tornado.httpclient.AsyncHTTPClient()
-            catalogue_result = yield http_client.fetch(catalogue_url)
-            descriptions_map = json.loads(catalogue_result.body)
+        catalogue_url = "http://localhost:{}/".format(catalogue_port)
+        catalogue_url_res = yield http_client.fetch(catalogue_url)
+        urls_map = json.loads(catalogue_url_res.body)
 
-            num_props = len(description_01.get("properties", {}).keys())
+        assert len(urls_map) == 2
+        assert exposed_thing_01.thing.url_name in urls_map.get(td_doc_01["id"])
+        assert exposed_thing_02.thing.url_name in urls_map.get(td_doc_02["id"])
 
-            assert len(descriptions_map) == 2
-            assert description_01["id"] in descriptions_map
-            assert description_02["id"] in descriptions_map
-            assert len(descriptions_map[description_01["id"]]["properties"]) == num_props
+        thing_01_url = "http://localhost:{}{}".format(catalogue_port, urls_map[td_doc_01["id"]])
+        thing_01_url_res = yield http_client.fetch(thing_01_url)
+        td_doc_01_recovered = json.loads(thing_01_url_res.body)
 
-            future_result.set_result(True)
-        except Exception as ex:
-            future_result.set_exception(ex)
+        assert td_doc_01_recovered["id"] == td_doc_01["id"]
+        assert td_doc_01_recovered["label"] == td_doc_01["label"]
 
-    @tornado.gen.coroutine
-    def stop_loop():
-        """Stops the IOLoop when the result Future completes."""
+        catalogue_expanded_url = "http://localhost:{}/?expanded=true".format(catalogue_port)
+        cataligue_expanded_url_res = yield http_client.fetch(catalogue_expanded_url)
+        expanded_map = json.loads(cataligue_expanded_url_res.body)
 
-        # noinspection PyBroadException
-        try:
-            yield future_result
-        except Exception:
-            pass
+        num_props = len(td_doc_01.get("properties", {}).keys())
 
-        io_loop.stop()
+        assert len(expanded_map) == 2
+        assert td_doc_01["id"] in expanded_map
+        assert td_doc_02["id"] in expanded_map
+        assert len(expanded_map[td_doc_01["id"]]["properties"]) == num_props
 
-    io_loop.add_callback(get_catalogue)
-    io_loop.add_callback(stop_loop)
-    io_loop.start()
-
-    assert future_result.result() is True
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
 @pytest.mark.flaky(reruns=5)

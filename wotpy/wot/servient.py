@@ -13,9 +13,50 @@ import tornado.web
 from wotpy.protocols.enums import Protocols
 from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.td.description import ThingDescription
+from wotpy.td.enums import InteractionTypes
 from wotpy.wot.exposed import ExposedThingGroup
 from wotpy.wot.wot import WoT
-from wotpy.td.enums import InteractionTypes
+
+
+# noinspection PyAbstractClass,PyMethodOverriding,PyAttributeOutsideInit
+class TDHandler(tornado.web.RequestHandler):
+    """Handler that returns the TD document of a given Thing."""
+
+    def initialize(self, servient):
+        self.servient = servient
+
+    def get(self, thing_url_name):
+        exp_thing = self.servient.exposed_thing_group.find(thing_url_name)
+
+        td_doc = ThingDescription.from_thing(exp_thing.thing).to_dict()
+        td_doc.update({"base": self.servient.get_thing_base_url(exp_thing)})
+
+        self.write(td_doc)
+
+
+# noinspection PyAbstractClass,PyMethodOverriding,PyAttributeOutsideInit
+class TDCatalogueHandler(tornado.web.RequestHandler):
+    """Handler that returns the entire catalogue of Things contained in this servient.
+    May return TDs in expanded format or URL pointers to the individual TDs."""
+
+    def initialize(self, servient):
+        self.servient = servient
+
+    def get(self):
+        response = {}
+
+        for exp_thing in self.servient.exposed_thing_group.exposed_things:
+            thing_id = exp_thing.thing.id
+
+            if self.get_argument("expanded", False):
+                val = ThingDescription.from_thing(exp_thing.thing).to_dict()
+                val.update({"base": self.servient.get_thing_base_url(exp_thing)})
+            else:
+                val = "/{}".format(exp_thing.thing.url_name)
+
+            response[thing_id] = val
+
+        self.write(response)
 
 
 class Servient(object):
@@ -79,11 +120,23 @@ class Servient(object):
         return next(client for client in clients if client.protocol == protocol)
 
     @property
+    def hostname(self):
+        """Hostname attached to this servient."""
+
+        return self._hostname
+
+    @property
     def exposed_thing_group(self):
         """Returns the ExposedThingGroup instance that
         contains the ExposedThings of this servient."""
 
         return self._exposed_thing_group
+
+    @property
+    def servers(self):
+        """Returns the dict of Protocol Binding servers attached to this servient."""
+
+        return self._servers
 
     @property
     def clients(self):
@@ -98,44 +151,14 @@ class Servient(object):
             Protocols.WEBSOCKETS: WebsocketClient()
         })
 
-    def _get_base_url(self, exposed_thing):
-        """Return the base URL for the given ExposedThing
-        for one of the currently active servers."""
-
-        assert self._exposed_thing_group.contains(exposed_thing)
-
-        if not len(self._servers):
-            return None
-
-        protocol = sorted(list(self._servers.keys()))[0]
-        server = self._servers[protocol]
-
-        return server.build_base_url(hostname=self._hostname, thing=exposed_thing.thing)
-
     def _build_td_catalogue_app(self):
         """Returns a Tornado app that provides one endpoint to retrieve the
         entire catalogue of thing descriptions contained in this servient."""
 
-        servient = self
-
-        # noinspection PyAbstractClass
-        class TDCatalogueHandler(tornado.web.RequestHandler):
-            """Handler that returns a JSON list containing
-            all thing descriptions from this servient."""
-
-            def get(self):
-                descriptions = {}
-
-                for exp_thing in servient._exposed_thing_group.exposed_things:
-                    base_url = servient._get_base_url(exp_thing)
-                    td_key = exp_thing.thing.id
-                    td_doc = ThingDescription.from_thing(exp_thing.thing).to_dict()
-                    td_doc.update({"base": base_url})
-                    descriptions[td_key] = td_doc
-
-                self.write(descriptions)
-
-        return tornado.web.Application([(r"/", TDCatalogueHandler)])
+        return tornado.web.Application([
+            (r"/", TDCatalogueHandler, dict(servient=self)),
+            (r"/(?P<thing_url_name>[^\/]+)", TDHandler, dict(servient=self))
+        ])
 
     def _start_catalogue(self):
         """Starts the TD catalogue server if enabled."""
@@ -200,6 +223,21 @@ class Servient(object):
             self._clean_protocol_forms(exp_thing, server.protocol)
             if self._server_has_exposed_thing(server, exp_thing):
                 self._add_interaction_forms(server, exp_thing)
+
+    def get_thing_base_url(self, exposed_thing):
+        """Return the base URL for the given ExposedThing
+        for one of the currently active servers."""
+
+        if not self.exposed_thing_group.contains(exposed_thing):
+            raise ValueError("The ExposedThing is not contained in this servient")
+
+        if not len(self.servers):
+            return None
+
+        protocol = sorted(list(self.servers.keys()))[0]
+        server = self.servers[protocol]
+
+        return server.build_base_url(hostname=self.hostname, thing=exposed_thing.thing)
 
     def select_client(self, td, name):
         """Returns the Protocol Binding client instance to
