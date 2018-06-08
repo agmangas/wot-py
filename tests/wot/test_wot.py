@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import json
-import logging
 import random
 
 # noinspection PyPackageRequirements
@@ -13,7 +12,6 @@ import tornado.testing
 import tornado.web
 # noinspection PyPackageRequirements
 from faker import Faker
-from tornado.concurrent import Future
 
 from tests.td_examples import TD_EXAMPLE
 from tests.wot.utils import assert_exposed_thing_equal
@@ -56,53 +54,48 @@ def test_produce_thing_template():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_produce_from_url():
+def test_produce_from_url(td_example_tornado_app):
     """ExposedThings can be created from URLs that provide Thing Description documents."""
 
-    fake = Faker()
-
-    # noinspection PyAbstractClass
-    class TDHandler(tornado.web.RequestHandler):
-        """Dummy handler to fetch a JSON-serialized TD document."""
-
-        def get(self):
-            self.write(TD_EXAMPLE)
-
-    app = tornado.web.Application([(r"/", TDHandler)])
     app_port = random.randint(20000, 40000)
-    app.listen(app_port)
+    td_example_tornado_app.listen(app_port)
 
     url_valid = "http://localhost:{}/".format(app_port)
-    url_error = "http://localhost:{}/{}".format(app_port, fake.pystr())
+    url_error = "http://localhost:{}/{}".format(app_port, Faker().pystr())
 
-    future_valid = Future()
-    future_error = Future()
-
-    servient = Servient()
-    wot = WoT(servient=servient)
-    io_loop = tornado.ioloop.IOLoop.current()
+    wot = WoT(servient=Servient())
 
     @tornado.gen.coroutine
-    def from_url(url, fut, timeout_secs=2.0):
-        try:
-            exp_thing = yield wot.produce_from_url(url, timeout_secs=timeout_secs)
-            fut.set_result(exp_thing)
-        except Exception as ex:
-            fut.set_result(ex)
+    def test_coroutine():
+        exposed_thing = yield wot.produce_from_url(url_valid)
+
+        assert exposed_thing.thing.id == TD_EXAMPLE.get("id")
+
+        with pytest.raises(Exception):
+            yield wot.produce_from_url(url_error)
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+@pytest.mark.flaky(reruns=5)
+def test_consume_from_url(td_example_tornado_app):
+    """ConsumedThings can be created from URLs that provide Thing Description documents."""
+
+    app_port = random.randint(20000, 40000)
+    td_example_tornado_app.listen(app_port)
+
+    url_valid = "http://localhost:{}/".format(app_port)
+    url_error = "http://localhost:{}/{}".format(app_port, Faker().pystr())
+
+    wot = WoT(servient=Servient())
 
     @tornado.gen.coroutine
-    def stop_loop():
-        yield [future_valid, future_error]
-        io_loop.stop()
+    def test_coroutine():
+        consumed_thing = yield wot.consume_from_url(url_valid)
 
-    logging.getLogger("tornado.access").disabled = True
+        assert consumed_thing.td.id == TD_EXAMPLE.get("id")
 
-    io_loop.add_callback(from_url, url=url_valid, fut=future_valid)
-    io_loop.add_callback(from_url, url=url_error, fut=future_error)
-    io_loop.add_callback(stop_loop)
-    io_loop.start()
+        with pytest.raises(Exception):
+            yield wot.consume_from_url(url_error)
 
-    logging.getLogger("tornado.access").disabled = False
-
-    assert isinstance(future_error.result(), Exception)
-    assert_exposed_thing_equal(future_valid.result(), TD_EXAMPLE)
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)

@@ -85,9 +85,16 @@ class WoT(object):
         from the thing description retrieved from the given URL."""
 
         td_str = yield self.fetch(url, timeout_secs=timeout_secs)
+        exposed_thing = self.produce(td_str)
 
-        td = ThingDescription(td_str)
-        thing = td.build_thing()
-        exp_thing = ExposedThing(servient=self._servient, thing=thing)
+        raise tornado.gen.Return(exposed_thing)
 
-        raise tornado.gen.Return(exp_thing)
+    @tornado.gen.coroutine
+    def consume_from_url(self, url, timeout_secs=None):
+        """Return a Future that resolves to a ConsumedThing created
+        from the thing description retrieved from the given URL."""
+
+        td_str = yield self.fetch(url, timeout_secs=timeout_secs)
+        consumed_thing = self.consume(td_str)
+
+        raise tornado.gen.Return(consumed_thing)

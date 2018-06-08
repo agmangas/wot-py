@@ -13,7 +13,6 @@ import six
 from six.moves import urllib
 
 from wotpy.td.constants import WOT_TD_CONTEXT_URL, WOT_COMMON_CONTEXT_URL
-from wotpy.td.enums import InteractionTypes
 from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.thing import Thing
 from wotpy.td.validation import SCHEMA_THING, InvalidDescription
@@ -134,10 +133,16 @@ class ThingDescription(object):
         return self._doc
 
     @property
+    def id(self):
+        """Thing ID."""
+
+        return self._doc.get("id")
+
+    @property
     def name(self):
         """Name (ID) of the Thing."""
 
-        return self._doc.get("id")
+        return self.id
 
     @property
     def base(self):
