@@ -201,7 +201,7 @@ class ThingDescription(object):
 
     def resolve_form_uri(self, form):
         """Resolves the given Form URI.
-        Basically, if the form href does not include a full URL it uses the base to build the URL."""
+        When the Form href does not contain a full URL the base URI is joined with said href."""
 
         href = form.get("href")
         href_parsed = urllib.parse.urlparse(href)

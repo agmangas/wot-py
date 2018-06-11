@@ -360,19 +360,14 @@ class WebsocketClient(BaseProtocolClient):
         # noinspection PyUnresolvedReferences
         return Observable.create(subscribe)
 
-    def on_td_change(self, td):
+    def on_td_change(self, url):
         """Subscribes to Thing Description changes on a remote Thing.
         Returns an Observable."""
 
-        base_url = td.base
+        parsed_url = urllib.parse.urlparse(url)
 
-        if not base_url:
-            # noinspection PyUnresolvedReferences
-            return Observable.throw(ProtocolClientException("Undefined base URI"))
-
-        parsed_base_url = urllib.parse.urlparse(base_url)
-        # noinspection PyProtectedMember
-        ws_url = parsed_base_url._replace(scheme=ProtocolSchemes.WS).geturl()
+        if parsed_url.scheme not in [ProtocolSchemes.WSS, ProtocolSchemes.WS]:
+            raise ValueError("URL should point to a Websockets server")
 
         msg_req = WebsocketMessageRequest(
             method=WebsocketMethods.ON_TD_CHANGE,
@@ -405,7 +400,7 @@ class WebsocketClient(BaseProtocolClient):
 
             observer.on_next(ThingDescriptionChangeEmittedEvent(init=init))
 
-        subscribe = self._build_subscribe(ws_url, msg_req, on_next)
+        subscribe = self._build_subscribe(url, msg_req, on_next)
 
         # noinspection PyUnresolvedReferences
         return Observable.create(subscribe)

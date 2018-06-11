@@ -5,7 +5,7 @@
 Class that represents the abstract client interface.
 """
 
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 
 
 class ProtocolClientException(Exception):
@@ -20,7 +20,8 @@ class BaseProtocolClient(object):
 
     __metaclass__ = ABCMeta
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def protocol(self):
         """Protocol of this client instance.
         A member of the Protocols enum."""
@@ -70,7 +71,7 @@ class BaseProtocolClient(object):
         raise NotImplementedError()
 
     @abstractmethod
-    def on_td_change(self, td):
+    def on_td_change(self, url):
         """Subscribes to Thing Description changes on a remote Thing.
         Returns an Observable."""
 

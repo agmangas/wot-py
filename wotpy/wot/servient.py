@@ -229,7 +229,7 @@ class Servient(object):
         for one of the currently active servers."""
 
         if not self.exposed_thing_group.contains(exposed_thing):
-            raise ValueError("The ExposedThing is not contained in this servient")
+            raise ValueError("Unknown ExposedThing")
 
         if not len(self.servers):
             return None
