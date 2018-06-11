@@ -24,7 +24,7 @@ PERIODIC_MS = 3000
 DEFAULT_TEMP_THRESHOLD = 27.0
 
 logging.basicConfig()
-LOGGER = logging.getLogger("temp-servient")
+LOGGER = logging.getLogger("temperature-server")
 LOGGER.setLevel(logging.INFO)
 
 NAME_THING = "urn:temperaturething"
