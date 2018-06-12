@@ -57,8 +57,8 @@ def test_servient_td_catalogue():
     exposed_thing_01 = wot.produce(td_01_str)
     exposed_thing_02 = wot.produce(td_02_str)
 
-    exposed_thing_01.start()
-    exposed_thing_02.start()
+    exposed_thing_01.expose()
+    exposed_thing_02.expose()
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -131,7 +131,7 @@ def test_servient_start_stop():
     td_str = json.dumps(td_doc)
 
     exposed_thing = wot.produce(td_str)
-    exposed_thing.start()
+    exposed_thing.expose()
 
     value_boolean = fake.pybool()
     value_string = fake.pystr()
@@ -164,19 +164,15 @@ def test_servient_start_stop():
 
         yield assert_thing_active()
 
-        exposed_thing.stop()
+        exposed_thing.destroy()
 
         with pytest.raises(Exception):
             yield assert_thing_active()
 
-        exposed_thing.start()
-
-        yield assert_thing_active()
+        with pytest.raises(Exception):
+            exposed_thing.expose()
 
         servient.shutdown()
-
-        with pytest.raises(Exception):
-            yield assert_thing_active()
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 

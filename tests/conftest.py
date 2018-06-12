@@ -68,7 +68,7 @@ def websocket_servient():
     })
 
     exposed_thing = wot.produce(td.to_str())
-    exposed_thing.start()
+    exposed_thing.expose()
 
     @tornado.gen.coroutine
     def action_handler(arg_a, arg_b=None):

@@ -338,31 +338,17 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         # noinspection PyUnresolvedReferences
         return self._events_stream.filter(td_change_filter)
 
-    def start(self):
-        """Start serving external requests for the Thing."""
+    def expose(self):
+        """Start serving external requests for the Thing, so that
+        WoT interactions using Properties, Actions and Events will be possible."""
 
         self._servient.enable_exposed_thing(self.thing.id)
 
-    def stop(self):
-        """Stop serving external requests for the Thing."""
+    def destroy(self):
+        """Stop serving external requests for the Thing and destroy the object.
+        Note that eventual unregistering should be done before invoking this method."""
 
-        self._servient.disable_exposed_thing(self.thing.id)
-
-    def register(self, directory=None):
-        """Generates the Thing Description given the properties, Actions
-        and Event defined for this object. If a directory argument is given,
-        make a request to register the Thing Description with the given WoT
-        repository by invoking its register Action."""
-
-        raise NotImplementedError()
-
-    def unregister(self, directory=None):
-        """If a directory argument is given, make a request to unregister
-        the Thing Description with the given WoT repository by invoking its
-        unregister Action. Then, and in the case no arguments were provided
-        to this function, stop the Thing and remove the Thing Description."""
-
-        raise NotImplementedError()
+        self._servient.remove_exposed_thing(self.thing.id)
 
     def emit_event(self, event_name, payload):
         """Emits an the event initialized with the event name specified by

@@ -291,6 +291,13 @@ class Servient(object):
 
         self._exposed_thing_group.add(exposed_thing)
 
+    def remove_exposed_thing(self, thing_id):
+        """Adds a ExposedThing to this servient.
+        ExposedThings are disabled by default."""
+
+        self.disable_exposed_thing(thing_id)
+        self._exposed_thing_group.remove(thing_id)
+
     def get_exposed_thing(self, thing_id):
         """Finds and returns an ExposedThing contained in this servient by Thing ID.
         Raises ValueError if the ExposedThing is not present."""

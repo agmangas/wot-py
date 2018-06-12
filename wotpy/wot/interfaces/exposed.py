@@ -14,19 +14,11 @@ class AbstractExposedThing(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def start(self):
+    def expose(self):
         pass
 
     @abstractmethod
-    def stop(self):
-        pass
-
-    @abstractmethod
-    def register(self, directory=None):
-        pass
-
-    @abstractmethod
-    def unregister(self, directory=None):
+    def destroy(self):
         pass
 
     @abstractmethod

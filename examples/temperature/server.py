@@ -107,7 +107,7 @@ if __name__ == "__main__":
     exposed_thing = wot.produce(json.dumps(DESCRIPTION))
     exposed_thing.set_property_read_handler(read_handler=temp_read_handler, property_name=NAME_PROP_TEMP)
     exposed_thing.write_property(NAME_PROP_TEMP_THRESHOLD, DEFAULT_TEMP_THRESHOLD)
-    exposed_thing.start()
+    exposed_thing.expose()
 
     periodic_update = PeriodicCallback(update_temp, PERIODIC_MS)
     periodic_update.start()
