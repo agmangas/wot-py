@@ -31,7 +31,6 @@ def test_validate_err():
         lambda x: x.update({"properties": [1, 2, 3]}) or x,
         lambda x: x.update({"actions": "hello-interactions"}) or x,
         lambda x: x.update({"events": {"overheating": {"forms": 0.5}}}) or x,
-        lambda x: x.update({"id": "this is not an URI"}) or x,
         lambda x: x.update({"events": {"Invalid Name": {}}}) or x,
         lambda x: x.update({"events": {100: {"label": "Invalid Name"}}}) or x
     ]
@@ -80,7 +79,7 @@ def test_build_thing():
         assert sorted(list(dict_a.keys())) == sorted(list(dict_b.keys()))
 
     assert thing.id == td_dict.get("id")
-    assert thing.label == td_dict.get("label")
+    assert thing.name == td_dict.get("name")
     assert thing.description == td_dict.get("description")
     assert_same_keys(thing.properties, td_dict.get("properties", {}))
     assert_same_keys(thing.actions, td_dict.get("actions", {}))

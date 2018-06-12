@@ -58,10 +58,10 @@ class BaseProtocolServer(object):
 
         self._exposed_thing_group.add(exposed_thing)
 
-    def remove_exposed_thing(self, name):
+    def remove_exposed_thing(self, thing_id):
         """Removes the given ExposedThing from this server."""
 
-        self._exposed_thing_group.remove(name)
+        self._exposed_thing_group.remove(thing_id)
 
     def get_exposed_thing(self, name):
         """Finds and returns an ExposedThing contained in this server by name.

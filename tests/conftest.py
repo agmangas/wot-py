@@ -35,6 +35,7 @@ def websocket_servient():
 
     td = ThingDescription(doc={
         "id": uuid.uuid4().urn,
+        "name": uuid.uuid4().hex,
         "properties": {
             property_name_01: {
                 "writable": True,

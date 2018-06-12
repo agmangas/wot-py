@@ -105,6 +105,7 @@ class ThingDescription(object):
                 WOT_COMMON_CONTEXT_URL
             ],
             "id": thing.id,
+            "name": thing.name,
             "label": thing.label,
             "description": thing.description,
             "support": thing.support,

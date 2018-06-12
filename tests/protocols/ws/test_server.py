@@ -399,7 +399,7 @@ def test_on_td_change(websocket_server):
         new_prop_init = ThingPropertyInit(
             name=uuid.uuid4().hex,
             value=Faker().sentence(),
-            data_type={"type": "string"},
+            data_type="string",
             writable=False,
             observable=True)
 

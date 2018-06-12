@@ -34,7 +34,7 @@ def test_servient_td_catalogue():
 
     td_doc_01 = {
         "id": uuid.uuid4().urn,
-        "label": Faker().sentence(),
+        "name": Faker().sentence(),
         "properties": {
             "status": {
                 "description": "Shows the current status of the lamp",
@@ -47,7 +47,8 @@ def test_servient_td_catalogue():
     }
 
     td_doc_02 = {
-        "id": uuid.uuid4().urn
+        "id": uuid.uuid4().urn,
+        "name": Faker().sentence()
     }
 
     td_01_str = json.dumps(td_doc_01)
@@ -76,7 +77,7 @@ def test_servient_td_catalogue():
         td_doc_01_recovered = json.loads(thing_01_url_res.body)
 
         assert td_doc_01_recovered["id"] == td_doc_01["id"]
-        assert td_doc_01_recovered["label"] == td_doc_01["label"]
+        assert td_doc_01_recovered["name"] == td_doc_01["name"]
 
         catalogue_expanded_url = "http://localhost:{}/?expanded=true".format(catalogue_port)
         cataligue_expanded_url_res = yield http_client.fetch(catalogue_expanded_url)
@@ -112,6 +113,7 @@ def test_servient_start_stop():
 
     td_doc = {
         "id": thing_id,
+        "name": Faker().sentence(),
         "properties": {
             name_prop_string: {
                 "writable": True,
@@ -180,21 +182,24 @@ def test_servient_start_stop():
 
 
 def test_duplicated_thing_names():
-    """A Servient rejects Things with duplicated names."""
+    """A Servient rejects Things with duplicated IDs."""
 
     description_01 = {
         "@context": [WOT_TD_CONTEXT_URL],
-        "id": uuid.uuid4().urn
+        "id": uuid.uuid4().urn,
+        "name": Faker().sentence()
     }
 
     description_02 = {
         "@context": [WOT_TD_CONTEXT_URL],
-        "id": uuid.uuid4().urn
+        "id": uuid.uuid4().urn,
+        "name": Faker().sentence()
     }
 
     description_03 = {
         "@context": [WOT_TD_CONTEXT_URL],
-        "id": description_01.get("id")
+        "id": description_01.get("id"),
+        "name": Faker().sentence()
     }
 
     description_01_str = json.dumps(description_01)

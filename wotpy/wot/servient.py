@@ -265,24 +265,24 @@ class Servient(object):
 
         self._servers.pop(protocol, None)
 
-    def enable_exposed_thing(self, name):
-        """Enables the ExposedThing with the given name.
+    def enable_exposed_thing(self, thing_id):
+        """Enables the ExposedThing with the given ID.
         This is, the servers will listen for requests for this thing."""
 
-        exposed_thing = self.get_exposed_thing(name)
+        exposed_thing = self.get_exposed_thing(thing_id)
 
         for server in self._servers.values():
             server.add_exposed_thing(exposed_thing)
             self._regenerate_server_forms(server)
 
-    def disable_exposed_thing(self, name):
-        """Disables the ExposedThing with the given name.
+    def disable_exposed_thing(self, thing_id):
+        """Disables the ExposedThing with the given ID.
         This is, the servers will not listen for requests for this thing."""
 
-        exposed_thing = self.get_exposed_thing(name)
+        exposed_thing = self.get_exposed_thing(thing_id)
 
         for server in self._servers.values():
-            server.remove_exposed_thing(exposed_thing.name)
+            server.remove_exposed_thing(exposed_thing.thing.id)
             self._regenerate_server_forms(server)
 
     def add_exposed_thing(self, exposed_thing):
@@ -291,14 +291,14 @@ class Servient(object):
 
         self._exposed_thing_group.add(exposed_thing)
 
-    def get_exposed_thing(self, name):
-        """Finds and returns an ExposedThing contained in this servient by name.
+    def get_exposed_thing(self, thing_id):
+        """Finds and returns an ExposedThing contained in this servient by Thing ID.
         Raises ValueError if the ExposedThing is not present."""
 
-        exp_thing = self._exposed_thing_group.find(name)
+        exp_thing = self._exposed_thing_group.find(thing_id)
 
         if exp_thing is None:
-            raise ValueError("Unknown Exposed Thing: {}".format(name))
+            raise ValueError("Unknown Exposed Thing: {}".format(thing_id))
 
         return exp_thing
 

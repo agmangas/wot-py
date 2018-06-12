@@ -13,7 +13,6 @@ import uuid
 from slugify import slugify
 
 from wotpy.td.interaction import Property, Action, Event
-from wotpy.td.validation import is_valid_uri
 
 
 class Thing(object):
@@ -22,21 +21,24 @@ class Thing(object):
 
     def __init__(self, **kwargs):
         self.id = kwargs.pop("id")
-        self.label = kwargs.get("label")
+        self._name = kwargs.get("name")
         self.description = kwargs.get("description")
         self.support = kwargs.get("support")
         self._properties = {}
         self._actions = {}
         self._events = {}
 
-        if not is_valid_uri(self.id):
-            raise ValueError("Invalid Thing ID: {}".format(self.id))
-
     @property
     def name(self):
         """Thing name."""
 
-        return self.id
+        return self._name if self._name is not None else self.id
+
+    @property
+    def label(self):
+        """Thing label (same as name for backward compatibility)."""
+
+        return self.name
 
     @property
     def uuid(self):
@@ -54,7 +56,7 @@ class Thing(object):
     def url_name(self):
         """Returns the URL-safe name of this Thing."""
 
-        return slugify("{}-{}".format(self.label, self.uuid)) if self.label else self.uuid
+        return slugify("{}-{}".format(self._name, self.uuid)) if self._name else self.uuid
 
     @property
     def properties(self):

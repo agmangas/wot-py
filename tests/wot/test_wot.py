@@ -32,7 +32,7 @@ def test_produce_td():
     exp_thing = wot.produce(td_str)
 
     assert servient.get_exposed_thing(thing_id)
-    assert exp_thing.name == thing_id
+    assert exp_thing.thing.id == thing_id
     assert_exposed_thing_equal(exp_thing, TD_EXAMPLE)
 
 

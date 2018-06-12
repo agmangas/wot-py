@@ -25,7 +25,7 @@ def thing_property_init():
     return ThingPropertyInit(
         name=fake.user_name(),
         value=fake.pystr(),
-        data_type={"type": "string"})
+        data_type="string")
 
 
 @pytest.fixture
@@ -36,7 +36,7 @@ def thing_event_init():
 
     return ThingEventInit(
         name=fake.user_name(),
-        data_description={"type": "string"})
+        data_description="string")
 
 
 @pytest.fixture
@@ -47,8 +47,8 @@ def thing_action_init():
 
     return ThingActionInit(
         name=fake.user_name(),
-        input_data_description={"type": "string"},
-        output_data_description={"type": "string"})
+        input_data_description="string",
+        output_data_description="string")
 
 
 @pytest.fixture

@@ -53,26 +53,26 @@ def websocket_server():
     prop_init_01 = ThingPropertyInit(
         name=uuid.uuid4().hex,
         value=fake.pystr(),
-        data_type={"type": "string"})
+        data_type="string")
 
     prop_init_02 = ThingPropertyInit(
         name=uuid.uuid4().hex,
         value=fake.pystr(),
-        data_type={"type": "string"})
+        data_type="string")
 
     prop_init_03 = ThingPropertyInit(
         name=uuid.uuid4().hex,
         value=fake.pystr(),
-        data_type={"type": "string"})
+        data_type="string")
 
     event_init_01 = ThingEventInit(
         name=uuid.uuid4().hex,
-        data_description={"type": "object"})
+        data_description="object")
 
     action_init_01 = ThingActionInit(
         name=uuid.uuid4().hex,
-        input_data_description={"type": "string"},
-        output_data_description={"type": "string"})
+        input_data_description="string",
+        output_data_description="string")
 
     def async_lower(val):
         loop = tornado.ioloop.IOLoop.current()

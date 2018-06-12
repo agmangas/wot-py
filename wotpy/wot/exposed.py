@@ -54,24 +54,24 @@ class ExposedThingGroup(object):
 
         self._exposed_things[exposed_thing.thing.id] = exposed_thing
 
-    def remove(self, name):
-        """Removes an existing ExposedThing by name.
-        The name argument may be the original name or the URL-safe version."""
+    def remove(self, thing_id):
+        """Removes an existing ExposedThing by ID.
+        The thing_id argument may be the original Thing ID or the URL-safe name."""
 
-        exposed_thing = self.find(name)
+        exposed_thing = self.find(thing_id)
 
         if exposed_thing is None:
-            raise ValueError("Unknown Exposed Thing: {}".format(name))
+            raise ValueError("Unknown Exposed Thing: {}".format(thing_id))
 
         assert exposed_thing.thing.id in self._exposed_things
         self._exposed_things.pop(exposed_thing.thing.id)
 
-    def find(self, name):
-        """Finds an existing ExposedThing by name.
-        The name argument may be the original name or the URL-safe version."""
+    def find(self, thing_id):
+        """Finds an existing ExposedThing by ID.
+        The thing_id argument may be the original Thing ID or the URL-safe name."""
 
         def is_match(exp_thing):
-            return exp_thing.name == name or exp_thing.url_name == name
+            return exp_thing.thing.id == thing_id or exp_thing.thing.url_name == thing_id
 
         return next((item for item in self._exposed_things.values() if is_match(item)), None)
 
@@ -341,12 +341,12 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
     def start(self):
         """Start serving external requests for the Thing."""
 
-        self._servient.enable_exposed_thing(self.name)
+        self._servient.enable_exposed_thing(self.thing.id)
 
     def stop(self):
         """Stop serving external requests for the Thing."""
 
-        self._servient.disable_exposed_thing(self.name)
+        self._servient.disable_exposed_thing(self.thing.id)
 
     def register(self, directory=None):
         """Generates the Thing Description given the properties, Actions

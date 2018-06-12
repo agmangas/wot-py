@@ -42,42 +42,6 @@ def test_empty_thing_valid():
     ThingDescription.validate(json_td.to_dict())
 
 
-def test_thing_invalid_id():
-    """Invalid IDs for Thing objects are rejected."""
-
-    fake = Faker()
-
-    ids_valid = [
-        uuid.uuid4().urn,
-        fake.url(),
-        fake.uri(),
-        "http://datypic.com",
-        "mailto:info@datypic.com",
-        "../%C3%A9dition.html",
-        "../édition.html",
-        "http://datypic.com/prod.html#shirt",
-        "../prod.html#shirt",
-        "urn:example:org"
-    ]
-
-    ids_invalid = [
-        fake.email(),
-        fake.ipv4_private(),
-        fake.uri_extension(),
-        fake.sentence(),
-        str(uuid.uuid4()),
-        uuid.uuid4().hex,
-        "http://datypic.com#f% rag"
-    ]
-
-    for thing_id in ids_valid:
-        Thing(id=thing_id)
-
-    for thing_id in ids_invalid:
-        with pytest.raises(ValueError):
-            Thing(id=thing_id)
-
-
 def test_interaction_invalid_name():
     """Invalid names for Interaction objects are rejected."""
 
