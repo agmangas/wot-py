@@ -34,7 +34,7 @@ class AbstractExposedThing(object):
         pass
 
     @abstractmethod
-    def add_property(self, property_init):
+    def add_property(self, name, property_init):
         pass
 
     @abstractmethod
@@ -42,7 +42,7 @@ class AbstractExposedThing(object):
         pass
 
     @abstractmethod
-    def add_action(self, action):
+    def add_action(self, name, action_init):
         pass
 
     @abstractmethod
@@ -50,7 +50,7 @@ class AbstractExposedThing(object):
         pass
 
     @abstractmethod
-    def add_event(self, event):
+    def add_event(self, name, event_init):
         pass
 
     @abstractmethod

@@ -39,10 +39,13 @@ def test_produce_td():
 def test_produce_thing_template():
     """Things can be produced from ThingTemplate instances."""
 
-    fake = Faker()
+    thing_id = Faker().url()
+    thing_name = Faker().sentence()
 
-    thing_id = fake.url()
-    thing_template = ThingTemplate(name=thing_id)
+    thing_template = ThingTemplate({
+        "id": thing_id,
+        "name": thing_name
+    })
 
     servient = Servient()
     wot = WoT(servient=servient)

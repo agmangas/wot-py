@@ -373,14 +373,16 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         self._events_stream.on_next(EmittedEvent(name=event_name, init=payload))
 
-    def add_property(self, property_init):
+    def add_property(self, name, property_init):
         """Adds a Property defined by the argument and updates the Thing Description.
         Takes an instance of ThingPropertyInit as argument."""
 
         prop = Property(
             thing=self._thing,
-            id=property_init.name,
-            type=property_init.type,
+            id=name,
+            label=property_init.label,
+            description=property_init.description,
+            value_type=property_init.value_type,
             writable=property_init.writable,
             observable=property_init.observable)
 
@@ -390,8 +392,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         event_data = ThingDescriptionChangeEventInit(
             td_change_type=TDChangeType.PROPERTY,
             method=TDChangeMethod.ADD,
-            name=property_init.name,
-            data=property_init,
+            name=name,
+            data=property_init.to_dict(),
             description=ThingDescription.from_thing(self.thing).to_dict())
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
@@ -409,23 +411,25 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
-    def add_action(self, action_init):
+    def add_action(self, name, action_init):
         """Adds an Action to the Thing object as defined by the action
         argument of type ThingActionInit and updates th,e Thing Description."""
 
         action = Action(
             thing=self._thing,
-            id=action_init.name,
-            output=action_init.output_data_description,
-            input=action_init.input_data_description)
+            id=name,
+            label=action_init.label,
+            description=action_init.description,
+            output=action_init.output,
+            input=action_init.input)
 
         self._thing.add_interaction(action)
 
         event_data = ThingDescriptionChangeEventInit(
             td_change_type=TDChangeType.ACTION,
             method=TDChangeMethod.ADD,
-            name=action_init.name,
-            data=action_init,
+            name=name,
+            data=action_init.to_dict(),
             description=ThingDescription.from_thing(self.thing).to_dict())
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
@@ -443,22 +447,24 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
-    def add_event(self, event_init):
+    def add_event(self, name, event_init):
         """Adds an event to the Thing object as defined by the event argument
         of type ThingEventInit and updates the Thing Description."""
 
         event = Event(
             thing=self._thing,
-            id=event_init.name,
-            type=event_init.data_description)
+            id=name,
+            label=event_init.label,
+            description=event_init.description,
+            value_type=event_init.value_type)
 
         self._thing.add_interaction(event)
 
         event_data = ThingDescriptionChangeEventInit(
             td_change_type=TDChangeType.EVENT,
             method=TDChangeMethod.ADD,
-            name=event_init.name,
-            data=event_init,
+            name=name,
+            data=event_init.to_dict(),
             description=ThingDescription.from_thing(self.thing).to_dict())
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))

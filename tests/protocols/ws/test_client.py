@@ -15,7 +15,7 @@ from tornado.concurrent import Future
 
 from wotpy.protocols.ws.client import WebsocketClient, ProtocolClientException
 from wotpy.td.description import ThingDescription
-from wotpy.wot.dictionaries import ThingActionInit
+from wotpy.wot.dictionaries import ActionInit
 
 
 @pytest.mark.flaky(reruns=5)
@@ -231,10 +231,12 @@ def test_on_td_change(websocket_servient):
         url = td.get_property_forms(first_prop_name)[0]["href"]
         observable = ws_client.on_td_change(url)
 
-        action_init = ThingActionInit(
-            name=uuid.uuid4().hex,
-            input_data_description="string",
-            output_data_description="string")
+        action_name = uuid.uuid4().hex
+
+        action_init = ActionInit({
+            "input": {"type": "string"},
+            "output": {"type": "string"}
+        })
 
         future_change = Future()
         future_conn = Future()
@@ -243,18 +245,18 @@ def test_on_td_change(websocket_servient):
             if not future_conn.done():
                 future_conn.set_result(True)
 
-            if ev.data.name == action_init.name:
+            if ev.data.name == action_name:
                 future_change.set_result(True)
 
         subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
 
         while not future_conn.done():
-            exposed_thing.add_action(ThingActionInit(name=uuid.uuid4().hex))
+            exposed_thing.add_action(uuid.uuid4().hex, ActionInit())
             yield tornado.gen.sleep(0.1)
 
         assert not future_change.done()
 
-        exposed_thing.add_action(action_init)
+        exposed_thing.add_action(action_name, action_init)
 
         yield future_change
 

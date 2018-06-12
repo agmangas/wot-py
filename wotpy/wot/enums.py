@@ -13,10 +13,18 @@ class DiscoveryMethod(EnumListMixin):
 
     ANY = "any"
     LOCAL = "local"
-    NEARBY = "nearby"
     DIRECTORY = "directory"
-    BROADCAST = "broadcast"
-    OTHER = "other"
+    MULTICAST = "multicast"
+
+
+class JSONType(EnumListMixin):
+    """Enumeration of the types that values can take"""
+
+    BOOLEAN = "boolean"
+    NUMBER = "number"
+    STRING = "string"
+    OBJECT = "object"
+    ARRAY = "array"
 
 
 class TDChangeType(EnumListMixin):

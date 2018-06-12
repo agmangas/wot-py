@@ -52,8 +52,12 @@ def websocket_servient():
             action_name_01: {
                 "writable": True,
                 "observable": True,
-                "input": "string",
-                "output": "string"
+                "input": {
+                    "type": "string"
+                },
+                "output": {
+                    "type": "string"
+                },
             }
         },
         "events": {

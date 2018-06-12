@@ -11,44 +11,48 @@ from faker import Faker
 
 from tests.td_examples import TD_EXAMPLE
 from wotpy.td.thing import Thing
-from wotpy.wot.dictionaries import ThingPropertyInit, ThingEventInit, ThingActionInit
+from wotpy.wot.dictionaries import PropertyInit, ActionInit, EventInit
 from wotpy.wot.exposed import ExposedThing
 from wotpy.wot.servient import Servient
 
 
 @pytest.fixture
-def thing_property_init():
-    """Builds and returns a random ThingPropertyInit."""
+def property_init():
+    """Builds and returns a random PropertyInit."""
 
-    fake = Faker()
-
-    return ThingPropertyInit(
-        name=fake.user_name(),
-        value=fake.pystr(),
-        data_type="string")
-
-
-@pytest.fixture
-def thing_event_init():
-    """Builds and returns a random ThingEventInit."""
-
-    fake = Faker()
-
-    return ThingEventInit(
-        name=fake.user_name(),
-        data_description="string")
+    return PropertyInit({
+        "label": Faker().sentence(),
+        "writable": True,
+        "observable": True,
+        "type": "string"
+    })
 
 
 @pytest.fixture
-def thing_action_init():
-    """Builds and returns a random ThingActionInit."""
+def event_init():
+    """Builds and returns a random EventInit."""
 
-    fake = Faker()
+    return EventInit({
+        "label": Faker().sentence(),
+        "type": "string"
+    })
 
-    return ThingActionInit(
-        name=fake.user_name(),
-        input_data_description="string",
-        output_data_description="string")
+
+@pytest.fixture
+def action_init():
+    """Builds and returns a random ActionInit."""
+
+    return ActionInit({
+        "label": Faker().sentence(),
+        "input": {
+            "type": "string",
+            "description": Faker().sentence()
+        },
+        "output": {
+            "type": "string",
+            "description": Faker().sentence()
+        }
+    })
 
 
 @pytest.fixture

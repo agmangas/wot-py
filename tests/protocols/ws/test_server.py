@@ -19,7 +19,7 @@ from wotpy.protocols.ws.messages import \
     WebsocketMessageResponse, \
     WebsocketMessageError, \
     WebsocketMessageEmittedItem
-from wotpy.wot.dictionaries import ThingPropertyInit
+from wotpy.wot.dictionaries import PropertyInit
 
 
 @pytest.mark.flaky(reruns=5)
@@ -48,6 +48,9 @@ def test_read_property(websocket_server):
     prop_init_01 = websocket_server.pop("prop_init_01")
     prop_init_02 = websocket_server.pop("prop_init_02")
     prop_init_03 = websocket_server.pop("prop_init_03")
+    prop_name_01 = websocket_server.pop("prop_name_01")
+    prop_name_02 = websocket_server.pop("prop_name_02")
+    prop_name_03 = websocket_server.pop("prop_name_03")
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -62,17 +65,17 @@ def test_read_property(websocket_server):
 
         ws_request_prop_01 = WebsocketMessageRequest(
             method=WebsocketMethods.READ_PROPERTY,
-            params={"name": prop_init_01.name},
+            params={"name": prop_name_01},
             msg_id=request_id_01)
 
         ws_request_prop_02 = WebsocketMessageRequest(
             method=WebsocketMethods.READ_PROPERTY,
-            params={"name": prop_init_02.name},
+            params={"name": prop_name_02},
             msg_id=request_id_02)
 
         ws_request_prop_03 = WebsocketMessageRequest(
             method=WebsocketMethods.READ_PROPERTY,
-            params={"name": prop_init_03.name},
+            params={"name": prop_name_03},
             msg_id=request_id_03)
 
         conns[0].write_message(ws_request_prop_01.to_json())
@@ -108,15 +111,14 @@ def test_write_property(websocket_server):
     """Properties can be updated using Websockets."""
 
     url_thing_01 = websocket_server.pop("url_thing_01")
-    prop_init_01 = websocket_server.pop("prop_init_01")
     exposed_thing_01 = websocket_server.pop("exposed_thing_01")
+    prop_name = websocket_server.pop("prop_name_01")
 
     @tornado.gen.coroutine
     def test_coroutine():
         conn = yield tornado.websocket.websocket_connect(url_thing_01)
 
         updated_value = Faker().pystr()
-        prop_name = prop_init_01.name
         msg_id = uuid.uuid4().hex
 
         ws_request = WebsocketMessageRequest(
@@ -159,15 +161,14 @@ def test_invoke_action(websocket_server):
     """Actions can be invoked using Websockets."""
 
     url_thing_01 = websocket_server.pop("url_thing_01")
-    action_init_01 = websocket_server.pop("action_init_01")
     exposed_thing_01 = websocket_server.pop("exposed_thing_01")
+    action_name = websocket_server.pop("action_name_01")
 
     @tornado.gen.coroutine
     def test_coroutine():
         conn = yield tornado.websocket.websocket_connect(url_thing_01)
 
         input_val = Faker().pystr()
-        action_name = action_init_01.name
 
         expected_out = yield exposed_thing_01.invoke_action(action_name, input_val)
 
@@ -196,13 +197,12 @@ def test_on_property_change(websocket_server):
     """Property changes can be observed using Websockets."""
 
     url_thing_01 = websocket_server.pop("url_thing_01")
-    prop_init_01 = websocket_server.pop("prop_init_01")
     exposed_thing_01 = websocket_server.pop("exposed_thing_01")
+    prop_name = websocket_server.pop("prop_name_01")
 
     @tornado.gen.coroutine
     def test_coroutine():
         observe_msg_id = Faker().pyint()
-        prop_name = prop_init_01.name
 
         updated_val_01 = Faker().pystr()
         updated_val_02 = Faker().pystr()
@@ -287,13 +287,12 @@ def test_on_event(websocket_server):
     """Events can be observed using Websockets."""
 
     url_thing_01 = websocket_server.pop("url_thing_01")
-    event_init_01 = websocket_server.pop("event_init_01")
     exposed_thing_01 = websocket_server.pop("exposed_thing_01")
+    event_name = websocket_server.pop("event_name_01")
 
     @tornado.gen.coroutine
     def test_coroutine():
         observe_msg_id = Faker().pyint()
-        event_name = event_init_01.name
         payload_01 = Faker().pydict(10, True, str, float)
         payload_02 = Faker().pydict(10, True, str, float)
         payload_03 = Faker().pydict(10, True, int)
@@ -396,20 +395,21 @@ def test_on_td_change(websocket_server):
 
         assert td_change_resp.id == td_change_msg_id
 
-        new_prop_init = ThingPropertyInit(
-            name=uuid.uuid4().hex,
-            value=Faker().sentence(),
-            data_type="string",
-            writable=False,
-            observable=True)
+        new_prop_name = uuid.uuid4().hex
 
-        exposed_thing_01.add_property(new_prop_init)
+        new_prop_init = PropertyInit({
+            "value": Faker().sentence(),
+            "type": "string",
+            "writable": False,
+            "observable": True
+        })
+
+        exposed_thing_01.add_property(new_prop_name, new_prop_init)
 
         msg_emitted_raw = yield conn.read_message()
         msg_emitted = WebsocketMessageEmittedItem.from_raw(msg_emitted_raw)
 
-        assert msg_emitted.data.get("name") == new_prop_init.name
-        assert msg_emitted.data.get("data", {}).get("name") == new_prop_init.name
+        assert msg_emitted.data.get("name") == new_prop_name
         assert msg_emitted.data.get("data", {}).get("value") == new_prop_init.value
         assert msg_emitted.data.get("data", {}).get("writable") == new_prop_init.writable
         assert msg_emitted.data.get("data", {}).get("observable") == new_prop_init.observable
@@ -422,14 +422,13 @@ def test_dispose(websocket_server):
     """Observable subscriptions can be disposed using Websockets."""
 
     url_thing_01 = websocket_server.pop("url_thing_01")
-    prop_init_01 = websocket_server.pop("prop_init_01")
     exposed_thing_01 = websocket_server.pop("exposed_thing_01")
+    prop_name = websocket_server.pop("prop_name_01")
 
     @tornado.gen.coroutine
     def test_coroutine():
         observe_msg_id = Faker().pyint()
         dispose_msg_id = Faker().pyint()
-        prop_name = prop_init_01.name
 
         conn = yield tornado.websocket.websocket_connect(url_thing_01)
 

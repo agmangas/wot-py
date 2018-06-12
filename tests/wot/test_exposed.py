@@ -2,67 +2,76 @@
 # -*- coding: utf-8 -*-
 
 import time
+# noinspection PyCompatibility
+from concurrent.futures import ThreadPoolExecutor
 
 # noinspection PyPackageRequirements
 import pytest
 import six
 import tornado.gen
 import tornado.ioloop
-# noinspection PyCompatibility
-from concurrent.futures import ThreadPoolExecutor
 # noinspection PyPackageRequirements
 from faker import Faker
 from tornado.concurrent import Future
 
+from wotpy.wot.dictionaries import PropertyInit
 from wotpy.wot.enums import TDChangeMethod, TDChangeType
 
 
-def test_read_property(exposed_thing, thing_property_init):
+def test_read_property(exposed_thing, property_init):
     """Properties may be retrieved on ExposedThings."""
 
     @tornado.gen.coroutine
     def test_coroutine():
-        exposed_thing.add_property(property_init=thing_property_init)
-        value = yield exposed_thing.read_property(thing_property_init.name)
-        assert value == thing_property_init.value
+        prop_name = Faker().pystr()
+        exposed_thing.add_property(prop_name, property_init)
+        value = yield exposed_thing.read_property(prop_name)
+        assert value == property_init.value
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_write_property(exposed_thing, thing_property_init):
+def test_write_property(exposed_thing, property_init):
     """Properties may be updated on ExposedThings."""
+
+    assert property_init.writable
 
     @tornado.gen.coroutine
     def test_coroutine():
         updated_val = Faker().pystr()
+        prop_name = Faker().pystr()
 
-        thing_property_init.writable = True
-        exposed_thing.add_property(property_init=thing_property_init)
+        exposed_thing.add_property(prop_name, property_init)
 
-        yield exposed_thing.write_property(thing_property_init.name, updated_val)
+        yield exposed_thing.write_property(prop_name, updated_val)
 
-        value = yield exposed_thing.read_property(thing_property_init.name)
+        value = yield exposed_thing.read_property(prop_name)
 
         assert value == updated_val
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_write_non_writable_property(exposed_thing, thing_property_init):
+def test_write_non_writable_property(exposed_thing):
     """Attempts to write a non-writable property should return an error."""
+
+    prop_init_non_writable = PropertyInit({
+        "type": "string",
+        "writable": False
+    })
 
     @tornado.gen.coroutine
     def test_coroutine():
-        thing_property_init.writable = False
-        exposed_thing.add_property(property_init=thing_property_init)
+        prop_name = Faker().pystr()
+        exposed_thing.add_property(prop_name, prop_init_non_writable)
 
         with pytest.raises(Exception):
-            yield exposed_thing.write_property(thing_property_init.name, Faker().pystr())
+            yield exposed_thing.write_property(prop_name, Faker().pystr())
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_invoke_action(exposed_thing, thing_action_init):
+def test_invoke_action(exposed_thing, action_init):
     """Actions can be invoked on ExposedThings."""
 
     thread_executor = ThreadPoolExecutor(max_workers=1)
@@ -93,8 +102,8 @@ def test_invoke_action(exposed_thing, thing_action_init):
 
     @tornado.gen.coroutine
     def test_coroutine():
-        exposed_thing.add_action(action_init=thing_action_init)
-        action_name = thing_action_init.name
+        action_name = Faker().pystr()
+        exposed_thing.add_action(action_name, action_init)
 
         for handler, assert_func in six.iteritems(handlers_map):
             exposed_thing.set_action_handler(action_handler=handler, action_name=action_name)
@@ -105,14 +114,13 @@ def test_invoke_action(exposed_thing, thing_action_init):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_invoke_action_undefined_handler(exposed_thing, thing_action_init):
+def test_invoke_action_undefined_handler(exposed_thing, action_init):
     """Actions with undefined handlers return an error."""
 
     @tornado.gen.coroutine
     def test_coroutine():
-        action_name = thing_action_init.name
-
-        exposed_thing.add_action(action_init=thing_action_init)
+        action_name = Faker().pystr()
+        exposed_thing.add_action(action_name, action_init)
 
         with pytest.raises(Exception):
             yield exposed_thing.invoke_action(action_name)
@@ -130,14 +138,15 @@ def test_invoke_action_undefined_handler(exposed_thing, thing_action_init):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_on_property_change(exposed_thing, thing_property_init):
+def test_on_property_change(exposed_thing, property_init):
     """Property changes can be observed."""
+
+    assert property_init.observable
 
     @tornado.gen.coroutine
     def test_coroutine():
-        prop_name = thing_property_init.name
-        thing_property_init.observable = True
-        exposed_thing.add_property(property_init=thing_property_init)
+        prop_name = Faker().pystr()
+        exposed_thing.add_property(prop_name, property_init)
 
         observable_prop = exposed_thing.on_property_change(prop_name)
 
@@ -160,15 +169,21 @@ def test_on_property_change(exposed_thing, thing_property_init):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_on_property_change_non_observable(exposed_thing, thing_property_init):
+def test_on_property_change_non_observable(exposed_thing, property_init):
     """Observe requests to non-observable properties are rejected."""
+
+    prop_init_non_observable = PropertyInit({
+        "type": "string",
+        "writable": True,
+        "observable": False
+    })
 
     @tornado.gen.coroutine
     def test_coroutine():
-        thing_property_init.observable = False
-        exposed_thing.add_property(property_init=thing_property_init)
+        prop_name = Faker().pystr()
+        exposed_thing.add_property(prop_name, prop_init_non_observable)
 
-        observable_prop = exposed_thing.on_property_change(thing_property_init.name)
+        observable_prop = exposed_thing.on_property_change(prop_name)
 
         future_next = Future()
         future_error = Future()
@@ -181,7 +196,7 @@ def test_on_property_change_non_observable(exposed_thing, thing_property_init):
 
         subscription = observable_prop.subscribe(on_next=on_next, on_error=on_error)
 
-        yield exposed_thing.write_property(thing_property_init.name, Faker().pystr())
+        yield exposed_thing.write_property(prop_name, Faker().pystr())
 
         with pytest.raises(Exception):
             future_error.result()
@@ -193,15 +208,15 @@ def test_on_property_change_non_observable(exposed_thing, thing_property_init):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_on_event(exposed_thing, thing_event_init):
+def test_on_event(exposed_thing, event_init):
     """Events defined in the Thing Description can be observed."""
 
-    event_name = thing_event_init.name
-    exposed_thing.add_event(event_init=thing_event_init)
+    event_name = Faker().pystr()
+    exposed_thing.add_event(event_name, event_init)
 
     observable_event = exposed_thing.on_event(event_name)
 
-    event_payloads = Faker().pylist(5, True, *(str,))
+    event_payloads = [Faker().pystr() for _ in range(5)]
 
     emitted_payloads = []
 
@@ -218,12 +233,12 @@ def test_on_event(exposed_thing, thing_event_init):
     subscription.dispose()
 
 
-def test_on_td_change(exposed_thing, thing_property_init, thing_event_init, thing_action_init):
+def test_on_td_change(exposed_thing, property_init, event_init, action_init):
     """Thing Description changes can be observed."""
 
-    prop_name = thing_property_init.name
-    event_name = thing_event_init.name
-    action_name = thing_action_init.name
+    prop_name = Faker().pystr()
+    event_name = Faker().pystr()
+    action_name = Faker().pystr()
 
     observable_td = exposed_thing.on_td_change()
 
@@ -245,20 +260,20 @@ def test_on_td_change(exposed_thing, thing_property_init, thing_event_init, thin
 
     subscription = observable_td.subscribe(on_next_td_event)
 
-    exposed_thing.add_event(event_init=thing_event_init)
+    exposed_thing.add_event(event_name, event_init)
 
     assert complete_futures[(TDChangeType.EVENT, TDChangeMethod.ADD)].result() == event_name
     assert not complete_futures[(TDChangeType.EVENT, TDChangeMethod.REMOVE)].done()
 
     exposed_thing.remove_event(name=event_name)
-    exposed_thing.add_property(property_init=thing_property_init)
+    exposed_thing.add_property(prop_name, property_init)
 
     assert complete_futures[(TDChangeType.EVENT, TDChangeMethod.REMOVE)].result() == event_name
     assert complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.ADD)].result() == prop_name
     assert not complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.REMOVE)].done()
 
     exposed_thing.remove_property(name=prop_name)
-    exposed_thing.add_action(action_init=thing_action_init)
+    exposed_thing.add_action(action_name, action_init)
     exposed_thing.remove_action(name=action_name)
 
     assert complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.REMOVE)].result() == prop_name

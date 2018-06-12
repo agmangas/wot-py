@@ -72,7 +72,7 @@ class WoT(object):
             thing = json_td.build_thing()
             exposed_thing = ExposedThing(servient=self._servient, thing=thing)
         else:
-            thing = Thing(id=model.name)
+            thing = Thing(id=model.id)
             exposed_thing = ExposedThing(servient=self._servient, thing=thing)
 
         self._servient.add_exposed_thing(exposed_thing)

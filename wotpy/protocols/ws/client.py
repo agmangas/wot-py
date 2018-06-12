@@ -24,11 +24,7 @@ from wotpy.protocols.ws.messages import \
     WebsocketMessageException
 from wotpy.wot.dictionaries import \
     PropertyChangeEventInit, \
-    ThingDescriptionChangeEventInit, \
-    ThingActionInit, \
-    ThingPropertyInit, \
-    ThingEventInit
-from wotpy.wot.enums import TDChangeType
+    ThingDescriptionChangeEventInit
 from wotpy.wot.events import \
     PropertyChangeEmittedEvent, \
     EmittedEvent, \
@@ -374,27 +370,16 @@ class WebsocketClient(BaseProtocolClient):
             params={},
             msg_id=uuid.uuid4().hex)
 
-        type_init_map = {
-            TDChangeType.PROPERTY: ThingPropertyInit,
-            TDChangeType.ACTION: ThingActionInit,
-            TDChangeType.EVENT: ThingEventInit
-        }
-
         def on_next(observer, msg_item):
             item_data = msg_item.data or {}
-            change_type = item_data.get("td_change_type")
 
             init_kwargs = {
-                "td_change_type": change_type,
+                "td_change_type": item_data.get("td_change_type"),
                 "method": item_data.get("method"),
                 "name": item_data.get("name"),
-                "description": item_data.get("description")
+                "description": item_data.get("description"),
+                "data": item_data.get("data")
             }
-
-            if change_type in type_init_map:
-                interaction_init_klass = type_init_map[change_type]
-                init_data = interaction_init_klass(**item_data.get("data", {}))
-                init_kwargs.update({"data": init_data})
 
             init = ThingDescriptionChangeEventInit(**init_kwargs)
 

@@ -16,6 +16,7 @@ from wotpy.td.constants import WOT_TD_CONTEXT_URL, WOT_COMMON_CONTEXT_URL
 from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.thing import Thing
 from wotpy.td.validation import SCHEMA_THING, InvalidDescription
+from wotpy.wot.dictionaries import ValueType
 
 
 class ThingDescription(object):
@@ -68,9 +69,10 @@ class ThingDescription(object):
                 "description": prop.description,
                 "observable": prop.observable,
                 "writable": prop.writable,
-                "type": prop.type,
                 "forms": [json_form(form) for form in prop.forms]
             }
+
+            ret.update(filter_dict(prop.value_type.to_dict()))
 
             return filter_dict(ret)
 
@@ -80,10 +82,14 @@ class ThingDescription(object):
             ret = {
                 "label": action.label,
                 "description": action.description,
-                "input": action.input,
-                "output": action.output,
                 "forms": [json_form(form) for form in action.forms]
             }
+
+            if action.input:
+                ret.update(filter_dict(action.input.to_dict()))
+
+            if action.output:
+                ret.update(filter_dict(action.output.to_dict()))
 
             return filter_dict(ret)
 
@@ -93,9 +99,10 @@ class ThingDescription(object):
             ret = {
                 "label": event.label,
                 "description": event.description,
-                "type": event.type,
                 "forms": [json_form(form) for form in event.forms]
             }
+
+            ret.update(filter_dict(event.value_type.to_dict()))
 
             return filter_dict(ret)
 
@@ -187,15 +194,20 @@ class ThingDescription(object):
         thing = Thing(**self._doc)
 
         for name, fields in six.iteritems(self._doc.get("properties", {})):
-            proprty = Property(thing=thing, id=name, **fields)
+            value_type = ValueType.build(fields)
+            proprty = Property(thing=thing, id=name, value_type=value_type, **fields)
             thing.add_interaction(proprty)
 
         for name, fields in six.iteritems(self._doc.get("actions", {})):
-            action = Action(thing=thing, id=name, **fields)
+            input_ = ValueType.build(fields.get("input")) if fields.get("input") else None
+            output = ValueType.build(fields.get("output")) if fields.get("output") else None
+            kwargs = {key: val for key, val in six.iteritems(fields) if key not in ["input", "output"]}
+            action = Action(thing=thing, id=name, input=input_, output=output, **kwargs)
             thing.add_interaction(action)
 
         for name, fields in six.iteritems(self._doc.get("events", {})):
-            event = Event(thing=thing, id=name, **fields)
+            value_type = ValueType.build(fields)
+            event = Event(thing=thing, id=name, value_type=value_type, **fields)
             thing.add_interaction(event)
 
         return thing

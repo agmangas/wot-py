@@ -2,10 +2,653 @@
 # -*- coding: utf-8 -*-
 
 """
-Classes that represent Scripting API dictionaries.
+Classes that represent wrappers for dictionaries described in the Scripting API document.
 """
 
-from wotpy.wot.enums import DiscoveryMethod, TDChangeType, TDChangeMethod
+import six
+
+from wotpy.wot.enums import TDChangeType, TDChangeMethod, JSONType
+
+
+def _build_init_dict(args, kwargs):
+    """Takes a tuple of args and dict of kwargs and updates the kwargs dict
+    with the first argument of args (if that item is a dict)."""
+
+    init_dict = {}
+
+    if len(args) > 0 and isinstance(args[0], dict):
+        init_dict = args[0]
+
+    init_dict.update(kwargs)
+
+    return init_dict
+
+
+class ThingTemplate(object):
+    """ThingTemplate is a wrapper around a dictionary that contains properties
+    representing semantic metadata and interactions (Properties, Actions and Events).
+    It is used for initializing an internal representation of a Thing Description,
+    and it is also used in ThingFilter."""
+
+    def __init__(self, *args, **kwargs):
+        self._init = _build_init_dict(args, kwargs)
+
+        if self.id is None:
+            raise ValueError("Property 'id' is required")
+
+    def to_dict(self):
+        """The internal dictionary that contains the entire set of properties."""
+
+        return self._init
+
+    @property
+    def name(self):
+        """The name attribute represents the name of the Thing."""
+
+        return self._init.get("name")
+
+    @property
+    def id(self):
+        """The id optional attribute represents an application provided hint
+        for the unique identifier of the Thing, typically a URI, IRI, or URN.
+        Note that the WoT Runtime may override this with a different value when exposing the Thing."""
+
+        return self._init.get("id")
+
+    @property
+    def description(self):
+        """The description optional attribute represents
+        a human readable description of the Thing."""
+
+        return self._init.get("description")
+
+    @property
+    def support(self):
+        """The support optional attribute represents human
+        readable information about the TD maintainer."""
+
+        return self._init.get("support")
+
+    @property
+    def security(self):
+        """The security optional attribute represents security metadata."""
+
+        return self._init.get("security")
+
+    @property
+    def properties(self):
+        """The properties optional attribute represents a dict with keys
+        that correspond to Property names and values of type PropertyInit."""
+
+        return self._init.get("properties", {})
+
+    @property
+    def actions(self):
+        """The actions optional attribute represents a dict with keys
+        that correspond to Action names and values of type ActionInit."""
+
+        return self._init.get("actions", {})
+
+    @property
+    def events(self):
+        """The events optional attribute represents a dictionary with keys
+        that correspond to Event names and values of type EventInit."""
+
+        return self._init.get("events", {})
+
+    @property
+    def links(self):
+        """The links optional attribute represents an array of WebLink objects."""
+
+        return [WebLink(item) for item in self._init.get("links", [])]
+
+    @property
+    def context(self):
+        """The @context optional attribute represents a semantic context."""
+
+        return self._init.get("@context")
+
+    @property
+    def type(self):
+        """The @type optional attribute represents a semantic type."""
+
+        return self._init.get("@type")
+
+
+class Security(object):
+    """Contains security related configuration."""
+
+    def __init__(self, *args, **kwargs):
+        self._init = _build_init_dict(args, kwargs)
+
+        if self.scheme is None:
+            raise ValueError("Property 'scheme' is required")
+
+    def to_dict(self):
+        """The internal dictionary that contains the entire set of properties."""
+
+        return self._init
+
+    @property
+    def scheme(self):
+        """The scheme property represents the identification
+        of the security scheme to be used for the Thing."""
+
+        return self._init.get("scheme")
+
+    @property
+    def in_data(self):
+        """The in property represents security initialization data
+        as described in the Security metadata description document."""
+
+        return self._init.get("in")
+
+
+class ThingFilter(object):
+    """The ThingFilter dictionary that represents the
+    constraints for discovering Things as key-value pairs."""
+
+    def __init__(self, *args, **kwargs):
+        self._init = _build_init_dict(args, kwargs)
+
+    def to_dict(self):
+        """The internal dictionary that contains the entire set of properties."""
+
+        return self._init
+
+    @property
+    def method(self):
+        """The method property represents the discovery type
+        that should be used in the discovery process."""
+
+        return self._init.get("method")
+
+    @property
+    def url(self):
+        """The url property represents additional information for the discovery method,
+        such as the URL of the target entity serving the discovery request,
+        for instance a Thing Directory (if method is "directory") or a Thing (otherwise)."""
+
+        return self._init.get("url")
+
+    @property
+    def query(self):
+        """The query property represents a query string accepted by the implementation,
+        for instance a SPARQL or JSON query. Support may be implemented locally in the
+        WoT Runtime or remotely as a service in a Thing Directory."""
+
+        return self._init.get("query")
+
+    @property
+    def template(self):
+        """The template property represents a ThingTemplate dictionary
+        wrapper class used for matching against discovered Things."""
+
+        template = self._init.get("template")
+
+        return None if template is None else ThingTemplate(template)
+
+
+class Link(object):
+    """A link to an external resource that may be related to the Thing in any way."""
+
+    def __init__(self, *args, **kwargs):
+        self._init = _build_init_dict(args, kwargs)
+
+        if self.href is None:
+            raise ValueError("Property 'href' is required")
+
+    def to_dict(self):
+        """The internal dictionary that contains the entire set of properties."""
+
+        return self._init
+
+    @property
+    def href(self):
+        """The href property is a hypertext reference that defines the Link."""
+
+        return self._init.get("href")
+
+    @property
+    def media_type(self):
+        """The mediaType property represents the IANA media type associated with the Link."""
+
+        return self._init.get("mediaType")
+
+    @property
+    def rel(self):
+        """The rel property represents a semantic label that
+        specifies how to interact with the linked resource."""
+
+        return self._init.get("rel")
+
+
+class WebLink(Link):
+    """A Link from a Thing to a resource that exists on the Web."""
+
+    def __init__(self, *args, **kwargs):
+        super(WebLink, self).__init__(*args, **kwargs)
+
+    @property
+    def anchor(self):
+        """The anchor property represents a URI that
+        overrides the default context of a Link."""
+
+        return self._init.get("anchor")
+
+
+class Form(Link):
+    """A dictionary that describes a connection endpoint for an interaction."""
+
+    def __init__(self, *args, **kwargs):
+        super(Form, self).__init__(*args, **kwargs)
+
+    @property
+    def security(self):
+        """The security property represents the security
+        requirements for the linked resource."""
+
+        return self._init.get("security")
+
+
+class ValueType(object):
+    """Represents the common properties of a value type definition."""
+
+    def __init__(self, *args, **kwargs):
+        self._init = _build_init_dict(args, kwargs)
+
+        if self.type is None:
+            raise ValueError("Property 'type' is required")
+
+    @classmethod
+    def build(cls, *args, **kwargs):
+        """Builds an instance of the appropriate subclass for the given ValueType."""
+
+        init_dict = _build_init_dict(args, kwargs)
+
+        klass_map = {
+            JSONType.NUMBER: NumberValueType,
+            JSONType.BOOLEAN: BooleanValueType,
+            JSONType.STRING: StringValueType,
+            JSONType.OBJECT: ObjectValueType,
+            JSONType.ARRAY: ArrayValueType
+        }
+
+        klass_type = init_dict.get("type")
+        klass = klass_map.get(klass_type)
+
+        if not klass:
+            raise ValueError("Unknown type: {}".format(klass_type))
+
+        return klass(*args, **kwargs)
+
+    def to_dict(self):
+        """The internal dictionary that contains the entire set of properties."""
+
+        return {
+            "type": self.type,
+            "required": self.required,
+            "description": self.description,
+            "const": self.const
+        }
+
+    @property
+    def type(self):
+        """The type property represents the value type enumerated in JSONType."""
+
+        return self._init.get("type")
+
+    @property
+    def required(self):
+        """The required property tells whether this value is required to be specified."""
+
+        return self._init.get("required", False)
+
+    @property
+    def description(self):
+        """The description property represents a textual description of the value."""
+
+        return self._init.get("description")
+
+    @property
+    def const(self):
+        """The const property tells whether this value is constant."""
+
+        return self._init.get("const")
+
+
+class NumberValueType(ValueType):
+    """Properties to describe a numeric type."""
+
+    def __init__(self, *args, **kwargs):
+        super(NumberValueType, self).__init__(*args, **kwargs)
+
+    def to_dict(self):
+        """The internal dictionary that contains the entire set of properties."""
+
+        ret = super(NumberValueType, self).to_dict()
+
+        ret.update({
+            "value": self.value,
+            "minimum": self.minimum,
+            "maximum": self.maximum
+        })
+
+        return ret
+
+    @property
+    def type(self):
+        """The type property represents the value type enumerated in JSONType."""
+
+        return JSONType.NUMBER
+
+    @property
+    def value(self):
+        """The value property represents the numeric value."""
+
+        return self._init.get("value")
+
+    @property
+    def minimum(self):
+        """The minimum property may be present when the value is of type
+        number and if present, it defines the minimum value that can be used."""
+
+        return self._init.get("minimum")
+
+    @property
+    def maximum(self):
+        """The maximum property may be present when the value is of type
+        number and if present, it defines the maximum value that can be used."""
+
+        return self._init.get("maximum")
+
+
+class BooleanValueType(ValueType):
+    """Properties to describe a boolean type."""
+
+    def __init__(self, *args, **kwargs):
+        super(BooleanValueType, self).__init__(*args, **kwargs)
+
+    def to_dict(self):
+        """The internal dictionary that contains the entire set of properties."""
+
+        ret = super(BooleanValueType, self).to_dict()
+
+        ret.update({
+            "value": self.value
+        })
+
+        return ret
+
+    @property
+    def type(self):
+        """The type property represents the value type enumerated in JSONType."""
+
+        return JSONType.BOOLEAN
+
+    @property
+    def value(self):
+        """The value property represents the boolean value."""
+
+        return self._init.get("value")
+
+
+class StringValueType(ValueType):
+    """Properties to describe a string type."""
+
+    def __init__(self, *args, **kwargs):
+        super(StringValueType, self).__init__(*args, **kwargs)
+
+    def to_dict(self):
+        """The internal dictionary that contains the entire set of properties."""
+
+        ret = super(StringValueType, self).to_dict()
+
+        ret.update({
+            "value": self.value,
+            "enum": self.enum
+        })
+
+        return ret
+
+    @property
+    def type(self):
+        """The type property represents the value type enumerated in JSONType."""
+
+        return JSONType.STRING
+
+    @property
+    def value(self):
+        """The value property represents the boolean value."""
+
+        return self._init.get("value")
+
+    @property
+    def enum(self):
+        """The enum property represents the list of allowed string values as a string array."""
+
+        return self._init.get("enum", [])
+
+
+class ObjectValueType(ValueType):
+    """Properties to describe an object type."""
+
+    def __init__(self, *args, **kwargs):
+        super(ObjectValueType, self).__init__(*args, **kwargs)
+
+    def to_dict(self):
+        """The internal dictionary that contains the entire set of properties."""
+
+        ret = super(ObjectValueType, self).to_dict()
+
+        ret.update({
+            "properties": {
+                key: val_type.to_dict()
+                for key, val_type in six.iteritems(self.properties)
+            }
+        })
+
+        return ret
+
+    @property
+    def type(self):
+        """The type property represents the value type enumerated in JSONType."""
+
+        return JSONType.OBJECT
+
+    @property
+    def properties(self):
+        """The properties property is a dictionary that contains the object properties."""
+
+        return {
+            key: ValueType.build(val)
+            for key, val in six.iteritems(self._init.get("properties", {}))
+        }
+
+
+class ArrayValueType(ValueType):
+    """Properties to describe an array type."""
+
+    def __init__(self, *args, **kwargs):
+        super(ArrayValueType, self).__init__(*args, **kwargs)
+
+    def to_dict(self):
+        """The internal dictionary that contains the entire set of properties."""
+
+        ret = super(ArrayValueType, self).to_dict()
+
+        ret.update({
+            "items": [val_type.to_dict() for val_type in self.items],
+            "minItems": self.min_items,
+            "maxItems": self.max_items
+        })
+
+        return ret
+
+    @property
+    def type(self):
+        """The type property represents the value type enumerated in JSONType."""
+
+        return JSONType.ARRAY
+
+    @property
+    def items(self):
+        """The items property is an array of ValueType elements."""
+
+        return [ValueType.build(item) for item in self._init.get("items", [])]
+
+    @property
+    def min_items(self):
+        """The minItems property represents the minimum
+        number of elements required to be in the array."""
+
+        return self._init.get("minItems")
+
+    @property
+    def max_items(self):
+        """The maxItems property represents the maximum
+        number of elements that can be specified in the array."""
+
+        return self._init.get("maxItems")
+
+
+class InteractionInit(object):
+    """A dictionary wrapper class that contains data to initialize an Interaction."""
+
+    def __init__(self, *args, **kwargs):
+        self._init = _build_init_dict(args, kwargs)
+
+    def to_dict(self):
+        """The internal dictionary that contains the entire set of properties"""
+
+        return {
+            "label": self.label,
+            "forms": [item.to_dict() for item in self.forms],
+            "links": [item.to_dict() for item in self.links],
+        }
+
+    @property
+    def label(self):
+        """The label property initializes the text label for the interaction."""
+
+        return self._init.get("label")
+
+    @property
+    def forms(self):
+        """The forms read-only property initializes the
+        protocol bindings initialization data."""
+
+        return [Form(item) for item in self._init.get("forms", [])]
+
+    @property
+    def links(self):
+        """The links read-only property initializes the
+        array of Links attached to the interaction."""
+
+        return [Link(item) for item in self._init.get("links", [])]
+
+
+class PropertyInit(InteractionInit):
+    """A dictionary wrapper class that contains data to initialize a Property."""
+
+    def __init__(self, *args, **kwargs):
+        super(PropertyInit, self).__init__(*args, **kwargs)
+        self._value_type = ValueType.build(self._init)
+
+    def __getattr__(self, name):
+        """Search for members that raised an AttributeError in
+        the internal ValueType before propagating the exception."""
+
+        return self.value_type.__getattribute__(name)
+
+    def to_dict(self):
+        """The internal dictionary that contains the entire set of properties"""
+
+        base_dict = super(PropertyInit, self).to_dict()
+
+        base_dict.update({
+            "writable": self.writable,
+            "observable": self.observable
+        })
+
+        base_dict.update(self.value_type.to_dict())
+
+        return base_dict
+
+    @property
+    def value_type(self):
+        """The ValueType dict wrapper that represents the schema of this interaction."""
+
+        return self._value_type
+
+    @property
+    def writable(self):
+        """The writable property initializes access to the Property value.
+        The default value is false."""
+
+        return self._init.get("writable", False)
+
+    @property
+    def observable(self):
+        """The observable property initializes observability access to the Property.
+        The default value is false."""
+
+        return self._init.get("observable", False)
+
+
+class ActionInit(InteractionInit):
+    """A dictionary wrapper class that contains data to initialize an Action."""
+
+    def __init__(self, *args, **kwargs):
+        super(ActionInit, self).__init__(*args, **kwargs)
+
+    def to_dict(self):
+        """The internal dictionary that contains the entire set of properties"""
+
+        base_dict = super(ActionInit, self).to_dict()
+
+        base_dict.update({
+            "description": self.description
+        })
+
+        if self.input:
+            base_dict.update({"input": self.input.to_dict()})
+
+        if self.output:
+            base_dict.update({"output": self.output.to_dict()})
+
+        return base_dict
+
+    @property
+    def input(self):
+        """The input property initializes the input of type ValueType to the ThingAction.
+        Multiple arguments can be provided by applications as an array or as an object."""
+
+        init = self._init.get("input")
+
+        return ValueType.build(init) if init else None
+
+    @property
+    def output(self):
+        """The output property initializes the output of type ValueType of the ThingAction.
+        The value is overridden when the action is executed."""
+
+        init = self._init.get("output")
+
+        return ValueType.build(init) if init else None
+
+    @property
+    def description(self):
+        """The description read-only property initializes a
+        human-readable textual description of the Action interaction."""
+
+        return self._init.get("description")
+
+
+class EventInit(PropertyInit):
+    """A dictionary wrapper class that contains data to initialize an Event."""
+
+    pass
 
 
 class SemanticType(object):
@@ -24,160 +667,6 @@ class SemanticType(object):
 
     def __hash__(self):
         return hash((self.name, self.context, self.prefix))
-
-
-class SemanticMetadata(object):
-    """Represents a semantic metadata item, containing a
-    semantic type (the predicate) and a value (the object)."""
-
-    def __init__(self, semantic_type, value):
-        self.semantic_type = semantic_type
-        self.value = value
-
-    def __eq__(self, other):
-        return self.semantic_type == other.semantic_type and \
-               self.value == self.value
-
-    def __hash__(self):
-        return hash((self.semantic_type, self.value))
-
-
-class SemanticAnnotations(object):
-    """Represents a tuple of sequences of semantic types and semantic metadata items."""
-
-    def __init__(self, semantic_types=None, metadata=None):
-        self.semantic_types = set(semantic_types) if semantic_types else set()
-        self.metadata = set(metadata) if metadata else set()
-
-    def __eq__(self, other):
-        return self.semantic_types == other.semantic_types and \
-               self.metadata == self.metadata
-
-    def __hash__(self):
-        return hash((self.semantic_types, self.metadata))
-
-    @property
-    def contexts(self):
-        """Returns a list of dicts that represent all contexts referenced in these annotations.
-        Each dict contains a 'context' key and an optional 'prefix' key."""
-
-        sem_types_metadata = set([item.semantic_type for item in self.metadata])
-        sem_types_all = self.semantic_types.union(sem_types_metadata)
-
-        return [{"context": item.context, "prefix": item.prefix} for item in sem_types_all]
-
-
-class ThingFilter(object):
-    """Represents a filter that may be applied
-    to a things discovery operation."""
-
-    def __init__(self, method=DiscoveryMethod.ANY, url=None, query=None, contraints=None):
-        assert method in DiscoveryMethod.list()
-        self.method = method
-        self.url = url
-        self.query = query
-        self.contraints = contraints
-
-
-class ThingTemplate(SemanticAnnotations):
-    """A Thing Template is a dictionary that provides a user
-    given name, and the semantic types and semantic metadata
-    attached to the ExposedThing Thing Description's root level."""
-
-    def __init__(self, name, semantic_types=None, metadata=None):
-        self.name = name
-
-        super(ThingTemplate, self).__init__(semantic_types=semantic_types, metadata=metadata)
-
-
-class ThingPropertyInit(SemanticAnnotations):
-    """Represents the set of properties required to initialize a thing property."""
-
-    def __init__(self, name, data_type,
-                 value=None, writable=True, observable=True,
-                 semantic_types=None, metadata=None):
-        self.name = name
-        self.data_type = data_type
-        self.value = value
-        self.writable = writable
-        self.observable = observable
-
-        super(ThingPropertyInit, self).__init__(semantic_types=semantic_types, metadata=metadata)
-
-    @property
-    def type(self):
-        """Data type property."""
-
-        return self.data_type
-
-    def __eq__(self, other):
-        return super(ThingPropertyInit, self).__eq__(other) and \
-               self.name == other.name and \
-               self.type == other.type and \
-               self.value == other.value and \
-               self.writable == other.writable and \
-               self.observable == other.observable
-
-    def __hash__(self):
-        return hash((
-            super(ThingPropertyInit, self).__hash__(),
-            self.name,
-            self.type,
-            self.value,
-            self.writable,
-            self.observable
-        ))
-
-
-class ThingActionInit(SemanticAnnotations):
-    """Represents the set of properties required to initialize a thing action."""
-
-    def __init__(self, name,
-                 input_data_description=None, output_data_description=None,
-                 semantic_types=None, metadata=None):
-        self.name = name
-        self.input_data_description = input_data_description
-        self.output_data_description = output_data_description
-
-        super(ThingActionInit, self).__init__(semantic_types=semantic_types, metadata=metadata)
-
-    def __eq__(self, other):
-        return super(ThingActionInit, self).__eq__(other) and \
-               self.name == other.name and \
-               self.input_data_description == other.input_data_description and \
-               self.output_data_description == other.output_data_description
-
-    def __hash__(self):
-        return hash((
-            super(ThingActionInit, self).__hash__(),
-            self.name,
-            self.input_data_description,
-            self.output_data_description
-        ))
-
-
-class ThingEventInit(SemanticAnnotations):
-    """Represents the set of properties required to initialize a thing event."""
-
-    def __init__(self, name,
-                 data_description=None,
-                 semantic_types=None, metadata=None):
-        self.name = name
-        self.data_description = data_description
-
-        super(ThingEventInit, self).__init__(semantic_types=semantic_types, metadata=metadata)
-
-    def __eq__(self, other):
-        return super(ThingEventInit, self).__eq__(other) and \
-               self.name == other.name and \
-               self.data_description == other.data_description
-
-    def __hash__(self):
-        return hash((
-            super(ThingEventInit, self).__hash__(),
-            self.name,
-            self.data_description
-        ))
 
 
 class PropertyChangeEventInit(object):
@@ -221,7 +710,6 @@ class ThingDescriptionChangeEventInit(object):
     def __init__(self, td_change_type, method, name, data=None, description=None):
         assert td_change_type in TDChangeType.list()
         assert method in TDChangeMethod.list()
-        assert data is None or isinstance(data, (ThingPropertyInit, ThingActionInit, ThingEventInit))
 
         self.td_change_type = td_change_type
         self.method = method

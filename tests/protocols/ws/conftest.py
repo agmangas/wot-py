@@ -18,7 +18,7 @@ from six.moves.urllib.parse import urlparse, urlunparse
 
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.td.thing import Thing
-from wotpy.wot.dictionaries import ThingPropertyInit, ThingEventInit, ThingActionInit
+from wotpy.wot.dictionaries import PropertyInit, ActionInit, EventInit
 from wotpy.wot.exposed import ExposedThing
 from wotpy.wot.servient import Servient
 
@@ -40,8 +40,6 @@ def build_websocket_url(exposed_thing, ws_server, server_port):
 def websocket_server():
     """Builds a WebsocketServer instance with some ExposedThings."""
 
-    fake = Faker()
-
     servient = Servient()
 
     thing_01_id = uuid.uuid4().urn
@@ -50,41 +48,53 @@ def websocket_server():
     exposed_thing_01 = ExposedThing(servient=servient, thing=Thing(id=thing_01_id))
     exposed_thing_02 = ExposedThing(servient=servient, thing=Thing(id=thing_02_id))
 
-    prop_init_01 = ThingPropertyInit(
-        name=uuid.uuid4().hex,
-        value=fake.pystr(),
-        data_type="string")
+    prop_name_01 = uuid.uuid4().hex
+    prop_name_02 = uuid.uuid4().hex
+    prop_name_03 = uuid.uuid4().hex
+    event_name_01 = uuid.uuid4().hex
+    action_name_01 = uuid.uuid4().hex
 
-    prop_init_02 = ThingPropertyInit(
-        name=uuid.uuid4().hex,
-        value=fake.pystr(),
-        data_type="string")
+    prop_init_01 = PropertyInit({
+        "type": "string",
+        "value": Faker().sentence(),
+        "writable": True,
+        "observable": True
+    })
 
-    prop_init_03 = ThingPropertyInit(
-        name=uuid.uuid4().hex,
-        value=fake.pystr(),
-        data_type="string")
+    prop_init_02 = PropertyInit({
+        "type": "string",
+        "value": Faker().sentence(),
+        "writable": True,
+        "observable": True
+    })
 
-    event_init_01 = ThingEventInit(
-        name=uuid.uuid4().hex,
-        data_description="object")
+    prop_init_03 = PropertyInit({
+        "type": "string",
+        "value": Faker().sentence(),
+        "writable": True,
+        "observable": True
+    })
 
-    action_init_01 = ThingActionInit(
-        name=uuid.uuid4().hex,
-        input_data_description="string",
-        output_data_description="string")
+    event_init_01 = EventInit({
+        "type": "object"
+    })
+
+    action_init_01 = ActionInit({
+        "input": {"type": "string"},
+        "output": {"type": "string"}
+    })
 
     def async_lower(val):
         loop = tornado.ioloop.IOLoop.current()
         return loop.run_in_executor(None, lambda x: time.sleep(0.1) or x.lower(), val)
 
-    exposed_thing_01.add_property(prop_init_01)
-    exposed_thing_01.add_property(prop_init_02)
-    exposed_thing_01.add_event(event_init_01)
-    exposed_thing_01.add_action(action_init_01)
-    exposed_thing_01.set_action_handler(async_lower, action_init_01.name)
+    exposed_thing_01.add_property(prop_name_01, prop_init_01)
+    exposed_thing_01.add_property(prop_name_02, prop_init_02)
+    exposed_thing_01.add_event(event_name_01, event_init_01)
+    exposed_thing_01.add_action(action_name_01, action_init_01)
+    exposed_thing_01.set_action_handler(async_lower, action_name_01)
 
-    exposed_thing_02.add_property(prop_init_03)
+    exposed_thing_02.add_property(prop_name_03, prop_init_03)
 
     ws_port = random.randint(20000, 40000)
 
@@ -99,10 +109,15 @@ def websocket_server():
     return {
         "exposed_thing_01": exposed_thing_01,
         "exposed_thing_02": exposed_thing_02,
+        "prop_name_01": prop_name_01,
         "prop_init_01": prop_init_01,
+        "prop_name_02": prop_name_02,
         "prop_init_02": prop_init_02,
+        "prop_name_03": prop_name_03,
         "prop_init_03": prop_init_03,
+        "event_name_01": event_name_01,
         "event_init_01": event_init_01,
+        "action_name_01": action_name_01,
         "action_init_01": action_init_01,
         "ws_server": ws_server,
         "url_thing_01": url_thing_01,
