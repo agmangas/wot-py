@@ -651,24 +651,6 @@ class EventInit(PropertyInit):
     pass
 
 
-class SemanticType(object):
-    """Represents a semantic type annotation, containing a
-    name, a context and an optional prefix."""
-
-    def __init__(self, name, context, prefix=None):
-        self.name = name
-        self.context = context
-        self.prefix = prefix
-
-    def __eq__(self, other):
-        return self.name == other.name and \
-               self.context == other.context and \
-               self.prefix == other.prefix
-
-    def __hash__(self):
-        return hash((self.name, self.context, self.prefix))
-
-
 class PropertyChangeEventInit(object):
     """Represents the data contained in a property update event.
 
