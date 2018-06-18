@@ -281,3 +281,62 @@ def test_on_td_change(exposed_thing, property_init, event_init, action_init):
     assert complete_futures[(TDChangeType.ACTION, TDChangeMethod.REMOVE)].result() == action_name
 
     subscription.dispose()
+
+
+def test_thing_property_get(exposed_thing, property_init):
+    """Property values can be retrieved on ExposedThings using the map-like interface."""
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        prop_name = Faker().pystr()
+        exposed_thing.add_property(prop_name, property_init)
+        value = yield exposed_thing.properties[prop_name].get()
+        assert value == property_init.value
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_thing_property_set(exposed_thing, property_init):
+    """Property values can be updated on ExposedThings using the map-like interface."""
+
+    assert property_init.writable
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        updated_val = Faker().pystr()
+        prop_name = Faker().pystr()
+        exposed_thing.add_property(prop_name, property_init)
+        yield exposed_thing.properties[prop_name].set(updated_val)
+        value = yield exposed_thing.properties[prop_name].get()
+        assert value == updated_val
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_thing_property_subscribe(exposed_thing, property_init):
+    """Property updates can be observed on ExposedThings using the map-like interface."""
+
+    assert property_init.observable
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        prop_name = Faker().pystr()
+        exposed_thing.add_property(prop_name, property_init)
+
+        property_values = [Faker().sentence() for _ in range(10)]
+
+        emitted_values = []
+
+        def on_next(ev):
+            emitted_values.append(ev.data.value)
+
+        subscription = exposed_thing.properties[prop_name].subscribe(on_next)
+
+        for val in property_values:
+            yield exposed_thing.properties[prop_name].set(val)
+
+        assert emitted_values == property_values
+
+        subscription.dispose()
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
