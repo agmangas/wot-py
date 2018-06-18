@@ -5,17 +5,22 @@
 Class that represents the form entities exposed by interactions.
 """
 
+from wotpy.wot.dictionaries import FormDictionary
+
 
 class Form(object):
     """Communication metadata where a service can be accessed by a client application."""
 
-    def __init__(self, interaction, protocol, **kwargs):
+    def __init__(self, interaction, protocol, form_dict=None, **kwargs):
         self.interaction = interaction
         self.protocol = protocol
-        self.href = kwargs.pop("href")
-        self.media_type = kwargs.get("media_type", "application/json")
-        self.rel = kwargs.get("rel")
-        self.security = kwargs.get("security")
+        self._form_dict = form_dict if form_dict else FormDictionary(**kwargs)
+
+    def __getattr__(self, name):
+        """Search for members that raised an AttributeError in
+        the internal FormDictionary before propagating the exception."""
+
+        return self._form_dict.__getattribute__(name)
 
     @property
     def id(self):

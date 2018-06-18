@@ -213,7 +213,7 @@ class LinkDictionary(object):
     def media_type(self):
         """The mediaType property represents the IANA media type associated with the Link."""
 
-        return self._init.get("mediaType")
+        return self._init.get("mediaType", self._init.get("media_type"))
 
     @property
     def rel(self):
@@ -488,14 +488,14 @@ class ArraySchemaDictionary(DataSchemaDictionary):
         """The minItems property represents the minimum
         number of elements required to be in the array."""
 
-        return self._init.get("minItems")
+        return self._init.get("minItems", self._init.get("min_items"))
 
     @property
     def max_items(self):
         """The maxItems property represents the maximum
         number of elements that can be specified in the array."""
 
-        return self._init.get("maxItems")
+        return self._init.get("maxItems", self._init.get("max_items"))
 
 
 class InteractionInitDictionary(object):
