@@ -19,7 +19,7 @@ from wotpy.protocols.ws.messages import \
     WebsocketMessageResponse, \
     WebsocketMessageError, \
     WebsocketMessageEmittedItem
-from wotpy.wot.dictionaries import PropertyInit
+from wotpy.wot.dictionaries import PropertyInitDictionary
 
 
 @pytest.mark.flaky(reruns=5)
@@ -397,7 +397,7 @@ def test_on_td_change(websocket_server):
 
         new_prop_name = uuid.uuid4().hex
 
-        new_prop_init = PropertyInit({
+        new_prop_init = PropertyInitDictionary({
             "value": Faker().sentence(),
             "type": "string",
             "writable": False,

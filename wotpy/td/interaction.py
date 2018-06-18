@@ -77,7 +77,7 @@ class Property(InteractionPattern):
 
     def __init__(self, thing, **kwargs):
         super(Property, self).__init__(thing, **kwargs)
-        self.value_type = kwargs.pop("value_type")
+        self.data_schema = kwargs.pop("data_schema")
         self.observable = kwargs.get("observable", False)
         self.writable = kwargs.get("writable", False)
 
@@ -111,7 +111,7 @@ class Event(InteractionPattern):
 
     def __init__(self, thing, **kwargs):
         super(Event, self).__init__(thing, **kwargs)
-        self.value_type = kwargs.pop("value_type")
+        self.data_schema = kwargs.pop("data_schema")
 
     @property
     def interaction_type(self):

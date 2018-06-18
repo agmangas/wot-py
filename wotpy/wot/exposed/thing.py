@@ -304,7 +304,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             id=name,
             label=property_init.label,
             description=property_init.description,
-            value_type=property_init.value_type,
+            data_schema=property_init.data_schema,
             writable=property_init.writable,
             observable=property_init.observable)
 
@@ -378,7 +378,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             id=name,
             label=event_init.label,
             description=event_init.description,
-            value_type=event_init.value_type)
+            data_schema=event_init.data_schema)
 
         self._thing.add_interaction(event)
 

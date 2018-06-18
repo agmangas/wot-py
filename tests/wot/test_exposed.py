@@ -14,7 +14,7 @@ import tornado.ioloop
 from faker import Faker
 from tornado.concurrent import Future
 
-from wotpy.wot.dictionaries import PropertyInit
+from wotpy.wot.dictionaries import PropertyInitDictionary
 from wotpy.wot.enums import TDChangeMethod, TDChangeType
 
 
@@ -55,7 +55,7 @@ def test_write_property(exposed_thing, property_init):
 def test_write_non_writable_property(exposed_thing):
     """Attempts to write a non-writable property should return an error."""
 
-    prop_init_non_writable = PropertyInit({
+    prop_init_non_writable = PropertyInitDictionary({
         "type": "string",
         "writable": False
     })
@@ -172,7 +172,7 @@ def test_on_property_change(exposed_thing, property_init):
 def test_on_property_change_non_observable(exposed_thing, property_init):
     """Observe requests to non-observable properties are rejected."""
 
-    prop_init_non_observable = PropertyInit({
+    prop_init_non_observable = PropertyInitDictionary({
         "type": "string",
         "writable": True,
         "observable": False

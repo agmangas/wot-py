@@ -11,7 +11,7 @@ from faker import Faker
 
 from tests.td_examples import TD_EXAMPLE
 from wotpy.td.thing import Thing
-from wotpy.wot.dictionaries import PropertyInit, ActionInit, EventInit
+from wotpy.wot.dictionaries import PropertyInitDictionary, ActionInitDictionary, EventInitDictionary
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 
@@ -20,11 +20,12 @@ from wotpy.wot.servient import Servient
 def property_init():
     """Builds and returns a random PropertyInit."""
 
-    return PropertyInit({
+    return PropertyInitDictionary({
         "label": Faker().sentence(),
         "writable": True,
         "observable": True,
-        "type": "string"
+        "type": "string",
+        "value": Faker().sentence()
     })
 
 
@@ -32,9 +33,10 @@ def property_init():
 def event_init():
     """Builds and returns a random EventInit."""
 
-    return EventInit({
+    return EventInitDictionary({
         "label": Faker().sentence(),
-        "type": "string"
+        "type": "string",
+        "value": Faker().sentence()
     })
 
 
@@ -42,7 +44,7 @@ def event_init():
 def action_init():
     """Builds and returns a random ActionInit."""
 
-    return ActionInit({
+    return ActionInitDictionary({
         "label": Faker().sentence(),
         "input": {
             "type": "string",

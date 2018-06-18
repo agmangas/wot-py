@@ -15,7 +15,7 @@ from faker import Faker
 
 from tests.td_examples import TD_EXAMPLE
 from tests.wot.utils import assert_exposed_thing_equal
-from wotpy.wot.dictionaries import ThingTemplate
+from wotpy.wot.dictionaries import ThingTemplateDictionary
 from wotpy.wot.servient import Servient
 from wotpy.wot.wot import WoT
 
@@ -42,7 +42,7 @@ def test_produce_thing_template():
     thing_id = Faker().url()
     thing_name = Faker().sentence()
 
-    thing_template = ThingTemplate({
+    thing_template = ThingTemplateDictionary({
         "id": thing_id,
         "name": thing_name
     })
