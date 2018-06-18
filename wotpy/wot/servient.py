@@ -14,7 +14,7 @@ from wotpy.protocols.enums import Protocols
 from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.td.description import ThingDescription
 from wotpy.td.enums import InteractionTypes
-from wotpy.wot.exposed import ExposedThingGroup
+from wotpy.wot.exposed_group import ExposedThingGroup
 from wotpy.wot.wot import WoT
 
 
