@@ -14,7 +14,7 @@ from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 
 from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
-from wotpy.wot.consumed import ConsumedThing
+from wotpy.wot.consumed.thing import ConsumedThing
 from wotpy.wot.dictionaries import ThingTemplate
 from wotpy.wot.exposed.thing import ExposedThing
 

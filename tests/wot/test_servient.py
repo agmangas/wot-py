@@ -17,7 +17,7 @@ from faker import Faker
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.td.constants import WOT_TD_CONTEXT_URL
 from wotpy.td.description import ThingDescription
-from wotpy.wot.consumed import ConsumedThing
+from wotpy.wot.consumed.thing import ConsumedThing
 from wotpy.wot.servient import Servient
 
 

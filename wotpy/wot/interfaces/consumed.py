@@ -16,33 +16,24 @@ class AbstractConsumedThing(object):
 
     @property
     @abstractmethod
-    def name(self):
+    def properties(self):
+        pass
+
+    @property
+    @abstractmethod
+    def actions(self):
+        pass
+
+    @property
+    @abstractmethod
+    def events(self):
+        pass
+
+    @property
+    @abstractmethod
+    def links(self):
         pass
 
     @abstractmethod
-    def get_thing_description(self):
-        pass
-
-    @abstractmethod
-    def invoke_action(self, name, *args, **kwargs):
-        pass
-
-    @abstractmethod
-    def write_property(self, name, value):
-        pass
-
-    @abstractmethod
-    def read_property(self, name):
-        pass
-
-    @abstractmethod
-    def on_event(self, name):
-        pass
-
-    @abstractmethod
-    def on_property_change(self, name):
-        pass
-
-    @abstractmethod
-    def on_td_change(self):
+    def subscribe(self):
         pass

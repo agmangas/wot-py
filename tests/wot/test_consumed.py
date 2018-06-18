@@ -12,7 +12,7 @@ from rx.concurrency import IOLoopScheduler
 from tornado.concurrent import Future
 
 from wotpy.td.description import ThingDescription
-from wotpy.wot.consumed import ConsumedThing
+from wotpy.wot.consumed.thing import ConsumedThing
 
 
 def test_read_property(websocket_servient):

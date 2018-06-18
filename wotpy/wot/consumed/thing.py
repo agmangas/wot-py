@@ -83,3 +83,32 @@ class ConsumedThing(AbstractConsumedThing):
         from notifications to the Thing Description."""
 
         raise NotImplementedError()
+
+    @property
+    def properties(self):
+        """Represents a dictionary of ThingProperty items."""
+
+        raise NotImplementedError()
+
+    @property
+    def actions(self):
+        """Represents a dictionary of ThingAction items."""
+
+        raise NotImplementedError()
+
+    @property
+    def events(self):
+        """Represents a dictionary of ThingEvent items."""
+
+        raise NotImplementedError()
+
+    @property
+    def links(self):
+        """Represents a dictionary of WebLink items."""
+
+        raise NotImplementedError()
+
+    def subscribe(self):
+        """Subscribes to changes on the TD of this thing."""
+
+        raise NotImplementedError()
