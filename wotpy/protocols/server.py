@@ -7,7 +7,7 @@ Class that represents the abstract server interface.
 
 from abc import ABCMeta, abstractmethod, abstractproperty
 
-from wotpy.wot.exposed_group import ExposedThingGroup
+from wotpy.wot.exposed.group import ExposedThingGroup
 
 
 class BaseProtocolServer(object):

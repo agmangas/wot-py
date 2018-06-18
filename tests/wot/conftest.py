@@ -12,7 +12,7 @@ from faker import Faker
 from tests.td_examples import TD_EXAMPLE
 from wotpy.td.thing import Thing
 from wotpy.wot.dictionaries import PropertyInit, ActionInit, EventInit
-from wotpy.wot.exposed import ExposedThing
+from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 
 

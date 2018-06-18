@@ -16,7 +16,7 @@ from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
 from wotpy.wot.consumed import ConsumedThing
 from wotpy.wot.dictionaries import ThingTemplate
-from wotpy.wot.exposed import ExposedThing
+from wotpy.wot.exposed.thing import ExposedThing
 
 DEFAULT_FETCH_TIMEOUT_SECS = 20.0
 
