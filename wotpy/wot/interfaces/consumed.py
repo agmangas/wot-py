@@ -5,7 +5,7 @@
 Abstract interface for consumed Things.
 """
 
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 
 
 class AbstractConsumedThing(object):
@@ -14,7 +14,8 @@ class AbstractConsumedThing(object):
 
     __metaclass__ = ABCMeta
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def name(self):
         pass
 
