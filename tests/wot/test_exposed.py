@@ -342,8 +342,8 @@ def test_thing_property_subscribe(exposed_thing, property_init):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_thing_property_init_properties(exposed_thing, property_init):
-    """Property values can be retrieved on ExposedThings using the map-like interface."""
+def test_thing_property_getters(exposed_thing, property_init):
+    """Property init attributes can be accessed using the map-like interface."""
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -356,5 +356,27 @@ def test_thing_property_init_properties(exposed_thing, property_init):
         assert thing_property.writable == property_init.writable
         assert thing_property.observable == property_init.observable
         assert thing_property.type == property_init.type
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_thing_action_run(exposed_thing, action_init):
+    """Actions can be invoked on ExposedThings using the map-like interface."""
+
+    @tornado.gen.coroutine
+    def lower(val):
+        raise tornado.gen.Return(str(val).lower())
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        action_name = Faker().pystr()
+        exposed_thing.add_action(action_name, action_init)
+        exposed_thing.set_action_handler(lower, action_name=action_name)
+        input_value = Faker().pystr()
+
+        result = yield exposed_thing.actions[action_name].run(input_value)
+        expected_result = yield lower(input_value)
+
+        assert result == expected_result
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)

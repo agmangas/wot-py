@@ -23,7 +23,9 @@ from wotpy.wot.events import \
     PropertyChangeEmittedEvent, \
     ThingDescriptionChangeEmittedEvent, \
     ActionInvocationEmittedEvent
-from wotpy.wot.exposed.interactions import ExposedThingPropertyDict
+from wotpy.wot.exposed.interactions import \
+    ExposedThingPropertyDict, \
+    ExposedThingActionDict
 from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 from wotpy.wot.interfaces.exposed import AbstractExposedThing
 
@@ -441,7 +443,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
     def actions(self):
         """Represents a dictionary of ThingAction items."""
 
-        raise NotImplementedError()
+        return ExposedThingActionDict(exposed_thing=self)
 
     @property
     def events(self):
