@@ -33,16 +33,22 @@ class Thing(object):
         return self._thing_templt.__getattribute__(name)
 
     @property
+    def thing_template(self):
+        """The ThingTemplate dictionary of this Thing."""
+
+        return self._thing_templt
+
+    @property
     def id(self):
         """Thing ID."""
 
-        return self._thing_templt.id
+        return self.thing_template.id
 
     @property
     def name(self):
         """Thing name."""
 
-        return self._thing_templt.name
+        return self.thing_template.name
 
     @property
     def uuid(self):
@@ -61,7 +67,7 @@ class Thing(object):
         """Returns the URL-safe name of this Thing.
         The URL name of a Thing is always unique and stable as long as the ID is unique."""
 
-        name_raw = self._thing_templt.to_dict().get("name")
+        name_raw = self.thing_template.to_dict().get("name")
 
         return slugify("{}-{}".format(name_raw, self.uuid)) if name_raw else self.uuid
 
