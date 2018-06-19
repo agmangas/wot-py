@@ -340,3 +340,21 @@ def test_thing_property_subscribe(exposed_thing, property_init):
         subscription.dispose()
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_thing_property_init_properties(exposed_thing, property_init):
+    """Property values can be retrieved on ExposedThings using the map-like interface."""
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        prop_name = Faker().pystr()
+        exposed_thing.add_property(prop_name, property_init)
+        thing_property = exposed_thing.properties[prop_name]
+
+        assert thing_property.label == property_init.label
+        assert thing_property.value == property_init.value
+        assert thing_property.writable == property_init.writable
+        assert thing_property.observable == property_init.observable
+        assert thing_property.type == property_init.type
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)

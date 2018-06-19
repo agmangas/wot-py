@@ -17,6 +17,12 @@ class ExposedThingProperty(object):
         self._exposed_thing = exposed_thing
         self._name = name
 
+    def __getattr__(self, name):
+        """Search for members that raised an AttributeError in
+        the private init dict before propagating the exception."""
+
+        return getattr(self._exposed_thing.thing.properties[self._name], name)
+
     @tornado.gen.coroutine
     def get(self):
         """The get() method will fetch the value of the Property.
