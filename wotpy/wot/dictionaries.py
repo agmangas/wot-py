@@ -80,21 +80,30 @@ class ThingTemplateDictionary(object):
         """The properties optional attribute represents a dict with keys
         that correspond to Property names and values of type PropertyInit."""
 
-        return self._init.get("properties", {})
+        return {
+            key: PropertyInitDictionary(val)
+            for key, val in six.iteritems(self._init.get("properties", {}))
+        }
 
     @property
     def actions(self):
         """The actions optional attribute represents a dict with keys
         that correspond to Action names and values of type ActionInit."""
 
-        return self._init.get("actions", {})
+        return {
+            key: ActionInitDictionary(val)
+            for key, val in six.iteritems(self._init.get("actions", {}))
+        }
 
     @property
     def events(self):
         """The events optional attribute represents a dictionary with keys
         that correspond to Event names and values of type EventInit."""
 
-        return self._init.get("events", {})
+        return {
+            key: EventInitDictionary(val)
+            for key, val in six.iteritems(self._init.get("events", {}))
+        }
 
     @property
     def links(self):
