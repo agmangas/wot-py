@@ -517,9 +517,7 @@ class InteractionInitDict(object):
         """The internal dictionary that contains the entire set of properties"""
 
         return {
-            "label": self.label,
-            "forms": [item.to_dict() for item in self.forms],
-            "links": [item.to_dict() for item in self.links],
+            "label": self.label
         }
 
     @property
@@ -527,20 +525,6 @@ class InteractionInitDict(object):
         """The label property initializes the text label for the interaction."""
 
         return self._init.get("label")
-
-    @property
-    def forms(self):
-        """The forms read-only property initializes the
-        protocol bindings initialization data."""
-
-        return [FormDict(item) for item in self._init.get("forms", [])]
-
-    @property
-    def links(self):
-        """The links read-only property initializes the
-        array of Links attached to the interaction."""
-
-        return [LinkDict(item) for item in self._init.get("links", [])]
 
 
 class PropertyInitDict(InteractionInitDict):
