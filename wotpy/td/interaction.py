@@ -51,7 +51,7 @@ class InteractionPattern(object):
     def forms(self):
         """Sequence of forms linked to this interaction."""
 
-        return self._forms[:]
+        return self._forms
 
     def add_form(self, form):
         """Add a new Form."""
