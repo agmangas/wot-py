@@ -90,7 +90,7 @@ class Thing(object):
         The name argument may be the original name or the URL-safe version."""
 
         def is_match(intrct):
-            return intrct.id == name or intrct.url_name == name
+            return intrct.name == name or intrct.url_name == name
 
         return next((intrct for intrct in self.interactions if is_match(intrct)), None)
 
@@ -100,8 +100,8 @@ class Thing(object):
         assert isinstance(interaction, (Property, Event, Action))
         assert interaction.thing is self
 
-        if self.find_interaction(interaction.id) is not None:
-            raise ValueError("Duplicate Interaction: {}".format(interaction.id))
+        if self.find_interaction(interaction.name) is not None:
+            raise ValueError("Duplicate Interaction: {}".format(interaction.name))
 
         interaction_dict_map = {
             Property: self._properties,
@@ -113,7 +113,7 @@ class Thing(object):
             klass for klass in [Property, Action, Event]
             if isinstance(interaction, klass))
 
-        interaction_dict_map[interaction_class][interaction.id] = interaction
+        interaction_dict_map[interaction_class][interaction.name] = interaction
 
     def remove_interaction(self, name):
         """Removes an existing Interaction by name.
@@ -124,6 +124,6 @@ class Thing(object):
         if interaction is None:
             return
 
-        self._properties.pop(interaction.id, None)
-        self._actions.pop(interaction.id, None)
-        self._events.pop(interaction.id, None)
+        self._properties.pop(interaction.name, None)
+        self._actions.pop(interaction.name, None)
+        self._events.pop(interaction.name, None)

@@ -299,14 +299,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Adds a Property defined by the argument and updates the Thing Description.
         Takes an instance of ThingPropertyInit as argument."""
 
-        prop = Property(
-            thing=self._thing,
-            id=name,
-            label=property_init.label,
-            description=property_init.description,
-            data_schema=property_init.data_schema,
-            writable=property_init.writable,
-            observable=property_init.observable)
+        prop = Property(thing=self._thing, name=name, init_dict=property_init)
 
         self._thing.add_interaction(prop)
         self._set_property_value(prop, property_init.value)
@@ -337,13 +330,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Adds an Action to the Thing object as defined by the action
         argument of type ThingActionInit and updates th,e Thing Description."""
 
-        action = Action(
-            thing=self._thing,
-            id=name,
-            label=action_init.label,
-            description=action_init.description,
-            output=action_init.output,
-            input=action_init.input)
+        action = Action(thing=self._thing, name=name, init_dict=action_init)
 
         self._thing.add_interaction(action)
 
@@ -373,12 +360,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Adds an event to the Thing object as defined by the event argument
         of type ThingEventInit and updates the Thing Description."""
 
-        event = Event(
-            thing=self._thing,
-            id=name,
-            label=event_init.label,
-            description=event_init.description,
-            data_schema=event_init.data_schema)
+        event = Event(thing=self._thing, name=name, init_dict=event_init)
 
         self._thing.add_interaction(event)
 

@@ -18,18 +18,18 @@ class Form(object):
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
-        the internal FormDictionary before propagating the exception."""
+        the internal Form init dict before propagating the exception."""
 
         return self._form_dict.__getattribute__(name)
 
     @property
     def id(self):
         """Returns the ID of this Form.
-        The ID is a hash that is based on its attributes and the ID of its Interaction.
-        No two Forms with the same ID may exist within the same Interaction."""
+        The ID is a hash that is based on the Form attributes.
+        No two Forms with the same ID may exist within the same Interaction.
+        The ID of a Form could change during its lifetime if some attributes are updated."""
 
         return hash((
-            self.interaction.id,
             self.protocol,
             self.href,
             self.media_type,

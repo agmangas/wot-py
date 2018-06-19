@@ -62,11 +62,11 @@ def test_interaction_invalid_name():
     thing = Thing(id=uuid.uuid4().urn)
 
     for name in names_valid:
-        Action(thing=thing, id=name)
+        Action(thing=thing, name=name)
 
     for name in names_invalid:
         with pytest.raises(ValueError):
-            Action(thing=thing, id=name)
+            Action(thing=thing, name=name)
 
 
 def test_find_interaction():
@@ -74,8 +74,8 @@ def test_find_interaction():
 
     thing = Thing(id=uuid.uuid4().urn)
 
-    interaction_01 = Action(thing=thing, id="my_interaction")
-    interaction_02 = Action(thing=thing, id="AnotherInteraction")
+    interaction_01 = Action(thing=thing, name="my_interaction")
+    interaction_02 = Action(thing=thing, name="AnotherInteraction")
 
     thing.add_interaction(interaction_01)
     thing.add_interaction(interaction_02)
@@ -91,9 +91,9 @@ def test_remove_interaction():
 
     thing = Thing(id=uuid.uuid4().urn)
 
-    interaction_01 = Action(thing=thing, id="my_interaction")
-    interaction_02 = Action(thing=thing, id="AnotherInteraction")
-    interaction_03 = Action(thing=thing, id="YetAnother_interaction")
+    interaction_01 = Action(thing=thing, name="my_interaction")
+    interaction_02 = Action(thing=thing, name="AnotherInteraction")
+    interaction_03 = Action(thing=thing, name="YetAnother_interaction")
 
     thing.add_interaction(interaction_01)
     thing.add_interaction(interaction_02)
@@ -116,9 +116,9 @@ def test_duplicated_interactions():
 
     thing = Thing(id=uuid.uuid4().urn)
 
-    interaction_01 = Action(thing=thing, id="my_interaction")
-    interaction_02 = Action(thing=thing, id="AnotherInteraction")
-    interaction_03 = Action(thing=thing, id="my_interaction")
+    interaction_01 = Action(thing=thing, name="my_interaction")
+    interaction_02 = Action(thing=thing, name="AnotherInteraction")
+    interaction_03 = Action(thing=thing, name="my_interaction")
 
     thing.add_interaction(interaction_01)
     thing.add_interaction(interaction_02)
@@ -131,7 +131,7 @@ def test_duplicated_forms():
     """Duplicated Forms are rejected on an Interaction."""
 
     thing = Thing(id=uuid.uuid4().urn)
-    interaction = Action(thing=thing, id="my_interaction")
+    interaction = Action(thing=thing, name="my_interaction")
     thing.add_interaction(interaction)
 
     href_01 = "/href-01"

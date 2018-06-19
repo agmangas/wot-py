@@ -52,7 +52,7 @@ def test_from_thing():
     form_href = fake.url()
 
     thing = Thing(id=thing_id)
-    action = Action(thing=thing, id=action_id)
+    action = Action(thing=thing, name=action_id)
     form = Form(interaction=action, protocol=Protocols.HTTP, href=form_href)
 
     action.add_form(form)

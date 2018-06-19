@@ -66,7 +66,6 @@ class ThingDescription(object):
 
             ret = {
                 "label": prop.label,
-                "description": prop.description,
                 "observable": prop.observable,
                 "writable": prop.writable,
                 "forms": [json_form(form) for form in prop.forms]
@@ -81,7 +80,6 @@ class ThingDescription(object):
 
             ret = {
                 "label": action.label,
-                "description": action.description,
                 "forms": [json_form(form) for form in action.forms]
             }
 
@@ -98,7 +96,6 @@ class ThingDescription(object):
 
             ret = {
                 "label": event.label,
-                "description": event.description,
                 "forms": [json_form(form) for form in event.forms]
             }
 
@@ -194,20 +191,15 @@ class ThingDescription(object):
         thing = Thing(**self._doc)
 
         for name, fields in six.iteritems(self._doc.get("properties", {})):
-            data_schema = DataSchemaDictionary.build(fields)
-            proprty = Property(thing=thing, id=name, data_schema=data_schema, **fields)
+            proprty = Property(thing=thing, name=name, **fields)
             thing.add_interaction(proprty)
 
         for name, fields in six.iteritems(self._doc.get("actions", {})):
-            input_ = DataSchemaDictionary.build(fields.get("input")) if fields.get("input") else None
-            output = DataSchemaDictionary.build(fields.get("output")) if fields.get("output") else None
-            kwargs = {key: val for key, val in six.iteritems(fields) if key not in ["input", "output"]}
-            action = Action(thing=thing, id=name, input=input_, output=output, **kwargs)
+            action = Action(thing=thing, name=name, **fields)
             thing.add_interaction(action)
 
         for name, fields in six.iteritems(self._doc.get("events", {})):
-            data_schema = DataSchemaDictionary.build(fields)
-            event = Event(thing=thing, id=name, data_schema=data_schema, **fields)
+            event = Event(thing=thing, name=name, **fields)
             thing.add_interaction(event)
 
         return thing
