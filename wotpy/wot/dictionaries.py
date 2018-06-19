@@ -34,7 +34,7 @@ class ThingTemplateDictionary(object):
         self._init = _build_init_dict(args, kwargs)
 
         if self.id is None:
-            raise ValueError("Property 'id' is required")
+            raise ValueError("Thing ID is required")
 
     def to_dict(self):
         """The internal dictionary that contains the entire set of properties."""
@@ -45,7 +45,7 @@ class ThingTemplateDictionary(object):
     def name(self):
         """The name attribute represents the name of the Thing."""
 
-        return self._init.get("name")
+        return self._init.get("name", self.id)
 
     @property
     def id(self):
