@@ -178,6 +178,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         that resolves with the Property value or rejects with an Error."""
 
         proprty = self.thing.properties[name]
+
         handler = self._handlers.get(self.HandlerKeys.RETRIEVE_PROPERTY, {}).get(proprty, None)
 
         if handler:
@@ -194,16 +195,17 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         Bindings to update the Property on the remote Thing and return the result.
         Returns a Future that resolves on success or rejects with an Error."""
 
-        interaction = self._find_interaction(name=name)
+        proprty = self.thing.properties[name]
 
-        if not interaction.writable:
+        if not proprty.writable:
             raise TypeError("Property is non-writable")
 
-        handler = self._get_handler(
-            handler_type=self.HandlerKeys.UPDATE_PROPERTY,
-            interaction=interaction)
+        handler = self._handlers.get(self.HandlerKeys.UPDATE_PROPERTY, {}).get(proprty, None)
 
-        yield handler(name, value)
+        if handler:
+            yield handler(value)
+        else:
+            yield self._default_update_property_handler(name, value)
 
         event_init = PropertyChangeEventInit(name=name, value=value)
         self._events_stream.on_next(PropertyChangeEmittedEvent(init=event_init))
@@ -212,11 +214,11 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
     def invoke_action(self, name, input_value=None):
         """Invokes an Action with the given parameters and yields with the invocation result."""
 
-        interaction = self._find_interaction(name=name)
+        action = self.thing.actions[name]
 
         handler = self._get_handler(
             handler_type=self.HandlerKeys.INVOKE_ACTION,
-            interaction=interaction)
+            interaction=action)
 
         result = yield handler({
             "input": input_value
@@ -415,20 +417,19 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         return self
 
-    def set_property_write_handler(self, write_handler, property_name=None):
-        """Takes a property_name as an optional string argument, and a property write handler.
-        Sets the handler function for writing the specified Property matched by property_name if the
-        property_name is specified, otherwise sets it for writing any properties. Throws on error."""
+    def set_property_write_handler(self, name, write_handler):
+        """Takes name as string argument and write_handler as argument of type PropertyWriteHandler.
+        Sets the handler function for writing the specified Property matched by name.
+        Throws on error. Returns a reference to the same object for supporting chaining."""
 
-        interaction = None
-
-        if property_name is not None:
-            interaction = self._find_interaction(name=property_name)
+        proprty = self.thing.properties[name]
 
         self._set_handler(
             handler_type=self.HandlerKeys.UPDATE_PROPERTY,
             handler=write_handler,
-            interaction=interaction)
+            interaction=proprty)
+
+        return self
 
     @property
     def properties(self):

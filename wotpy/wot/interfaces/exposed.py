@@ -58,5 +58,5 @@ class AbstractExposedThing(object):
         pass
 
     @abstractmethod
-    def set_property_write_handler(self, write_handler, property_name=None):
+    def set_property_write_handler(self, name, write_handler):
         pass

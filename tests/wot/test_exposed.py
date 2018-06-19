@@ -386,3 +386,46 @@ def test_thing_action_run(exposed_thing, action_init):
         assert result == result_expected
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_set_property_read_handler(exposed_thing, property_init):
+    """Read handlers can be defined for ExposedThing property interactions."""
+
+    const_prop_value = Faker().sentence()
+
+    @tornado.gen.coroutine
+    def read_handler():
+        raise tornado.gen.Return(const_prop_value)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        prop_name = Faker().pystr()
+        exposed_thing.add_property(prop_name, property_init)
+        exposed_thing.set_property_read_handler(prop_name, read_handler)
+        value = yield exposed_thing.properties[prop_name].get()
+        assert value == const_prop_value
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_set_property_write_handler(exposed_thing, property_init):
+    """Write handlers can be defined for ExposedThing property interactions."""
+
+    prop_history = []
+
+    @tornado.gen.coroutine
+    def write_handler(value):
+        yield tornado.gen.sleep(0.01)
+        prop_history.append(value)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        prop_name = Faker().pystr()
+        exposed_thing.add_property(prop_name, property_init)
+        exposed_thing.set_property_write_handler(prop_name, write_handler)
+        prop_value = Faker().sentence()
+        assert not len(prop_history)
+        yield exposed_thing.properties[prop_name].set(prop_value)
+        assert prop_value in prop_history
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
