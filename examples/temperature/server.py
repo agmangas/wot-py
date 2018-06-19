@@ -74,10 +74,8 @@ def emit_temp_high(exp_thing):
 
 
 @tornado.gen.coroutine
-def temp_read_handler(property_name):
+def temp_read_handler():
     """Custom handler for the 'Temperature' property."""
-
-    assert property_name == NAME_PROP_TEMP
 
     LOGGER.info("Doing some work to simulate temperature retrieval")
     yield tornado.gen.sleep(random.random() * 3.0)
@@ -105,7 +103,7 @@ if __name__ == "__main__":
     LOGGER.info("Exposing and configuring Thing")
 
     exposed_thing = wot.produce(json.dumps(DESCRIPTION))
-    exposed_thing.set_property_read_handler(read_handler=temp_read_handler, property_name=NAME_PROP_TEMP)
+    exposed_thing.set_property_read_handler(NAME_PROP_TEMP, temp_read_handler)
     exposed_thing.write_property(NAME_PROP_TEMP_THRESHOLD, DEFAULT_TEMP_THRESHOLD)
     exposed_thing.expose()
 

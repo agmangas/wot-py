@@ -54,7 +54,7 @@ class AbstractExposedThing(object):
         pass
 
     @abstractmethod
-    def set_property_read_handler(self, read_handler, property_name=None):
+    def set_property_read_handler(self, name, read_handler):
         pass
 
     @abstractmethod

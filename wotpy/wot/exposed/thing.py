@@ -177,13 +177,13 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         Property on the remote Thing and return the result. Returns a Future
         that resolves with the Property value or rejects with an Error."""
 
-        interaction = self._find_interaction(name=name)
+        proprty = self.thing.properties[name]
+        handler = self._handlers.get(self.HandlerKeys.RETRIEVE_PROPERTY, {}).get(proprty, None)
 
-        handler = self._get_handler(
-            handler_type=self.HandlerKeys.RETRIEVE_PROPERTY,
-            interaction=interaction)
-
-        value = yield handler(name)
+        if handler:
+            value = yield handler()
+        else:
+            value = yield self._default_retrieve_property_handler(name)
 
         raise tornado.gen.Return(value)
 
@@ -401,20 +401,19 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         return self
 
-    def set_property_read_handler(self, read_handler, property_name=None):
-        """Takes a property_name as an optional string argument, and a property read handler.
-        Sets the handler function for reading the specified Property matched by property_name if
-        property_name is specified, otherwise sets it for reading any property. Throws on error."""
+    def set_property_read_handler(self, name, read_handler):
+        """Takes name as string argument and read_handler as argument of type PropertyReadHandler.
+        Sets the handler function for reading the specified Property matched by name.
+        Throws on error. Returns a reference to the same object for supporting chaining."""
 
-        interaction = None
-
-        if property_name is not None:
-            interaction = self._find_interaction(name=property_name)
+        proprty = self.thing.properties[name]
 
         self._set_handler(
             handler_type=self.HandlerKeys.RETRIEVE_PROPERTY,
             handler=read_handler,
-            interaction=interaction)
+            interaction=proprty)
+
+        return self
 
     def set_property_write_handler(self, write_handler, property_name=None):
         """Takes a property_name as an optional string argument, and a property write handler.
