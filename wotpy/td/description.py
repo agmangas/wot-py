@@ -16,7 +16,6 @@ from wotpy.td.constants import WOT_TD_CONTEXT_URL, WOT_COMMON_CONTEXT_URL
 from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.thing import Thing
 from wotpy.td.validation import SCHEMA_THING, InvalidDescription
-from wotpy.wot.dictionaries import DataSchemaDictionary
 
 
 class ThingDescription(object):
@@ -110,7 +109,6 @@ class ThingDescription(object):
             ],
             "id": thing.id,
             "name": thing.name,
-            "label": thing.label,
             "description": thing.description,
             "support": thing.support,
             "properties": {

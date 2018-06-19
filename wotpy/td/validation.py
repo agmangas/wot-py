@@ -5,6 +5,7 @@
 Schemas following the JSON Schema specification used to validate the shape of Thing Description documents.
 """
 
+import copy
 import re
 
 from wotpy.td.enums import InteractionTypes
@@ -113,7 +114,6 @@ SCHEMA_PROPERTY = {
             "type": "object",
             "properties": {
                 "label": {"type": "string"},
-                "description": {"type": "string"},
                 "observable": {
                     "type": "boolean",
                     "default": False
@@ -131,32 +131,8 @@ SCHEMA_PROPERTY = {
     ]
 }
 
-SCHEMA_EVENT = {
-    "$schema": "http://json-schema.org/schema#",
-    "id": "http://fundacionctic.org/schemas/event.json",
-    "allOf": [
-        SCHEMA_DATA_SCHEMA,
-        {
-            "type": "object",
-            "properties": {
-                "label": {"type": "string"},
-                "description": {"type": "string"},
-                "observable": {
-                    "type": "boolean",
-                    "default": False
-                },
-                "writable": {
-                    "type": "boolean",
-                    "default": False
-                },
-                "forms": {
-                    "type": "array",
-                    "items": SCHEMA_FORM
-                }
-            }
-        }
-    ]
-}
+SCHEMA_EVENT = copy.deepcopy(SCHEMA_PROPERTY)
+SCHEMA_EVENT.update({"id": "http://fundacionctic.org/schemas/event.json"})
 
 SCHEMA_ACTION = {
     "$schema": "http://json-schema.org/schema#",

@@ -13,38 +13,42 @@ import uuid
 from slugify import slugify
 
 from wotpy.td.interaction import Property, Action, Event
+from wotpy.wot.dictionaries import ThingTemplateDictionary
 
 
 class Thing(object):
     """An abstraction of a physical or virtual entity whose metadata
     and interfaces are described by a WoT Thing Description."""
 
-    def __init__(self, **kwargs):
-        self.id = kwargs.pop("id")
-        self._name = kwargs.get("name")
-        self.description = kwargs.get("description")
-        self.support = kwargs.get("support")
+    def __init__(self, thing_template=None, **kwargs):
+        self._thing_templt = thing_template if thing_template else ThingTemplateDictionary(**kwargs)
         self._properties = {}
         self._actions = {}
         self._events = {}
+
+    def __getattr__(self, name):
+        """Search for members that raised an AttributeError in
+        the internal ThingTemplate dict before propagating the exception."""
+
+        return self._thing_templt.__getattribute__(name)
+
+    @property
+    def id(self):
+        """Thing ID."""
+
+        return self._thing_templt.id
 
     @property
     def name(self):
         """Thing name."""
 
-        return self._name if self._name is not None else self.id
-
-    @property
-    def label(self):
-        """Thing label (same as name for backward compatibility)."""
-
-        return self.name
+        return self._thing_templt.name
 
     @property
     def uuid(self):
         """Thing UUID in hex string format (e.g. a5220c5f-6bcb-4675-9c67-a2b1adc280b7).
         This value is deterministic and derived from the Thing ID.
-        It may be of use in places where chars that can appear in an URI could be a problem."""
+        It may be of use when URL-unsafe chars are not acceptable."""
 
         hasher = hashlib.md5()
         hasher.update(self.id.encode())
@@ -54,9 +58,12 @@ class Thing(object):
 
     @property
     def url_name(self):
-        """Returns the URL-safe name of this Thing."""
+        """Returns the URL-safe name of this Thing.
+        The URL name of a Thing is always unique and stable as long as the ID is unique."""
 
-        return slugify("{}-{}".format(self._name, self.uuid)) if self._name else self.uuid
+        name_raw = self._thing_templt.to_dict().get("name")
+
+        return slugify("{}-{}".format(name_raw, self.uuid)) if name_raw else self.uuid
 
     @property
     def properties(self):
