@@ -25,7 +25,8 @@ from wotpy.wot.events import \
     ActionInvocationEmittedEvent
 from wotpy.wot.exposed.interactions import \
     ExposedThingPropertyDict, \
-    ExposedThingActionDict
+    ExposedThingActionDict, \
+    ExposedThingEventDict
 from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 from wotpy.wot.interfaces.exposed import AbstractExposedThing
 
@@ -234,9 +235,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Returns an Observable for the Event specified in the name argument,
         allowing subscribing to and unsubscribing from notifications."""
 
-        try:
-            self._find_interaction(name=name)
-        except ValueError:
+        if name not in self.thing.events:
             # noinspection PyUnresolvedReferences
             return Observable.throw(Exception("Unknown event"))
 
@@ -447,7 +446,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
     def events(self):
         """Represents a dictionary of ThingEvent items."""
 
-        raise NotImplementedError()
+        return ExposedThingEventDict(exposed_thing=self)
 
     @property
     def links(self):

@@ -388,6 +388,50 @@ def test_thing_action_run(exposed_thing, action_init):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
+def test_thing_action_getters(exposed_thing, action_init):
+    """Action init attributes can be accessed using the map-like interface."""
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        action_name = Faker().pystr()
+        exposed_thing.add_action(action_name, action_init)
+        thing_action = exposed_thing.actions[action_name]
+
+        assert thing_action.label == action_init.label
+        assert thing_action.description == action_init.description
+        assert thing_action.input.type == action_init.input.type
+        assert thing_action.output.type == action_init.output.type
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_thing_event_subscribe(exposed_thing, event_init):
+    """Property updates can be observed on ExposedThings using the map-like interface."""
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        event_name = Faker().pystr()
+        exposed_thing.add_event(event_name, event_init)
+
+        event_values = [Faker().sentence() for _ in range(10)]
+
+        emitted_values = []
+
+        def on_next(ev):
+            emitted_values.append(ev.data)
+
+        subscription = exposed_thing.events[event_name].subscribe(on_next)
+
+        for val in event_values:
+            yield exposed_thing.emit_event(event_name, val)
+
+        assert emitted_values == event_values
+
+        subscription.dispose()
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
 def test_set_property_read_handler(exposed_thing, property_init):
     """Read handlers can be defined for ExposedThing property interactions."""
 
