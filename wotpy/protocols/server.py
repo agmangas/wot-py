@@ -5,7 +5,7 @@
 Class that represents the abstract server interface.
 """
 
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 
 from wotpy.wot.exposed.group import ExposedThingGroup
 
@@ -21,7 +21,8 @@ class BaseProtocolServer(object):
         self._codecs = []
         self._exposed_thing_group = ExposedThingGroup()
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def protocol(self):
         """Server protocol."""
 
