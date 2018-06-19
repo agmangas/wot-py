@@ -5,7 +5,7 @@
 Classes that represent all interaction patterns.
 """
 
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 
 # noinspection PyPackageRequirements
 from slugify import slugify
@@ -20,13 +20,28 @@ class InteractionPattern(object):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, thing, name):
+    def __init__(self, thing, name, init_dict=None, **kwargs):
         if not is_valid_safe_name(name):
             raise ValueError("Invalid Interaction name: {}".format(name))
+
+        self._init_dict = init_dict if init_dict else self.init_class(**kwargs)
 
         self._thing = thing
         self._name = name
         self._forms = []
+
+    def __getattr__(self, name):
+        """Search for members that raised an AttributeError in
+        the private init dict before propagating the exception."""
+
+        return self._init_dict.__getattribute__(name)
+
+    @property
+    @abstractmethod
+    def init_class(self):
+        """Returns the init dict class for this type of interaction."""
+
+        raise NotImplementedError()
 
     @property
     def thing(self):
@@ -76,20 +91,14 @@ class InteractionPattern(object):
 
 
 class Property(InteractionPattern):
-    """The Property interaction definitions (also see Property vocabulary
-    definition section) provides metadata for readable and/or writeable data
-    that can be static (e.g., supported mode, rated output voltage, etc.) or
-    dynamic (e.g., current fill level of water, minimum recorded temperature, etc.)."""
+    """Properties expose internal state of a Thing that can be
+    directly accessed (get) and optionally manipulated (set)."""
 
-    def __init__(self, thing, name, init_dict=None, **kwargs):
-        super(Property, self).__init__(thing, name)
-        self._init_dict = init_dict if init_dict else PropertyInitDict(**kwargs)
+    @property
+    def init_class(self):
+        """Returns the init dict class for this type of interaction."""
 
-    def __getattr__(self, name):
-        """Search for members that raised an AttributeError in
-        the internal Property init dict before propagating the exception."""
-
-        return self._init_dict.__getattribute__(name)
+        return PropertyInitDict
 
     @property
     def interaction_type(self):
@@ -99,19 +108,14 @@ class Property(InteractionPattern):
 
 
 class Action(InteractionPattern):
-    """The Action interaction pattern (also see Action vocabulary definition section)
-    targets changes or processes on a Thing that take a certain time to complete
-    (i.e., actions cannot be applied instantaneously like property writes). """
+    """Actions offer functions of the Thing. These functions may manipulate the
+    internal state of a Thing in a way that is not possible through setting Properties."""
 
-    def __init__(self, thing, name, init_dict=None, **kwargs):
-        super(Action, self).__init__(thing, name)
-        self._init_dict = init_dict if init_dict else ActionInitDict(**kwargs)
+    @property
+    def init_class(self):
+        """Returns the init dict class for this type of interaction."""
 
-    def __getattr__(self, name):
-        """Search for members that raised an AttributeError in
-        the internal Action init dict before propagating the exception."""
-
-        return self._init_dict.__getattribute__(name)
+        return ActionInitDict
 
     @property
     def interaction_type(self):
@@ -121,18 +125,14 @@ class Action(InteractionPattern):
 
 
 class Event(InteractionPattern):
-    """The Event interaction pattern (also see Event vocabulary definition section)
-    enables a mechanism to be notified by a Thing on a certain condition."""
+    """The Event Interaction Pattern describes event sources that asynchronously push messages.
+    Here not state, but state transitions (events) are communicated (e.g., clicked)."""
 
-    def __init__(self, thing, name, init_dict=None, **kwargs):
-        super(Event, self).__init__(thing, name)
-        self._init_dict = init_dict if init_dict else EventInitDict(**kwargs)
+    @property
+    def init_class(self):
+        """Returns the init dict class for this type of interaction."""
 
-    def __getattr__(self, name):
-        """Search for members that raised an AttributeError in
-        the internal Event init dict before propagating the exception."""
-
-        return self._init_dict.__getattribute__(name)
+        return EventInitDict
 
     @property
     def interaction_type(self):
