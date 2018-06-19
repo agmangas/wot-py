@@ -12,8 +12,8 @@ class Form(object):
     """Communication metadata where a service can be accessed by a client application."""
 
     def __init__(self, interaction, protocol, form_dict=None, **kwargs):
-        self.interaction = interaction
-        self.protocol = protocol
+        self._interaction = interaction
+        self._protocol = protocol
         self._form_dict = form_dict if form_dict else FormDict(**kwargs)
 
     def __getattr__(self, name):
@@ -21,6 +21,18 @@ class Form(object):
         the internal Form init dict before propagating the exception."""
 
         return self._form_dict.__getattribute__(name)
+
+    @property
+    def interaction(self):
+        """Interaction that contains this Form."""
+
+        return self._interaction
+
+    @property
+    def protocol(self):
+        """Form protocol."""
+
+        return self._protocol
 
     @property
     def id(self):
