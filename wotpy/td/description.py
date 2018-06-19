@@ -16,6 +16,7 @@ from wotpy.td.constants import WOT_TD_CONTEXT_URL, WOT_COMMON_CONTEXT_URL
 from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.thing import Thing
 from wotpy.td.validation import SCHEMA_THING, InvalidDescription
+from wotpy.wot.dictionaries import ThingTemplateDictionary
 
 
 class ThingDescription(object):
@@ -181,26 +182,15 @@ class ThingDescription(object):
 
         return json.dumps(self._doc)
 
+    def to_thing_template(self):
+        """Returns a ThingTemplate dictionary built from this TD."""
+
+        return ThingTemplateDictionary(**self.doc)
+
     def build_thing(self):
-        """Builds a new Thing object from the serialized Thing Description.
-        Ignores the Form objects defined on all interactions,
-        as the Forms can only be defined by their respective servers."""
+        """Builds a new Thing object from the serialized Thing Description."""
 
-        thing = Thing(**self._doc)
-
-        for name, fields in six.iteritems(self._doc.get("properties", {})):
-            proprty = Property(thing=thing, name=name, **fields)
-            thing.add_interaction(proprty)
-
-        for name, fields in six.iteritems(self._doc.get("actions", {})):
-            action = Action(thing=thing, name=name, **fields)
-            thing.add_interaction(action)
-
-        for name, fields in six.iteritems(self._doc.get("events", {})):
-            event = Event(thing=thing, name=name, **fields)
-            thing.add_interaction(event)
-
-        return thing
+        return Thing(thing_template=self.to_thing_template())
 
     def resolve_form_uri(self, form):
         """Resolves the given Form URI.

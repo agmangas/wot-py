@@ -9,7 +9,7 @@ import hashlib
 import itertools
 import uuid
 
-# noinspection PyPackageRequirements
+import six
 from slugify import slugify
 
 from wotpy.td.interaction import Property, Action, Event
@@ -25,12 +25,28 @@ class Thing(object):
         self._properties = {}
         self._actions = {}
         self._events = {}
+        self._init_template_interactions()
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
         the internal ThingTemplate dict before propagating the exception."""
 
         return self._thing_templt.__getattribute__(name)
+
+    def _init_template_interactions(self):
+        """Adds the interactions declared in the ThingTemplate to the instance private dicts."""
+
+        for name, property_init in six.iteritems(self.thing_template.properties):
+            prop = Property(thing=self, name=name, init_dict=property_init)
+            self.add_interaction(prop)
+
+        for name, action_init in six.iteritems(self.thing_template.actions):
+            action = Action(thing=self, name=name, init_dict=action_init)
+            self.add_interaction(action)
+
+        for name, event_init in six.iteritems(self.thing_template.events):
+            event = Event(thing=self, name=name, init_dict=event_init)
+            self.add_interaction(event)
 
     @property
     def thing_template(self):
