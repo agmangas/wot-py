@@ -12,7 +12,7 @@ from slugify import slugify
 
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.validation import is_valid_safe_name
-from wotpy.wot.dictionaries import PropertyInitDictionary, ActionInitDictionary, EventInitDictionary
+from wotpy.wot.dictionaries import PropertyInitDict, ActionInitDict, EventInitDict
 
 
 class InteractionPattern(object):
@@ -83,7 +83,7 @@ class Property(InteractionPattern):
 
     def __init__(self, thing, name, init_dict=None, **kwargs):
         super(Property, self).__init__(thing, name)
-        self._init_dict = init_dict if init_dict else PropertyInitDictionary(**kwargs)
+        self._init_dict = init_dict if init_dict else PropertyInitDict(**kwargs)
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
@@ -105,7 +105,7 @@ class Action(InteractionPattern):
 
     def __init__(self, thing, name, init_dict=None, **kwargs):
         super(Action, self).__init__(thing, name)
-        self._init_dict = init_dict if init_dict else ActionInitDictionary(**kwargs)
+        self._init_dict = init_dict if init_dict else ActionInitDict(**kwargs)
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
@@ -126,7 +126,7 @@ class Event(InteractionPattern):
 
     def __init__(self, thing, name, init_dict=None, **kwargs):
         super(Event, self).__init__(thing, name)
-        self._init_dict = init_dict if init_dict else EventInitDictionary(**kwargs)
+        self._init_dict = init_dict if init_dict else EventInitDict(**kwargs)
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in

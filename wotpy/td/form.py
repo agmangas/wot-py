@@ -5,7 +5,7 @@
 Class that represents the form entities exposed by interactions.
 """
 
-from wotpy.wot.dictionaries import FormDictionary
+from wotpy.wot.dictionaries import FormDict
 
 
 class Form(object):
@@ -14,7 +14,7 @@ class Form(object):
     def __init__(self, interaction, protocol, form_dict=None, **kwargs):
         self.interaction = interaction
         self.protocol = protocol
-        self._form_dict = form_dict if form_dict else FormDictionary(**kwargs)
+        self._form_dict = form_dict if form_dict else FormDict(**kwargs)
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in

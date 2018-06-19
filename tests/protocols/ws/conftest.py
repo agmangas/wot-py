@@ -18,7 +18,7 @@ from six.moves.urllib.parse import urlparse, urlunparse
 
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.td.thing import Thing
-from wotpy.wot.dictionaries import PropertyInitDictionary, ActionInitDictionary, EventInitDictionary
+from wotpy.wot.dictionaries import PropertyInitDict, ActionInitDict, EventInitDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 
@@ -54,32 +54,32 @@ def websocket_server():
     event_name_01 = uuid.uuid4().hex
     action_name_01 = uuid.uuid4().hex
 
-    prop_init_01 = PropertyInitDictionary({
+    prop_init_01 = PropertyInitDict({
         "type": "string",
         "value": Faker().sentence(),
         "writable": True,
         "observable": True
     })
 
-    prop_init_02 = PropertyInitDictionary({
+    prop_init_02 = PropertyInitDict({
         "type": "string",
         "value": Faker().sentence(),
         "writable": True,
         "observable": True
     })
 
-    prop_init_03 = PropertyInitDictionary({
+    prop_init_03 = PropertyInitDict({
         "type": "string",
         "value": Faker().sentence(),
         "writable": True,
         "observable": True
     })
 
-    event_init_01 = EventInitDictionary({
+    event_init_01 = EventInitDict({
         "type": "object"
     })
 
-    action_init_01 = ActionInitDictionary({
+    action_init_01 = ActionInitDict({
         "input": {"type": "string"},
         "output": {"type": "string"}
     })

@@ -16,7 +16,7 @@ from wotpy.td.constants import WOT_TD_CONTEXT_URL, WOT_COMMON_CONTEXT_URL
 from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.thing import Thing
 from wotpy.td.validation import SCHEMA_THING, InvalidDescription
-from wotpy.wot.dictionaries import ThingTemplateDictionary
+from wotpy.wot.dictionaries import ThingTemplateDict
 
 
 class ThingDescription(object):
@@ -185,7 +185,7 @@ class ThingDescription(object):
     def to_thing_template(self):
         """Returns a ThingTemplate dictionary built from this TD."""
 
-        return ThingTemplateDictionary(**self.doc)
+        return ThingTemplateDict(**self.doc)
 
     def build_thing(self):
         """Builds a new Thing object from the serialized Thing Description."""

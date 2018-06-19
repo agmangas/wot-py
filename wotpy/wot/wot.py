@@ -15,7 +15,7 @@ from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
 from wotpy.wot.consumed.thing import ConsumedThing
-from wotpy.wot.dictionaries import ThingTemplateDictionary
+from wotpy.wot.dictionaries import ThingTemplateDict
 from wotpy.wot.exposed.thing import ExposedThing
 
 DEFAULT_FETCH_TIMEOUT_SECS = 20.0
@@ -65,7 +65,7 @@ class WoT(object):
         """Accepts a model argument of type ThingModel and returns an ExposedThing
         object, locally created based on the provided initialization parameters."""
 
-        assert isinstance(model, six.string_types) or isinstance(model, ThingTemplateDictionary)
+        assert isinstance(model, six.string_types) or isinstance(model, ThingTemplateDict)
 
         if isinstance(model, six.string_types):
             json_td = ThingDescription(doc=model)

@@ -24,7 +24,7 @@ def _build_init_dict(args, kwargs):
     return init_dict
 
 
-class ThingTemplateDictionary(object):
+class ThingTemplateDict(object):
     """ThingTemplate is a wrapper around a dictionary that contains properties
     representing semantic metadata and interactions (Properties, Actions and Events).
     It is used for initializing an internal representation of a Thing Description,
@@ -81,7 +81,7 @@ class ThingTemplateDictionary(object):
         that correspond to Property names and values of type PropertyInit."""
 
         return {
-            key: PropertyInitDictionary(val)
+            key: PropertyInitDict(val)
             for key, val in six.iteritems(self._init.get("properties", {}))
         }
 
@@ -91,7 +91,7 @@ class ThingTemplateDictionary(object):
         that correspond to Action names and values of type ActionInit."""
 
         return {
-            key: ActionInitDictionary(val)
+            key: ActionInitDict(val)
             for key, val in six.iteritems(self._init.get("actions", {}))
         }
 
@@ -101,7 +101,7 @@ class ThingTemplateDictionary(object):
         that correspond to Event names and values of type EventInit."""
 
         return {
-            key: EventInitDictionary(val)
+            key: EventInitDict(val)
             for key, val in six.iteritems(self._init.get("events", {}))
         }
 
@@ -109,7 +109,7 @@ class ThingTemplateDictionary(object):
     def links(self):
         """The links optional attribute represents an array of WebLink objects."""
 
-        return [WebLinkDictionary(item) for item in self._init.get("links", [])]
+        return [WebLinkDict(item) for item in self._init.get("links", [])]
 
     @property
     def context(self):
@@ -124,7 +124,7 @@ class ThingTemplateDictionary(object):
         return self._init.get("@type")
 
 
-class SecurityDictionary(object):
+class SecurityDict(object):
     """Contains security related configuration."""
 
     def __init__(self, *args, **kwargs):
@@ -153,7 +153,7 @@ class SecurityDictionary(object):
         return self._init.get("in")
 
 
-class ThingFilterDictionary(object):
+class ThingFilterDict(object):
     """The ThingFilter dictionary that represents the
     constraints for discovering Things as key-value pairs."""
 
@@ -195,10 +195,10 @@ class ThingFilterDictionary(object):
 
         template = self._init.get("template")
 
-        return None if template is None else ThingTemplateDictionary(template)
+        return None if template is None else ThingTemplateDict(template)
 
 
-class LinkDictionary(object):
+class LinkDict(object):
     """A link to an external resource that may be related to the Thing in any way."""
 
     def __init__(self, *args, **kwargs):
@@ -232,11 +232,11 @@ class LinkDictionary(object):
         return self._init.get("rel")
 
 
-class WebLinkDictionary(LinkDictionary):
+class WebLinkDict(LinkDict):
     """A Link from a Thing to a resource that exists on the Web."""
 
     def __init__(self, *args, **kwargs):
-        super(WebLinkDictionary, self).__init__(*args, **kwargs)
+        super(WebLinkDict, self).__init__(*args, **kwargs)
 
     @property
     def anchor(self):
@@ -246,11 +246,11 @@ class WebLinkDictionary(LinkDictionary):
         return self._init.get("anchor")
 
 
-class FormDictionary(LinkDictionary):
+class FormDict(LinkDict):
     """A dictionary that describes a connection endpoint for an interaction."""
 
     def __init__(self, *args, **kwargs):
-        super(FormDictionary, self).__init__(*args, **kwargs)
+        super(FormDict, self).__init__(*args, **kwargs)
 
     @property
     def security(self):
@@ -260,7 +260,7 @@ class FormDictionary(LinkDictionary):
         return self._init.get("security")
 
 
-class DataSchemaDictionary(object):
+class DataSchemaDict(object):
     """Represents the common properties of a value type definition."""
 
     def __init__(self, *args, **kwargs):
@@ -276,11 +276,11 @@ class DataSchemaDictionary(object):
         init_dict = _build_init_dict(args, kwargs)
 
         klass_map = {
-            JSONType.NUMBER: NumberSchemaDictionary,
-            JSONType.BOOLEAN: BooleanSchemaDictionary,
-            JSONType.STRING: StringSchemaDictionary,
-            JSONType.OBJECT: ObjectSchemaDictionary,
-            JSONType.ARRAY: ArraySchemaDictionary
+            JSONType.NUMBER: NumberSchemaDict,
+            JSONType.BOOLEAN: BooleanSchemaDict,
+            JSONType.STRING: StringSchemaDict,
+            JSONType.OBJECT: ObjectSchemaDict,
+            JSONType.ARRAY: ArraySchemaDict
         }
 
         klass_type = init_dict.get("type")
@@ -326,16 +326,16 @@ class DataSchemaDictionary(object):
         return self._init.get("const")
 
 
-class NumberSchemaDictionary(DataSchemaDictionary):
+class NumberSchemaDict(DataSchemaDict):
     """Properties to describe a numeric type."""
 
     def __init__(self, *args, **kwargs):
-        super(NumberSchemaDictionary, self).__init__(*args, **kwargs)
+        super(NumberSchemaDict, self).__init__(*args, **kwargs)
 
     def to_dict(self):
         """The internal dictionary that contains the entire set of properties."""
 
-        ret = super(NumberSchemaDictionary, self).to_dict()
+        ret = super(NumberSchemaDict, self).to_dict()
 
         ret.update({
             "minimum": self.minimum,
@@ -365,16 +365,16 @@ class NumberSchemaDictionary(DataSchemaDictionary):
         return self._init.get("maximum")
 
 
-class BooleanSchemaDictionary(DataSchemaDictionary):
+class BooleanSchemaDict(DataSchemaDict):
     """Properties to describe a boolean type."""
 
     def __init__(self, *args, **kwargs):
-        super(BooleanSchemaDictionary, self).__init__(*args, **kwargs)
+        super(BooleanSchemaDict, self).__init__(*args, **kwargs)
 
     def to_dict(self):
         """The internal dictionary that contains the entire set of properties."""
 
-        ret = super(BooleanSchemaDictionary, self).to_dict()
+        ret = super(BooleanSchemaDict, self).to_dict()
 
         ret.update({})
 
@@ -387,16 +387,16 @@ class BooleanSchemaDictionary(DataSchemaDictionary):
         return JSONType.BOOLEAN
 
 
-class StringSchemaDictionary(DataSchemaDictionary):
+class StringSchemaDict(DataSchemaDict):
     """Properties to describe a string type."""
 
     def __init__(self, *args, **kwargs):
-        super(StringSchemaDictionary, self).__init__(*args, **kwargs)
+        super(StringSchemaDict, self).__init__(*args, **kwargs)
 
     def to_dict(self):
         """The internal dictionary that contains the entire set of properties."""
 
-        ret = super(StringSchemaDictionary, self).to_dict()
+        ret = super(StringSchemaDict, self).to_dict()
 
         ret.update({
             "enum": self.enum
@@ -417,16 +417,16 @@ class StringSchemaDictionary(DataSchemaDictionary):
         return self._init.get("enum", [])
 
 
-class ObjectSchemaDictionary(DataSchemaDictionary):
+class ObjectSchemaDict(DataSchemaDict):
     """Properties to describe an object type."""
 
     def __init__(self, *args, **kwargs):
-        super(ObjectSchemaDictionary, self).__init__(*args, **kwargs)
+        super(ObjectSchemaDict, self).__init__(*args, **kwargs)
 
     def to_dict(self):
         """The internal dictionary that contains the entire set of properties."""
 
-        ret = super(ObjectSchemaDictionary, self).to_dict()
+        ret = super(ObjectSchemaDict, self).to_dict()
 
         ret.update({
             "properties": {
@@ -449,7 +449,7 @@ class ObjectSchemaDictionary(DataSchemaDictionary):
         """The properties property is a dictionary that contains the object properties."""
 
         return {
-            key: DataSchemaDictionary.build(val)
+            key: DataSchemaDict.build(val)
             for key, val in six.iteritems(self._init.get("properties", {}))
         }
 
@@ -461,16 +461,16 @@ class ObjectSchemaDictionary(DataSchemaDictionary):
         return self._init.get("required", [])
 
 
-class ArraySchemaDictionary(DataSchemaDictionary):
+class ArraySchemaDict(DataSchemaDict):
     """Properties to describe an array type."""
 
     def __init__(self, *args, **kwargs):
-        super(ArraySchemaDictionary, self).__init__(*args, **kwargs)
+        super(ArraySchemaDict, self).__init__(*args, **kwargs)
 
     def to_dict(self):
         """The internal dictionary that contains the entire set of properties."""
 
-        ret = super(ArraySchemaDictionary, self).to_dict()
+        ret = super(ArraySchemaDict, self).to_dict()
 
         ret.update({
             "items": [val_type.to_dict() for val_type in self.items],
@@ -490,7 +490,7 @@ class ArraySchemaDictionary(DataSchemaDictionary):
     def items(self):
         """The items property is an array of ValueType elements."""
 
-        return [DataSchemaDictionary.build(item) for item in self._init.get("items", [])]
+        return [DataSchemaDict.build(item) for item in self._init.get("items", [])]
 
     @property
     def min_items(self):
@@ -507,7 +507,7 @@ class ArraySchemaDictionary(DataSchemaDictionary):
         return self._init.get("maxItems", self._init.get("max_items"))
 
 
-class InteractionInitDictionary(object):
+class InteractionInitDict(object):
     """A dictionary wrapper class that contains data to initialize an Interaction."""
 
     def __init__(self, *args, **kwargs):
@@ -533,22 +533,22 @@ class InteractionInitDictionary(object):
         """The forms read-only property initializes the
         protocol bindings initialization data."""
 
-        return [FormDictionary(item) for item in self._init.get("forms", [])]
+        return [FormDict(item) for item in self._init.get("forms", [])]
 
     @property
     def links(self):
         """The links read-only property initializes the
         array of Links attached to the interaction."""
 
-        return [LinkDictionary(item) for item in self._init.get("links", [])]
+        return [LinkDict(item) for item in self._init.get("links", [])]
 
 
-class PropertyInitDictionary(InteractionInitDictionary):
+class PropertyInitDict(InteractionInitDict):
     """A dictionary wrapper class that contains data to initialize a Property."""
 
     def __init__(self, *args, **kwargs):
-        super(PropertyInitDictionary, self).__init__(*args, **kwargs)
-        self._data_schema = DataSchemaDictionary.build(self._init)
+        super(PropertyInitDict, self).__init__(*args, **kwargs)
+        self._data_schema = DataSchemaDict.build(self._init)
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
@@ -559,7 +559,7 @@ class PropertyInitDictionary(InteractionInitDictionary):
     def to_dict(self):
         """The internal dictionary that contains the entire set of properties"""
 
-        base_dict = super(PropertyInitDictionary, self).to_dict()
+        base_dict = super(PropertyInitDict, self).to_dict()
 
         base_dict.update({
             "writable": self.writable,
@@ -599,16 +599,16 @@ class PropertyInitDictionary(InteractionInitDictionary):
         return self._init.get("value")
 
 
-class ActionInitDictionary(InteractionInitDictionary):
+class ActionInitDict(InteractionInitDict):
     """A dictionary wrapper class that contains data to initialize an Action."""
 
     def __init__(self, *args, **kwargs):
-        super(ActionInitDictionary, self).__init__(*args, **kwargs)
+        super(ActionInitDict, self).__init__(*args, **kwargs)
 
     def to_dict(self):
         """The internal dictionary that contains the entire set of properties"""
 
-        base_dict = super(ActionInitDictionary, self).to_dict()
+        base_dict = super(ActionInitDict, self).to_dict()
 
         base_dict.update({
             "description": self.description
@@ -629,7 +629,7 @@ class ActionInitDictionary(InteractionInitDictionary):
 
         init = self._init.get("input")
 
-        return DataSchemaDictionary.build(init) if init else None
+        return DataSchemaDict.build(init) if init else None
 
     @property
     def output(self):
@@ -638,7 +638,7 @@ class ActionInitDictionary(InteractionInitDictionary):
 
         init = self._init.get("output")
 
-        return DataSchemaDictionary.build(init) if init else None
+        return DataSchemaDict.build(init) if init else None
 
     @property
     def description(self):
@@ -648,7 +648,7 @@ class ActionInitDictionary(InteractionInitDictionary):
         return self._init.get("description")
 
 
-class EventInitDictionary(PropertyInitDictionary):
+class EventInitDict(PropertyInitDict):
     """A dictionary wrapper class that contains data to initialize an Event."""
 
     pass
