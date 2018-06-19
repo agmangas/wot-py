@@ -31,7 +31,7 @@ class Thing(object):
         """Search for members that raised an AttributeError in
         the internal ThingTemplate dict before propagating the exception."""
 
-        return self._thing_templt.__getattribute__(name)
+        return getattr(self._thing_templt, name)
 
     def _init_template_interactions(self):
         """Adds the interactions declared in the ThingTemplate to the instance private dicts."""

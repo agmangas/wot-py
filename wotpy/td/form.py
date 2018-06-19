@@ -20,7 +20,7 @@ class Form(object):
         """Search for members that raised an AttributeError in
         the internal Form init dict before propagating the exception."""
 
-        return self._form_dict.__getattribute__(name)
+        return getattr(self._form_dict, name)
 
     @property
     def interaction(self):

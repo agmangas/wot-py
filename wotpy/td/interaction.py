@@ -34,7 +34,7 @@ class InteractionPattern(object):
         """Search for members that raised an AttributeError in
         the private init dict before propagating the exception."""
 
-        return self._init_dict.__getattribute__(name)
+        return getattr(self._init_dict, name)
 
     @property
     @abstractmethod

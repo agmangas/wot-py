@@ -538,7 +538,7 @@ class PropertyInitDict(InteractionInitDict):
         """Search for members that raised an AttributeError in
         the internal ValueType before propagating the exception."""
 
-        return self.data_schema.__getattribute__(name)
+        return getattr(self.data_schema, name)
 
     def to_dict(self):
         """The internal dictionary that contains the entire set of properties"""
