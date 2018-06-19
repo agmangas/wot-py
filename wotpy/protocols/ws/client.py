@@ -241,7 +241,7 @@ class WebsocketClient(BaseProtocolClient):
         return len(forms_wss) or len(forms_ws)
 
     @tornado.gen.coroutine
-    def invoke_action(self, td, name, *args, **kwargs):
+    def invoke_action(self, td, name, input_value):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
 
@@ -254,7 +254,7 @@ class WebsocketClient(BaseProtocolClient):
 
         msg_req = WebsocketMessageRequest(
             method=WebsocketMethods.INVOKE_ACTION,
-            params={"name": name, "parameters": kwargs},
+            params={"name": name, "parameters": input_value},
             msg_id=uuid.uuid4().hex)
 
         result = yield self._send_websocket_message(ws_url, msg_req)

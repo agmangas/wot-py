@@ -209,11 +209,8 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         self._events_stream.on_next(PropertyChangeEmittedEvent(init=event_init))
 
     @tornado.gen.coroutine
-    def invoke_action(self, name, *args, **kwargs):
-        """Takes the Action name from the name argument and the list of parameters,
-        then requests from the underlying platform and the Protocol Bindings to
-        invoke the Action on the remote Thing and return the result. Returns a
-        Promise that resolves with the return value or rejects with an Error."""
+    def invoke_action(self, name, input_value=None):
+        """Invokes an Action with the given parameters and yields with the invocation result."""
 
         interaction = self._find_interaction(name=name)
 
@@ -221,7 +218,9 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
             handler_type=self.HandlerKeys.INVOKE_ACTION,
             interaction=interaction)
 
-        result = yield handler(*args, **kwargs)
+        result = yield handler({
+            "input": input_value
+        })
 
         event_init = ActionInvocationEventInit(action_name=name, return_value=result)
         emitted_event = ActionInvocationEmittedEvent(init=event_init)
@@ -388,20 +387,19 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
-    def set_action_handler(self, action_handler, action_name=None):
-        """Takes an action_name as an optional string argument, and an action handler.
-        Sets the handler function for the specified Action matched by action_name if
-        action_name is specified, otherwise sets it for any action. Throws on error."""
+    def set_action_handler(self, name, action_handler):
+        """Takes name as string argument and action_handler as argument of type ActionHandler.
+        Sets the handler function for the specified Action matched by name.
+        Throws on error. Returns a reference to the same object for supporting chaining."""
 
-        interaction = None
-
-        if action_name is not None:
-            interaction = self._find_interaction(name=action_name)
+        action = self.thing.actions[name]
 
         self._set_handler(
             handler_type=self.HandlerKeys.INVOKE_ACTION,
             handler=action_handler,
-            interaction=interaction)
+            interaction=action)
+
+        return self
 
     def set_property_read_handler(self, read_handler, property_name=None):
         """Takes a property_name as an optional string argument, and a property read handler.

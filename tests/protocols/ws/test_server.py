@@ -176,7 +176,7 @@ def test_invoke_action(websocket_server):
 
         msg_invoke_req = WebsocketMessageRequest(
             method=WebsocketMethods.INVOKE_ACTION,
-            params={"name": action_name, "parameters": {"val": input_val}},
+            params={"name": action_name, "parameters": input_val},
             msg_id=msg_id)
 
         conn.write_message(msg_invoke_req.to_json())

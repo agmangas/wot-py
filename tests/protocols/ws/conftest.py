@@ -84,15 +84,16 @@ def websocket_server():
         "output": {"type": "string"}
     })
 
-    def async_lower(val):
+    def async_lower(parameters):
         loop = tornado.ioloop.IOLoop.current()
-        return loop.run_in_executor(None, lambda x: time.sleep(0.1) or x.lower(), val)
+        input_value = parameters.get("input")
+        return loop.run_in_executor(None, lambda x: time.sleep(0.1) or x.lower(), input_value)
 
     exposed_thing_01.add_property(prop_name_01, prop_init_01)
     exposed_thing_01.add_property(prop_name_02, prop_init_02)
     exposed_thing_01.add_event(event_name_01, event_init_01)
     exposed_thing_01.add_action(action_name_01, action_init_01)
-    exposed_thing_01.set_action_handler(async_lower, action_name_01)
+    exposed_thing_01.set_action_handler(action_name_01, async_lower)
 
     exposed_thing_02.add_property(prop_name_03, prop_init_03)
 

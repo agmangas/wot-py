@@ -50,7 +50,7 @@ class AbstractExposedThing(object):
         pass
 
     @abstractmethod
-    def set_action_handler(self, action_handler, action_name=None):
+    def set_action_handler(self, name, action_handler):
         pass
 
     @abstractmethod

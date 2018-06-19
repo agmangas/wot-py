@@ -76,21 +76,25 @@ def test_invoke_action(exposed_thing, action_init):
 
     thread_executor = ThreadPoolExecutor(max_workers=1)
 
-    def upper_thread(val):
-        return thread_executor.submit(lambda x: time.sleep(0.1) or str(x).upper(), val)
+    def upper_thread(parameters):
+        input_value = parameters.get("input")
+        return thread_executor.submit(lambda x: time.sleep(0.1) or str(x).upper(), input_value)
 
-    def upper(val):
+    def upper(parameters):
         loop = tornado.ioloop.IOLoop.current()
-        return loop.run_in_executor(None, lambda x: time.sleep(0.1) or str(x).upper(), val)
+        input_value = parameters.get("input")
+        return loop.run_in_executor(None, lambda x: time.sleep(0.1) or str(x).upper(), input_value)
 
     @tornado.gen.coroutine
-    def lower(val):
+    def lower(parameters):
+        input_value = parameters.get("input")
         yield tornado.gen.sleep(0.1)
-        raise tornado.gen.Return(str(val).lower())
+        raise tornado.gen.Return(str(input_value).lower())
 
-    def title(val):
+    def title(parameters):
+        input_value = parameters.get("input")
         future = Future()
-        future.set_result(val.title())
+        future.set_result(input_value.title())
         return future
 
     handlers_map = {
@@ -106,9 +110,9 @@ def test_invoke_action(exposed_thing, action_init):
         exposed_thing.add_action(action_name, action_init)
 
         for handler, assert_func in six.iteritems(handlers_map):
-            exposed_thing.set_action_handler(action_handler=handler, action_name=action_name)
+            exposed_thing.set_action_handler(action_name, handler)
             action_arg = Faker().sentence(10)
-            result = yield exposed_thing.invoke_action(action_name, val=action_arg)
+            result = yield exposed_thing.invoke_action(action_name, action_arg)
             assert result == assert_func(action_arg)
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
@@ -126,10 +130,11 @@ def test_invoke_action_undefined_handler(exposed_thing, action_init):
             yield exposed_thing.invoke_action(action_name)
 
         @tornado.gen.coroutine
-        def dummy_func():
+        def dummy_func(parameters):
+            assert parameters.get("input") is None
             raise tornado.gen.Return(True)
 
-        exposed_thing.set_action_handler(action_handler=dummy_func, action_name=action_name)
+        exposed_thing.set_action_handler(action_name, dummy_func)
 
         result = yield exposed_thing.invoke_action(action_name)
 
@@ -364,19 +369,20 @@ def test_thing_action_run(exposed_thing, action_init):
     """Actions can be invoked on ExposedThings using the map-like interface."""
 
     @tornado.gen.coroutine
-    def lower(val):
-        raise tornado.gen.Return(str(val).lower())
+    def lower(parameters):
+        input_value = parameters.get("input")
+        raise tornado.gen.Return(str(input_value).lower())
 
     @tornado.gen.coroutine
     def test_coroutine():
         action_name = Faker().pystr()
         exposed_thing.add_action(action_name, action_init)
-        exposed_thing.set_action_handler(lower, action_name=action_name)
+        exposed_thing.set_action_handler(action_name, lower)
         input_value = Faker().pystr()
 
         result = yield exposed_thing.actions[action_name].run(input_value)
-        expected_result = yield lower(input_value)
+        result_expected = yield exposed_thing.invoke_action(action_name, input_value)
 
-        assert result == expected_result
+        assert result == result_expected
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)

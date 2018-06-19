@@ -78,7 +78,7 @@ def test_invoke_action(websocket_servient):
         arg_a = Faker().sentence()
         arg_b = Faker().sentence()
 
-        result = yield consumed_thing.invoke_action(action_name, arg_a=arg_a, arg_b=arg_b)
+        result = yield consumed_thing.invoke_action(action_name, {"arg_a": arg_a, "arg_b": arg_b})
         result_expected = arg_a + arg_b
 
         assert result == result_expected

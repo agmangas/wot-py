@@ -178,8 +178,8 @@ class WebsocketHandler(websocket.WebSocketHandler):
             return
 
         try:
-            action_kwargs = params.get("parameters", {})
-            action_result = yield self.exposed_thing.invoke_action(params["name"], **action_kwargs)
+            input_value = params.get("parameters")
+            action_result = yield self.exposed_thing.invoke_action(params["name"], input_value)
         except Exception as ex:
             self._write_error(str(ex), WebsocketErrors.INTERNAL_ERROR, msg_id=req.id)
             return

@@ -97,7 +97,7 @@ def test_invoke_action(websocket_servient):
         arg_a = uuid.uuid4().hex
         arg_b = uuid.uuid4().hex
 
-        result = yield ws_client.invoke_action(td, action_name, arg_a=arg_a, arg_b=arg_b)
+        result = yield ws_client.invoke_action(td, action_name, {"arg_a": arg_a, "arg_b": arg_b})
 
         assert result == arg_a + arg_b
 

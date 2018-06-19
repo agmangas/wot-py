@@ -143,7 +143,7 @@ SCHEMA_PARAMS_INVOKE_ACTION = {
     "type": "object",
     "properties": {
         "name": {"type": "string"},
-        "parameters": {"type": "object"}
+        "parameters": {}
     },
     "required": [
         "name"

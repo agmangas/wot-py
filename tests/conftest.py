@@ -53,7 +53,7 @@ def websocket_servient():
                 "writable": True,
                 "observable": True,
                 "input": {
-                    "type": "string"
+                    "type": "object"
                 },
                 "output": {
                     "type": "string"
@@ -71,11 +71,12 @@ def websocket_servient():
     exposed_thing.expose()
 
     @tornado.gen.coroutine
-    def action_handler(arg_a, arg_b=None):
-        arg_b = arg_b or uuid.uuid4().hex
-        raise tornado.gen.Return(arg_a + arg_b)
+    def action_handler(parameters):
+        input_value = parameters.get("input")
+        arg_b = input_value.get("arg_b") or uuid.uuid4().hex
+        raise tornado.gen.Return(input_value.get("arg_a") + arg_b)
 
-    exposed_thing.set_action_handler(action_handler=action_handler, action_name=action_name_01)
+    exposed_thing.set_action_handler(action_name_01, action_handler)
 
     return {
         "servient": servient,

@@ -31,14 +31,14 @@ class ConsumedThing(AbstractConsumedThing):
         return self.td.to_str()
 
     @tornado.gen.coroutine
-    def invoke_action(self, name, *args, **kwargs):
+    def invoke_action(self, name, input_value=None):
         """Takes the Action name from the name argument and the list of parameters,
         then requests from the underlying platform and the Protocol Bindings to invoke
         the Action on the remote Thing and return the result.
         Returns a Future that resolves with the return value or rejects with an Error."""
 
         client = self.servient.select_client(self.td, name)
-        result = yield client.invoke_action(self.td, name, *args, **kwargs)
+        result = yield client.invoke_action(self.td, name, input_value)
 
         raise tornado.gen.Return(result)
 
