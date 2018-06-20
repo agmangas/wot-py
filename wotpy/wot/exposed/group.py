@@ -37,7 +37,7 @@ class ExposedThingGroup(object):
         """Removes an existing ExposedThing by ID.
         The thing_id argument may be the original Thing ID or the URL-safe name."""
 
-        exposed_thing = self.find(thing_id)
+        exposed_thing = self.find_by_thing_id(thing_id)
 
         if exposed_thing is None:
             raise ValueError("Unknown Exposed Thing: {}".format(thing_id))
@@ -45,9 +45,10 @@ class ExposedThingGroup(object):
         assert exposed_thing.thing.id in self._exposed_things
         self._exposed_things.pop(exposed_thing.thing.id)
 
-    def find(self, thing_id):
-        """Finds an existing ExposedThing by ID.
-        The thing_id argument may be the original Thing ID or the URL-safe name."""
+    def find_by_thing_id(self, thing_id):
+        """Finds an existing ExposedThing by Thing ID.
+        The ID argument may be the original Thing ID or the URL-safe name
+        (which is also unique and based on the ID)."""
 
         def is_match(exp_thing):
             return exp_thing.thing.id == thing_id or exp_thing.thing.url_name == thing_id
@@ -59,13 +60,5 @@ class ExposedThingGroup(object):
 
         def is_match(exp_thing):
             return exp_thing.thing is interaction.thing
-
-        return next((item for item in self._exposed_things.values() if is_match(item)), None)
-
-    def find_by_thing(self, thing):
-        """Finds the ExposedThing that is linked to the given Thing."""
-
-        def is_match(exp_thing):
-            return exp_thing.thing is thing
 
         return next((item for item in self._exposed_things.values() if is_match(item)), None)

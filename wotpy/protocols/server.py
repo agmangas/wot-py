@@ -68,7 +68,7 @@ class BaseProtocolServer(object):
         """Finds and returns an ExposedThing contained in this server by name.
         Raises ValueError if the ExposedThing is not present."""
 
-        exposed_thing = self._exposed_thing_group.find(name)
+        exposed_thing = self._exposed_thing_group.find_by_thing_id(name)
 
         if exposed_thing is None:
             raise ValueError("Unknown Exposed Thing: {}".format(name))

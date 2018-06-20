@@ -26,7 +26,7 @@ class TDHandler(tornado.web.RequestHandler):
         self.servient = servient
 
     def get(self, thing_url_name):
-        exp_thing = self.servient.exposed_thing_group.find(thing_url_name)
+        exp_thing = self.servient.exposed_thing_group.find_by_thing_id(thing_url_name)
 
         td_doc = ThingDescription.from_thing(exp_thing.thing).to_dict()
         td_doc.update({"base": self.servient.get_thing_base_url(exp_thing)})
@@ -302,7 +302,7 @@ class Servient(object):
         """Finds and returns an ExposedThing contained in this servient by Thing ID.
         Raises ValueError if the ExposedThing is not present."""
 
-        exp_thing = self._exposed_thing_group.find(thing_id)
+        exp_thing = self._exposed_thing_group.find_by_thing_id(thing_id)
 
         if exp_thing is None:
             raise ValueError("Unknown Exposed Thing: {}".format(thing_id))

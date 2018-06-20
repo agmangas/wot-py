@@ -83,7 +83,7 @@ class WebsocketServer(BaseProtocolServer):
     def build_base_url(self, hostname, thing):
         """Returns the base URL for the given Thing in the context of this server."""
 
-        if not self.exposed_thing_group.find_by_thing(thing):
+        if not self.exposed_thing_group.find_by_thing_id(thing.id):
             raise ValueError("Unknown Thing")
 
         hostname = hostname.rstrip("/")
