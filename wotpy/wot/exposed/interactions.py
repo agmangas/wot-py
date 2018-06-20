@@ -10,6 +10,75 @@ from rx.concurrency import IOLoopScheduler
 from six.moves import UserDict
 
 
+class ExposedThingInteractionDict(UserDict):
+    """A dictionary that provides lazy access to the objects that implement
+    the Interaction interface for each interaction in a given ExposedThing."""
+
+    def __init__(self, *args, **kwargs):
+        self._exposed_thing = kwargs.pop("exposed_thing")
+        UserDict.__init__(self, *args, **kwargs)
+
+    def __getitem__(self, name):
+        """Lazily build and return an object that implements the Interaction interface."""
+
+        if name not in self.thing_interaction_dict:
+            raise KeyError("Unknown interaction: {}".format(name))
+
+        return self.thing_interaction_class(self._exposed_thing, name)
+
+    @property
+    def thing_interaction_dict(self):
+        """Returns the InteractionPattern objects dict by name."""
+
+        raise NotImplementedError()
+
+    @property
+    def thing_interaction_class(self):
+        """Returns the class that implements the
+        Interaction interface for this type of interaction."""
+
+        raise NotImplementedError()
+
+
+class ExposedThingPropertyDict(ExposedThingInteractionDict):
+    """A dictionary that provides lazy access to the objects that implement
+    the ThingProperty interface for each property in a given ExposedThing."""
+
+    @property
+    def thing_interaction_dict(self):
+        return self._exposed_thing.thing.properties
+
+    @property
+    def thing_interaction_class(self):
+        return ExposedThingProperty
+
+
+class ExposedThingActionDict(ExposedThingInteractionDict):
+    """A dictionary that provides lazy access to the objects that implement
+    the ThingAction interface for each action in a given ExposedThing."""
+
+    @property
+    def thing_interaction_dict(self):
+        return self._exposed_thing.thing.actions
+
+    @property
+    def thing_interaction_class(self):
+        return ExposedThingAction
+
+
+class ExposedThingEventDict(ExposedThingInteractionDict):
+    """A dictionary that provides lazy access to the objects that implement
+    the ThingEvent interface for each event in a given ExposedThing."""
+
+    @property
+    def thing_interaction_dict(self):
+        return self._exposed_thing.thing.events
+
+    @property
+    def thing_interaction_class(self):
+        return ExposedThingEvent
+
+
 class ExposedThingProperty(object):
     """The ThingProperty interface implementation for ExposedThing objects."""
 
@@ -47,21 +116,6 @@ class ExposedThingProperty(object):
         return observable.subscribe_on(IOLoopScheduler()).subscribe(*args, **kwargs)
 
 
-class ExposedThingPropertyDict(UserDict):
-    """A dictionary that provides lazy access to the objects that implement
-    the ThingProperty interface for each property in a given ExposedThing."""
-
-    def __init__(self, *args, **kwargs):
-        self._exposed_thing = kwargs.pop("exposed_thing")
-        UserDict.__init__(self, *args, **kwargs)
-
-    def __getitem__(self, name):
-        if name not in self._exposed_thing.thing.properties:
-            raise KeyError("Unknown property: {}".format(name))
-
-        return ExposedThingProperty(self._exposed_thing, name)
-
-
 class ExposedThingAction(object):
     """The ThingAction interface implementation for ExposedThing objects."""
 
@@ -84,21 +138,6 @@ class ExposedThingAction(object):
         raise tornado.gen.Return(result)
 
 
-class ExposedThingActionDict(UserDict):
-    """A dictionary that provides lazy access to the objects that implement
-    the ThingAction interface for each action in a given ExposedThing."""
-
-    def __init__(self, *args, **kwargs):
-        self._exposed_thing = kwargs.pop("exposed_thing")
-        UserDict.__init__(self, *args, **kwargs)
-
-    def __getitem__(self, name):
-        if name not in self._exposed_thing.thing.actions:
-            raise KeyError("Unknown action: {}".format(name))
-
-        return ExposedThingAction(self._exposed_thing, name)
-
-
 class ExposedThingEvent(object):
     """The ThingEvent interface implementation for ExposedThing objects."""
 
@@ -117,18 +156,3 @@ class ExposedThingEvent(object):
 
         observable = self._exposed_thing.on_event(self._name)
         return observable.subscribe_on(IOLoopScheduler()).subscribe(*args, **kwargs)
-
-
-class ExposedThingEventDict(UserDict):
-    """A dictionary that provides lazy access to the objects that implement
-    the ThingEvent interface for each event in a given ExposedThing."""
-
-    def __init__(self, *args, **kwargs):
-        self._exposed_thing = kwargs.pop("exposed_thing")
-        UserDict.__init__(self, *args, **kwargs)
-
-    def __getitem__(self, name):
-        if name not in self._exposed_thing.thing.events:
-            raise KeyError("Unknown event: {}".format(name))
-
-        return ExposedThingEvent(self._exposed_thing, name)
