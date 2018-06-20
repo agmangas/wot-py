@@ -174,7 +174,7 @@ def test_on_property_change(exposed_thing, property_init):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_on_property_change_non_observable(exposed_thing, property_init):
+def test_on_property_change_non_observable(exposed_thing):
     """Observe requests to non-observable properties are rejected."""
 
     prop_init_non_observable = PropertyInitDict({
