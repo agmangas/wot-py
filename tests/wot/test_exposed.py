@@ -88,7 +88,7 @@ def test_invoke_action(exposed_thing, action_init):
     @tornado.gen.coroutine
     def lower(parameters):
         input_value = parameters.get("input")
-        yield tornado.gen.sleep(0.1)
+        yield tornado.gen.sleep(0)
         raise tornado.gen.Return(str(input_value).lower())
 
     def title(parameters):
@@ -493,7 +493,7 @@ def test_set_property_write_handler(exposed_thing, property_init):
 
     @tornado.gen.coroutine
     def write_handler(value):
-        yield tornado.gen.sleep(0.01)
+        yield tornado.gen.sleep(0)
         prop_history.append(value)
 
     @tornado.gen.coroutine

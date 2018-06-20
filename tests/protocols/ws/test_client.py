@@ -134,7 +134,7 @@ def test_on_event(websocket_servient):
 
         while not future_conn.done():
             yield exposed_thing.emit_event(event_name, uuid.uuid4().hex)
-            yield tornado.gen.sleep(0.1)
+            yield tornado.gen.sleep(0)
 
         for payload in future_payloads:
             yield exposed_thing.emit_event(event_name, payload)
@@ -192,7 +192,7 @@ def test_on_property_change(websocket_servient):
         while not future_conn_01.done() or not future_conn_02.done():
             yield exposed_thing.write_property(prop_name_01, uuid.uuid4().hex)
             yield exposed_thing.write_property(prop_name_02, uuid.uuid4().hex)
-            yield tornado.gen.sleep(0.1)
+            yield tornado.gen.sleep(0)
 
         assert len(prop_values_01) < len(prop_values_02)
 
@@ -252,7 +252,7 @@ def test_on_td_change(websocket_servient):
 
         while not future_conn.done():
             exposed_thing.add_action(uuid.uuid4().hex, ActionInitDict())
-            yield tornado.gen.sleep(0.1)
+            yield tornado.gen.sleep(0)
 
         assert not future_change.done()
 

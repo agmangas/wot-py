@@ -101,25 +101,28 @@ def test_on_event(websocket_servient):
         future_conn = Future()
         future_event = Future()
 
+        payload = Faker().sentence()
+
         def on_next(ev):
             if not future_conn.done():
                 future_conn.set_result(True)
-            else:
-                future_event.set_result(ev.data)
+                return
+
+            if ev.data == payload:
+                future_event.set_result(True)
 
         observable = consumed_thing.on_event(event_name)
         subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
 
         while not future_conn.done():
+            yield tornado.gen.sleep(0)
             exposed_thing.emit_event(event_name, Faker().sentence())
-            yield tornado.gen.sleep(0.1)
 
-        payload = Faker().sentence()
         exposed_thing.emit_event(event_name, payload)
 
         yield future_event
 
-        assert future_event.result() == payload
+        assert future_event.result()
 
         subscription.dispose()
 
@@ -141,25 +144,28 @@ def test_on_property_change(websocket_servient):
         future_conn = Future()
         future_change = Future()
 
+        prop_value = Faker().sentence()
+
         def on_next(ev):
             if not future_conn.done():
                 future_conn.set_result(True)
-            else:
-                future_change.set_result(ev.data.value)
+                return
+
+            if ev.data.value == prop_value:
+                future_change.set_result(True)
 
         observable = consumed_thing.on_property_change(prop_name)
         subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
 
         while not future_conn.done():
+            yield tornado.gen.sleep(0)
             yield exposed_thing.write_property(prop_name, Faker().sentence())
-            yield tornado.gen.sleep(0.1)
 
-        prop_value = Faker().sentence()
         yield exposed_thing.write_property(prop_name, prop_value)
 
         yield future_change
 
-        assert future_change.result() == prop_value
+        assert future_change.result()
 
         subscription.dispose()
 
