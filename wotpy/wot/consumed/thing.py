@@ -24,12 +24,6 @@ class ConsumedThing(AbstractConsumedThing):
 
         return self.td.name
 
-    def get_thing_description(self):
-        """Returns the Thing Description of the Thing.
-        Returns a serialized string."""
-
-        return self.td.to_str()
-
     @tornado.gen.coroutine
     def invoke_action(self, name, input_value=None):
         """Takes the Action name from the name argument and the list of parameters,

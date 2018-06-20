@@ -155,7 +155,7 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
     @property
     def name(self):
-        """Name property."""
+        """Name of the Thing."""
 
         return self._thing.name
 
@@ -164,12 +164,6 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Returns the object that represents the Thing beneath this ExposedThing."""
 
         return self._thing
-
-    def get_thing_description(self):
-        """Returns the Thing Description of the Thing.
-        Returns a serialized string."""
-
-        return self._thing.to_jsonld_str()
 
     @tornado.gen.coroutine
     def read_property(self, name):
@@ -432,29 +426,29 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
     @property
     def properties(self):
-        """Represents a dictionary of ThingProperty items."""
+        """Returns a dictionary of ThingProperty items."""
 
         return ExposedThingPropertyDict(exposed_thing=self)
 
     @property
     def actions(self):
-        """Represents a dictionary of ThingAction items."""
+        """Returns a dictionary of ThingAction items."""
 
         return ExposedThingActionDict(exposed_thing=self)
 
     @property
     def events(self):
-        """Represents a dictionary of ThingEvent items."""
+        """Returns a dictionary of ThingEvent items."""
 
         return ExposedThingEventDict(exposed_thing=self)
 
     @property
     def links(self):
-        """Represents a dictionary of WebLink items."""
+        """Returns a dictionary of WebLink items."""
 
         raise NotImplementedError()
 
-    def subscribe(self):
+    def subscribe(self, *args, **kwargs):
         """Subscribes to changes on the TD of this thing."""
 
-        raise NotImplementedError()
+        return self.on_td_change().subscribe(*args, **kwargs)

@@ -54,8 +54,6 @@ def main_coroutine():
     td_url = yield fetch_td_url()
     consumed_thing = yield wot.consume_from_url(td_url)
 
-    LOGGER.info("Consumed Thing TD: {}".format(consumed_thing.get_thing_description()))
-
     event_observer = consumed_thing.on_event(NAME_EVENT_TEMP_HIGH)
 
     def on_next_event(ev):

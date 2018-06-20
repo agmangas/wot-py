@@ -238,14 +238,12 @@ def test_on_event(exposed_thing, event_init):
     subscription.dispose()
 
 
-def test_on_td_change(exposed_thing, property_init, event_init, action_init):
-    """Thing Description changes can be observed."""
+def _test_td_change_events(exposed_thing, property_init, event_init, action_init, subscribe_func):
+    """Helper function to test subscriptions to TD changes."""
 
     prop_name = Faker().pystr()
     event_name = Faker().pystr()
     action_name = Faker().pystr()
-
-    observable_td = exposed_thing.on_td_change()
 
     complete_futures = {
         (TDChangeType.PROPERTY, TDChangeMethod.ADD): Future(),
@@ -256,14 +254,14 @@ def test_on_td_change(exposed_thing, property_init, event_init, action_init):
         (TDChangeType.ACTION, TDChangeMethod.REMOVE): Future()
     }
 
-    def on_next_td_event(ev):
+    def on_next(ev):
         change_type = ev.data.td_change_type
         change_method = ev.data.method
         interaction_name = ev.data.name
         future_key = (change_type, change_method)
         complete_futures[future_key].set_result(interaction_name)
 
-    subscription = observable_td.subscribe(on_next_td_event)
+    subscription = subscribe_func(on_next)
 
     exposed_thing.add_event(event_name, event_init)
 
@@ -286,6 +284,15 @@ def test_on_td_change(exposed_thing, property_init, event_init, action_init):
     assert complete_futures[(TDChangeType.ACTION, TDChangeMethod.REMOVE)].result() == action_name
 
     subscription.dispose()
+
+
+def test_on_td_change(exposed_thing, property_init, event_init, action_init):
+    """Thing Description changes can be observed."""
+
+    def subscribe_func(*args, **kwargs):
+        return exposed_thing.on_td_change().subscribe(*args, **kwargs)
+
+    _test_td_change_events(exposed_thing, property_init, event_init, action_init, subscribe_func)
 
 
 def test_thing_property_get(exposed_thing, property_init):
@@ -432,6 +439,21 @@ def test_thing_event_subscribe(exposed_thing, event_init):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
+def test_thing_event_getters(exposed_thing, event_init):
+    """Event init attributes can be accessed using the map-like interface."""
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        event_name = Faker().pystr()
+        exposed_thing.add_event(event_name, event_init)
+        thing_event = exposed_thing.events[event_name]
+
+        assert thing_event.label == event_init.label
+        assert thing_event.type == event_init.type
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
 def test_set_property_read_handler(exposed_thing, property_init):
     """Read handlers can be defined for ExposedThing property interactions."""
 
@@ -473,3 +495,12 @@ def test_set_property_write_handler(exposed_thing, property_init):
         assert prop_value in prop_history
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_subscribe(exposed_thing, property_init, event_init, action_init):
+    """Subscribing to the ExposedThing provides Thing Description update events."""
+
+    def subscribe_func(*args, **kwargs):
+        return exposed_thing.subscribe(*args, **kwargs)
+
+    _test_td_change_events(exposed_thing, property_init, event_init, action_init, subscribe_func)
