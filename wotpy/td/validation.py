@@ -57,12 +57,7 @@ SCHEMA_SECURITY_SCHEME = {
     "id": "http://fundacionctic.org/schemas/security-scheme.json",
     "type": "object",
     "properties": {
-        "scheme": {"type": "string"},
-        "description": {"type": "string"},
-        "proxyUrl": {
-            "type": "string",
-            "pattern": REGEX_ANY_URI
-        }
+        "scheme": {"type": "string"}
     },
     "required": [
         "scheme"
@@ -98,7 +93,7 @@ SCHEMA_FORM = {
             "default": "application/json"
         },
         "rel": {"type": "string"},
-        "security": {"type": "string"}
+        "security": SCHEMA_SECURITY_SCHEME
     },
     "required": [
         "href"
