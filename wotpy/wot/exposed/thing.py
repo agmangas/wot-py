@@ -132,12 +132,12 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         return future_write
 
-    # noinspection PyMethodMayBeStatic
-    def _default_invoke_action_handler(self):
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def _default_invoke_action_handler(self, parameters):
         """Default handler for onInvokeAction."""
 
         future_invoke = Future()
-        future_invoke.set_exception(Exception("Undefined action handler"))
+        future_invoke.set_exception(NotImplementedError("Undefined action handler"))
 
         return future_invoke
 

@@ -126,7 +126,7 @@ def test_invoke_action_undefined_handler(exposed_thing, action_init):
         action_name = Faker().pystr()
         exposed_thing.add_action(action_name, action_init)
 
-        with pytest.raises(Exception):
+        with pytest.raises(NotImplementedError):
             yield exposed_thing.invoke_action(action_name)
 
         @tornado.gen.coroutine
