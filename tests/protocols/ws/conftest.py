@@ -18,7 +18,7 @@ from six.moves.urllib.parse import urlparse, urlunparse
 
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.td.thing import Thing
-from wotpy.wot.dictionaries import PropertyInitDict, ActionInitDict, EventInitDict
+from wotpy.wot.dictionaries.interaction import PropertyInitDict, ActionInitDict, EventInitDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 

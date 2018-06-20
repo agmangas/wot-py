@@ -12,7 +12,7 @@ from slugify import slugify
 
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.validation import is_valid_safe_name
-from wotpy.wot.dictionaries import PropertyInitDict, ActionInitDict, EventInitDict
+from wotpy.wot.dictionaries.interaction import PropertyInitDict, ActionInitDict, EventInitDict
 
 
 class InteractionPattern(object):

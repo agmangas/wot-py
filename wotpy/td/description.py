@@ -15,7 +15,7 @@ from six.moves import urllib
 from wotpy.td.constants import WOT_TD_CONTEXT_URL, WOT_COMMON_CONTEXT_URL
 from wotpy.td.thing import Thing
 from wotpy.td.validation import SCHEMA_THING, InvalidDescription
-from wotpy.wot.dictionaries import ThingTemplateDict
+from wotpy.wot.dictionaries.wot import ThingTemplateDict
 
 
 class ThingDescription(object):

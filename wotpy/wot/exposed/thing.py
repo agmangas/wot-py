@@ -14,16 +14,12 @@ from tornado.concurrent import Future
 from wotpy.td.description import ThingDescription
 from wotpy.td.interaction import Property, Action, Event
 from wotpy.utils.enums import EnumListMixin
-from wotpy.wot.dictionaries import \
-    PropertyChangeEventInit, \
-    ThingDescriptionChangeEventInit, \
-    ActionInvocationEventInit
 from wotpy.wot.enums import DefaultThingEvent, TDChangeMethod, TDChangeType
 from wotpy.wot.events import \
     EmittedEvent, \
     PropertyChangeEmittedEvent, \
     ThingDescriptionChangeEmittedEvent, \
-    ActionInvocationEmittedEvent
+    ActionInvocationEmittedEvent, PropertyChangeEventInit, ActionInvocationEventInit, ThingDescriptionChangeEventInit
 from wotpy.wot.exposed.interactions import \
     ExposedThingPropertyDict, \
     ExposedThingActionDict, \

@@ -14,7 +14,7 @@ import tornado.ioloop
 from faker import Faker
 from tornado.concurrent import Future
 
-from wotpy.wot.dictionaries import PropertyInitDict
+from wotpy.wot.dictionaries.interaction import PropertyInitDict
 from wotpy.wot.enums import TDChangeMethod, TDChangeType
 
 

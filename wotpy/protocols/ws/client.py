@@ -22,13 +22,10 @@ from wotpy.protocols.ws.messages import \
     WebsocketMessageEmittedItem, \
     WebsocketMessageError, \
     WebsocketMessageException
-from wotpy.wot.dictionaries import \
-    PropertyChangeEventInit, \
-    ThingDescriptionChangeEventInit
 from wotpy.wot.events import \
     PropertyChangeEmittedEvent, \
     EmittedEvent, \
-    ThingDescriptionChangeEmittedEvent
+    ThingDescriptionChangeEmittedEvent, PropertyChangeEventInit, ThingDescriptionChangeEventInit
 
 
 class WebsocketClient(BaseProtocolClient):

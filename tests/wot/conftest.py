@@ -11,7 +11,7 @@ from faker import Faker
 
 from tests.td_examples import TD_EXAMPLE
 from wotpy.td.thing import Thing
-from wotpy.wot.dictionaries import PropertyInitDict, ActionInitDict, EventInitDict
+from wotpy.wot.dictionaries.interaction import PropertyInitDict, ActionInitDict, EventInitDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 

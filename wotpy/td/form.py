@@ -5,7 +5,7 @@
 Class that represents the form entities exposed by interactions.
 """
 
-from wotpy.wot.dictionaries import FormDict
+from wotpy.wot.dictionaries.link import FormDict
 
 
 class Form(object):

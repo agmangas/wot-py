@@ -19,7 +19,7 @@ from wotpy.protocols.ws.messages import \
     WebsocketMessageResponse, \
     WebsocketMessageError, \
     WebsocketMessageEmittedItem
-from wotpy.wot.dictionaries import PropertyInitDict
+from wotpy.wot.dictionaries.interaction import PropertyInitDict
 
 
 @pytest.mark.flaky(reruns=5)

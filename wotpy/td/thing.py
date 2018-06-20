@@ -13,7 +13,7 @@ import six
 from slugify import slugify
 
 from wotpy.td.interaction import Property, Action, Event
-from wotpy.wot.dictionaries import ThingTemplateDict
+from wotpy.wot.dictionaries.wot import ThingTemplateDict
 
 
 class Thing(object):

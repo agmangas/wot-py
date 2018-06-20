@@ -15,7 +15,7 @@ from tornado.concurrent import Future
 
 from wotpy.protocols.ws.client import WebsocketClient, ProtocolClientException
 from wotpy.td.description import ThingDescription
-from wotpy.wot.dictionaries import ActionInitDict
+from wotpy.wot.dictionaries.interaction import ActionInitDict
 
 
 @pytest.mark.flaky(reruns=5)
