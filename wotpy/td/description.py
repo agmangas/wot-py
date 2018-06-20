@@ -13,7 +13,6 @@ import six
 from six.moves import urllib
 
 from wotpy.td.constants import WOT_TD_CONTEXT_URL, WOT_COMMON_CONTEXT_URL
-from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.thing import Thing
 from wotpy.td.validation import SCHEMA_THING, InvalidDescription
 from wotpy.wot.dictionaries import ThingTemplateDict
@@ -222,16 +221,16 @@ class ThingDescription(object):
         return []
 
     def get_property_forms(self, name):
-        """Returns the Form objects for the given Property."""
+        """Returns a list of FormDict for the property that matches the given name."""
 
         return self._doc.get("properties", {}).get(name, {}).get("forms", [])
 
     def get_action_forms(self, name):
-        """Returns the Form objects for the given Action."""
+        """Returns a list of FormDict for the action that matches the given name."""
 
         return self._doc.get("actions", {}).get(name, {}).get("forms", [])
 
     def get_event_forms(self, name):
-        """Returns the Form objects for the given Event."""
+        """Returns a list of FormDict for the event that matches the given name."""
 
         return self._doc.get("events", {}).get(name, {}).get("forms", [])
