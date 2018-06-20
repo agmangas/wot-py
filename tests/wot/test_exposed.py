@@ -18,6 +18,72 @@ from wotpy.wot.dictionaries import PropertyInitDict
 from wotpy.wot.enums import TDChangeMethod, TDChangeType
 
 
+def _test_td_change_events(exposed_thing, property_init, event_init, action_init, subscribe_func):
+    """Helper function to test subscriptions to TD changes."""
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        prop_name = Faker().pystr()
+        event_name = Faker().pystr()
+        action_name = Faker().pystr()
+
+        complete_futures = {
+            (TDChangeType.PROPERTY, TDChangeMethod.ADD): Future(),
+            (TDChangeType.PROPERTY, TDChangeMethod.REMOVE): Future(),
+            (TDChangeType.EVENT, TDChangeMethod.ADD): Future(),
+            (TDChangeType.EVENT, TDChangeMethod.REMOVE): Future(),
+            (TDChangeType.ACTION, TDChangeMethod.ADD): Future(),
+            (TDChangeType.ACTION, TDChangeMethod.REMOVE): Future()
+        }
+
+        def on_next(ev):
+            change_type = ev.data.td_change_type
+            change_method = ev.data.method
+            interaction_name = ev.data.name
+            future_key = (change_type, change_method)
+            complete_futures[future_key].set_result(interaction_name)
+
+        subscription = subscribe_func(on_next)
+
+        yield tornado.gen.sleep(0)
+
+        exposed_thing.add_event(event_name, event_init)
+
+        assert complete_futures[(TDChangeType.EVENT, TDChangeMethod.ADD)].result() == event_name
+        assert not complete_futures[(TDChangeType.EVENT, TDChangeMethod.REMOVE)].done()
+
+        exposed_thing.remove_event(name=event_name)
+        exposed_thing.add_property(prop_name, property_init)
+
+        assert complete_futures[(TDChangeType.EVENT, TDChangeMethod.REMOVE)].result() == event_name
+        assert complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.ADD)].result() == prop_name
+        assert not complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.REMOVE)].done()
+
+        exposed_thing.remove_property(name=prop_name)
+        exposed_thing.add_action(action_name, action_init)
+        exposed_thing.remove_action(name=action_name)
+
+        assert complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.REMOVE)].result() == prop_name
+        assert complete_futures[(TDChangeType.ACTION, TDChangeMethod.ADD)].result() == action_name
+        assert complete_futures[(TDChangeType.ACTION, TDChangeMethod.REMOVE)].result() == action_name
+
+        subscription.dispose()
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_thing_template_getters(exposed_thing):
+    """ThingTemplate properties can be accessed from the ExposedThing."""
+
+    thing_template = exposed_thing.thing.thing_template
+
+    assert exposed_thing.id == thing_template.id
+    assert exposed_thing.name == thing_template.name
+    assert exposed_thing.description == thing_template.description
+    assert exposed_thing.type == thing_template.type
+    assert exposed_thing.context == thing_template.context
+
+
 def test_read_property(exposed_thing, property_init):
     """Properties may be retrieved on ExposedThings."""
 
@@ -236,60 +302,6 @@ def test_on_event(exposed_thing, event_init):
     assert emitted_payloads == event_payloads
 
     subscription.dispose()
-
-
-def _test_td_change_events(exposed_thing, property_init, event_init, action_init, subscribe_func):
-    """Helper function to test subscriptions to TD changes."""
-
-    @tornado.gen.coroutine
-    def test_coroutine():
-        prop_name = Faker().pystr()
-        event_name = Faker().pystr()
-        action_name = Faker().pystr()
-
-        complete_futures = {
-            (TDChangeType.PROPERTY, TDChangeMethod.ADD): Future(),
-            (TDChangeType.PROPERTY, TDChangeMethod.REMOVE): Future(),
-            (TDChangeType.EVENT, TDChangeMethod.ADD): Future(),
-            (TDChangeType.EVENT, TDChangeMethod.REMOVE): Future(),
-            (TDChangeType.ACTION, TDChangeMethod.ADD): Future(),
-            (TDChangeType.ACTION, TDChangeMethod.REMOVE): Future()
-        }
-
-        def on_next(ev):
-            change_type = ev.data.td_change_type
-            change_method = ev.data.method
-            interaction_name = ev.data.name
-            future_key = (change_type, change_method)
-            complete_futures[future_key].set_result(interaction_name)
-
-        subscription = subscribe_func(on_next)
-
-        yield tornado.gen.sleep(0)
-
-        exposed_thing.add_event(event_name, event_init)
-
-        assert complete_futures[(TDChangeType.EVENT, TDChangeMethod.ADD)].result() == event_name
-        assert not complete_futures[(TDChangeType.EVENT, TDChangeMethod.REMOVE)].done()
-
-        exposed_thing.remove_event(name=event_name)
-        exposed_thing.add_property(prop_name, property_init)
-
-        assert complete_futures[(TDChangeType.EVENT, TDChangeMethod.REMOVE)].result() == event_name
-        assert complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.ADD)].result() == prop_name
-        assert not complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.REMOVE)].done()
-
-        exposed_thing.remove_property(name=prop_name)
-        exposed_thing.add_action(action_name, action_init)
-        exposed_thing.remove_action(name=action_name)
-
-        assert complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.REMOVE)].result() == prop_name
-        assert complete_futures[(TDChangeType.ACTION, TDChangeMethod.ADD)].result() == action_name
-        assert complete_futures[(TDChangeType.ACTION, TDChangeMethod.REMOVE)].result() == action_name
-
-        subscription.dispose()
-
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
 def test_on_td_change(exposed_thing, property_init, event_init, action_init):

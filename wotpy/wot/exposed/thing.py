@@ -77,6 +77,12 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
     def __hash__(self):
         return hash((self.servient, self.thing))
 
+    def __getattr__(self, name):
+        """Search for members that raised an AttributeError in
+        the private Thing instance before propagating the exception."""
+
+        return getattr(self.thing, name)
+
     def _set_property_value(self, prop, value):
         """Sets a Property value."""
 
@@ -147,18 +153,6 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
         """Servient that contains this ExposedThing."""
 
         return self._servient
-
-    @property
-    def url_name(self):
-        """Slug version (URL-safe) of the ExposedThing name."""
-
-        return self._thing.url_name
-
-    @property
-    def name(self):
-        """Name of the Thing."""
-
-        return self._thing.name
 
     @property
     def thing(self):
