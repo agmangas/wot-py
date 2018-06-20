@@ -6,6 +6,7 @@ Classes that represent Interaction instances accessed on a ExposedThing.
 """
 
 import tornado.gen
+from rx.concurrency import IOLoopScheduler
 from six.moves import UserDict
 
 
@@ -42,7 +43,8 @@ class ExposedThingProperty(object):
     def subscribe(self, *args, **kwargs):
         """Subscribe to an stream of events emitted when the property value changes."""
 
-        return self._exposed_thing.on_property_change(self._name).subscribe(*args, **kwargs)
+        observable = self._exposed_thing.on_property_change(self._name)
+        return observable.subscribe_on(IOLoopScheduler()).subscribe(*args, **kwargs)
 
 
 class ExposedThingPropertyDict(UserDict):
@@ -113,7 +115,8 @@ class ExposedThingEvent(object):
     def subscribe(self, *args, **kwargs):
         """Subscribe to an stream of emissions of this event."""
 
-        return self._exposed_thing.on_event(self._name).subscribe(*args, **kwargs)
+        observable = self._exposed_thing.on_event(self._name)
+        return observable.subscribe_on(IOLoopScheduler()).subscribe(*args, **kwargs)
 
 
 class ExposedThingEventDict(UserDict):

@@ -7,6 +7,7 @@ Classes that represent Things exposed by a servient.
 
 import tornado.gen
 from rx import Observable
+from rx.concurrency import IOLoopScheduler
 from rx.subjects import Subject
 from tornado.concurrent import Future
 
@@ -451,4 +452,5 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
     def subscribe(self, *args, **kwargs):
         """Subscribes to changes on the TD of this thing."""
 
-        return self.on_td_change().subscribe(*args, **kwargs)
+        observable = self.on_td_change()
+        return observable.subscribe_on(IOLoopScheduler()).subscribe(*args, **kwargs)

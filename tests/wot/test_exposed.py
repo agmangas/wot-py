@@ -241,49 +241,55 @@ def test_on_event(exposed_thing, event_init):
 def _test_td_change_events(exposed_thing, property_init, event_init, action_init, subscribe_func):
     """Helper function to test subscriptions to TD changes."""
 
-    prop_name = Faker().pystr()
-    event_name = Faker().pystr()
-    action_name = Faker().pystr()
+    @tornado.gen.coroutine
+    def test_coroutine():
+        prop_name = Faker().pystr()
+        event_name = Faker().pystr()
+        action_name = Faker().pystr()
 
-    complete_futures = {
-        (TDChangeType.PROPERTY, TDChangeMethod.ADD): Future(),
-        (TDChangeType.PROPERTY, TDChangeMethod.REMOVE): Future(),
-        (TDChangeType.EVENT, TDChangeMethod.ADD): Future(),
-        (TDChangeType.EVENT, TDChangeMethod.REMOVE): Future(),
-        (TDChangeType.ACTION, TDChangeMethod.ADD): Future(),
-        (TDChangeType.ACTION, TDChangeMethod.REMOVE): Future()
-    }
+        complete_futures = {
+            (TDChangeType.PROPERTY, TDChangeMethod.ADD): Future(),
+            (TDChangeType.PROPERTY, TDChangeMethod.REMOVE): Future(),
+            (TDChangeType.EVENT, TDChangeMethod.ADD): Future(),
+            (TDChangeType.EVENT, TDChangeMethod.REMOVE): Future(),
+            (TDChangeType.ACTION, TDChangeMethod.ADD): Future(),
+            (TDChangeType.ACTION, TDChangeMethod.REMOVE): Future()
+        }
 
-    def on_next(ev):
-        change_type = ev.data.td_change_type
-        change_method = ev.data.method
-        interaction_name = ev.data.name
-        future_key = (change_type, change_method)
-        complete_futures[future_key].set_result(interaction_name)
+        def on_next(ev):
+            change_type = ev.data.td_change_type
+            change_method = ev.data.method
+            interaction_name = ev.data.name
+            future_key = (change_type, change_method)
+            complete_futures[future_key].set_result(interaction_name)
 
-    subscription = subscribe_func(on_next)
+        subscription = subscribe_func(on_next)
 
-    exposed_thing.add_event(event_name, event_init)
+        yield tornado.gen.sleep(0)
 
-    assert complete_futures[(TDChangeType.EVENT, TDChangeMethod.ADD)].result() == event_name
-    assert not complete_futures[(TDChangeType.EVENT, TDChangeMethod.REMOVE)].done()
+        exposed_thing.add_event(event_name, event_init)
 
-    exposed_thing.remove_event(name=event_name)
-    exposed_thing.add_property(prop_name, property_init)
+        assert complete_futures[(TDChangeType.EVENT, TDChangeMethod.ADD)].result() == event_name
+        assert not complete_futures[(TDChangeType.EVENT, TDChangeMethod.REMOVE)].done()
 
-    assert complete_futures[(TDChangeType.EVENT, TDChangeMethod.REMOVE)].result() == event_name
-    assert complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.ADD)].result() == prop_name
-    assert not complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.REMOVE)].done()
+        exposed_thing.remove_event(name=event_name)
+        exposed_thing.add_property(prop_name, property_init)
 
-    exposed_thing.remove_property(name=prop_name)
-    exposed_thing.add_action(action_name, action_init)
-    exposed_thing.remove_action(name=action_name)
+        assert complete_futures[(TDChangeType.EVENT, TDChangeMethod.REMOVE)].result() == event_name
+        assert complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.ADD)].result() == prop_name
+        assert not complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.REMOVE)].done()
 
-    assert complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.REMOVE)].result() == prop_name
-    assert complete_futures[(TDChangeType.ACTION, TDChangeMethod.ADD)].result() == action_name
-    assert complete_futures[(TDChangeType.ACTION, TDChangeMethod.REMOVE)].result() == action_name
+        exposed_thing.remove_property(name=prop_name)
+        exposed_thing.add_action(action_name, action_init)
+        exposed_thing.remove_action(name=action_name)
 
-    subscription.dispose()
+        assert complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.REMOVE)].result() == prop_name
+        assert complete_futures[(TDChangeType.ACTION, TDChangeMethod.ADD)].result() == action_name
+        assert complete_futures[(TDChangeType.ACTION, TDChangeMethod.REMOVE)].result() == action_name
+
+        subscription.dispose()
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
 def test_on_td_change(exposed_thing, property_init, event_init, action_init):
@@ -335,19 +341,22 @@ def test_thing_property_subscribe(exposed_thing, property_init):
         prop_name = Faker().pystr()
         exposed_thing.add_property(prop_name, property_init)
 
-        property_values = [Faker().sentence() for _ in range(10)]
-
-        emitted_values = []
+        values = [Faker().sentence() for _ in range(10)]
+        values_futures = {key: Future() for key in values}
 
         def on_next(ev):
-            emitted_values.append(ev.data.value)
+            value = ev.data.value
+            if value in values_futures and not values_futures[value].done():
+                values_futures[value].set_result(True)
 
         subscription = exposed_thing.properties[prop_name].subscribe(on_next)
 
-        for val in property_values:
+        yield tornado.gen.sleep(0)
+
+        for val in values:
             yield exposed_thing.properties[prop_name].set(val)
 
-        assert emitted_values == property_values
+        yield [future for future in six.itervalues(values_futures)]
 
         subscription.dispose()
 
@@ -420,19 +429,22 @@ def test_thing_event_subscribe(exposed_thing, event_init):
         event_name = Faker().pystr()
         exposed_thing.add_event(event_name, event_init)
 
-        event_values = [Faker().sentence() for _ in range(10)]
-
-        emitted_values = []
+        values = [Faker().sentence() for _ in range(10)]
+        values_futures = {key: Future() for key in values}
 
         def on_next(ev):
-            emitted_values.append(ev.data)
+            value = ev.data
+            if value in values_futures and not values_futures[value].done():
+                values_futures[value].set_result(True)
 
         subscription = exposed_thing.events[event_name].subscribe(on_next)
 
-        for val in event_values:
+        yield tornado.gen.sleep(0)
+
+        for val in values:
             yield exposed_thing.emit_event(event_name, val)
 
-        assert emitted_values == event_values
+        yield [future for future in six.itervalues(values_futures)]
 
         subscription.dispose()
 
