@@ -73,8 +73,8 @@ class SecuritySchemeType(EnumListMixin):
     DIGEST = "digest"
     BEARER = "bearer"
     POP = "pop"
-    OAUTH2 = "OAUTH2"
-    APIKEY = "APIKEY"
+    OAUTH2 = "oauth2"
+    APIKEY = "apikey"
 
 
 class AuthenticationType(EnumListMixin):
