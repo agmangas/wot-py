@@ -5,6 +5,7 @@
 Wrapper classes for link dictionaries defined in the Scripting API.
 """
 
+from wotpy.wot.dictionaries.security import SecuritySchemeDict
 from wotpy.wot.dictionaries.utils import build_init_dict
 
 
@@ -67,4 +68,6 @@ class FormDict(LinkDict):
         """The security property represents the security
         requirements for the linked resource."""
 
-        return self._init.get("security")
+        val = self._init.get("security")
+
+        return SecuritySchemeDict.build(val) if val is not None else None

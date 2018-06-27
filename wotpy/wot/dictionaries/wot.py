@@ -7,8 +7,9 @@ Wrapper classes for dictionaries used at the WoT object level defined in the Scr
 
 import six
 
-from wotpy.wot.dictionaries.link import WebLinkDict
 from wotpy.wot.dictionaries.interaction import PropertyInitDict, ActionInitDict, EventInitDict
+from wotpy.wot.dictionaries.link import WebLinkDict
+from wotpy.wot.dictionaries.security import SecuritySchemeDict
 from wotpy.wot.dictionaries.utils import build_init_dict
 
 
@@ -61,7 +62,9 @@ class ThingTemplateDict(object):
     def security(self):
         """The security optional attribute represents security metadata."""
 
-        return self._init.get("security")
+        val = self._init.get("security")
+
+        return SecuritySchemeDict.build(val) if val is not None else None
 
     @property
     def properties(self):
@@ -152,6 +155,6 @@ class ThingFilterDict(object):
         """The template property represents a ThingTemplate dictionary
         wrapper class used for matching against discovered Things."""
 
-        template = self._init.get("template")
+        val = self._init.get("template")
 
-        return None if template is None else ThingTemplateDict(template)
+        return ThingTemplateDict(val) if val is not None else None
