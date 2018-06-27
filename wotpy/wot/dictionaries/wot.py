@@ -62,9 +62,7 @@ class ThingTemplateDict(object):
     def security(self):
         """The security optional attribute represents security metadata."""
 
-        val = self._init.get("security")
-
-        return SecuritySchemeDict.build(val) if val is not None else None
+        return [SecuritySchemeDict.build(item) for item in self._init.get("security", [])]
 
     @property
     def properties(self):
