@@ -5,6 +5,18 @@ TD_EXAMPLE = {
     "id": "urn:dev:wot:com:example:servient:lamp",
     "name": "MyLampThing",
     "description": "MyLampThing uses JSON-LD 1.1 serialization",
+    "security": [{
+        "scheme": "digest",
+        "in": "header",
+        "pname": "Auth-Digest-Header",
+        "qop": "auth"
+    }, {
+        "scheme": "oauth2",
+        "tokenURL": "http://token.server",
+        "authorizationURL": "http://auth.server",
+        "refreshURL": "http://refresh.server",
+        "flow": "password"
+    }],
     "properties": {
         "status": {
             "description": "Shows the current status of the lamp",
