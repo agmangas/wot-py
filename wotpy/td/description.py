@@ -145,7 +145,13 @@ class ThingDescription(object):
     def name(self):
         """Name (ID) of the Thing."""
 
-        return self.id
+        return self._doc.get("name")
+
+    @property
+    def description(self):
+        """Human description of the Thing."""
+
+        return self._doc.get("description")
 
     @property
     def base(self):
