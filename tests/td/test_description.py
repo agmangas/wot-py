@@ -42,8 +42,18 @@ def test_validate_err():
             ThingDescription.validate(doc=td_err)
 
 
+def test_from_dict():
+    """ThingDescription objects can be built from TD documents in dict format."""
+
+    td = ThingDescription(TD_EXAMPLE)
+
+    assert td.id == TD_EXAMPLE.get("id")
+    assert td.name == TD_EXAMPLE.get("name")
+    assert td.description == TD_EXAMPLE.get("description")
+
+
 def test_from_thing():
-    """Thing instances can be serialized to JSON format."""
+    """ThingDescription objects can be built from Thing objects."""
 
     fake = Faker()
 
@@ -69,7 +79,7 @@ def test_from_thing():
 
 
 def test_build_thing():
-    """Thing instances can be built from JSON TD instances."""
+    """Thing objects can be built from ThingDescription objects."""
 
     json_td = ThingDescription(TD_EXAMPLE)
     thing = json_td.build_thing()
