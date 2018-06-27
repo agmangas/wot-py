@@ -54,9 +54,11 @@ class ThingDescription(object):
             ret = {
                 "href": form.href,
                 "mediaType": form.media_type,
-                "rel": form.rel,
-                "security": form.security
+                "rel": form.rel
             }
+
+            if form.security:
+                ret.update(filter_dict(form.security.to_dict()))
 
             return filter_dict(ret)
 
@@ -111,6 +113,7 @@ class ThingDescription(object):
             "name": thing.name,
             "description": thing.description,
             "support": thing.support,
+            "security": [item.to_dict() for item in thing.security],
             "properties": {
                 key: json_property(val)
                 for key, val in six.iteritems(thing.properties)
