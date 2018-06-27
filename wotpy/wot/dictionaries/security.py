@@ -94,7 +94,7 @@ class BasicSecuritySchemeDict(SecuritySchemeDict):
         return self._init.get("pname")
 
 
-class DigestSecuritySchemeDict(SecuritySchemeDict):
+class DigestSecuritySchemeDict(BasicSecuritySchemeDict):
     """Properties that describe a digest security scheme."""
 
     DEFAULT_QOP = "auth"
@@ -128,7 +128,7 @@ class DigestSecuritySchemeDict(SecuritySchemeDict):
         return self._init.get("qop", self.DEFAULT_QOP)
 
 
-class BearerSecuritySchemeDict(SecuritySchemeDict):
+class BearerSecuritySchemeDict(BasicSecuritySchemeDict):
     """Properties that describe a bearer security scheme."""
 
     DEFAULT_ALG = "ES256"
@@ -176,7 +176,7 @@ class BearerSecuritySchemeDict(SecuritySchemeDict):
         return self._init.get("format", self.DEFAULT_FORMAT)
 
 
-class PopSecuritySchemeDict(SecuritySchemeDict):
+class PopSecuritySchemeDict(DigestSecuritySchemeDict):
     """Properties that describe a proof-of-possession token authentication security scheme."""
 
     def __init__(self, *args, **kwargs):
@@ -195,7 +195,7 @@ class PopSecuritySchemeDict(SecuritySchemeDict):
         return SecuritySchemeType.POP
 
 
-class ApikeySecuritySchemeDict(SecuritySchemeDict):
+class ApikeySecuritySchemeDict(BasicSecuritySchemeDict):
     """Properties that describe a API key authentication security scheme."""
 
     def __init__(self, *args, **kwargs):
