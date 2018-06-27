@@ -10,7 +10,10 @@ TD_EXAMPLE = {
             "description": "Shows the current status of the lamp",
             "type": "string",
             "forms": [{
-                "href": "coaps://mylamp.example.com:5683/status"
+                "href": "coaps://mylamp.example.com:5683/status",
+                "scheme": "basic",
+                "in": "header",
+                "pname": "Auth-Header"
             }]
         }
     },
