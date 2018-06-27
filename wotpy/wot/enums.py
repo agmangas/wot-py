@@ -52,3 +52,35 @@ class DefaultThingEvent(EnumListMixin):
     PROPERTY_CHANGE = "propertychange"
     ACTION_INVOCATION = "actioninvocation"
     DESCRIPTION_CHANGE = "descriptionchange"
+
+
+class DataType(EnumListMixin):
+    """Defines the types that values can take."""
+
+    BOOLEAN = "boolean"
+    INTEGER = "integer"
+    NUMBER = "number"
+    STRING = "string"
+    OBJECT = "object"
+    ARRAY = "array"
+    NULL = "null"
+
+
+class SecuritySchemeType(EnumListMixin):
+    """Defines the supported security schemes."""
+
+    BASIC = "basic"
+    DIGEST = "digest"
+    BEARER = "bearer"
+    POP = "pop"
+    OAUTH2 = "OAUTH2"
+    APIKEY = "APIKEY"
+
+
+class AuthenticationType(EnumListMixin):
+    """Defines the location of the authentication information."""
+
+    HEADER = "header"
+    BODY = "body"
+    QUERY = "query"
+    COOKIE = "cookie"
