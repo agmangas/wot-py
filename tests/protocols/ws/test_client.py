@@ -228,7 +228,7 @@ def test_on_td_change(websocket_servient):
         ws_client = WebsocketClient()
 
         first_prop_name = next(six.iterkeys(td.properties))
-        url = td.get_property_forms(first_prop_name)[0]["href"]
+        url = td.get_property_forms(first_prop_name)[0].href
         observable = ws_client.on_td_change(url)
 
         action_name = uuid.uuid4().hex

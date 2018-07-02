@@ -10,11 +10,11 @@ import json
 
 import jsonschema
 import six
-from six.moves import urllib
 
 from wotpy.td.constants import WOT_TD_CONTEXT_URL, WOT_COMMON_CONTEXT_URL
 from wotpy.td.thing import Thing
 from wotpy.td.validation import SCHEMA_THING, InvalidDescription
+from wotpy.wot.dictionaries.link import FormDict
 from wotpy.wot.dictionaries.wot import ThingTemplateDict
 
 
@@ -135,12 +135,6 @@ class ThingDescription(object):
         return ThingDescription(doc)
 
     @property
-    def doc(self):
-        """Thing Description document as a dict."""
-
-        return self._doc
-
-    @property
     def id(self):
         """Thing ID."""
 
@@ -185,7 +179,7 @@ class ThingDescription(object):
     def to_dict(self):
         """Returns the JSON Thing Description as a dict."""
 
-        return copy.deepcopy(self.doc)
+        return copy.deepcopy(self._doc)
 
     def to_str(self):
         """Returns the JSON Thing Description as a string."""
@@ -195,30 +189,15 @@ class ThingDescription(object):
     def to_thing_template(self):
         """Returns a ThingTemplate dictionary built from this TD."""
 
-        return ThingTemplateDict(**self.doc)
+        return ThingTemplateDict(**self._doc)
 
     def build_thing(self):
         """Builds a new Thing object from the serialized Thing Description."""
 
         return Thing(thing_template=self.to_thing_template())
 
-    def resolve_form_uri(self, form):
-        """Resolves the given Form URI.
-        When the Form href does not contain a full URL the base URI is joined with said href."""
-
-        href = form.get("href")
-        href_parsed = urllib.parse.urlparse(href)
-
-        if self.base and not href_parsed.scheme:
-            return urllib.parse.urljoin(self.base, href)
-
-        if href_parsed.scheme:
-            return href
-
-        return None
-
     def get_forms(self, name):
-        """Returns the Form objects for the interaction with the given name."""
+        """Returns a list of FormDict for the interaction that matches the given name."""
 
         if name in self.properties:
             return self.get_property_forms(name)
@@ -234,14 +213,23 @@ class ThingDescription(object):
     def get_property_forms(self, name):
         """Returns a list of FormDict for the property that matches the given name."""
 
-        return self._doc.get("properties", {}).get(name, {}).get("forms", [])
+        return [
+            FormDict(item) for item in
+            self._doc.get("properties", {}).get(name, {}).get("forms", [])
+        ]
 
     def get_action_forms(self, name):
         """Returns a list of FormDict for the action that matches the given name."""
 
-        return self._doc.get("actions", {}).get(name, {}).get("forms", [])
+        return [
+            FormDict(item) for item in
+            self._doc.get("actions", {}).get(name, {}).get("forms", [])
+        ]
 
     def get_event_forms(self, name):
         """Returns a list of FormDict for the event that matches the given name."""
 
-        return self._doc.get("events", {}).get(name, {}).get("forms", [])
+        return [
+            FormDict(item) for item in
+            self._doc.get("events", {}).get(name, {}).get("forms", [])
+        ]

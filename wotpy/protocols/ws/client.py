@@ -32,11 +32,11 @@ class WebsocketClient(BaseProtocolClient):
     """Implementation of the protocol client interface for the Websocket protocol."""
 
     @classmethod
-    def _is_scheme_form(cls, td, form, scheme):
+    def _is_scheme_form(cls, form, base, scheme):
         """Returns True if the scheme of the URI for
         the given Form matches the scheme argument."""
 
-        resolved_url = td.resolve_form_uri(form)
+        resolved_url = form.resolve_uri(base=base)
 
         if not resolved_url:
             return False
@@ -49,7 +49,7 @@ class WebsocketClient(BaseProtocolClient):
 
         forms_wss = [
             form for form in forms
-            if cls._is_scheme_form(td, form, ProtocolSchemes.WSS)
+            if cls._is_scheme_form(form, td.base, ProtocolSchemes.WSS)
         ]
 
         if len(forms_wss):
@@ -57,7 +57,7 @@ class WebsocketClient(BaseProtocolClient):
 
         forms_ws = [
             form for form in forms
-            if cls._is_scheme_form(td, form, ProtocolSchemes.WS)
+            if cls._is_scheme_form(form, td.base, ProtocolSchemes.WS)
         ]
 
         if len(forms_ws):
@@ -227,12 +227,12 @@ class WebsocketClient(BaseProtocolClient):
 
         forms_wss = [
             form for form in forms
-            if self._is_scheme_form(td, form, ProtocolSchemes.WSS)
+            if self._is_scheme_form(form, td.base, ProtocolSchemes.WSS)
         ]
 
         forms_ws = [
             form for form in forms
-            if self._is_scheme_form(td, form, ProtocolSchemes.WS)
+            if self._is_scheme_form(form, td.base, ProtocolSchemes.WS)
         ]
 
         return len(forms_wss) or len(forms_ws)
@@ -247,7 +247,7 @@ class WebsocketClient(BaseProtocolClient):
         if not form:
             raise ProtocolClientException()
 
-        ws_url = td.resolve_form_uri(form)
+        ws_url = form.resolve_uri(td.base)
 
         msg_req = WebsocketMessageRequest(
             method=WebsocketMethods.INVOKE_ACTION,
@@ -268,7 +268,7 @@ class WebsocketClient(BaseProtocolClient):
         if not form:
             raise ProtocolClientException()
 
-        ws_url = td.resolve_form_uri(form)
+        ws_url = form.resolve_uri(td.base)
 
         msg_req = WebsocketMessageRequest(
             method=WebsocketMethods.WRITE_PROPERTY,
@@ -289,7 +289,7 @@ class WebsocketClient(BaseProtocolClient):
         if not form:
             raise ProtocolClientException()
 
-        ws_url = td.resolve_form_uri(form)
+        ws_url = form.resolve_uri(td.base)
 
         msg_req = WebsocketMessageRequest(
             method=WebsocketMethods.READ_PROPERTY,
@@ -310,7 +310,7 @@ class WebsocketClient(BaseProtocolClient):
             # noinspection PyUnresolvedReferences
             return Observable.throw(ProtocolClientException())
 
-        ws_url = td.resolve_form_uri(form)
+        ws_url = form.resolve_uri(td.base)
 
         msg_req = WebsocketMessageRequest(
             method=WebsocketMethods.ON_EVENT,
@@ -335,7 +335,7 @@ class WebsocketClient(BaseProtocolClient):
             # noinspection PyUnresolvedReferences
             return Observable.throw(ProtocolClientException())
 
-        ws_url = td.resolve_form_uri(form)
+        ws_url = form.resolve_uri(td.base)
 
         msg_req = WebsocketMessageRequest(
             method=WebsocketMethods.ON_PROPERTY_CHANGE,

@@ -5,6 +5,8 @@
 Wrapper classes for link dictionaries defined in the Scripting API.
 """
 
+from six.moves import urllib
+
 from wotpy.wot.dictionaries.security import SecuritySchemeDict
 from wotpy.wot.dictionaries.utils import build_init_dict
 
@@ -71,3 +73,17 @@ class FormDict(LinkDict):
         val = self._init.get("security")
 
         return SecuritySchemeDict.build(val) if val is not None else None
+
+    def resolve_uri(self, base=None):
+        """Resolves and returns the Link URI.
+        When the href does not contain a full URL the base URI is joined with said href."""
+
+        href_parsed = urllib.parse.urlparse(self.href)
+
+        if base and not href_parsed.scheme:
+            return urllib.parse.urljoin(base, self.href)
+
+        if href_parsed.scheme:
+            return self.href
+
+        return None
