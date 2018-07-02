@@ -58,7 +58,7 @@ class ThingDescription(object):
             }
 
             if form.security:
-                ret.update(filter_dict(form.security.to_dict()))
+                ret.update({"security": filter_dict(form.security.to_dict())})
 
             return filter_dict(ret)
 
@@ -85,10 +85,10 @@ class ThingDescription(object):
             }
 
             if action.input:
-                ret.update(filter_dict(action.input.to_dict()))
+                ret.update({"input": filter_dict(action.input.to_dict())})
 
             if action.output:
-                ret.update(filter_dict(action.output.to_dict()))
+                ret.update({"output": filter_dict(action.output.to_dict())})
 
             return filter_dict(ret)
 
