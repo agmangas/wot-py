@@ -50,8 +50,6 @@ def websocket_servient():
         },
         "actions": {
             action_name_01: {
-                "writable": True,
-                "observable": True,
                 "input": {
                     "type": "object"
                 },

@@ -6,7 +6,12 @@ Class that represents a Thing consumed by a servient.
 """
 
 import tornado.gen
+from rx.concurrency import IOLoopScheduler
 
+from wotpy.wot.consumed.interactions import \
+    ConsumedThingPropertyDict, \
+    ConsumedThingActionDict, \
+    ConsumedThingEventDict
 from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 
 
@@ -15,8 +20,21 @@ class ConsumedThing(AbstractConsumedThing):
     An application uses this class when it acts as a *client* of the Thing."""
 
     def __init__(self, servient, td):
-        self.servient = servient
-        self.td = td
+        self._servient = servient
+        self._td = td
+
+    @property
+    def servient(self):
+        """Returns the Servient that contains this Consumed Thing."""
+
+        return self._servient
+
+    @property
+    def td(self):
+        """Returns the ThingDescription instance that represents
+        the TD that this Consumed Thing is based on."""
+
+        return self._td
 
     @property
     def name(self):
@@ -80,21 +98,21 @@ class ConsumedThing(AbstractConsumedThing):
 
     @property
     def properties(self):
-        """Represents a dictionary of ThingProperty items."""
+        """Returns a dictionary of ThingProperty items."""
 
-        raise NotImplementedError()
+        return ConsumedThingPropertyDict(consumed_thing=self)
 
     @property
     def actions(self):
-        """Represents a dictionary of ThingAction items."""
+        """Returns a dictionary of ThingAction items."""
 
-        raise NotImplementedError()
+        return ConsumedThingActionDict(consumed_thing=self)
 
     @property
     def events(self):
-        """Represents a dictionary of ThingEvent items."""
+        """Returns a dictionary of ThingEvent items."""
 
-        raise NotImplementedError()
+        return ConsumedThingEventDict(consumed_thing=self)
 
     @property
     def links(self):
@@ -102,7 +120,8 @@ class ConsumedThing(AbstractConsumedThing):
 
         raise NotImplementedError()
 
-    def subscribe(self):
+    def subscribe(self, *args, **kwargs):
         """Subscribes to changes on the TD of this thing."""
 
-        raise NotImplementedError()
+        observable = self.on_td_change()
+        return observable.subscribe_on(IOLoopScheduler()).subscribe(*args, **kwargs)
