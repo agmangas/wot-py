@@ -47,3 +47,10 @@ class Form(object):
             self.media_type,
             self.rel
         ))
+
+    @property
+    def security(self):
+        """Returns a SecurityScheme object that represents
+        the security strategy implemented on this Form."""
+
+        return None

@@ -113,7 +113,6 @@ class ThingDescription(object):
             "name": thing.name,
             "description": thing.description,
             "support": thing.support,
-            "security": [item.to_dict() for item in thing.security],
             "properties": {
                 key: json_property(val)
                 for key, val in six.iteritems(thing.properties)
@@ -127,6 +126,9 @@ class ThingDescription(object):
                 for key, val in six.iteritems(thing.events)
             }
         }
+
+        if thing.security:
+            doc.update({"security": [item.to_dict() for item in thing.security]})
 
         doc = filter_dict(doc)
 

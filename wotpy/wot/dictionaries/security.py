@@ -182,11 +182,6 @@ class PopSecuritySchemeDict(DigestSecuritySchemeDict):
     def __init__(self, *args, **kwargs):
         super(PopSecuritySchemeDict, self).__init__(*args, **kwargs)
 
-    def to_dict(self):
-        """The internal dictionary that contains the entire set of properties."""
-
-        return super(PopSecuritySchemeDict, self).to_dict()
-
     @property
     def scheme(self):
         """The scheme property represents the identification
@@ -200,11 +195,6 @@ class ApikeySecuritySchemeDict(BasicSecuritySchemeDict):
 
     def __init__(self, *args, **kwargs):
         super(ApikeySecuritySchemeDict, self).__init__(*args, **kwargs)
-
-    def to_dict(self):
-        """The internal dictionary that contains the entire set of properties."""
-
-        return super(ApikeySecuritySchemeDict, self).to_dict()
 
     @property
     def scheme(self):

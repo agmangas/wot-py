@@ -114,6 +114,13 @@ class Thing(object):
             self._actions.values(),
             self._events.values())
 
+    @property
+    def security(self):
+        """Returns a list of SecurityScheme objects that represents
+        the security strategies implemented on this Thing."""
+
+        return None
+
     def find_interaction(self, name):
         """Finds an existing Interaction by name.
         The name argument may be the original name or the URL-safe version."""
