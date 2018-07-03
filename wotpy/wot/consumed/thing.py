@@ -23,6 +23,12 @@ class ConsumedThing(AbstractConsumedThing):
         self._servient = servient
         self._td = td
 
+    def __getattr__(self, name):
+        """Search for members that raised an AttributeError in
+        the private ThingTemplate instance before propagating the exception."""
+
+        return getattr(self.td.to_thing_template(), name)
+
     @property
     def servient(self):
         """Returns the Servient that contains this Consumed Thing."""
@@ -35,12 +41,6 @@ class ConsumedThing(AbstractConsumedThing):
         the TD that this Consumed Thing is based on."""
 
         return self._td
-
-    @property
-    def name(self):
-        """User-given name of the Thing."""
-
-        return self.td.name
 
     @tornado.gen.coroutine
     def invoke_action(self, name, input_value=None):

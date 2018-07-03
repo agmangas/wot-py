@@ -91,6 +91,23 @@ def _test_event_emission_events(exposed_thing, subscribe_func):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
+def test_thing_template_getters(websocket_servient):
+    """ThingTemplate properties can be accessed from the ConsumedThing."""
+
+    servient = websocket_servient.pop("servient")
+    exposed_thing = websocket_servient.pop("exposed_thing")
+    td = ThingDescription.from_thing(exposed_thing.thing)
+    consumed_thing = ConsumedThing(servient=servient, td=td)
+
+    thing_template = consumed_thing.td.to_thing_template()
+
+    assert consumed_thing.id == thing_template.id
+    assert consumed_thing.name == thing_template.name
+    assert consumed_thing.description == thing_template.description
+    assert consumed_thing.type == thing_template.type
+    assert consumed_thing.context == thing_template.context
+
+
 def test_read_property(websocket_servient):
     """A ConsumedThing is able to read properties."""
 
