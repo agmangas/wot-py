@@ -22,7 +22,7 @@ from wotpy.wot.dictionaries.interaction import ActionInitDict
 def test_read_property(websocket_servient):
     """The Websockets client can read properties."""
 
-    exposed_thing = websocket_servient.pop("exposed_thing")
+    exposed_thing = next(websocket_servient.exposed_things)
     td = ThingDescription.from_thing(exposed_thing.thing)
 
     @tornado.gen.coroutine
@@ -45,7 +45,7 @@ def test_read_property(websocket_servient):
 def test_read_property_unknown(websocket_servient):
     """The Websockets client raises an error when attempting to read an unknown property."""
 
-    exposed_thing = websocket_servient.pop("exposed_thing")
+    exposed_thing = next(websocket_servient.exposed_things)
     td = ThingDescription.from_thing(exposed_thing.thing)
 
     @tornado.gen.coroutine
@@ -62,7 +62,7 @@ def test_read_property_unknown(websocket_servient):
 def test_write_property(websocket_servient):
     """The Websockets client can write properties."""
 
-    exposed_thing = websocket_servient.pop("exposed_thing")
+    exposed_thing = next(websocket_servient.exposed_things)
     td = ThingDescription.from_thing(exposed_thing.thing)
 
     @tornado.gen.coroutine
@@ -85,7 +85,7 @@ def test_write_property(websocket_servient):
 def test_invoke_action(websocket_servient):
     """The Websockets client can invoke actions."""
 
-    exposed_thing = websocket_servient.pop("exposed_thing")
+    exposed_thing = next(websocket_servient.exposed_things)
     td = ThingDescription.from_thing(exposed_thing.thing)
 
     @tornado.gen.coroutine
@@ -108,7 +108,7 @@ def test_invoke_action(websocket_servient):
 def test_on_event(websocket_servient):
     """The Websockets client can observe events."""
 
-    exposed_thing = websocket_servient.pop("exposed_thing")
+    exposed_thing = next(websocket_servient.exposed_things)
     td = ThingDescription.from_thing(exposed_thing.thing)
 
     @tornado.gen.coroutine
@@ -150,7 +150,7 @@ def test_on_event(websocket_servient):
 def test_on_property_change(websocket_servient):
     """The Websockets client can observe property changes."""
 
-    exposed_thing = websocket_servient.pop("exposed_thing")
+    exposed_thing = next(websocket_servient.exposed_things)
     td = ThingDescription.from_thing(exposed_thing.thing)
 
     @tornado.gen.coroutine
@@ -220,7 +220,7 @@ def test_on_property_change(websocket_servient):
 def test_on_td_change(websocket_servient):
     """The Websockets client can observe Thing Description changes."""
 
-    exposed_thing = websocket_servient.pop("exposed_thing")
+    exposed_thing = next(websocket_servient.exposed_things)
     td = ThingDescription.from_thing(exposed_thing.thing)
 
     @tornado.gen.coroutine

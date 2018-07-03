@@ -3,14 +3,18 @@
 
 import uuid
 
-# noinspection PyPackageRequirements
 import pytest
+import tornado.gen
+import tornado.ioloop
 import tornado.web
-# noinspection PyPackageRequirements
 from faker import Faker
+from mock import MagicMock
 
 from tests.td_examples import TD_EXAMPLE
+from wotpy.protocols.client import BaseProtocolClient
+from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
+from wotpy.wot.consumed.thing import ConsumedThing
 from wotpy.wot.dictionaries.interaction import PropertyInitDict, ActionInitDict, EventInitDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
@@ -79,3 +83,74 @@ def td_example_tornado_app():
             self.write(TD_EXAMPLE)
 
     return tornado.web.Application([(r"/", TDHandler)])
+
+
+class ExposedThingProxyClient(BaseProtocolClient):
+    """Dummy Protocol Binding client implementation that
+    basically serves as a proxy for a local ExposedThing object."""
+
+    def __init__(self, exp_thing):
+        self._exp_thing = exp_thing
+        super(ExposedThingProxyClient, self).__init__()
+
+    @property
+    def protocol(self):
+        return None
+
+    def is_supported_interaction(self, td, name):
+        return True
+
+    @tornado.gen.coroutine
+    def invoke_action(self, td, name, input_value):
+        result = yield self._exp_thing.invoke_action(name, input_value)
+        raise tornado.gen.Return(result)
+
+    @tornado.gen.coroutine
+    def write_property(self, td, name, value):
+        yield self._exp_thing.write_property(name, value)
+
+    @tornado.gen.coroutine
+    def read_property(self, td, name):
+        value = yield self._exp_thing.read_property(name)
+        raise tornado.gen.Return(value)
+
+    def on_event(self, td, name):
+        return self._exp_thing.on_event(name)
+
+    def on_property_change(self, td, name):
+        return self._exp_thing.on_property_change(name)
+
+    def on_td_change(self, url):
+        return self._exp_thing.on_td_change()
+
+
+@pytest.fixture
+def consumed_exposed_pair():
+    """Returns a dict with two keys:
+    * consumed_thing: A ConsumedThing instance. The Servient instance that contains this
+    ConsumedThing has been patched to use the ExposedThingProxyClient Protocol Binding client.
+    * exposed_thing: The ExposedThing behind the previous ConsumedThing (for assertion purposes)."""
+
+    exp_thing = ExposedThing(
+        servient=Servient(),
+        thing=Thing(id=uuid.uuid4().urn))
+
+    @tornado.gen.coroutine
+    def lower(parameters):
+        input_value = parameters.get("input")
+        yield tornado.gen.sleep(0)
+        raise tornado.gen.Return(str(input_value).lower())
+
+    exp_thing.add_property(uuid.uuid4().hex, property_init())
+    exp_thing.add_action(uuid.uuid4().hex, action_init())
+    exp_thing.set_action_handler(next(name for name in exp_thing.actions), lower)
+    exp_thing.add_event(uuid.uuid4().hex, event_init())
+
+    servient = Servient()
+    servient.select_client = MagicMock(return_value=ExposedThingProxyClient(exp_thing))
+    td = ThingDescription.from_thing(exp_thing.thing)
+
+    return {
+        "consumed_thing": ConsumedThing(servient=servient, td=td),
+        "exposed_thing": exp_thing
+    }

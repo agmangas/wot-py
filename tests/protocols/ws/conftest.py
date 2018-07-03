@@ -8,15 +8,20 @@ import uuid
 
 # noinspection PyPackageRequirements
 import pytest
+import tornado.concurrent
+import tornado.gen
 import tornado.gen
 import tornado.ioloop
+import tornado.ioloop
 import tornado.testing
+import tornado.websocket
 import tornado.websocket
 # noinspection PyPackageRequirements
 from faker import Faker
 from six.moves.urllib.parse import urlparse, urlunparse
 
 from wotpy.protocols.ws.server import WebsocketServer
+from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
 from wotpy.wot.dictionaries.interaction import PropertyInitDict, ActionInitDict, EventInitDict
 from wotpy.wot.exposed.thing import ExposedThing
@@ -125,3 +130,68 @@ def websocket_server():
         "url_thing_02": url_thing_02,
         "ws_port": ws_port
     }
+
+
+@pytest.fixture
+def websocket_servient():
+    """Returns a Servient that exposes a Websockets server and one ExposedThing."""
+
+    ws_port = random.randint(20000, 40000)
+    ws_server = WebsocketServer(port=ws_port)
+
+    servient = Servient()
+    servient.add_server(ws_server)
+
+    wot = servient.start()
+
+    property_name_01 = uuid.uuid4().hex
+    property_name_02 = uuid.uuid4().hex
+    action_name_01 = uuid.uuid4().hex
+    event_name_01 = uuid.uuid4().hex
+
+    td_dict = {
+        "id": uuid.uuid4().urn,
+        "name": uuid.uuid4().hex,
+        "properties": {
+            property_name_01: {
+                "writable": True,
+                "observable": True,
+                "type": "string"
+            },
+            property_name_02: {
+                "writable": True,
+                "observable": True,
+                "type": "string"
+            }
+        },
+        "actions": {
+            action_name_01: {
+                "input": {
+                    "type": "object"
+                },
+                "output": {
+                    "type": "string"
+                },
+            }
+        },
+        "events": {
+            event_name_01: {
+                "type": "string"
+            }
+        },
+    }
+
+    td = ThingDescription(td_dict)
+
+    exposed_thing = wot.produce(td.to_str())
+    exposed_thing.expose()
+
+    @tornado.gen.coroutine
+    def action_handler(parameters):
+        input_value = parameters.get("input")
+        arg_b = input_value.get("arg_b") or uuid.uuid4().hex
+        raise tornado.gen.Return(input_value.get("arg_a") + arg_b)
+
+    exposed_thing.set_action_handler(action_name_01, action_handler)
+
+    return servient

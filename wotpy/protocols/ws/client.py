@@ -25,7 +25,9 @@ from wotpy.protocols.ws.messages import \
 from wotpy.wot.events import \
     PropertyChangeEmittedEvent, \
     EmittedEvent, \
-    ThingDescriptionChangeEmittedEvent, PropertyChangeEventInit, ThingDescriptionChangeEventInit
+    ThingDescriptionChangeEmittedEvent, \
+    PropertyChangeEventInit, \
+    ThingDescriptionChangeEventInit
 
 
 class WebsocketClient(BaseProtocolClient):
