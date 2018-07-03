@@ -26,6 +26,12 @@ class ExposedThingInteractionDict(UserDict):
 
         return self.thing_interaction_class(self._exposed_thing, name)
 
+    def __len__(self):
+        return len(self.thing_interaction_dict)
+
+    def __contains__(self, item):
+        return item in self.thing_interaction_dict
+
     @property
     def thing_interaction_dict(self):
         """Returns the InteractionPattern objects dict by name."""

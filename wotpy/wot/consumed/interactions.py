@@ -26,6 +26,12 @@ class ConsumedThingInteractionDict(UserDict):
 
         return self.thing_interaction_class(self._consumed_thing, name)
 
+    def __len__(self):
+        return len(self.thing_interaction_dict)
+
+    def __contains__(self, item):
+        return item in self.thing_interaction_dict
+
     @property
     def thing_interaction_dict(self):
         """Returns an interactions dict by name.
