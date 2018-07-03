@@ -133,6 +133,12 @@ class Servient(object):
         return self._exposed_thing_group
 
     @property
+    def exposed_things(self):
+        """Returns an iterator for the ExposedThings contained in this Sevient."""
+
+        return self.exposed_thing_group.exposed_things
+
+    @property
     def servers(self):
         """Returns the dict of Protocol Binding servers attached to this servient."""
 
