@@ -5,6 +5,7 @@
 Classes that represent Interaction instances accessed on a ExposedThing.
 """
 
+import six
 import tornado.gen
 from rx.concurrency import IOLoopScheduler
 from six.moves import UserDict
@@ -31,6 +32,9 @@ class ExposedThingInteractionDict(UserDict):
 
     def __contains__(self, item):
         return item in self.thing_interaction_dict
+
+    def __iter__(self):
+        return six.iterkeys(self.thing_interaction_dict)
 
     @property
     def thing_interaction_dict(self):

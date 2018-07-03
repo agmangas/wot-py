@@ -528,3 +528,14 @@ def test_subscribe(exposed_thing, property_init, event_init, action_init):
         return exposed_thing.subscribe(*args, **kwargs)
 
     _test_td_change_events(exposed_thing, property_init, event_init, action_init, subscribe_func)
+
+
+def test_thing_interaction_dict_behaviour(exposed_thing, property_init):
+    """The Interactions dict-like interface of an ExposedThing behaves like a dict."""
+
+    prop_name = Faker().pystr()
+    exposed_thing.add_property(prop_name, property_init)
+
+    assert len(exposed_thing.properties) == 1
+    assert prop_name in exposed_thing.properties
+    assert next(key for key in exposed_thing.properties if key == prop_name)

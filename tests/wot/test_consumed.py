@@ -348,3 +348,18 @@ def test_thing_event_getters(websocket_servient):
         assert thing_action_con.type == thing_action_exp.type
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_thing_interaction_dict_behaviour(websocket_servient):
+    """The Interactions dict-like interface of a ConsumedThing behaves like a dict."""
+
+    servient = websocket_servient.pop("servient")
+    exposed_thing = websocket_servient.pop("exposed_thing")
+    td = ThingDescription.from_thing(exposed_thing.thing)
+    consumed_thing = ConsumedThing(servient=servient, td=td)
+
+    prop_name = next((key for key in consumed_thing.properties), None)
+
+    assert prop_name
+    assert len(consumed_thing.properties) > 0
+    assert prop_name in consumed_thing.properties
