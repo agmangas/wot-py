@@ -65,16 +65,19 @@ class WoT(object):
         """Accepts a model argument of type ThingModel and returns an ExposedThing
         object, locally created based on the provided initialization parameters."""
 
-        assert isinstance(model, six.string_types) or isinstance(model, ThingTemplateDict)
+        expected_types = (six.string_types, ThingTemplateDict, ConsumedThing)
+
+        if not isinstance(model, expected_types):
+            raise ValueError("Expected one of: {}".format(expected_types))
 
         if isinstance(model, six.string_types):
-            json_td = ThingDescription(doc=model)
-            thing = json_td.build_thing()
-            exposed_thing = ExposedThing(servient=self._servient, thing=thing)
+            thing = ThingDescription(doc=model).build_thing()
+        elif isinstance(model, ThingTemplateDict):
+            thing = Thing(thing_template=model)
         else:
-            thing = Thing(id=model.id)
-            exposed_thing = ExposedThing(servient=self._servient, thing=thing)
+            thing = model.td.build_thing()
 
+        exposed_thing = ExposedThing(servient=self._servient, thing=thing)
         self._servient.add_exposed_thing(exposed_thing)
 
         return exposed_thing

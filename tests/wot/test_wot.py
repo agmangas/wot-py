@@ -20,8 +20,8 @@ from wotpy.wot.servient import Servient
 from wotpy.wot.wot import WoT
 
 
-def test_produce_td():
-    """Things can be produced from thing descriptions serialized to JSON-LD string."""
+def test_produce_model_str():
+    """Things can be produced from TD documents serialized to JSON-LD string."""
 
     td_str = json.dumps(TD_EXAMPLE)
     thing_id = TD_EXAMPLE.get("id")
@@ -36,7 +36,7 @@ def test_produce_td():
     assert_exposed_thing_equal(exp_thing, TD_EXAMPLE)
 
 
-def test_produce_thing_template():
+def test_produce_model_thing_template():
     """Things can be produced from ThingTemplate instances."""
 
     thing_id = Faker().url()
@@ -53,7 +53,25 @@ def test_produce_thing_template():
     exp_thing = wot.produce(thing_template)
 
     assert servient.get_exposed_thing(thing_id)
-    assert exp_thing.name == thing_id
+    assert exp_thing.id == thing_id
+    assert exp_thing.name == thing_name
+
+
+def test_produce_model_consumed_thing():
+    """Things can be produced from ConsumedThing instances."""
+
+    servient = Servient()
+    wot = WoT(servient=servient)
+
+    td_str = json.dumps(TD_EXAMPLE)
+    consumed_thing = wot.consume(td_str)
+    exposed_thing = wot.produce(consumed_thing)
+
+    assert exposed_thing.id == consumed_thing.td.id
+    assert exposed_thing.name == consumed_thing.td.name
+    assert len(exposed_thing.properties) == len(consumed_thing.td.properties)
+    assert len(exposed_thing.actions) == len(consumed_thing.td.actions)
+    assert len(exposed_thing.events) == len(consumed_thing.td.events)
 
 
 @pytest.mark.flaky(reruns=5)
