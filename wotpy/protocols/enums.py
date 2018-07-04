@@ -13,11 +13,3 @@ class Protocols(EnumListMixin):
 
     HTTP = "HTTP"
     WEBSOCKETS = "WEBSOCKETS"
-
-
-class ProtocolSchemes(EnumListMixin):
-    """Enumeration of protocol schemes."""
-
-    HTTP = "http"
-    WS = "ws"
-    WSS = "wss"

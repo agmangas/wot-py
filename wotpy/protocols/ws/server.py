@@ -9,8 +9,9 @@ from tornado import web
 from tornado.httpserver import HTTPServer
 
 from wotpy.codecs.enums import MediaTypes
-from wotpy.protocols.enums import Protocols, ProtocolSchemes
+from wotpy.protocols.enums import Protocols
 from wotpy.protocols.server import BaseProtocolServer
+from wotpy.protocols.ws.enums import WebsocketSchemes
 from wotpy.protocols.ws.handler import WebsocketHandler
 from wotpy.td.form import Form
 
@@ -38,7 +39,7 @@ class WebsocketServer(BaseProtocolServer):
     def scheme(self):
         """Returns the URL scheme for this server."""
 
-        return ProtocolSchemes.WSS if self.is_secure else ProtocolSchemes.WS
+        return WebsocketSchemes.WSS if self.is_secure else WebsocketSchemes.WS
 
     @property
     def is_secure(self):

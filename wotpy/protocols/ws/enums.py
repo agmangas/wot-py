@@ -29,3 +29,10 @@ class WebsocketErrors(EnumListMixin):
     INVALID_METHOD_PARAMS = -32602
     INTERNAL_ERROR = -32603
     SUBSCRIPTION_ERROR = -32000
+
+
+class WebsocketSchemes(EnumListMixin):
+    """Enumeration of Websocket schemes."""
+
+    WS = "ws"
+    WSS = "wss"

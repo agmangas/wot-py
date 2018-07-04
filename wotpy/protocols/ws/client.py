@@ -14,8 +14,8 @@ from six.moves import urllib
 from tornado.concurrent import Future
 
 from wotpy.protocols.client import BaseProtocolClient, ProtocolClientException
-from wotpy.protocols.enums import ProtocolSchemes, Protocols
-from wotpy.protocols.ws.enums import WebsocketMethods
+from wotpy.protocols.enums import Protocols
+from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketSchemes
 from wotpy.protocols.ws.messages import \
     WebsocketMessageRequest, \
     WebsocketMessageResponse, \
@@ -51,7 +51,7 @@ class WebsocketClient(BaseProtocolClient):
 
         forms_wss = [
             form for form in forms
-            if cls._is_scheme_form(form, td.base, ProtocolSchemes.WSS)
+            if cls._is_scheme_form(form, td.base, WebsocketSchemes.WSS)
         ]
 
         if len(forms_wss):
@@ -59,7 +59,7 @@ class WebsocketClient(BaseProtocolClient):
 
         forms_ws = [
             form for form in forms
-            if cls._is_scheme_form(form, td.base, ProtocolSchemes.WS)
+            if cls._is_scheme_form(form, td.base, WebsocketSchemes.WS)
         ]
 
         if len(forms_ws):
@@ -229,12 +229,12 @@ class WebsocketClient(BaseProtocolClient):
 
         forms_wss = [
             form for form in forms
-            if self._is_scheme_form(form, td.base, ProtocolSchemes.WSS)
+            if self._is_scheme_form(form, td.base, WebsocketSchemes.WSS)
         ]
 
         forms_ws = [
             form for form in forms
-            if self._is_scheme_form(form, td.base, ProtocolSchemes.WS)
+            if self._is_scheme_form(form, td.base, WebsocketSchemes.WS)
         ]
 
         return len(forms_wss) or len(forms_ws)
@@ -361,7 +361,7 @@ class WebsocketClient(BaseProtocolClient):
 
         parsed_url = urllib.parse.urlparse(url)
 
-        if parsed_url.scheme not in [ProtocolSchemes.WSS, ProtocolSchemes.WS]:
+        if parsed_url.scheme not in WebsocketSchemes.list():
             raise ValueError("URL should point to a Websockets server")
 
         msg_req = WebsocketMessageRequest(
