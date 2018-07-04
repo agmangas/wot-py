@@ -101,3 +101,17 @@ class WoT(object):
         consumed_thing = self.consume(td_str)
 
         raise tornado.gen.Return(consumed_thing)
+
+    @tornado.gen.coroutine
+    def register(self, directory, thing):
+        """Generate the Thing Description as td, given the Properties,
+        Actions and Events defined for this ExposedThing object.
+        Then make a request to register td to the given WoT Thing Directory."""
+
+        raise NotImplementedError()
+
+    @tornado.gen.coroutine
+    def unregister(self, directory, thing):
+        """Makes a request to unregister the thing from the given WoT Thing Directory."""
+
+        raise NotImplementedError()
