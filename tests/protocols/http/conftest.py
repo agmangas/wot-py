@@ -22,15 +22,15 @@ def http_server():
     exposed_thing = ExposedThing(servient=Servient(), thing=Thing(id=uuid.uuid4().urn))
 
     exposed_thing.add_property(uuid.uuid4().hex, PropertyInitDict({
-        "type": "string",
-        "value": Faker().sentence(),
+        "type": "number",
+        "value": Faker().pyint(),
         "writable": True,
         "observable": True
     }))
 
     exposed_thing.add_property(uuid.uuid4().hex, PropertyInitDict({
-        "type": "string",
-        "value": Faker().sentence(),
+        "type": "number",
+        "value": Faker().pyint(),
         "writable": True,
         "observable": True
     }))

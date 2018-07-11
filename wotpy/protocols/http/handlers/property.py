@@ -7,17 +7,9 @@ Request handler for Property interactions.
 
 import tornado.gen
 from tornado.concurrent import Future
-from tornado.web import RequestHandler, HTTPError
+from tornado.web import RequestHandler
 
-
-def _get_exposed_thing(server, thing_name):
-    """Utility function to retrieve an ExposedThing
-    from the HTTPServer or raise an HTTPError."""
-
-    try:
-        return server.get_exposed_thing(thing_name)
-    except ValueError:
-        raise HTTPError(log_message="Unknown Thing: {}".format(thing_name))
+import wotpy.protocols.http.handlers.utils as handler_utils
 
 
 # noinspection PyAbstractClass
@@ -32,7 +24,7 @@ class PropertyReadWriteHandler(RequestHandler):
     def get(self, thing_name, name):
         """Reads and returns the Property value."""
 
-        exposed_thing = _get_exposed_thing(self._server, thing_name)
+        exposed_thing = handler_utils.get_exposed_thing(self._server, thing_name)
         value = yield exposed_thing.properties[name].get()
         self.write({"value": value})
 
@@ -40,8 +32,8 @@ class PropertyReadWriteHandler(RequestHandler):
     def post(self, thing_name, name):
         """Updates the Property value."""
 
-        exposed_thing = _get_exposed_thing(self._server, thing_name)
-        value = self.get_argument("value")
+        exposed_thing = handler_utils.get_exposed_thing(self._server, thing_name)
+        value = handler_utils.get_argument(self, "value")
         yield exposed_thing.properties[name].set(value)
 
 
@@ -58,7 +50,7 @@ class PropertyObserverHandler(RequestHandler):
         """Subscribes to Property updates and waits for the next event (HTTP long-polling pattern).
         Returns the updated value and destroys the subscription."""
 
-        exposed_thing = _get_exposed_thing(self._server, thing_name)
+        exposed_thing = handler_utils.get_exposed_thing(self._server, thing_name)
 
         future_next = Future()
         self.future_next = future_next
