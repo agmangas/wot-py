@@ -11,9 +11,8 @@ import tornado.web
 from wotpy.codecs.enums import MediaTypes
 from wotpy.protocols.enums import Protocols
 from wotpy.protocols.http.enums import HTTPSchemes
-from wotpy.protocols.http.handlers.property import \
-    PropertyObserverHandler, \
-    PropertyReadWriteHandler
+from wotpy.protocols.http.handlers.action import ActionInvokeHandler
+from wotpy.protocols.http.handlers.property import PropertyObserverHandler, PropertyReadWriteHandler
 from wotpy.protocols.server import BaseProtocolServer
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.form import Form
@@ -60,19 +59,23 @@ class HTTPServer(BaseProtocolServer):
         """Builds and returns the Tornado application for the WebSockets server."""
 
         return tornado.web.Application([(
-            r"/(?P<thing_name>[^\/]+)/(?P<name>[^\/]+)",
+            r"/(?P<thing_name>[^\/]+)/property/(?P<name>[^\/]+)",
             PropertyReadWriteHandler,
             {"http_server": self}
         ), (
-            r"/(?P<thing_name>[^\/]+)/(?P<name>[^\/]+)/subscription",
+            r"/(?P<thing_name>[^\/]+)/property/(?P<name>[^\/]+)/subscription",
             PropertyObserverHandler,
+            {"http_server": self}
+        ), (
+            r"/(?P<thing_name>[^\/]+)/action/(?P<name>[^\/]+)",
+            ActionInvokeHandler,
             {"http_server": self}
         )])
 
     def _build_forms_property(self, proprty, hostname):
         """Builds and returns the HTTP Form instances for the given Property interaction."""
 
-        href_read_write = "{}://{}:{}/{}/{}".format(
+        href_read_write = "{}://{}:{}/{}/property/{}".format(
             self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
             proprty.thing.url_name, proprty.url_name)
 
@@ -93,12 +96,28 @@ class HTTPServer(BaseProtocolServer):
 
         return [form_read_write, form_observe]
 
+    def _build_forms_action(self, action, hostname):
+        """Builds and returns the HTTP Form instances for the given Action interaction."""
+
+        href_invoke = "{}://{}:{}/{}/action/{}".format(
+            self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
+            action.thing.url_name, action.url_name)
+
+        form_invoke = Form(
+            interaction=action,
+            protocol=self.protocol,
+            href=href_invoke,
+            media_type=MediaTypes.JSON)
+
+        return [form_invoke]
+
     def build_forms(self, hostname, interaction):
         """Builds and returns a list with all Form that are
         linked to this server for the given Interaction."""
 
         intrct_type_map = {
-            InteractionTypes.PROPERTY: self._build_forms_property
+            InteractionTypes.PROPERTY: self._build_forms_property,
+            InteractionTypes.ACTION: self._build_forms_action
         }
 
         if interaction.interaction_type not in intrct_type_map:

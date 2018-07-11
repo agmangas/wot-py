@@ -10,6 +10,8 @@ import tornado.ioloop
 from faker import Faker
 from six.moves.urllib import parse
 
+JSON_HEADERS = {"Content-Type": "application/json"}
+
 
 def _get_property_href(exp_thing, prop_name, server):
     """Helper function to retrieve the Property read/write href."""
@@ -25,6 +27,14 @@ def _get_property_observe_href(exp_thing, prop_name, server):
     prop = exp_thing.thing.properties[prop_name]
     prop_forms = server.build_forms("localhost", prop)
     return next(item.href for item in prop_forms if item.rel == "observeProperty")
+
+
+def _get_action_href(exp_thing, action_name, server):
+    """Helper function to retrieve the Property subscription href."""
+
+    action = exp_thing.thing.actions[action_name]
+    action_forms = server.build_forms("localhost", action)
+    return next(item.href for item in action_forms if item.rel is None)
 
 
 def test_property_get(http_server):
@@ -82,7 +92,7 @@ def test_property_set_json(http_server):
 
     prop_value = Faker().pyint()
     body = json.dumps({"value": prop_value})
-    _test_property_set(http_server, body, prop_value, headers={"Content-Type": "application/json"})
+    _test_property_set(http_server, body, prop_value, headers=JSON_HEADERS)
 
 
 def test_property_subscribe(http_server):
@@ -115,5 +125,27 @@ def test_property_subscribe(http_server):
         periodic_set.stop()
 
         assert json.loads(response.body).get("value") == prop_value
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_action_run(http_server):
+    """Actions exposed in an HTTP server can be invoked with an HTTP POST request."""
+
+    exposed_thing = next(http_server.exposed_things)
+    action_name = next(six.iterkeys(exposed_thing.thing.actions))
+    href = _get_action_href(exposed_thing, action_name, http_server)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        action_arg = Faker().pyint()
+        body = json.dumps({"input": action_arg})
+        http_client = tornado.httpclient.AsyncHTTPClient()
+        http_request = tornado.httpclient.HTTPRequest(href, method="POST", body=body, headers=JSON_HEADERS)
+        response = yield http_client.fetch(http_request)
+        result = yield exposed_thing.actions[action_name].run(action_arg)
+
+        assert response.rethrow() is None
+        assert result == json.loads(response.body).get("result")
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)

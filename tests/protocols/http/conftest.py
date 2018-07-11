@@ -42,17 +42,17 @@ def http_server():
     action_name = uuid.uuid4().hex
 
     exposed_thing.add_action(action_name, ActionInitDict({
-        "input": {"type": "string"},
-        "output": {"type": "string"}
+        "input": {"type": "number"},
+        "output": {"type": "number"}
     }))
 
     @tornado.gen.coroutine
-    def upper(parameters):
+    def triple(parameters):
         input_value = parameters.get("input")
         yield tornado.gen.sleep(0)
-        raise tornado.gen.Return(input_value.upper())
+        raise tornado.gen.Return(input_value * 3)
 
-    exposed_thing.set_action_handler(action_name, upper)
+    exposed_thing.set_action_handler(action_name, triple)
 
     port = random.randint(20000, 40000)
 
