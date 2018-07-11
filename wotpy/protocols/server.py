@@ -41,6 +41,12 @@ class BaseProtocolServer(object):
 
         return self._exposed_thing_group
 
+    @property
+    def exposed_things(self):
+        """Returns an iterator for all the ExposedThings contained in this server."""
+
+        return self._exposed_thing_group.exposed_things
+
     def codec_for_media_type(self, media_type):
         """Returns a BaseCodec to serialize or deserialize content for the given media type."""
 
