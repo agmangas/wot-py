@@ -11,7 +11,7 @@ import tornado.web
 from wotpy.codecs.enums import MediaTypes
 from wotpy.protocols.enums import Protocols
 from wotpy.protocols.http.enums import HTTPSchemes
-from wotpy.protocols.http.handlers.action import ActionInvokeHandler
+from wotpy.protocols.http.handlers.action import ActionInvokeHandler, PendingInvocationHandler
 from wotpy.protocols.http.handlers.property import PropertyObserverHandler, PropertyReadWriteHandler
 from wotpy.protocols.server import BaseProtocolServer
 from wotpy.td.enums import InteractionTypes
@@ -29,6 +29,7 @@ class HTTPServer(BaseProtocolServer):
         self._server = None
         self._app = self._build_app()
         self._ssl_context = ssl_context
+        self._pending_actions = {}
 
     @property
     def protocol(self):
@@ -55,6 +56,12 @@ class HTTPServer(BaseProtocolServer):
 
         return self._app
 
+    @property
+    def pending_actions(self):
+        """Dict of pending action invocations represented as Futures."""
+
+        return self._pending_actions
+
     def _build_app(self):
         """Builds and returns the Tornado application for the WebSockets server."""
 
@@ -69,6 +76,10 @@ class HTTPServer(BaseProtocolServer):
         ), (
             r"/(?P<thing_name>[^\/]+)/action/(?P<name>[^\/]+)",
             ActionInvokeHandler,
+            {"http_server": self}
+        ), (
+            r"/invocation/(?P<invocation_id>[^\/]+)",
+            PendingInvocationHandler,
             {"http_server": self}
         )])
 

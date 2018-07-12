@@ -9,6 +9,7 @@ import tornado.httpclient
 import tornado.ioloop
 from faker import Faker
 from six.moves.urllib import parse
+from tornado.concurrent import Future
 
 JSON_HEADERS = {"Content-Type": "application/json"}
 
@@ -129,23 +130,89 @@ def test_property_subscribe(http_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_action_run(http_server):
-    """Actions exposed in an HTTP server can be invoked with an HTTP POST request."""
+@tornado.gen.coroutine
+def _test_action_run(server):
+    """"""
 
-    exposed_thing = next(http_server.exposed_things)
+    exposed_thing = next(server.exposed_things)
     action_name = next(six.iterkeys(exposed_thing.thing.actions))
-    href = _get_action_href(exposed_thing, action_name, http_server)
+    href = _get_action_href(exposed_thing, action_name, server)
+
+    action_future = Future()
+
+    @tornado.gen.coroutine
+    def action_handler(parameters):
+        yield action_future
+        raise tornado.gen.Return(parameters.get("input") * 2)
+
+    exposed_thing.set_action_handler(action_name, action_handler)
+
+    input_value = Faker().pyint()
+    body = json.dumps({"input": input_value})
+    http_client = tornado.httpclient.AsyncHTTPClient()
+    http_request = tornado.httpclient.HTTPRequest(href, method="POST", body=body, headers=JSON_HEADERS)
+    response = yield http_client.fetch(http_request)
+    invocation_url = json.loads(response.body).get("invocation")
+
+    assert invocation_url is not None
+
+    @tornado.gen.coroutine
+    def fetch_invocation():
+        href_invoc = "http://localhost:{}/{}".format(server.port, invocation_url.lstrip("/"))
+        http_request_invoc = tornado.httpclient.HTTPRequest(href_invoc, method="GET")
+        response_invoc = yield http_client.fetch(http_request_invoc)
+        raise tornado.gen.Return(json.loads(response_invoc.body))
+
+    raise tornado.gen.Return({
+        "expected_result": input_value * 2,
+        "fetch_invocation": fetch_invocation,
+        "action_future": action_future
+    })
+
+
+def test_action_run_success(http_server):
+    """Actions exposed in an HTTP server can be successfully invoked with an HTTP POST request."""
 
     @tornado.gen.coroutine
     def test_coroutine():
-        action_arg = Faker().pyint()
-        body = json.dumps({"input": action_arg})
-        http_client = tornado.httpclient.AsyncHTTPClient()
-        http_request = tornado.httpclient.HTTPRequest(href, method="POST", body=body, headers=JSON_HEADERS)
-        response = yield http_client.fetch(http_request)
-        result = yield exposed_thing.actions[action_name].run(action_arg)
+        action_fixtures = yield _test_action_run(http_server)
+        expected_result = action_fixtures.pop("expected_result")
+        fetch_invocation = action_fixtures.pop("fetch_invocation")
+        action_future = action_fixtures.pop("action_future")
 
-        assert response.rethrow() is None
-        assert result == json.loads(response.body).get("result")
+        invocation = yield fetch_invocation()
+
+        assert invocation.get("done") is False
+
+        action_future.set_result(True)
+        invocation = yield fetch_invocation()
+
+        assert invocation.get("done") is True
+        assert invocation.get("result") == expected_result
+        assert invocation.get("error", None) is None
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_action_run_error(http_server):
+    """Actions exposed in an HTTP server can raise errors."""
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        action_fixtures = yield _test_action_run(http_server)
+        fetch_invocation = action_fixtures.pop("fetch_invocation")
+        action_future = action_fixtures.pop("action_future")
+
+        invocation = yield fetch_invocation()
+
+        assert invocation.get("done") is False
+
+        ex_message = Faker().sentence()
+        action_future.set_exception(Exception(ex_message))
+        invocation = yield fetch_invocation()
+
+        assert invocation.get("done") is True
+        assert invocation.get("result", None) is None
+        assert ex_message in invocation.get("error")
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
