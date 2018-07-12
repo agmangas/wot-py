@@ -12,6 +12,7 @@ from wotpy.codecs.enums import MediaTypes
 from wotpy.protocols.enums import Protocols
 from wotpy.protocols.http.enums import HTTPSchemes
 from wotpy.protocols.http.handlers.action import ActionInvokeHandler, PendingInvocationHandler
+from wotpy.protocols.http.handlers.event import EventObserverHandler
 from wotpy.protocols.http.handlers.property import PropertyObserverHandler, PropertyReadWriteHandler
 from wotpy.protocols.server import BaseProtocolServer
 from wotpy.td.enums import InteractionTypes
@@ -81,6 +82,10 @@ class HTTPServer(BaseProtocolServer):
             r"/invocation/(?P<invocation_id>[^\/]+)",
             PendingInvocationHandler,
             {"http_server": self}
+        ), (
+            r"/(?P<thing_name>[^\/]+)/event/(?P<name>[^\/]+)/subscription",
+            EventObserverHandler,
+            {"http_server": self}
         )])
 
     def _build_forms_property(self, proprty, hostname):
@@ -122,13 +127,30 @@ class HTTPServer(BaseProtocolServer):
 
         return [form_invoke]
 
+    def _build_forms_event(self, event, hostname):
+        """Builds and returns the HTTP Form instances for the given Event interaction."""
+
+        href_observe = "{}://{}:{}/{}/event/{}/subscription".format(
+            self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
+            event.thing.url_name, event.url_name)
+
+        form_observe = Form(
+            interaction=event,
+            protocol=self.protocol,
+            href=href_observe,
+            media_type=MediaTypes.JSON,
+            rel=self.REL_OBSERVE)
+
+        return [form_observe]
+
     def build_forms(self, hostname, interaction):
         """Builds and returns a list with all Form that are
         linked to this server for the given Interaction."""
 
         intrct_type_map = {
             InteractionTypes.PROPERTY: self._build_forms_property,
-            InteractionTypes.ACTION: self._build_forms_action
+            InteractionTypes.ACTION: self._build_forms_action,
+            InteractionTypes.EVENT: self._build_forms_event
         }
 
         if interaction.interaction_type not in intrct_type_map:

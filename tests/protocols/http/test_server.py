@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import random
 
 import six
 import tornado.gen
@@ -12,6 +13,7 @@ from six.moves.urllib import parse
 from tornado.concurrent import Future
 
 JSON_HEADERS = {"Content-Type": "application/json"}
+REL_OBSERVE = "observeProperty"
 
 
 def _get_property_href(exp_thing, prop_name, server):
@@ -27,7 +29,7 @@ def _get_property_observe_href(exp_thing, prop_name, server):
 
     prop = exp_thing.thing.properties[prop_name]
     prop_forms = server.build_forms("localhost", prop)
-    return next(item.href for item in prop_forms if item.rel == "observeProperty")
+    return next(item.href for item in prop_forms if item.rel == REL_OBSERVE)
 
 
 def _get_action_href(exp_thing, action_name, server):
@@ -36,6 +38,14 @@ def _get_action_href(exp_thing, action_name, server):
     action = exp_thing.thing.actions[action_name]
     action_forms = server.build_forms("localhost", action)
     return next(item.href for item in action_forms if item.rel is None)
+
+
+def _get_event_observe_href(exp_thing, event_name, server):
+    """Helper function to retrieve the Event subscription href."""
+
+    event = exp_thing.thing.events[event_name]
+    event_forms = server.build_forms("localhost", event)
+    return next(item.href for item in event_forms if item.rel == REL_OBSERVE)
 
 
 def test_property_get(http_server):
@@ -214,5 +224,35 @@ def test_action_run_error(http_server):
         assert invocation.get("done") is True
         assert invocation.get("result", None) is None
         assert ex_message in invocation.get("error")
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_event_subscribe(http_server):
+    """Events exposed in an HTTP server can be subscribed to with an HTTP GET request."""
+
+    exposed_thing = next(http_server.exposed_things)
+    event_name = next(six.iterkeys(exposed_thing.thing.events))
+    href = _get_event_observe_href(exposed_thing, event_name, http_server)
+
+    fake = Faker()
+    payload = {fake.pystr(): random.choice([fake.pystr(), fake.pyint()]) for _ in range(5)}
+
+    @tornado.gen.coroutine
+    def emit_event():
+        yield exposed_thing.emit_event(event_name, payload)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        periodic_set = tornado.ioloop.PeriodicCallback(emit_event, 10)
+        periodic_set.start()
+
+        http_client = tornado.httpclient.AsyncHTTPClient()
+        http_request = tornado.httpclient.HTTPRequest(href, method="GET")
+        response = yield http_client.fetch(http_request)
+
+        periodic_set.stop()
+
+        assert json.loads(response.body).get("payload") == payload
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
