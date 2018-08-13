@@ -109,16 +109,16 @@ class ConsumedThingProperty(object):
         raise AttributeError(name)
 
     @tornado.gen.coroutine
-    def get(self):
-        """The get() method will fetch the value of the Property.
+    def read(self):
+        """The read() method will fetch the value of the Property.
         A coroutine that yields the value or raises an error."""
 
         value = yield self._consumed_thing.read_property(self._name)
         raise tornado.gen.Return(value)
 
     @tornado.gen.coroutine
-    def set(self, value):
-        """The set() method will attempt to set the value of the
+    def write(self, value):
+        """The write() method will attempt to set the value of the
         Property specified in the value argument whose type SHOULD
         match the one specified by the type property.
         A coroutine that yields on success or raises an error."""
@@ -151,8 +151,8 @@ class ConsumedThingAction(object):
         raise AttributeError(name)
 
     @tornado.gen.coroutine
-    def run(self, input_value):
-        """The run() method when invoked, starts the Action interaction
+    def invoke(self, input_value):
+        """The invoke() method when invoked, starts the Action interaction
         with the input value provided by the inputValue argument."""
 
         result = yield self._consumed_thing.invoke_action(self._name, input_value)

@@ -282,14 +282,14 @@ class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
 
         self._events_stream.on_next(EmittedEvent(name=event_name, init=payload))
 
-    def add_property(self, name, property_init):
+    def add_property(self, name, property_init, value=None):
         """Adds a Property defined by the argument and updates the Thing Description.
         Takes an instance of ThingPropertyInit as argument."""
 
         prop = Property(thing=self._thing, name=name, init_dict=property_init)
 
         self._thing.add_interaction(prop)
-        self._set_property_value(prop, property_init.value)
+        self._set_property_value(prop, value)
 
         event_data = ThingDescriptionChangeEventInit(
             td_change_type=TDChangeType.PROPERTY,

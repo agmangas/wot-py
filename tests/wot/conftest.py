@@ -15,29 +15,28 @@ from wotpy.protocols.client import BaseProtocolClient
 from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
 from wotpy.wot.consumed.thing import ConsumedThing
-from wotpy.wot.dictionaries.interaction import PropertyInitDict, ActionInitDict, EventInitDict
+from wotpy.wot.dictionaries.interaction import PropertyFragment, ActionFragment, EventFragment
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 
 
 @pytest.fixture
-def property_init():
+def property_fragment():
     """Builds and returns a random PropertyInit."""
 
-    return PropertyInitDict({
+    return PropertyFragment({
         "label": Faker().sentence(),
         "writable": True,
         "observable": True,
-        "type": "string",
-        "value": Faker().sentence()
+        "type": "string"
     })
 
 
 @pytest.fixture
-def event_init():
+def event_fragment():
     """Builds and returns a random EventInit."""
 
-    return EventInitDict({
+    return EventFragment({
         "label": Faker().sentence(),
         "type": "string",
         "value": Faker().sentence()
@@ -45,10 +44,10 @@ def event_init():
 
 
 @pytest.fixture
-def action_init():
+def action_fragment():
     """Builds and returns a random ActionInit."""
 
-    return ActionInitDict({
+    return ActionFragment({
         "label": Faker().sentence(),
         "input": {
             "type": "string",
@@ -141,10 +140,10 @@ def consumed_exposed_pair():
         yield tornado.gen.sleep(0)
         raise tornado.gen.Return(str(input_value).lower())
 
-    exp_thing.add_property(uuid.uuid4().hex, property_init())
-    exp_thing.add_action(uuid.uuid4().hex, action_init())
+    exp_thing.add_property(uuid.uuid4().hex, property_fragment())
+    exp_thing.add_action(uuid.uuid4().hex, action_fragment())
     exp_thing.set_action_handler(next(name for name in exp_thing.actions), lower)
-    exp_thing.add_event(uuid.uuid4().hex, event_init())
+    exp_thing.add_event(uuid.uuid4().hex, event_fragment())
 
     servient = Servient()
     servient.select_client = MagicMock(return_value=ExposedThingProxyClient(exp_thing))

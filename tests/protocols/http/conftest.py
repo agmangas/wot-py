@@ -10,7 +10,7 @@ from faker import Faker
 
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.td.thing import Thing
-from wotpy.wot.dictionaries.interaction import PropertyInitDict, ActionInitDict, EventInitDict
+from wotpy.wot.dictionaries.interaction import PropertyFragment, ActionFragment, EventFragment
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 
@@ -21,27 +21,25 @@ def http_server():
 
     exposed_thing = ExposedThing(servient=Servient(), thing=Thing(id=uuid.uuid4().urn))
 
-    exposed_thing.add_property(uuid.uuid4().hex, PropertyInitDict({
+    exposed_thing.add_property(uuid.uuid4().hex, PropertyFragment({
         "type": "number",
-        "value": Faker().pyint(),
         "writable": True,
         "observable": True
-    }))
+    }), value=Faker().pyint())
 
-    exposed_thing.add_property(uuid.uuid4().hex, PropertyInitDict({
+    exposed_thing.add_property(uuid.uuid4().hex, PropertyFragment({
         "type": "number",
-        "value": Faker().pyint(),
         "writable": True,
         "observable": True
-    }))
+    }), value=Faker().pyint())
 
-    exposed_thing.add_event(uuid.uuid4().hex, EventInitDict({
+    exposed_thing.add_event(uuid.uuid4().hex, EventFragment({
         "type": "object"
     }))
 
     action_name = uuid.uuid4().hex
 
-    exposed_thing.add_action(action_name, ActionInitDict({
+    exposed_thing.add_action(action_name, ActionFragment({
         "input": {"type": "number"},
         "output": {"type": "number"}
     }))

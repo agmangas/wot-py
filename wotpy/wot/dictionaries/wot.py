@@ -7,13 +7,13 @@ Wrapper classes for dictionaries used at the WoT object level defined in the Scr
 
 import six
 
-from wotpy.wot.dictionaries.interaction import PropertyInitDict, ActionInitDict, EventInitDict
+from wotpy.wot.dictionaries.interaction import PropertyFragment, ActionFragment, EventFragment
 from wotpy.wot.dictionaries.link import WebLinkDict
 from wotpy.wot.dictionaries.security import SecuritySchemeDict
 from wotpy.wot.dictionaries.utils import build_init_dict
 
 
-class ThingTemplateDict(object):
+class ThingFragment(object):
     """ThingTemplate is a wrapper around a dictionary that contains properties
     representing semantic metadata and interactions (Properties, Actions and Events).
     It is used for initializing an internal representation of a Thing Description,
@@ -70,7 +70,7 @@ class ThingTemplateDict(object):
         that correspond to Property names and values of type PropertyInit."""
 
         return {
-            key: PropertyInitDict(val)
+            key: PropertyFragment(val)
             for key, val in six.iteritems(self._init.get("properties", {}))
         }
 
@@ -80,7 +80,7 @@ class ThingTemplateDict(object):
         that correspond to Action names and values of type ActionInit."""
 
         return {
-            key: ActionInitDict(val)
+            key: ActionFragment(val)
             for key, val in six.iteritems(self._init.get("actions", {}))
         }
 
@@ -90,7 +90,7 @@ class ThingTemplateDict(object):
         that correspond to Event names and values of type EventInit."""
 
         return {
-            key: EventInitDict(val)
+            key: EventFragment(val)
             for key, val in six.iteritems(self._init.get("events", {}))
         }
 
@@ -113,7 +113,7 @@ class ThingTemplateDict(object):
         return self._init.get("@type")
 
 
-class ThingFilterDict(object):
+class ThingFilter(object):
     """The ThingFilter dictionary that represents the
     constraints for discovering Things as key-value pairs."""
 
@@ -149,10 +149,10 @@ class ThingFilterDict(object):
         return self._init.get("query")
 
     @property
-    def template(self):
-        """The template property represents a ThingTemplate dictionary
-        wrapper class used for matching against discovered Things."""
+    def fragment(self):
+        """The fragment property represents a ThingFragment dictionary used
+        for matching property by property against discovered Things."""
 
-        val = self._init.get("template")
+        val = self._init.get("fragment")
 
-        return ThingTemplateDict(val) if val is not None else None
+        return ThingFragment(val) if val is not None else None

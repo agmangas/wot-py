@@ -19,7 +19,7 @@ from wotpy.protocols.ws.messages import \
     WebsocketMessageResponse, \
     WebsocketMessageError, \
     WebsocketMessageEmittedItem
-from wotpy.wot.dictionaries.interaction import PropertyInitDict
+from wotpy.wot.dictionaries.interaction import PropertyFragment
 
 
 @pytest.mark.flaky(reruns=5)
@@ -51,6 +51,9 @@ def test_read_property(websocket_server):
     prop_name_01 = websocket_server.pop("prop_name_01")
     prop_name_02 = websocket_server.pop("prop_name_02")
     prop_name_03 = websocket_server.pop("prop_name_03")
+    prop_value_01 = websocket_server.pop("prop_value_01")
+    prop_value_02 = websocket_server.pop("prop_value_02")
+    prop_value_03 = websocket_server.pop("prop_value_03")
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -96,9 +99,9 @@ def test_read_property(websocket_server):
             request_id_03: prop_init_03
         }
 
-        assert ws_resp_01.result == prop_init_map[ws_resp_01.id].value
-        assert ws_resp_02.result == prop_init_map[ws_resp_02.id].value
-        assert ws_resp_03.result == prop_init_map[ws_resp_03.id].value
+        assert ws_resp_01.result == prop_value_01
+        assert ws_resp_02.result == prop_value_02
+        assert ws_resp_03.result == prop_value_03
 
         yield conns[0].close()
         yield conns[1].close()
@@ -396,21 +399,20 @@ def test_on_td_change(websocket_server):
         assert td_change_resp.id == td_change_msg_id
 
         new_prop_name = uuid.uuid4().hex
+        new_prop_value = Faker().sentence()
 
-        new_prop_init = PropertyInitDict({
-            "value": Faker().sentence(),
+        new_prop_init = PropertyFragment({
             "type": "string",
             "writable": False,
             "observable": True
         })
 
-        exposed_thing_01.add_property(new_prop_name, new_prop_init)
+        exposed_thing_01.add_property(new_prop_name, new_prop_init, value=new_prop_value)
 
         msg_emitted_raw = yield conn.read_message()
         msg_emitted = WebsocketMessageEmittedItem.from_raw(msg_emitted_raw)
 
         assert msg_emitted.data.get("name") == new_prop_name
-        assert msg_emitted.data.get("data", {}).get("value") == new_prop_init.value
         assert msg_emitted.data.get("data", {}).get("writable") == new_prop_init.writable
         assert msg_emitted.data.get("data", {}).get("observable") == new_prop_init.observable
 

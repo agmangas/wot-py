@@ -25,7 +25,7 @@ class PropertyReadWriteHandler(RequestHandler):
         """Reads and returns the Property value."""
 
         exposed_thing = handler_utils.get_exposed_thing(self._server, thing_name)
-        value = yield exposed_thing.properties[name].get()
+        value = yield exposed_thing.properties[name].read()
         self.write({"value": value})
 
     @tornado.gen.coroutine
@@ -34,7 +34,7 @@ class PropertyReadWriteHandler(RequestHandler):
 
         exposed_thing = handler_utils.get_exposed_thing(self._server, thing_name)
         value = handler_utils.get_argument(self, "value")
-        yield exposed_thing.properties[name].set(value)
+        yield exposed_thing.properties[name].write(value)
 
 
 # noinspection PyAbstractClass,PyAttributeOutsideInit

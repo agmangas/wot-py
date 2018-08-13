@@ -103,7 +103,7 @@ class ExposedThingProperty(object):
         return getattr(self._exposed_thing.thing.properties[self._name], name)
 
     @tornado.gen.coroutine
-    def get(self):
+    def read(self):
         """The get() method will fetch the value of the Property.
         A coroutine that yields the value or raises an error."""
 
@@ -111,7 +111,7 @@ class ExposedThingProperty(object):
         raise tornado.gen.Return(value)
 
     @tornado.gen.coroutine
-    def set(self, value):
+    def write(self, value):
         """The set() method will attempt to set the value of the
         Property specified in the value argument whose type SHOULD
         match the one specified by the type property.
@@ -140,7 +140,7 @@ class ExposedThingAction(object):
         return getattr(self._exposed_thing.thing.actions[self._name], name)
 
     @tornado.gen.coroutine
-    def run(self, input_value):
+    def invoke(self, input_value):
         """The run() method when invoked, starts the Action interaction
         with the input value provided by the inputValue argument."""
 

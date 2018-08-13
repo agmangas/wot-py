@@ -13,7 +13,7 @@ import six
 from slugify import slugify
 
 from wotpy.td.interaction import Property, Action, Event
-from wotpy.wot.dictionaries.wot import ThingTemplateDict
+from wotpy.wot.dictionaries.wot import ThingFragment
 
 
 class Thing(object):
@@ -21,7 +21,7 @@ class Thing(object):
     and interfaces are described by a WoT Thing Description."""
 
     def __init__(self, thing_template=None, **kwargs):
-        self._thing_templt = thing_template if thing_template else ThingTemplateDict(**kwargs)
+        self._thing_templt = thing_template if thing_template else ThingFragment(**kwargs)
         self._properties = {}
         self._actions = {}
         self._events = {}

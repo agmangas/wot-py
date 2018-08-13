@@ -200,7 +200,7 @@ def test_thing_property_get(consumed_exposed_pair):
         prop_name = next(six.iterkeys(consumed_thing.td.properties))
 
         result_exposed = yield exposed_thing.read_property(prop_name)
-        result_consumed = yield consumed_thing.properties[prop_name].get()
+        result_consumed = yield consumed_thing.properties[prop_name].read()
 
         assert result_consumed == result_exposed
 
@@ -222,7 +222,7 @@ def test_thing_property_set(consumed_exposed_pair):
         assert consumed_thing.td.properties[prop_name].get("writable")
         assert curr_value != updated_value
 
-        yield consumed_thing.properties[prop_name].set(updated_value)
+        yield consumed_thing.properties[prop_name].write(updated_value)
         result_exposed = yield exposed_thing.read_property(prop_name)
 
         assert result_exposed == updated_value
@@ -272,7 +272,7 @@ def test_thing_action_run(consumed_exposed_pair):
         action_name = next(six.iterkeys(consumed_thing.td.actions))
 
         input_value = Faker().pystr()
-        result = yield consumed_thing.actions[action_name].run(input_value)
+        result = yield consumed_thing.actions[action_name].invoke(input_value)
         result_expected = yield exposed_thing.invoke_action(action_name, input_value)
 
         assert result == result_expected

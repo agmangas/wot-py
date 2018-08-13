@@ -11,7 +11,7 @@ from wotpy.wot.dictionaries.utils import build_init_dict
 from wotpy.wot.enums import JSONType
 
 
-class DataSchemaDict(object):
+class DataSchema(object):
     """Represents the common properties of a value type definition."""
 
     def __init__(self, *args, **kwargs):
@@ -27,11 +27,11 @@ class DataSchemaDict(object):
         init_dict = build_init_dict(args, kwargs)
 
         klass_map = {
-            JSONType.NUMBER: NumberSchemaDict,
-            JSONType.BOOLEAN: BooleanSchemaDict,
-            JSONType.STRING: StringSchemaDict,
-            JSONType.OBJECT: ObjectSchemaDict,
-            JSONType.ARRAY: ArraySchemaDict
+            JSONType.NUMBER: NumberSchema,
+            JSONType.BOOLEAN: BooleanSchema,
+            JSONType.STRING: StringSchema,
+            JSONType.OBJECT: ObjectSchema,
+            JSONType.ARRAY: ArraySchema
         }
 
         klass_type = init_dict.get("type")
@@ -49,7 +49,7 @@ class DataSchemaDict(object):
             "type": self.type,
             "required": self.required,
             "description": self.description,
-            "const": self.const
+            "constant": self.constant
         }
 
     @property
@@ -71,22 +71,22 @@ class DataSchemaDict(object):
         return self._init.get("description")
 
     @property
-    def const(self):
-        """The const property tells whether this value is constant."""
+    def constant(self):
+        """The constant property tells whether this value is constant."""
 
-        return self._init.get("const")
+        return self._init.get("constant")
 
 
-class NumberSchemaDict(DataSchemaDict):
+class NumberSchema(DataSchema):
     """Properties to describe a numeric type."""
 
     def __init__(self, *args, **kwargs):
-        super(NumberSchemaDict, self).__init__(*args, **kwargs)
+        super(NumberSchema, self).__init__(*args, **kwargs)
 
     def to_dict(self):
         """The internal dictionary that contains the entire set of properties."""
 
-        ret = super(NumberSchemaDict, self).to_dict()
+        ret = super(NumberSchema, self).to_dict()
 
         ret.update({
             "minimum": self.minimum,
@@ -116,16 +116,16 @@ class NumberSchemaDict(DataSchemaDict):
         return self._init.get("maximum")
 
 
-class BooleanSchemaDict(DataSchemaDict):
+class BooleanSchema(DataSchema):
     """Properties to describe a boolean type."""
 
     def __init__(self, *args, **kwargs):
-        super(BooleanSchemaDict, self).__init__(*args, **kwargs)
+        super(BooleanSchema, self).__init__(*args, **kwargs)
 
     def to_dict(self):
         """The internal dictionary that contains the entire set of properties."""
 
-        ret = super(BooleanSchemaDict, self).to_dict()
+        ret = super(BooleanSchema, self).to_dict()
 
         ret.update({})
 
@@ -138,19 +138,19 @@ class BooleanSchemaDict(DataSchemaDict):
         return JSONType.BOOLEAN
 
 
-class StringSchemaDict(DataSchemaDict):
+class StringSchema(DataSchema):
     """Properties to describe a string type."""
 
     def __init__(self, *args, **kwargs):
-        super(StringSchemaDict, self).__init__(*args, **kwargs)
+        super(StringSchema, self).__init__(*args, **kwargs)
 
     def to_dict(self):
         """The internal dictionary that contains the entire set of properties."""
 
-        ret = super(StringSchemaDict, self).to_dict()
+        ret = super(StringSchema, self).to_dict()
 
         ret.update({
-            "enum": self.enum
+            "enumeration": self.enumeration
         })
 
         return ret
@@ -162,29 +162,29 @@ class StringSchemaDict(DataSchemaDict):
         return JSONType.STRING
 
     @property
-    def enum(self):
+    def enumeration(self):
         """The enum property represents the list of allowed string values as a string array."""
 
-        return self._init.get("enum", [])
+        return self._init.get("enumeration", [])
 
 
-class ObjectSchemaDict(DataSchemaDict):
+class ObjectSchema(DataSchema):
     """Properties to describe an object type."""
 
     def __init__(self, *args, **kwargs):
-        super(ObjectSchemaDict, self).__init__(*args, **kwargs)
+        super(ObjectSchema, self).__init__(*args, **kwargs)
 
     def to_dict(self):
         """The internal dictionary that contains the entire set of properties."""
 
-        ret = super(ObjectSchemaDict, self).to_dict()
+        ret = super(ObjectSchema, self).to_dict()
 
         ret.update({
             "properties": {
                 key: val_type.to_dict()
                 for key, val_type in six.iteritems(self.properties)
             },
-            "required": self.required
+            "mandatory": self.mandatory
         })
 
         return ret
@@ -200,28 +200,29 @@ class ObjectSchemaDict(DataSchemaDict):
         """The properties property is a dictionary that contains the object properties."""
 
         return {
-            key: DataSchemaDict.build(val)
+            key: DataSchema.build(val)
             for key, val in six.iteritems(self._init.get("properties", {}))
         }
 
     @property
-    def required(self):
-        """The required property is a string array that containes the names
-        that are mandatory to be present from the object properties."""
+    def mandatory(self):
+        """The mandatory property is a string array that containes the names that are
+        mandatory to be present from the object properties.
+        If not provided, it SHOULD be initialized to undefined. An empty array is accepted."""
 
-        return self._init.get("required", [])
+        return self._init.get("mandatory", [])
 
 
-class ArraySchemaDict(DataSchemaDict):
+class ArraySchema(DataSchema):
     """Properties to describe an array type."""
 
     def __init__(self, *args, **kwargs):
-        super(ArraySchemaDict, self).__init__(*args, **kwargs)
+        super(ArraySchema, self).__init__(*args, **kwargs)
 
     def to_dict(self):
         """The internal dictionary that contains the entire set of properties."""
 
-        ret = super(ArraySchemaDict, self).to_dict()
+        ret = super(ArraySchema, self).to_dict()
 
         ret.update({
             "items": [val_type.to_dict() for val_type in self.items],
@@ -241,7 +242,7 @@ class ArraySchemaDict(DataSchemaDict):
     def items(self):
         """The items property is an array of ValueType elements."""
 
-        return [DataSchemaDict.build(item) for item in self._init.get("items", [])]
+        return [DataSchema.build(item) for item in self._init.get("items", [])]
 
     @property
     def min_items(self):

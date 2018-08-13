@@ -23,7 +23,7 @@ from six.moves.urllib.parse import urlparse, urlunparse
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
-from wotpy.wot.dictionaries.interaction import PropertyInitDict, ActionInitDict, EventInitDict
+from wotpy.wot.dictionaries.interaction import PropertyFragment, ActionFragment, EventFragment
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 
@@ -59,32 +59,33 @@ def websocket_server():
     event_name_01 = uuid.uuid4().hex
     action_name_01 = uuid.uuid4().hex
 
-    prop_init_01 = PropertyInitDict({
+    prop_value_01 = Faker().sentence()
+    prop_value_02 = Faker().sentence()
+    prop_value_03 = Faker().sentence()
+
+    prop_init_01 = PropertyFragment({
         "type": "string",
-        "value": Faker().sentence(),
         "writable": True,
         "observable": True
     })
 
-    prop_init_02 = PropertyInitDict({
+    prop_init_02 = PropertyFragment({
         "type": "string",
-        "value": Faker().sentence(),
         "writable": True,
         "observable": True
     })
 
-    prop_init_03 = PropertyInitDict({
+    prop_init_03 = PropertyFragment({
         "type": "string",
-        "value": Faker().sentence(),
         "writable": True,
         "observable": True
     })
 
-    event_init_01 = EventInitDict({
+    event_init_01 = EventFragment({
         "type": "object"
     })
 
-    action_init_01 = ActionInitDict({
+    action_init_01 = ActionFragment({
         "input": {"type": "string"},
         "output": {"type": "string"}
     })
@@ -94,13 +95,13 @@ def websocket_server():
         input_value = parameters.get("input")
         return loop.run_in_executor(None, lambda x: time.sleep(0.1) or x.lower(), input_value)
 
-    exposed_thing_01.add_property(prop_name_01, prop_init_01)
-    exposed_thing_01.add_property(prop_name_02, prop_init_02)
+    exposed_thing_01.add_property(prop_name_01, prop_init_01, value=prop_value_01)
+    exposed_thing_01.add_property(prop_name_02, prop_init_02, value=prop_value_02)
     exposed_thing_01.add_event(event_name_01, event_init_01)
     exposed_thing_01.add_action(action_name_01, action_init_01)
     exposed_thing_01.set_action_handler(action_name_01, async_lower)
 
-    exposed_thing_02.add_property(prop_name_03, prop_init_03)
+    exposed_thing_02.add_property(prop_name_03, prop_init_03, value=prop_value_03)
 
     ws_port = random.randint(20000, 40000)
 
@@ -117,10 +118,13 @@ def websocket_server():
         "exposed_thing_02": exposed_thing_02,
         "prop_name_01": prop_name_01,
         "prop_init_01": prop_init_01,
+        "prop_value_01": prop_value_01,
         "prop_name_02": prop_name_02,
         "prop_init_02": prop_init_02,
+        "prop_value_02": prop_value_02,
         "prop_name_03": prop_name_03,
         "prop_init_03": prop_init_03,
+        "prop_value_03": prop_value_03,
         "event_name_01": event_name_01,
         "event_init_01": event_init_01,
         "action_name_01": action_name_01,

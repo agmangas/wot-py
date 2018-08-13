@@ -14,11 +14,11 @@ import tornado.ioloop
 from faker import Faker
 from tornado.concurrent import Future
 
-from wotpy.wot.dictionaries.interaction import PropertyInitDict
+from wotpy.wot.dictionaries.interaction import PropertyFragment
 from wotpy.wot.enums import TDChangeMethod, TDChangeType
 
 
-def _test_td_change_events(exposed_thing, property_init, event_init, action_init, subscribe_func):
+def _test_td_change_events(exposed_thing, property_fragment, event_fragment, action_fragment, subscribe_func):
     """Helper function to test subscriptions to TD changes."""
 
     @tornado.gen.coroutine
@@ -47,20 +47,20 @@ def _test_td_change_events(exposed_thing, property_init, event_init, action_init
 
         yield tornado.gen.sleep(0)
 
-        exposed_thing.add_event(event_name, event_init)
+        exposed_thing.add_event(event_name, event_fragment)
 
         assert complete_futures[(TDChangeType.EVENT, TDChangeMethod.ADD)].result() == event_name
         assert not complete_futures[(TDChangeType.EVENT, TDChangeMethod.REMOVE)].done()
 
         exposed_thing.remove_event(name=event_name)
-        exposed_thing.add_property(prop_name, property_init)
+        exposed_thing.add_property(prop_name, property_fragment)
 
         assert complete_futures[(TDChangeType.EVENT, TDChangeMethod.REMOVE)].result() == event_name
         assert complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.ADD)].result() == prop_name
         assert not complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.REMOVE)].done()
 
         exposed_thing.remove_property(name=prop_name)
-        exposed_thing.add_action(action_name, action_init)
+        exposed_thing.add_action(action_name, action_fragment)
         exposed_thing.remove_action(name=action_name)
 
         assert complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.REMOVE)].result() == prop_name
@@ -84,30 +84,31 @@ def test_thing_template_getters(exposed_thing):
     assert exposed_thing.context == thing_template.context
 
 
-def test_read_property(exposed_thing, property_init):
+def test_read_property(exposed_thing, property_fragment):
     """Properties may be retrieved on ExposedThings."""
 
     @tornado.gen.coroutine
     def test_coroutine():
         prop_name = Faker().pystr()
-        exposed_thing.add_property(prop_name, property_init)
+        prop_init_value = Faker().sentence()
+        exposed_thing.add_property(prop_name, property_fragment, value=prop_init_value)
         value = yield exposed_thing.read_property(prop_name)
-        assert value == property_init.value
+        assert value == prop_init_value
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_write_property(exposed_thing, property_init):
+def test_write_property(exposed_thing, property_fragment):
     """Properties may be updated on ExposedThings."""
 
-    assert property_init.writable
+    assert property_fragment.writable
 
     @tornado.gen.coroutine
     def test_coroutine():
         updated_val = Faker().pystr()
         prop_name = Faker().pystr()
 
-        exposed_thing.add_property(prop_name, property_init)
+        exposed_thing.add_property(prop_name, property_fragment)
 
         yield exposed_thing.write_property(prop_name, updated_val)
 
@@ -121,7 +122,7 @@ def test_write_property(exposed_thing, property_init):
 def test_write_non_writable_property(exposed_thing):
     """Attempts to write a non-writable property should return an error."""
 
-    prop_init_non_writable = PropertyInitDict({
+    prop_init_non_writable = PropertyFragment({
         "type": "string",
         "writable": False
     })
@@ -137,7 +138,7 @@ def test_write_non_writable_property(exposed_thing):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_invoke_action(exposed_thing, action_init):
+def test_invoke_action(exposed_thing, action_fragment):
     """Actions can be invoked on ExposedThings."""
 
     thread_executor = ThreadPoolExecutor(max_workers=1)
@@ -173,7 +174,7 @@ def test_invoke_action(exposed_thing, action_init):
     @tornado.gen.coroutine
     def test_coroutine():
         action_name = Faker().pystr()
-        exposed_thing.add_action(action_name, action_init)
+        exposed_thing.add_action(action_name, action_fragment)
 
         for handler, assert_func in six.iteritems(handlers_map):
             exposed_thing.set_action_handler(action_name, handler)
@@ -184,13 +185,13 @@ def test_invoke_action(exposed_thing, action_init):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_invoke_action_undefined_handler(exposed_thing, action_init):
+def test_invoke_action_undefined_handler(exposed_thing, action_fragment):
     """Actions with undefined handlers return an error."""
 
     @tornado.gen.coroutine
     def test_coroutine():
         action_name = Faker().pystr()
-        exposed_thing.add_action(action_name, action_init)
+        exposed_thing.add_action(action_name, action_fragment)
 
         with pytest.raises(NotImplementedError):
             yield exposed_thing.invoke_action(action_name)
@@ -209,15 +210,15 @@ def test_invoke_action_undefined_handler(exposed_thing, action_init):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_on_property_change(exposed_thing, property_init):
+def test_on_property_change(exposed_thing, property_fragment):
     """Property changes can be observed."""
 
-    assert property_init.observable
+    assert property_fragment.observable
 
     @tornado.gen.coroutine
     def test_coroutine():
         prop_name = Faker().pystr()
-        exposed_thing.add_property(prop_name, property_init)
+        exposed_thing.add_property(prop_name, property_fragment)
 
         observable_prop = exposed_thing.on_property_change(prop_name)
 
@@ -243,7 +244,7 @@ def test_on_property_change(exposed_thing, property_init):
 def test_on_property_change_non_observable(exposed_thing):
     """Observe requests to non-observable properties are rejected."""
 
-    prop_init_non_observable = PropertyInitDict({
+    prop_init_non_observable = PropertyFragment({
         "type": "string",
         "writable": True,
         "observable": False
@@ -279,11 +280,11 @@ def test_on_property_change_non_observable(exposed_thing):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_on_event(exposed_thing, event_init):
+def test_on_event(exposed_thing, event_fragment):
     """Events defined in the Thing Description can be observed."""
 
     event_name = Faker().pystr()
-    exposed_thing.add_event(event_name, event_init)
+    exposed_thing.add_event(event_name, event_fragment)
 
     observable_event = exposed_thing.on_event(event_name)
 
@@ -304,54 +305,55 @@ def test_on_event(exposed_thing, event_init):
     subscription.dispose()
 
 
-def test_on_td_change(exposed_thing, property_init, event_init, action_init):
+def test_on_td_change(exposed_thing, property_fragment, event_fragment, action_fragment):
     """Thing Description changes can be observed."""
 
     def subscribe_func(*args, **kwargs):
         return exposed_thing.on_td_change().subscribe(*args, **kwargs)
 
-    _test_td_change_events(exposed_thing, property_init, event_init, action_init, subscribe_func)
+    _test_td_change_events(exposed_thing, property_fragment, event_fragment, action_fragment, subscribe_func)
 
 
-def test_thing_property_get(exposed_thing, property_init):
+def test_thing_property_get(exposed_thing, property_fragment):
     """Property values can be retrieved on ExposedThings using the map-like interface."""
 
     @tornado.gen.coroutine
     def test_coroutine():
         prop_name = Faker().pystr()
-        exposed_thing.add_property(prop_name, property_init)
-        value = yield exposed_thing.properties[prop_name].get()
-        assert value == property_init.value
+        prop_init_value = Faker().sentence()
+        exposed_thing.add_property(prop_name, property_fragment, value=prop_init_value)
+        value = yield exposed_thing.properties[prop_name].read()
+        assert value == prop_init_value
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_thing_property_set(exposed_thing, property_init):
+def test_thing_property_set(exposed_thing, property_fragment):
     """Property values can be updated on ExposedThings using the map-like interface."""
 
-    assert property_init.writable
+    assert property_fragment.writable
 
     @tornado.gen.coroutine
     def test_coroutine():
         updated_val = Faker().pystr()
         prop_name = Faker().pystr()
-        exposed_thing.add_property(prop_name, property_init)
-        yield exposed_thing.properties[prop_name].set(updated_val)
-        value = yield exposed_thing.properties[prop_name].get()
+        exposed_thing.add_property(prop_name, property_fragment)
+        yield exposed_thing.properties[prop_name].write(updated_val)
+        value = yield exposed_thing.properties[prop_name].read()
         assert value == updated_val
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_thing_property_subscribe(exposed_thing, property_init):
+def test_thing_property_subscribe(exposed_thing, property_fragment):
     """Property updates can be observed on ExposedThings using the map-like interface."""
 
-    assert property_init.observable
+    assert property_fragment.observable
 
     @tornado.gen.coroutine
     def test_coroutine():
         prop_name = Faker().pystr()
-        exposed_thing.add_property(prop_name, property_init)
+        exposed_thing.add_property(prop_name, property_fragment)
 
         values = [Faker().sentence() for _ in range(10)]
         values_futures = {key: Future() for key in values}
@@ -366,7 +368,7 @@ def test_thing_property_subscribe(exposed_thing, property_init):
         yield tornado.gen.sleep(0)
 
         for val in values:
-            yield exposed_thing.properties[prop_name].set(val)
+            yield exposed_thing.properties[prop_name].write(val)
 
         yield [future for future in six.itervalues(values_futures)]
 
@@ -375,25 +377,25 @@ def test_thing_property_subscribe(exposed_thing, property_init):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_thing_property_getters(exposed_thing, property_init):
+def test_thing_property_getters(exposed_thing, property_fragment):
     """Property init attributes can be accessed using the map-like interface."""
 
     @tornado.gen.coroutine
     def test_coroutine():
         prop_name = Faker().pystr()
-        exposed_thing.add_property(prop_name, property_init)
+        prop_init_value = Faker().sentence()
+        exposed_thing.add_property(prop_name, property_fragment, value=prop_init_value)
         thing_property = exposed_thing.properties[prop_name]
 
-        assert thing_property.label == property_init.label
-        assert thing_property.value == property_init.value
-        assert thing_property.writable == property_init.writable
-        assert thing_property.observable == property_init.observable
-        assert thing_property.type == property_init.type
+        assert thing_property.label == property_fragment.label
+        assert thing_property.writable == property_fragment.writable
+        assert thing_property.observable == property_fragment.observable
+        assert thing_property.type == property_fragment.type
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_thing_action_run(exposed_thing, action_init):
+def test_thing_action_run(exposed_thing, action_fragment):
     """Actions can be invoked on ExposedThings using the map-like interface."""
 
     @tornado.gen.coroutine
@@ -404,11 +406,11 @@ def test_thing_action_run(exposed_thing, action_init):
     @tornado.gen.coroutine
     def test_coroutine():
         action_name = Faker().pystr()
-        exposed_thing.add_action(action_name, action_init)
+        exposed_thing.add_action(action_name, action_fragment)
         exposed_thing.set_action_handler(action_name, lower)
         input_value = Faker().pystr()
 
-        result = yield exposed_thing.actions[action_name].run(input_value)
+        result = yield exposed_thing.actions[action_name].invoke(input_value)
         result_expected = yield exposed_thing.invoke_action(action_name, input_value)
 
         assert result == result_expected
@@ -416,30 +418,30 @@ def test_thing_action_run(exposed_thing, action_init):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_thing_action_getters(exposed_thing, action_init):
+def test_thing_action_getters(exposed_thing, action_fragment):
     """Action init attributes can be accessed using the map-like interface."""
 
     @tornado.gen.coroutine
     def test_coroutine():
         action_name = Faker().pystr()
-        exposed_thing.add_action(action_name, action_init)
+        exposed_thing.add_action(action_name, action_fragment)
         thing_action = exposed_thing.actions[action_name]
 
-        assert thing_action.label == action_init.label
-        assert thing_action.description == action_init.description
-        assert thing_action.input.type == action_init.input.type
-        assert thing_action.output.type == action_init.output.type
+        assert thing_action.label == action_fragment.label
+        assert thing_action.description == action_fragment.description
+        assert thing_action.input.type == action_fragment.input.type
+        assert thing_action.output.type == action_fragment.output.type
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_thing_event_subscribe(exposed_thing, event_init):
+def test_thing_event_subscribe(exposed_thing, event_fragment):
     """Property updates can be observed on ExposedThings using the map-like interface."""
 
     @tornado.gen.coroutine
     def test_coroutine():
         event_name = Faker().pystr()
-        exposed_thing.add_event(event_name, event_init)
+        exposed_thing.add_event(event_name, event_fragment)
 
         values = [Faker().sentence() for _ in range(10)]
         values_futures = {key: Future() for key in values}
@@ -463,22 +465,22 @@ def test_thing_event_subscribe(exposed_thing, event_init):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_thing_event_getters(exposed_thing, event_init):
+def test_thing_event_getters(exposed_thing, event_fragment):
     """Event init attributes can be accessed using the map-like interface."""
 
     @tornado.gen.coroutine
     def test_coroutine():
         event_name = Faker().pystr()
-        exposed_thing.add_event(event_name, event_init)
+        exposed_thing.add_event(event_name, event_fragment)
         thing_event = exposed_thing.events[event_name]
 
-        assert thing_event.label == event_init.label
-        assert thing_event.type == event_init.type
+        assert thing_event.label == event_fragment.label
+        assert thing_event.type == event_fragment.type
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_set_property_read_handler(exposed_thing, property_init):
+def test_set_property_read_handler(exposed_thing, property_fragment):
     """Read handlers can be defined for ExposedThing property interactions."""
 
     const_prop_value = Faker().sentence()
@@ -490,15 +492,15 @@ def test_set_property_read_handler(exposed_thing, property_init):
     @tornado.gen.coroutine
     def test_coroutine():
         prop_name = Faker().pystr()
-        exposed_thing.add_property(prop_name, property_init)
+        exposed_thing.add_property(prop_name, property_fragment)
         exposed_thing.set_property_read_handler(prop_name, read_handler)
-        value = yield exposed_thing.properties[prop_name].get()
+        value = yield exposed_thing.properties[prop_name].read()
         assert value == const_prop_value
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_set_property_write_handler(exposed_thing, property_init):
+def test_set_property_write_handler(exposed_thing, property_fragment):
     """Write handlers can be defined for ExposedThing property interactions."""
 
     prop_history = []
@@ -511,30 +513,30 @@ def test_set_property_write_handler(exposed_thing, property_init):
     @tornado.gen.coroutine
     def test_coroutine():
         prop_name = Faker().pystr()
-        exposed_thing.add_property(prop_name, property_init)
+        exposed_thing.add_property(prop_name, property_fragment)
         exposed_thing.set_property_write_handler(prop_name, write_handler)
         prop_value = Faker().sentence()
         assert not len(prop_history)
-        yield exposed_thing.properties[prop_name].set(prop_value)
+        yield exposed_thing.properties[prop_name].write(prop_value)
         assert prop_value in prop_history
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_subscribe(exposed_thing, property_init, event_init, action_init):
+def test_subscribe(exposed_thing, property_fragment, event_fragment, action_fragment):
     """Subscribing to the ExposedThing provides Thing Description update events."""
 
     def subscribe_func(*args, **kwargs):
         return exposed_thing.subscribe(*args, **kwargs)
 
-    _test_td_change_events(exposed_thing, property_init, event_init, action_init, subscribe_func)
+    _test_td_change_events(exposed_thing, property_fragment, event_fragment, action_fragment, subscribe_func)
 
 
-def test_thing_interaction_dict_behaviour(exposed_thing, property_init):
+def test_thing_interaction_dict_behaviour(exposed_thing, property_fragment):
     """The Interactions dict-like interface of an ExposedThing behaves like a dict."""
 
     prop_name = Faker().pystr()
-    exposed_thing.add_property(prop_name, property_init)
+    exposed_thing.add_property(prop_name, property_fragment)
 
     assert len(exposed_thing.properties) == 1
     assert prop_name in exposed_thing.properties

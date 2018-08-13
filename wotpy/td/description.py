@@ -15,7 +15,7 @@ from wotpy.td.constants import WOT_TD_CONTEXT_URL, WOT_COMMON_CONTEXT_URL
 from wotpy.td.thing import Thing
 from wotpy.td.validation import SCHEMA_THING, InvalidDescription
 from wotpy.wot.dictionaries.link import FormDict
-from wotpy.wot.dictionaries.wot import ThingTemplateDict
+from wotpy.wot.dictionaries.wot import ThingFragment
 
 
 class ThingDescription(object):
@@ -189,7 +189,7 @@ class ThingDescription(object):
     def to_thing_template(self):
         """Returns a ThingTemplate dictionary built from this TD."""
 
-        return ThingTemplateDict(**self._doc)
+        return ThingFragment(**self._doc)
 
     def build_thing(self):
         """Builds a new Thing object from the serialized Thing Description."""

@@ -5,11 +5,11 @@
 Wrapper classes for dictionaries for interaction initialization that are defined in the Scripting API.
 """
 
-from wotpy.wot.dictionaries.schema import DataSchemaDict
+from wotpy.wot.dictionaries.schema import DataSchema
 from wotpy.wot.dictionaries.utils import build_init_dict
 
 
-class InteractionInitDict(object):
+class InteractionFragment(object):
     """A dictionary wrapper class that contains data to initialize an Interaction."""
 
     def __init__(self, *args, **kwargs):
@@ -19,7 +19,8 @@ class InteractionInitDict(object):
         """The internal dictionary that contains the entire set of properties"""
 
         return {
-            "label": self.label
+            "label": self.label,
+            "description": self.description
         }
 
     @property
@@ -28,13 +29,19 @@ class InteractionInitDict(object):
 
         return self._init.get("label")
 
+    @property
+    def description(self):
+        """The description property initializes the description for the interaction."""
 
-class PropertyInitDict(InteractionInitDict):
+        return self._init.get("description")
+
+
+class PropertyFragment(InteractionFragment):
     """A dictionary wrapper class that contains data to initialize a Property."""
 
     def __init__(self, *args, **kwargs):
-        super(PropertyInitDict, self).__init__(*args, **kwargs)
-        self._data_schema = DataSchemaDict.build(self._init)
+        super(PropertyFragment, self).__init__(*args, **kwargs)
+        self._data_schema = DataSchema.build(self._init)
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
@@ -45,12 +52,11 @@ class PropertyInitDict(InteractionInitDict):
     def to_dict(self):
         """The internal dictionary that contains the entire set of properties"""
 
-        base_dict = super(PropertyInitDict, self).to_dict()
+        base_dict = super(PropertyFragment, self).to_dict()
 
         base_dict.update({
             "writable": self.writable,
-            "observable": self.observable,
-            "value": self.value
+            "observable": self.observable
         })
 
         base_dict.update(self.data_schema.to_dict())
@@ -77,28 +83,17 @@ class PropertyInitDict(InteractionInitDict):
 
         return self._init.get("observable", False)
 
-    @property
-    def value(self):
-        """The value property represents the initialization value of the property.
-        Its type should match the one defined in the type property."""
 
-        return self._init.get("value")
-
-
-class ActionInitDict(InteractionInitDict):
+class ActionFragment(InteractionFragment):
     """A dictionary wrapper class that contains data to initialize an Action."""
 
     def __init__(self, *args, **kwargs):
-        super(ActionInitDict, self).__init__(*args, **kwargs)
+        super(ActionFragment, self).__init__(*args, **kwargs)
 
     def to_dict(self):
         """The internal dictionary that contains the entire set of properties"""
 
-        base_dict = super(ActionInitDict, self).to_dict()
-
-        base_dict.update({
-            "description": self.description
-        })
+        base_dict = super(ActionFragment, self).to_dict()
 
         if self.input:
             base_dict.update({"input": self.input.to_dict()})
@@ -115,7 +110,7 @@ class ActionInitDict(InteractionInitDict):
 
         init = self._init.get("input")
 
-        return DataSchemaDict.build(init) if init else None
+        return DataSchema.build(init) if init else None
 
     @property
     def output(self):
@@ -124,17 +119,10 @@ class ActionInitDict(InteractionInitDict):
 
         init = self._init.get("output")
 
-        return DataSchemaDict.build(init) if init else None
-
-    @property
-    def description(self):
-        """The description read-only property initializes a
-        human-readable textual description of the Action interaction."""
-
-        return self._init.get("description")
+        return DataSchema.build(init) if init else None
 
 
-class EventInitDict(PropertyInitDict):
+class EventFragment(PropertyFragment):
     """A dictionary wrapper class that contains data to initialize an Event."""
 
     pass

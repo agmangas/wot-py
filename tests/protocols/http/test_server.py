@@ -58,7 +58,7 @@ def test_property_get(http_server):
     @tornado.gen.coroutine
     def test_coroutine():
         prop_value = Faker().pyint()
-        yield exposed_thing.properties[prop_name].set(prop_value)
+        yield exposed_thing.properties[prop_name].write(prop_value)
         http_client = tornado.httpclient.AsyncHTTPClient()
         http_request = tornado.httpclient.HTTPRequest(href, method="GET")
         response = yield http_client.fetch(http_request)
@@ -80,7 +80,7 @@ def _test_property_set(server, body, prop_value, headers=None):
         http_client = tornado.httpclient.AsyncHTTPClient()
         http_request = tornado.httpclient.HTTPRequest(href, method="POST", body=body, headers=headers)
         response = yield http_client.fetch(http_request)
-        value = yield exposed_thing.properties[prop_name].get()
+        value = yield exposed_thing.properties[prop_name].read()
 
         assert response.rethrow() is None
         assert value == prop_value
@@ -120,11 +120,11 @@ def test_property_subscribe(http_server):
 
     @tornado.gen.coroutine
     def set_property():
-        yield exposed_thing.properties[prop_name].set(prop_value)
+        yield exposed_thing.properties[prop_name].write(prop_value)
 
     @tornado.gen.coroutine
     def test_coroutine():
-        yield exposed_thing.properties[prop_name].set(init_value)
+        yield exposed_thing.properties[prop_name].write(init_value)
 
         periodic_set = tornado.ioloop.PeriodicCallback(set_property, 10)
         periodic_set.start()

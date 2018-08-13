@@ -28,7 +28,7 @@ class ActionInvokeHandler(RequestHandler):
 
         exposed_thing = handler_utils.get_exposed_thing(self._server, thing_name)
         input_value = handler_utils.get_argument(self, "input")
-        future_result = exposed_thing.actions[name].run(input_value)
+        future_result = exposed_thing.actions[name].invoke(input_value)
         invocation_id = uuid.uuid4().hex
         self._server.pending_actions[invocation_id] = future_result
         self.write({"invocation": "/invocation/{}".format(invocation_id)})
