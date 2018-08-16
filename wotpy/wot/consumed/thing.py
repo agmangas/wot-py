@@ -12,10 +12,9 @@ from wotpy.wot.consumed.interactions import \
     ConsumedThingPropertyDict, \
     ConsumedThingActionDict, \
     ConsumedThingEventDict
-from wotpy.wot.interfaces.consumed import AbstractConsumedThing
 
 
-class ConsumedThing(AbstractConsumedThing):
+class ConsumedThing(object):
     """An entity that serves to interact with a Thing.
     An application uses this class when it acts as a *client* of the Thing."""
 

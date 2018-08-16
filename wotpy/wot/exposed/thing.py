@@ -19,16 +19,17 @@ from wotpy.wot.events import \
     EmittedEvent, \
     PropertyChangeEmittedEvent, \
     ThingDescriptionChangeEmittedEvent, \
-    ActionInvocationEmittedEvent, PropertyChangeEventInit, ActionInvocationEventInit, ThingDescriptionChangeEventInit
+    ActionInvocationEmittedEvent, \
+    PropertyChangeEventInit, \
+    ActionInvocationEventInit, \
+    ThingDescriptionChangeEventInit
 from wotpy.wot.exposed.interactions import \
     ExposedThingPropertyDict, \
     ExposedThingActionDict, \
     ExposedThingEventDict
-from wotpy.wot.interfaces.consumed import AbstractConsumedThing
-from wotpy.wot.interfaces.exposed import AbstractExposedThing
 
 
-class ExposedThing(AbstractConsumedThing, AbstractExposedThing):
+class ExposedThing(object):
     """An entity that serves to define the behavior of a Thing.
     An application uses this class when it acts as the Thing 'server'."""
 
