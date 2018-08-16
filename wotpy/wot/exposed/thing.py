@@ -314,7 +314,7 @@ class ExposedThing(object):
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
-    def add_action(self, name, action_init):
+    def add_action(self, name, action_init, action_handler=None):
         """Adds an Action to the Thing object as defined by the action
         argument of type ThingActionInit and updates th,e Thing Description."""
 
@@ -330,6 +330,9 @@ class ExposedThing(object):
             description=ThingDescription.from_thing(self.thing).to_dict())
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
+
+        if action_handler:
+            self.set_action_handler(name, action_handler)
 
     def remove_action(self, name):
         """Removes the Action specified by the name argument,

@@ -406,8 +406,7 @@ def test_thing_action_run(exposed_thing, action_fragment):
     @tornado.gen.coroutine
     def test_coroutine():
         action_name = Faker().pystr()
-        exposed_thing.add_action(action_name, action_fragment)
-        exposed_thing.set_action_handler(action_name, lower)
+        exposed_thing.add_action(action_name, action_fragment, lower)
         input_value = Faker().pystr()
 
         result = yield exposed_thing.actions[action_name].invoke(input_value)

@@ -141,8 +141,7 @@ def consumed_exposed_pair():
         raise tornado.gen.Return(str(input_value).lower())
 
     exp_thing.add_property(uuid.uuid4().hex, property_fragment())
-    exp_thing.add_action(uuid.uuid4().hex, action_fragment())
-    exp_thing.set_action_handler(next(name for name in exp_thing.actions), lower)
+    exp_thing.add_action(uuid.uuid4().hex, action_fragment(), lower)
     exp_thing.add_event(uuid.uuid4().hex, event_fragment())
 
     servient = Servient()

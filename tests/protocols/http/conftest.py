@@ -39,18 +39,16 @@ def http_server():
 
     action_name = uuid.uuid4().hex
 
-    exposed_thing.add_action(action_name, ActionFragment({
-        "input": {"type": "number"},
-        "output": {"type": "number"}
-    }))
-
     @tornado.gen.coroutine
     def triple(parameters):
         input_value = parameters.get("input")
         yield tornado.gen.sleep(0)
         raise tornado.gen.Return(input_value * 3)
 
-    exposed_thing.set_action_handler(action_name, triple)
+    exposed_thing.add_action(action_name, ActionFragment({
+        "input": {"type": "number"},
+        "output": {"type": "number"}
+    }), triple)
 
     port = random.randint(20000, 40000)
 
