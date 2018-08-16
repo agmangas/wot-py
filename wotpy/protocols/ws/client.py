@@ -15,6 +15,7 @@ from tornado.concurrent import Future
 
 from wotpy.protocols.client import BaseProtocolClient, ProtocolClientException
 from wotpy.protocols.enums import Protocols
+from wotpy.protocols.utils import pick_form_for_schemes, is_scheme_form
 from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketSchemes
 from wotpy.protocols.ws.messages import \
     WebsocketMessageRequest, \
@@ -34,38 +35,10 @@ class WebsocketClient(BaseProtocolClient):
     """Implementation of the protocol client interface for the Websocket protocol."""
 
     @classmethod
-    def _is_scheme_form(cls, form, base, scheme):
-        """Returns True if the scheme of the URI for
-        the given Form matches the scheme argument."""
-
-        resolved_url = form.resolve_uri(base=base)
-
-        if not resolved_url:
-            return False
-
-        return urllib.parse.urlparse(resolved_url).scheme == scheme
-
-    @classmethod
     def _select_form(cls, td, forms):
         """Picks the Form that will be used to connect to the remote Thing."""
 
-        forms_wss = [
-            form for form in forms
-            if cls._is_scheme_form(form, td.base, WebsocketSchemes.WSS)
-        ]
-
-        if len(forms_wss):
-            return forms_wss[0]
-
-        forms_ws = [
-            form for form in forms
-            if cls._is_scheme_form(form, td.base, WebsocketSchemes.WS)
-        ]
-
-        if len(forms_ws):
-            return forms_ws[0]
-
-        return None
+        return pick_form_for_schemes(td, forms, WebsocketSchemes.list())
 
     @classmethod
     def _parse_response(cls, raw_msg, msg_id):
@@ -229,12 +202,12 @@ class WebsocketClient(BaseProtocolClient):
 
         forms_wss = [
             form for form in forms
-            if self._is_scheme_form(form, td.base, WebsocketSchemes.WSS)
+            if is_scheme_form(form, td.base, WebsocketSchemes.WSS)
         ]
 
         forms_ws = [
             form for form in forms
-            if self._is_scheme_form(form, td.base, WebsocketSchemes.WS)
+            if is_scheme_form(form, td.base, WebsocketSchemes.WS)
         ]
 
         return len(forms_wss) or len(forms_ws)
