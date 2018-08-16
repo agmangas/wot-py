@@ -166,3 +166,8 @@ class ExposedThingEvent(object):
 
         observable = self._exposed_thing.on_event(self._name)
         return observable.subscribe_on(IOLoopScheduler()).subscribe(*args, **kwargs)
+
+    def emit(self, payload):
+        """Emits an event that carries data specified by the payload argument."""
+
+        return self._exposed_thing.emit_event(self._name, payload)

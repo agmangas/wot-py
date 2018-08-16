@@ -455,7 +455,7 @@ def test_thing_event_subscribe(exposed_thing, event_fragment):
         yield tornado.gen.sleep(0)
 
         for val in values:
-            yield exposed_thing.emit_event(event_name, val)
+            yield exposed_thing.events[event_name].emit(val)
 
         yield [future for future in six.itervalues(values_futures)]
 
