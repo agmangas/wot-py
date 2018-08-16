@@ -17,7 +17,9 @@ def is_scheme_form(form, base, scheme):
     if not resolved_url:
         return False
 
-    return urllib.parse.urlparse(resolved_url).scheme == scheme
+    parsed_scheme = urllib.parse.urlparse(resolved_url).scheme
+
+    return parsed_scheme in scheme if isinstance(scheme, list) else parsed_scheme == scheme
 
 
 def pick_form_for_schemes(td, forms, schemes):
