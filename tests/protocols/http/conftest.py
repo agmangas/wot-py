@@ -95,10 +95,10 @@ def http_servient():
         "actions": {
             action_name_01: {
                 "input": {
-                    "type": "object"
+                    "type": "number"
                 },
                 "output": {
-                    "type": "string"
+                    "type": "number"
                 },
             }
         },
