@@ -9,7 +9,7 @@ import tornado.httpserver
 import tornado.web
 
 from wotpy.codecs.enums import MediaTypes
-from wotpy.protocols.enums import Protocols
+from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.http.enums import HTTPSchemes
 from wotpy.protocols.http.handlers.action import ActionInvokeHandler, PendingInvocationHandler
 from wotpy.protocols.http.handlers.event import EventObserverHandler
@@ -23,7 +23,6 @@ class HTTPServer(BaseProtocolServer):
     """HTTP binding server implementation."""
 
     DEFAULT_PORT = 80
-    REL_OBSERVE = "observeProperty"
 
     def __init__(self, port=DEFAULT_PORT, ssl_context=None):
         super(HTTPServer, self).__init__(port=port)
@@ -108,7 +107,7 @@ class HTTPServer(BaseProtocolServer):
             protocol=self.protocol,
             href=href_observe,
             media_type=MediaTypes.JSON,
-            rel=self.REL_OBSERVE)
+            rel=InteractionVerbs.OBSERVE_PROPERTY)
 
         return [form_read_write, form_observe]
 
@@ -138,8 +137,7 @@ class HTTPServer(BaseProtocolServer):
             interaction=event,
             protocol=self.protocol,
             href=href_observe,
-            media_type=MediaTypes.JSON,
-            rel=self.REL_OBSERVE)
+            media_type=MediaTypes.JSON)
 
         return [form_observe]
 

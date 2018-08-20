@@ -15,7 +15,7 @@ from rx import Observable
 from six.moves.urllib import parse
 
 from wotpy.protocols.client import BaseProtocolClient, ProtocolClientException
-from wotpy.protocols.enums import Protocols
+from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.http.enums import HTTPSchemes
 from wotpy.protocols.utils import is_scheme_form
 from wotpy.wot.events import EmittedEvent, PropertyChangeEmittedEvent, PropertyChangeEventInit
@@ -24,7 +24,6 @@ from wotpy.wot.events import EmittedEvent, PropertyChangeEmittedEvent, PropertyC
 class HTTPClient(BaseProtocolClient):
     """Implementation of the protocol client interface for the Websocket protocol."""
 
-    REL_OBSERVE = "observeProperty"
     JSON_HEADERS = {"Content-Type": "application/json"}
 
     @classmethod
@@ -141,7 +140,7 @@ class HTTPClient(BaseProtocolClient):
         """Subscribes to an event on a remote Thing.
         Returns an Observable."""
 
-        href = self.pick_http_href(td, td.get_event_forms(name), rel=self.REL_OBSERVE)
+        href = self.pick_http_href(td, td.get_event_forms(name))
 
         if href is None:
             raise ProtocolClientException("Unable to find the event subscription form")
@@ -181,7 +180,7 @@ class HTTPClient(BaseProtocolClient):
         """Subscribes to property changes on a remote Thing.
         Returns an Observable"""
 
-        href = self.pick_http_href(td, td.get_property_forms(name), rel=self.REL_OBSERVE)
+        href = self.pick_http_href(td, td.get_property_forms(name), rel=InteractionVerbs.OBSERVE_PROPERTY)
 
         if href is None:
             raise ProtocolClientException("Unable to find the property subscription form")

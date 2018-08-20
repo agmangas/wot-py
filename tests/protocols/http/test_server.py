@@ -12,8 +12,9 @@ from faker import Faker
 from six.moves.urllib import parse
 from tornado.concurrent import Future
 
+from wotpy.protocols.enums import InteractionVerbs
+
 JSON_HEADERS = {"Content-Type": "application/json"}
-REL_OBSERVE = "observeProperty"
 
 
 def _get_property_href(exp_thing, prop_name, server):
@@ -29,7 +30,7 @@ def _get_property_observe_href(exp_thing, prop_name, server):
 
     prop = exp_thing.thing.properties[prop_name]
     prop_forms = server.build_forms("localhost", prop)
-    return next(item.href for item in prop_forms if item.rel == REL_OBSERVE)
+    return next(item.href for item in prop_forms if item.rel == InteractionVerbs.OBSERVE_PROPERTY)
 
 
 def _get_action_href(exp_thing, action_name, server):
@@ -45,7 +46,7 @@ def _get_event_observe_href(exp_thing, event_name, server):
 
     event = exp_thing.thing.events[event_name]
     event_forms = server.build_forms("localhost", event)
-    return next(item.href for item in event_forms if item.rel == REL_OBSERVE)
+    return next(item.href for item in event_forms)
 
 
 def test_property_get(http_server):
