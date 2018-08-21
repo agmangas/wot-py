@@ -4,6 +4,7 @@
 from setuptools import setup, find_packages
 
 from wotpy.__version__ import __version__
+from wotpy.protocols.support import is_coap_supported
 
 install_requires = [
     'tornado>=5.0,<6.0',
@@ -12,6 +13,10 @@ install_requires = [
     'rx>=1.6.0,<2.0',
     'python-slugify>=1.2.4,<2.0'
 ]
+
+if is_coap_supported():
+    install_requires.append('aiocoap>=0.3.0,<1.0')
+    install_requires.append('LinkHeader>=0.4.3,<1.0')
 
 setup(
     name='wotpy',
