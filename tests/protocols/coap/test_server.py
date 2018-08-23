@@ -82,6 +82,7 @@ def test_property_read(coap_server):
         request = aiocoap.Message(code=aiocoap.Code.GET, uri=href)
         response = yield coap_client.request(request).response
 
+        assert response.code.is_successful()
         assert json.loads(response.payload).get("value") == prop_value
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
