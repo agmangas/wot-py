@@ -6,14 +6,21 @@ Class that implements the CoAP server.
 """
 
 import aiocoap
-import aiocoap.resource as resource
+import aiocoap.resource
+import six
 import tornado.concurrent
 import tornado.gen
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 
+from wotpy.codecs.enums import MediaTypes
+from wotpy.protocols.coap.enums import CoAPSchemes
+from wotpy.protocols.coap.resources.property import PropertyReadWriteResource
+from wotpy.protocols.enums import Protocols
 from wotpy.protocols.server import BaseProtocolServer
+from wotpy.td.enums import InteractionTypes
+from wotpy.td.form import Form
 
 
 class CoAPServer(BaseProtocolServer):
@@ -31,13 +38,13 @@ class CoAPServer(BaseProtocolServer):
         """Protocol of this server instance.
         A member of the Protocols enum."""
 
-        raise NotImplementedError
+        return Protocols.COAP
 
     @property
     def scheme(self):
         """Returns the URL scheme for this server."""
 
-        raise NotImplementedError
+        return CoAPSchemes.COAPS if self.is_secure else CoAPSchemes.COAP
 
     @property
     def is_secure(self):
@@ -45,24 +52,70 @@ class CoAPServer(BaseProtocolServer):
 
         return self._ssl_context is not None
 
-    def build_forms(self, hostname, interaction):
-        """"""
+    def _build_forms_property(self, proprty, hostname):
+        """Builds and returns the CoAP Form instances for the given Property interaction."""
 
-        raise NotImplementedError
+        href_read_write = "{}://{}:{}/{}/property/{}".format(
+            self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
+            proprty.thing.url_name, proprty.url_name)
+
+        form_read_write = Form(
+            interaction=proprty,
+            protocol=self.protocol,
+            href=href_read_write,
+            media_type=MediaTypes.JSON)
+
+        return [form_read_write]
+
+    def _build_forms_action(self, action, hostname):
+        """Builds and returns the CoAP Form instances for the given Action interaction."""
+
+        return []
+
+    def _build_forms_event(self, event, hostname):
+        """Builds and returns the CoAP Form instances for the given Event interaction."""
+
+        return []
+
+    def build_forms(self, hostname, interaction):
+        """Builds and returns a list with all Form that are
+        linked to this server for the given Interaction."""
+
+        intrct_type_map = {
+            InteractionTypes.PROPERTY: self._build_forms_property,
+            InteractionTypes.ACTION: self._build_forms_action,
+            InteractionTypes.EVENT: self._build_forms_event
+        }
+
+        if interaction.interaction_type not in intrct_type_map:
+            raise ValueError("Unsupported interaction")
+
+        return intrct_type_map[interaction.interaction_type](interaction, hostname)
 
     def build_base_url(self, hostname, thing):
-        """"""
+        """Returns the base URL for the given Thing in the context of this server."""
 
-        raise NotImplementedError
+        if not self.exposed_thing_group.find_by_thing_id(thing.id):
+            raise ValueError("Unknown Thing")
+
+        return "{}://{}:{}/{}".format(
+            self.scheme, hostname.rstrip("/").lstrip("/"),
+            self.port, thing.url_name)
 
     def _build_root_site(self):
         """Builds and returns the root CoAP Site."""
 
-        root = resource.Site()
+        root = aiocoap.resource.Site()
 
         root.add_resource(
-            ('.well-known', 'core'),
-            resource.WKCResource(root.get_resources_as_linkheader))
+            (".well-known", "core"),
+            aiocoap.resource.WKCResource(root.get_resources_as_linkheader))
+
+        for exposed_thing in self.exposed_things:
+            for name, proprty in six.iteritems(exposed_thing.thing.properties):
+                resource_path = (exposed_thing.thing.url_name, "property", proprty.url_name)
+                resource = PropertyReadWriteResource(exposed_thing, proprty.name)
+                root.add_resource(resource_path, resource)
 
         return root
 
@@ -77,7 +130,8 @@ class CoAPServer(BaseProtocolServer):
         @tornado.gen.coroutine
         def yield_create_server():
             root = self._build_root_site()
-            coap_server = yield aiocoap.Context.create_server_context(root)
+            bind_address = ("::", self.port)
+            coap_server = yield aiocoap.Context.create_server_context(root, bind=bind_address)
             self._future_server.set_result(coap_server)
 
         tornado.ioloop.IOLoop.current().add_callback(yield_create_server)
