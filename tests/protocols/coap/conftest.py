@@ -9,7 +9,6 @@ import pytest
 import tornado.gen
 from faker import Faker
 
-from wotpy.protocols.coap.server import CoAPServer
 from wotpy.protocols.support import is_coap_supported
 from wotpy.td.thing import Thing
 from wotpy.wot.dictionaries.interaction import PropertyFragment, EventFragment, ActionFragment
@@ -26,6 +25,8 @@ if not is_coap_supported():
 @pytest.fixture
 def coap_server():
     """Builds a CoAPServer instance that contains an ExposedThing."""
+
+    from wotpy.protocols.coap.server import CoAPServer
 
     exposed_thing = ExposedThing(servient=Servient(), thing=Thing(id=uuid.uuid4().urn))
 
