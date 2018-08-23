@@ -16,8 +16,8 @@ import tornado.web
 
 from wotpy.codecs.enums import MediaTypes
 from wotpy.protocols.coap.enums import CoAPSchemes
-from wotpy.protocols.coap.resources.property import PropertyReadWriteResource
-from wotpy.protocols.enums import Protocols
+from wotpy.protocols.coap.resources.property import PropertyReadWriteResource, PropertyObservableResource
+from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.server import BaseProtocolServer
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.form import Form
@@ -65,7 +65,16 @@ class CoAPServer(BaseProtocolServer):
             href=href_read_write,
             media_type=MediaTypes.JSON)
 
-        return [form_read_write]
+        href_observe = "{}/subscription".format(href_read_write)
+
+        form_observe = Form(
+            interaction=proprty,
+            protocol=self.protocol,
+            href=href_observe,
+            media_type=MediaTypes.JSON,
+            rel=InteractionVerbs.OBSERVE_PROPERTY)
+
+        return [form_read_write, form_observe]
 
     def _build_forms_action(self, action, hostname):
         """Builds and returns the CoAP Form instances for the given Action interaction."""
@@ -113,9 +122,13 @@ class CoAPServer(BaseProtocolServer):
 
         for exposed_thing in self.exposed_things:
             for name, proprty in six.iteritems(exposed_thing.thing.properties):
-                resource_path = (exposed_thing.thing.url_name, "property", proprty.url_name)
-                resource = PropertyReadWriteResource(exposed_thing, proprty.name)
-                root.add_resource(resource_path, resource)
+                root.add_resource(
+                    (exposed_thing.thing.url_name, "property", proprty.url_name),
+                    PropertyReadWriteResource(exposed_thing, proprty.name))
+
+                root.add_resource(
+                    (exposed_thing.thing.url_name, "property", proprty.url_name, "subscription"),
+                    PropertyObservableResource(exposed_thing, proprty.name))
 
         return root
 
