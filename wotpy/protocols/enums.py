@@ -13,6 +13,7 @@ class Protocols(EnumListMixin):
 
     HTTP = "HTTP"
     WEBSOCKETS = "WEBSOCKETS"
+    COAP = "COAP"
 
 
 class InteractionVerbs(EnumListMixin):
