@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import datetime
 import json
 import random
 
@@ -45,7 +46,9 @@ def test_start_stop():
         try:
             coap_client = yield aiocoap.Context.create_client_context()
             request_msg = aiocoap.Message(code=aiocoap.Code.GET, uri=ping_uri)
-            response = yield coap_client.request(request_msg).response
+            response = yield tornado.gen.with_timeout(
+                datetime.timedelta(seconds=2),
+                coap_client.request(request_msg).response)
         except Exception:
             raise tornado.gen.Return(False)
 
