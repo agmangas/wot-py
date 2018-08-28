@@ -51,7 +51,6 @@ def coap_server():
     @tornado.gen.coroutine
     def triple(parameters):
         input_value = parameters.get("input")
-        yield tornado.gen.sleep(0)
         raise tornado.gen.Return(input_value * 3)
 
     exposed_thing.add_action(action_name, ActionFragment({

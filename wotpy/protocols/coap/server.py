@@ -17,6 +17,7 @@ import tornado.web
 from wotpy.codecs.enums import MediaTypes
 from wotpy.protocols.coap.enums import CoAPSchemes
 from wotpy.protocols.coap.resources.property import PropertyReadWriteResource, PropertyObservableResource
+from wotpy.protocols.coap.resources.action import ActionInvokeResource
 from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.server import BaseProtocolServer
 from wotpy.td.enums import InteractionTypes
@@ -79,7 +80,17 @@ class CoAPServer(BaseProtocolServer):
     def _build_forms_action(self, action, hostname):
         """Builds and returns the CoAP Form instances for the given Action interaction."""
 
-        return []
+        href_invoke = "{}://{}:{}/{}/action/{}".format(
+            self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
+            action.thing.url_name, action.url_name)
+
+        form_invoke = Form(
+            interaction=action,
+            protocol=self.protocol,
+            href=href_invoke,
+            media_type=MediaTypes.JSON)
+
+        return [form_invoke]
 
     def _build_forms_event(self, event, hostname):
         """Builds and returns the CoAP Form instances for the given Event interaction."""
@@ -129,6 +140,11 @@ class CoAPServer(BaseProtocolServer):
                 root.add_resource(
                     (exposed_thing.thing.url_name, "property", proprty.url_name, "subscription"),
                     PropertyObservableResource(exposed_thing, proprty.name))
+
+            for name, action in six.iteritems(exposed_thing.thing.actions):
+                root.add_resource(
+                    (exposed_thing.thing.url_name, "action", action.url_name),
+                    ActionInvokeResource(exposed_thing, action.name))
 
         return root
 

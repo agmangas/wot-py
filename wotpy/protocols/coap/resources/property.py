@@ -59,7 +59,7 @@ class PropertyReadWriteResource(aiocoap.resource.Resource):
 
 
 class PropertyObservableResource(aiocoap.resource.ObservableResource):
-    """"""
+    """CoAP resource to observe property updates."""
 
     def __init__(self, exposed_thing, name):
         super(PropertyObservableResource, self).__init__()

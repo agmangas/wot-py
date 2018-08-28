@@ -33,6 +33,14 @@ def _get_property_observe_href(exp_thing, prop_name, server):
     return next(item.href for item in prop_forms if item.rel == InteractionVerbs.OBSERVE_PROPERTY)
 
 
+def _get_action_href(exp_thing, action_name, server):
+    """Helper function to retrieve the Action invocation href."""
+
+    action = exp_thing.thing.actions[action_name]
+    action_forms = server.build_forms("127.0.0.1", action)
+    return next(item.href for item in action_forms)
+
+
 @pytest.mark.flaky(reruns=5)
 def test_start_stop():
     """The CoAP server can be started and stopped."""
@@ -167,5 +175,61 @@ def test_property_subscription(coap_server):
 
         request.observation.cancel()
         periodic_set.stop()
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_action_invoke(coap_server):
+    """Actions exposed in a CoAP server can be invoked and observed for their eventual results."""
+
+    exposed_thing = next(coap_server.exposed_things)
+    action_name = next(six.iterkeys(exposed_thing.thing.actions))
+    href = _get_action_href(exposed_thing, action_name, coap_server)
+
+    future_handler_block = tornado.concurrent.Future()
+
+    # noinspection PyUnusedLocal
+    @tornado.gen.coroutine
+    def the_handler(parameters):
+        yield future_handler_block
+        raise tornado.gen.Return(parameters.get("input") * 3)
+
+    exposed_thing.set_action_handler(action_name, the_handler)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        input_value = Faker().pyint()
+
+        coap_client = yield aiocoap.Context.create_client_context()
+
+        invoke_req_payload = json.dumps({"input": input_value}).encode("utf-8")
+        invoke_msg = aiocoap.Message(code=aiocoap.Code.POST, payload=invoke_req_payload, uri=href)
+        invoke_resp = yield coap_client.request(invoke_msg).response
+        invocation_id = json.loads(invoke_resp.payload).get("invocation")
+
+        observe_req_payload = json.dumps({"invocation": invocation_id}).encode("utf-8")
+        observe_msg = aiocoap.Message(code=aiocoap.Code.GET, payload=observe_req_payload, uri=href, observe=0)
+        observe_req = coap_client.request(observe_msg)
+
+        first_observe_resp = yield observe_req.response
+
+        assert json.loads(first_observe_resp.payload).get("done") is False
+
+        def unblock_handler():
+            future_handler_block.set_result(True)
+
+        @tornado.gen.coroutine
+        def get_next_observation():
+            resp = yield observe_req.observation.__aiter__().__anext__()
+            resp_payload = json.loads(resp.payload)
+            raise tornado.gen.Return(resp_payload)
+
+        tornado.ioloop.IOLoop.current().add_callback(unblock_handler)
+        observation_payload = yield get_next_observation()
+
+        assert observation_payload.get("done") is True
+        assert observation_payload.get("result") == input_value * 3
+
+        observe_req.observation.cancel()
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
