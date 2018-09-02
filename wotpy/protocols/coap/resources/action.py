@@ -19,7 +19,7 @@ JSON_CONTENT_FORMAT = 50
 
 
 class ActionInvokeResource(aiocoap.resource.ObservableResource):
-    """CoAP resource to observe property updates."""
+    """CoAP resource to invoke Actions and observe those invocations."""
 
     def __init__(self, exposed_thing, name):
         super(ActionInvokeResource, self).__init__()
@@ -29,7 +29,9 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
 
     @tornado.gen.coroutine
     def add_observation(self, request, server_observation):
-        """"""
+        """Method that decides whether to add a new observer.
+        Observers are added for GET requests (checks for invocation status)
+        but not for POST requests (action invocations)."""
 
         if request.code.name != aiocoap.Code.GET.name:
             return
@@ -58,7 +60,7 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
 
     @tornado.gen.coroutine
     def render_get(self, request):
-        """"""
+        """Handler to check the status of an ongoing invocation."""
 
         request_payload = json.loads(request.payload)
         invocation_id = request_payload.get("invocation", None)
@@ -78,21 +80,21 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
             raise tornado.gen.Return(response)
 
         if not future_result.done():
-            raise_response({"done": False})
+            raise_response({"invocation": invocation_id, "done": False})
 
         resp_dict = {}
 
         try:
             result = future_result.result()
-            resp_dict.update({"done": True, "result": result})
+            resp_dict.update({"invocation": invocation_id, "done": True, "result": result})
         except Exception as ex:
-            resp_dict.update({"done": True, "error": str(ex)})
+            resp_dict.update({"invocation": invocation_id, "done": True, "error": str(ex)})
 
         raise_response(resp_dict)
 
     @tornado.gen.coroutine
     def render_post(self, request):
-        """"""
+        """Handler for action invocations."""
 
         request_payload = json.loads(request.payload)
 
