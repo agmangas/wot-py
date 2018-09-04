@@ -4,7 +4,7 @@
 """
 CoAP resources to deal with Action interactions.
 """
-
+import datetime
 import json
 import uuid
 
@@ -21,10 +21,11 @@ JSON_CONTENT_FORMAT = 50
 class ActionInvokeResource(aiocoap.resource.ObservableResource):
     """CoAP resource to invoke Actions and observe those invocations."""
 
-    def __init__(self, exposed_thing, name):
+    def __init__(self, exposed_thing, name, clear_timeout_ms=1000 * 60 * 60):
         super(ActionInvokeResource, self).__init__()
         self._exposed_thing = exposed_thing
         self._name = name
+        self._clear_timeout_ms = clear_timeout_ms
         self._pending_actions = {}
 
     @tornado.gen.coroutine
@@ -101,9 +102,19 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
         if "input" not in request_payload:
             raise aiocoap.error.BadRequest(b"Missing input value")
 
+        invocation_id = uuid.uuid4().hex
+
+        def clear_cb():
+            self._pending_actions.pop(invocation_id, None)
+
+        # noinspection PyUnusedLocal
+        def done_cb(fut):
+            loop = tornado.ioloop.IOLoop.current()
+            loop.add_timeout(datetime.timedelta(milliseconds=self._clear_timeout_ms), clear_cb)
+
         input_value = request_payload.get("input")
         future_action = self._exposed_thing.actions[self._name].invoke(input_value)
-        invocation_id = uuid.uuid4().hex
+        tornado.concurrent.future_add_done_callback(future_action, done_cb)
         self._pending_actions[invocation_id] = future_action
         response_payload = json.dumps({"invocation": invocation_id}).encode("utf-8")
         response = aiocoap.Message(code=aiocoap.Code.CREATED, payload=response_payload)
