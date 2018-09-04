@@ -42,6 +42,23 @@ def _get_action_href(exp_thing, action_name, server):
     return next(item.href for item in action_forms)
 
 
+def _get_event_href(exp_thing, event_name, server):
+    """Helper function to retrieve the Event subscription href."""
+
+    event = exp_thing.thing.events[event_name]
+    event_forms = server.build_forms("127.0.0.1", event)
+    return next(item.href for item in event_forms)
+
+
+@tornado.gen.coroutine
+def _next_observation(request):
+    """Yields the next observation for the given CoAP request."""
+
+    resp = yield request.observation.__aiter__().__anext__()
+    val = json.loads(resp.payload)
+    raise tornado.gen.Return(val)
+
+
 @pytest.mark.flaky(reruns=5)
 def test_start_stop():
     """The CoAP server can be started and stopped."""
@@ -157,14 +174,9 @@ def test_property_subscription(coap_server):
         request_msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href, observe=0)
         request = coap_client.request(request_msg)
 
-        @tornado.gen.coroutine
-        def get_next_observation():
-            resp = yield request.observation.__aiter__().__anext__()
-            val = json.loads(resp.payload).get("value")
-            raise tornado.gen.Return(val)
-
         while True:
-            value = yield get_next_observation()
+            payload = yield _next_observation(request)
+            value = payload.get("value")
 
             try:
                 future_values.pop(future_values.index(value))
@@ -180,6 +192,7 @@ def test_property_subscription(coap_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
+@pytest.mark.flaky(reruns=5)
 def test_action_invoke(coap_server):
     """Actions exposed in a CoAP server can be invoked and observed for their eventual results."""
 
@@ -228,12 +241,6 @@ def test_action_invoke(coap_server):
         return coap_client.request(msg)
 
     @tornado.gen.coroutine
-    def get_next_observation(observe_request):
-        response = yield observe_request.observation.__aiter__().__anext__()
-        payload = json.loads(response.payload)
-        raise tornado.gen.Return(payload)
-
-    @tornado.gen.coroutine
     def test_coroutine():
         coap_client = yield aiocoap.Context.create_client_context()
 
@@ -260,8 +267,8 @@ def test_action_invoke(coap_server):
         assert not handler_futures[invocation_01["future"]].done()
         assert not handler_futures[invocation_02["future"]].done()
 
-        fut_result_01 = get_next_observation(observe_req_01)
-        fut_result_02 = get_next_observation(observe_req_02)
+        fut_result_01 = _next_observation(observe_req_01)
+        fut_result_02 = _next_observation(observe_req_02)
 
         unblock_01()
 
@@ -284,5 +291,56 @@ def test_action_invoke(coap_server):
 
         observe_req_01.observation.cancel()
         observe_req_02.observation.cancel()
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+@pytest.mark.flaky(reruns=5)
+def test_event_subscription(coap_server):
+    """Event emissions can be observed in a CoAP server."""
+
+    exposed_thing = next(coap_server.exposed_things)
+    event_name = next(six.iterkeys(exposed_thing.thing.events))
+    href = _get_event_href(exposed_thing, event_name, coap_server)
+
+    emitted_values = [{"num": Faker().pyint(), "str": Faker().sentence()} for _ in range(5)]
+
+    def emit_event():
+        exposed_thing.emit_event(event_name, payload=emitted_values[0])
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        periodic_set = tornado.ioloop.PeriodicCallback(emit_event, 5)
+        periodic_set.start()
+
+        coap_client = yield aiocoap.Context.create_client_context()
+        request_msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href, observe=0)
+        request = coap_client.request(request_msg)
+        first_response = yield request.response
+
+        assert not first_response.payload
+
+        while True:
+            payload = yield _next_observation(request)
+            data = payload["data"]
+
+            assert payload.get("name") == event_name
+            assert "num" in data
+            assert "str" in data
+
+            try:
+                emitted_idx = next(
+                    idx for idx, item in enumerate(emitted_values)
+                    if item["num"] == data["num"] and item["str"] == data["str"])
+
+                emitted_values.pop(emitted_idx)
+            except StopIteration:
+                pass
+
+            if len(emitted_values) == 0:
+                break
+
+        request.observation.cancel()
+        periodic_set.stop()
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
