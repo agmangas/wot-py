@@ -62,7 +62,7 @@ def http_server():
 
 @pytest.fixture
 def http_servient():
-    """Returns a Servient that exposes a Websockets server and one ExposedThing."""
+    """Returns a Servient that exposes an HTTP server and one ExposedThing."""
 
     http_port = random.randint(20000, 40000)
     http_server = HTTPServer(port=http_port)
