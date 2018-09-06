@@ -8,12 +8,6 @@ Class that represents the abstract client interface.
 from abc import ABCMeta, abstractmethod
 
 
-class ProtocolClientException(Exception):
-    """"""
-
-    pass
-
-
 class BaseProtocolClient(object):
     """Base protocol client class.
     This is the interface that must be implemented by all client classes."""

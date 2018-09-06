@@ -9,7 +9,6 @@ import pytest
 import tornado.gen
 from faker import Faker
 
-from wotpy.protocols.coap.server import CoAPServer
 from wotpy.protocols.support import is_coap_supported
 from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
@@ -21,7 +20,7 @@ collect_ignore = []
 
 if not is_coap_supported():
     logging.warning("Skipping CoAP tests due to unsupported platform")
-    collect_ignore += ["test_server.py"]
+    collect_ignore += ["test_server.py", "test_client.py"]
 
 
 @pytest.fixture(params=[{"action_clear_ms": 5000}])

@@ -13,7 +13,8 @@ from rx import Observable
 from six.moves import urllib
 from tornado.concurrent import Future
 
-from wotpy.protocols.client import BaseProtocolClient, ProtocolClientException
+from wotpy.protocols.client import BaseProtocolClient
+from wotpy.protocols.exceptions import ProtocolClientException
 from wotpy.protocols.enums import Protocols
 from wotpy.protocols.utils import pick_form_for_schemes, is_scheme_form
 from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketSchemes

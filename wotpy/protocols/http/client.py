@@ -14,7 +14,8 @@ import tornado.ioloop
 from rx import Observable
 from six.moves.urllib import parse
 
-from wotpy.protocols.client import BaseProtocolClient, ProtocolClientException
+from wotpy.protocols.client import BaseProtocolClient
+from wotpy.protocols.exceptions import ProtocolClientException
 from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.http.enums import HTTPSchemes
 from wotpy.protocols.utils import is_scheme_form

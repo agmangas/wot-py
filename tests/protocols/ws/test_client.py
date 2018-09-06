@@ -13,7 +13,8 @@ import tornado.websocket
 from rx.concurrency import IOLoopScheduler
 from tornado.concurrent import Future
 
-from wotpy.protocols.ws.client import WebsocketClient, ProtocolClientException
+from wotpy.protocols.ws.client import WebsocketClient
+from wotpy.protocols.exceptions import ProtocolClientException
 from wotpy.td.description import ThingDescription
 from wotpy.wot.dictionaries.interaction import ActionFragment
 

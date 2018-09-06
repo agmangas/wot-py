@@ -9,7 +9,8 @@ import json
 import aiocoap
 import tornado.gen
 
-from wotpy.protocols.client import BaseProtocolClient, ProtocolClientException
+from wotpy.protocols.client import BaseProtocolClient
+from wotpy.protocols.exceptions import ProtocolClientException
 from wotpy.protocols.coap.enums import CoAPSchemes
 from wotpy.protocols.enums import Protocols
 from wotpy.protocols.utils import is_scheme_form
