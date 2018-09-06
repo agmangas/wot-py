@@ -165,6 +165,9 @@ def test_property_subscription(coap_server):
     def update_property():
         yield exposed_thing.properties[prop_name].write(future_values[0])
 
+    def all_values_written():
+        return len(future_values) == 0
+
     @tornado.gen.coroutine
     def test_coroutine():
         periodic_set = tornado.ioloop.PeriodicCallback(update_property, 5)
@@ -174,7 +177,7 @@ def test_property_subscription(coap_server):
         request_msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href, observe=0)
         request = coap_client.request(request_msg)
 
-        while True:
+        while not all_values_written():
             payload = yield _next_observation(request)
             value = payload.get("value")
 
@@ -182,9 +185,6 @@ def test_property_subscription(coap_server):
                 future_values.pop(future_values.index(value))
             except ValueError:
                 pass
-
-            if len(future_values) == 0:
-                break
 
         request.observation.cancel()
         periodic_set.stop()
@@ -296,6 +296,37 @@ def test_action_invoke(coap_server):
 
 
 @pytest.mark.flaky(reruns=5)
+@pytest.mark.parametrize("coap_server", [{"action_clear_ms": 5}], indirect=True)
+def test_action_clear(coap_server):
+    """Completed Action invocations are removed from the CoAP server after a while."""
+
+    exposed_thing = next(coap_server.exposed_things)
+    action_name = next(six.iterkeys(exposed_thing.thing.actions))
+    href = _get_action_href(exposed_thing, action_name, coap_server)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        coap_client = yield aiocoap.Context.create_client_context()
+
+        payload = json.dumps({"input": Faker().pyint()}).encode("utf-8")
+        msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
+        response = yield coap_client.request(msg).response
+        invocation_id = json.loads(response.payload).get("invocation")
+
+        assert invocation_id
+
+        yield tornado.gen.sleep(0.01)
+
+        obsv_payload = json.dumps({"invocation": invocation_id}).encode("utf-8")
+        obsv_msg = aiocoap.Message(code=aiocoap.Code.GET, payload=obsv_payload, uri=href, observe=0)
+        obsv_response = yield coap_client.request(obsv_msg).response
+
+        assert not obsv_response.code.is_successful()
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+@pytest.mark.flaky(reruns=5)
 def test_event_subscription(coap_server):
     """Event emissions can be observed in a CoAP server."""
 
@@ -307,6 +338,9 @@ def test_event_subscription(coap_server):
 
     def emit_event():
         exposed_thing.emit_event(event_name, payload=emitted_values[0])
+
+    def all_values_emitted():
+        return len(emitted_values) == 0
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -320,7 +354,7 @@ def test_event_subscription(coap_server):
 
         assert not first_response.payload
 
-        while True:
+        while not all_values_emitted():
             payload = yield _next_observation(request)
             data = payload["data"]
 
@@ -336,9 +370,6 @@ def test_event_subscription(coap_server):
                 emitted_values.pop(emitted_idx)
             except StopIteration:
                 pass
-
-            if len(emitted_values) == 0:
-                break
 
         request.observation.cancel()
         periodic_set.stop()

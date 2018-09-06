@@ -22,8 +22,8 @@ if not is_coap_supported():
     collect_ignore += ["test_server.py"]
 
 
-@pytest.fixture
-def coap_server():
+@pytest.fixture(params=[{"action_clear_ms": 5000}])
+def coap_server(request):
     """Builds a CoAPServer instance that contains an ExposedThing."""
 
     from wotpy.protocols.coap.server import CoAPServer
@@ -60,7 +60,7 @@ def coap_server():
 
     port = random.randint(20000, 40000)
 
-    server = CoAPServer(port=port)
+    server = CoAPServer(port=port, **request.param)
     server.add_exposed_thing(exposed_thing)
     server.start()
 

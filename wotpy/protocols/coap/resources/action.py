@@ -4,6 +4,7 @@
 """
 CoAP resources to deal with Action interactions.
 """
+
 import datetime
 import json
 import uuid
@@ -16,16 +17,17 @@ import tornado.gen
 import tornado.ioloop
 
 JSON_CONTENT_FORMAT = 50
+DEFAULT_CLEAR_MS = 1000 * 60 * 60
 
 
 class ActionInvokeResource(aiocoap.resource.ObservableResource):
     """CoAP resource to invoke Actions and observe those invocations."""
 
-    def __init__(self, exposed_thing, name, clear_timeout_ms=1000 * 60 * 60):
+    def __init__(self, exposed_thing, name, clear_ms=None):
         super(ActionInvokeResource, self).__init__()
         self._exposed_thing = exposed_thing
         self._name = name
-        self._clear_timeout_ms = clear_timeout_ms
+        self._clear_ms = DEFAULT_CLEAR_MS if clear_ms is None else clear_ms
         self._pending_actions = {}
 
     @tornado.gen.coroutine
@@ -110,7 +112,7 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
         # noinspection PyUnusedLocal
         def done_cb(fut):
             loop = tornado.ioloop.IOLoop.current()
-            loop.add_timeout(datetime.timedelta(milliseconds=self._clear_timeout_ms), clear_cb)
+            loop.add_timeout(datetime.timedelta(milliseconds=self._clear_ms), clear_cb)
 
         input_value = request_payload.get("input")
         future_action = self._exposed_thing.actions[self._name].invoke(input_value)

@@ -30,10 +30,11 @@ class CoAPServer(BaseProtocolServer):
 
     DEFAULT_PORT = 5683
 
-    def __init__(self, port=DEFAULT_PORT, ssl_context=None):
+    def __init__(self, port=DEFAULT_PORT, ssl_context=None, action_clear_ms=None):
         super(CoAPServer, self).__init__(port=port)
         self._future_server = None
         self._ssl_context = ssl_context
+        self._action_clear_ms = action_clear_ms
 
     @property
     def protocol(self):
@@ -133,14 +134,8 @@ class CoAPServer(BaseProtocolServer):
             self.scheme, hostname.rstrip("/").lstrip("/"),
             self.port, thing.url_name)
 
-    def _build_root_site(self):
-        """Builds and returns the root CoAP Site."""
-
-        root = aiocoap.resource.Site()
-
-        root.add_resource(
-            (".well-known", "core"),
-            aiocoap.resource.WKCResource(root.get_resources_as_linkheader))
+    def _add_property_resources(self, root):
+        """Builds and adds all the Property CoAP resources on the given root resource."""
 
         for exposed_thing in self.exposed_things:
             for name, proprty in six.iteritems(exposed_thing.thing.properties):
@@ -152,15 +147,36 @@ class CoAPServer(BaseProtocolServer):
                     (exposed_thing.thing.url_name, "property", proprty.url_name, "subscription"),
                     PropertyObservableResource(exposed_thing, proprty.name))
 
+    def _add_action_resources(self, root):
+        """Builds and adds all the Action CoAP resources on the given root resource."""
+
+        for exposed_thing in self.exposed_things:
             for name, action in six.iteritems(exposed_thing.thing.actions):
                 root.add_resource(
                     (exposed_thing.thing.url_name, "action", action.url_name),
-                    ActionInvokeResource(exposed_thing, action.name))
+                    ActionInvokeResource(exposed_thing, action.name, clear_ms=self._action_clear_ms))
 
+    def _add_event_resoures(self, root):
+        """Builds and adds all the Event CoAP resources on the given root resource."""
+
+        for exposed_thing in self.exposed_things:
             for name, event in six.iteritems(exposed_thing.thing.events):
                 root.add_resource(
                     (exposed_thing.thing.url_name, "event", event.url_name, "subscription"),
                     EventObserveResource(exposed_thing, event.name))
+
+    def _build_root_site(self):
+        """Builds and returns the root CoAP Site."""
+
+        root = aiocoap.resource.Site()
+
+        root.add_resource(
+            (".well-known", "core"),
+            aiocoap.resource.WKCResource(root.get_resources_as_linkheader))
+
+        self._add_property_resources(root)
+        self._add_action_resources(root)
+        self._add_event_resoures(root)
 
         return root
 
