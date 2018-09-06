@@ -4,15 +4,16 @@
 """
 Classes that contain the client logic for the CoAP protocol.
 """
+
 import json
 
 import aiocoap
 import tornado.gen
 
 from wotpy.protocols.client import BaseProtocolClient
-from wotpy.protocols.exceptions import ProtocolClientException
 from wotpy.protocols.coap.enums import CoAPSchemes
 from wotpy.protocols.enums import Protocols
+from wotpy.protocols.exceptions import FormNotFoundException
 from wotpy.protocols.utils import is_scheme_form
 
 
@@ -77,7 +78,7 @@ class CoAPClient(BaseProtocolClient):
         href = self.pick_coap_href(td, td.get_property_forms(name))
 
         if href is None:
-            raise ProtocolClientException("Unable to find the property form")
+            raise FormNotFoundException()
 
         coap_client = yield aiocoap.Context.create_client_context()
         msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href)

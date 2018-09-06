@@ -15,8 +15,8 @@ from rx import Observable
 from six.moves.urllib import parse
 
 from wotpy.protocols.client import BaseProtocolClient
-from wotpy.protocols.exceptions import ProtocolClientException
 from wotpy.protocols.enums import Protocols, InteractionVerbs
+from wotpy.protocols.exceptions import FormNotFoundException
 from wotpy.protocols.http.enums import HTTPSchemes
 from wotpy.protocols.utils import is_scheme_form
 from wotpy.wot.events import EmittedEvent, PropertyChangeEmittedEvent, PropertyChangeEventInit
@@ -71,7 +71,7 @@ class HTTPClient(BaseProtocolClient):
         href = self.pick_http_href(td, td.get_action_forms(name))
 
         if href is None:
-            raise ProtocolClientException("Unable to find the action form")
+            raise FormNotFoundException()
 
         body = json.dumps({"input": input_value})
         http_client = tornado.httpclient.AsyncHTTPClient()
@@ -114,7 +114,7 @@ class HTTPClient(BaseProtocolClient):
         href = self.pick_http_href(td, td.get_property_forms(name))
 
         if href is None:
-            raise ProtocolClientException("Unable to find the property form")
+            raise FormNotFoundException()
 
         http_client = tornado.httpclient.AsyncHTTPClient()
         body = json.dumps({"value": value})
@@ -129,7 +129,7 @@ class HTTPClient(BaseProtocolClient):
         href = self.pick_http_href(td, td.get_property_forms(name))
 
         if href is None:
-            raise ProtocolClientException("Unable to find the property form")
+            raise FormNotFoundException()
 
         http_client = tornado.httpclient.AsyncHTTPClient()
         http_request = tornado.httpclient.HTTPRequest(href, method="GET")
@@ -144,7 +144,7 @@ class HTTPClient(BaseProtocolClient):
         href = self.pick_http_href(td, td.get_event_forms(name))
 
         if href is None:
-            raise ProtocolClientException("Unable to find the event subscription form")
+            raise FormNotFoundException()
 
         def subscribe(observer):
             """Subscription function to observe events using the HTTP protocol."""
@@ -184,7 +184,7 @@ class HTTPClient(BaseProtocolClient):
         href = self.pick_http_href(td, td.get_property_forms(name), rel=InteractionVerbs.OBSERVE_PROPERTY)
 
         if href is None:
-            raise ProtocolClientException("Unable to find the property subscription form")
+            raise FormNotFoundException()
 
         def subscribe(observer):
             """Subscription function to observe property updates using the HTTP protocol."""

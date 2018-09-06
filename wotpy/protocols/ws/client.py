@@ -14,8 +14,8 @@ from six.moves import urllib
 from tornado.concurrent import Future
 
 from wotpy.protocols.client import BaseProtocolClient
-from wotpy.protocols.exceptions import ProtocolClientException
 from wotpy.protocols.enums import Protocols
+from wotpy.protocols.exceptions import FormNotFoundException
 from wotpy.protocols.utils import pick_form_for_schemes, is_scheme_form
 from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketSchemes
 from wotpy.protocols.ws.messages import \
@@ -221,7 +221,7 @@ class WebsocketClient(BaseProtocolClient):
         form = self._select_form(td, td.get_action_forms(name))
 
         if not form:
-            raise ProtocolClientException()
+            raise FormNotFoundException()
 
         ws_url = form.resolve_uri(td.base)
 
@@ -242,7 +242,7 @@ class WebsocketClient(BaseProtocolClient):
         form = self._select_form(td, td.get_property_forms(name))
 
         if not form:
-            raise ProtocolClientException()
+            raise FormNotFoundException()
 
         ws_url = form.resolve_uri(td.base)
 
@@ -263,7 +263,7 @@ class WebsocketClient(BaseProtocolClient):
         form = self._select_form(td, td.get_property_forms(name))
 
         if not form:
-            raise ProtocolClientException()
+            raise FormNotFoundException()
 
         ws_url = form.resolve_uri(td.base)
 
@@ -284,7 +284,7 @@ class WebsocketClient(BaseProtocolClient):
 
         if not form:
             # noinspection PyUnresolvedReferences
-            return Observable.throw(ProtocolClientException())
+            return Observable.throw(FormNotFoundException())
 
         ws_url = form.resolve_uri(td.base)
 
@@ -309,7 +309,7 @@ class WebsocketClient(BaseProtocolClient):
 
         if not form:
             # noinspection PyUnresolvedReferences
-            return Observable.throw(ProtocolClientException())
+            return Observable.throw(FormNotFoundException())
 
         ws_url = form.resolve_uri(td.base)
 
