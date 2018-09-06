@@ -61,7 +61,33 @@ class CoAPClient(BaseProtocolClient):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
 
-        raise NotImplementedError
+        href = self.pick_coap_href(td, td.get_action_forms(name))
+
+        if href is None:
+            raise FormNotFoundException()
+
+        coap_client = yield aiocoap.Context.create_client_context()
+
+        payload = json.dumps({"input": input_value}).encode("utf-8")
+        msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
+        response = yield coap_client.request(msg).response
+        invocation_id = json.loads(response.payload).get("invocation")
+
+        payload_obsv = json.dumps({"invocation": invocation_id}).encode("utf-8")
+        msg_obsv = aiocoap.Message(code=aiocoap.Code.GET, payload=payload_obsv, uri=href, observe=0)
+        request_obsv = coap_client.request(msg_obsv)
+        first_response_obsv = yield request_obsv.response
+
+        invocation_status = json.loads(first_response_obsv.payload)
+
+        while not invocation_status.get("done"):
+            response_obsv = yield request_obsv.observation.__aiter__().__anext__()
+            invocation_status = json.loads(response_obsv.payload)
+
+        if invocation_status.get("error"):
+            raise Exception(invocation_status.get("error"))
+        else:
+            raise tornado.gen.Return(invocation_status.get("result"))
 
     @tornado.gen.coroutine
     def write_property(self, td, name, value):

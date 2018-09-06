@@ -59,3 +59,30 @@ def test_write_property(coap_servient):
         assert curr_value == prop_value
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+@pytest.mark.flaky(reruns=5)
+def test_invoke_action(coap_servient):
+    """The CoAP client can invoke actions."""
+
+    exposed_thing = next(coap_servient.exposed_things)
+    td = ThingDescription.from_thing(exposed_thing.thing)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        coap_client = CoAPClient()
+        action_name = next(six.iterkeys(td.actions))
+        input_value = Faker().pyint()
+
+        @tornado.gen.coroutine
+        def double(parameters):
+            yield tornado.gen.sleep(0.1)
+            raise tornado.gen.Return(parameters.get("input") * 2)
+
+        exposed_thing.set_action_handler(action_name, double)
+
+        result = yield coap_client.invoke_action(td, action_name, input_value)
+
+        assert result == input_value * 2
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
