@@ -72,6 +72,8 @@ def coap_server(request):
 def coap_servient():
     """Returns a Servient that exposes a CoAP server and one ExposedThing."""
 
+    from wotpy.protocols.coap.server import CoAPServer
+
     coap_port = random.randint(20000, 40000)
     coap_server = CoAPServer(port=coap_port)
 
