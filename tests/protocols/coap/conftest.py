@@ -9,7 +9,9 @@ import pytest
 import tornado.gen
 from faker import Faker
 
+from wotpy.protocols.coap.server import CoAPServer
 from wotpy.protocols.support import is_coap_supported
+from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
 from wotpy.wot.dictionaries.interaction import PropertyFragment, EventFragment, ActionFragment
 from wotpy.wot.exposed.thing import ExposedThing
@@ -65,3 +67,61 @@ def coap_server(request):
     server.start()
 
     return server
+
+
+@pytest.fixture
+def coap_servient():
+    """Returns a Servient that exposes a CoAP server and one ExposedThing."""
+
+    coap_port = random.randint(20000, 40000)
+    coap_server = CoAPServer(port=coap_port)
+
+    servient = Servient()
+    servient.add_server(coap_server)
+
+    wot = servient.start()
+
+    property_name_01 = uuid.uuid4().hex
+    action_name_01 = uuid.uuid4().hex
+    event_name_01 = uuid.uuid4().hex
+
+    td_dict = {
+        "id": uuid.uuid4().urn,
+        "name": uuid.uuid4().hex,
+        "properties": {
+            property_name_01: {
+                "writable": True,
+                "observable": True,
+                "type": "string"
+            }
+        },
+        "actions": {
+            action_name_01: {
+                "input": {
+                    "type": "number"
+                },
+                "output": {
+                    "type": "number"
+                },
+            }
+        },
+        "events": {
+            event_name_01: {
+                "type": "string"
+            }
+        },
+    }
+
+    td = ThingDescription(td_dict)
+
+    exposed_thing = wot.produce(td.to_str())
+    exposed_thing.expose()
+
+    @tornado.gen.coroutine
+    def action_handler(parameters):
+        input_value = parameters.get("input")
+        raise tornado.gen.Return(int(input_value) * 2)
+
+    exposed_thing.set_action_handler(action_name_01, action_handler)
+
+    return servient
