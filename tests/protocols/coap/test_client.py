@@ -35,3 +35,27 @@ def test_read_property(coap_servient):
         assert coap_prop_value == prop_value
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+@pytest.mark.flaky(reruns=5)
+def test_write_property(coap_servient):
+    """The CoAP client can write properties."""
+
+    exposed_thing = next(coap_servient.exposed_things)
+    td = ThingDescription.from_thing(exposed_thing.thing)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        coap_client = CoAPClient()
+        prop_name = next(six.iterkeys(td.properties))
+        prop_value = Faker().sentence()
+
+        prev_value = yield exposed_thing.properties[prop_name].read()
+        assert prev_value != prop_value
+
+        yield coap_client.write_property(td, prop_name, prop_value)
+
+        curr_value = yield exposed_thing.properties[prop_name].read()
+        assert curr_value == prop_value
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)

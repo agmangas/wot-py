@@ -13,7 +13,7 @@ import tornado.gen
 from wotpy.protocols.client import BaseProtocolClient
 from wotpy.protocols.coap.enums import CoAPSchemes
 from wotpy.protocols.enums import Protocols
-from wotpy.protocols.exceptions import FormNotFoundException
+from wotpy.protocols.exceptions import FormNotFoundException, ProtocolClientException
 from wotpy.protocols.utils import is_scheme_form
 
 
@@ -68,7 +68,18 @@ class CoAPClient(BaseProtocolClient):
         """Updates the value of a Property on a remote Thing.
         Returns a Future."""
 
-        raise NotImplementedError
+        href = self.pick_coap_href(td, td.get_property_forms(name))
+
+        if href is None:
+            raise FormNotFoundException()
+
+        coap_client = yield aiocoap.Context.create_client_context()
+        payload = json.dumps({"value": value}).encode("utf-8")
+        msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
+        response = yield coap_client.request(msg).response
+
+        if not response.code.is_successful():
+            raise ProtocolClientException(str(response.code))
 
     @tornado.gen.coroutine
     def read_property(self, td, name):
