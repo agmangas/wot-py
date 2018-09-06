@@ -20,9 +20,8 @@ from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 
 
-@pytest.fixture
-def property_fragment():
-    """Builds and returns a random PropertyInit."""
+def _build_property_fragment():
+    """Builds and returns a random Property init fragment."""
 
     return PropertyFragment({
         "label": Faker().sentence(),
@@ -32,9 +31,8 @@ def property_fragment():
     })
 
 
-@pytest.fixture
-def event_fragment():
-    """Builds and returns a random EventInit."""
+def _build_event_fragment():
+    """Builds and returns a random Event init fragment."""
 
     return EventFragment({
         "label": Faker().sentence(),
@@ -43,9 +41,8 @@ def event_fragment():
     })
 
 
-@pytest.fixture
-def action_fragment():
-    """Builds and returns a random ActionInit."""
+def _build_action_fragment():
+    """Builds and returns a random Action init fragment."""
 
     return ActionFragment({
         "label": Faker().sentence(),
@@ -58,6 +55,27 @@ def action_fragment():
             "description": Faker().sentence()
         }
     })
+
+
+@pytest.fixture
+def property_fragment():
+    """Builds and returns a random Property init fragment."""
+
+    return _build_property_fragment()
+
+
+@pytest.fixture
+def action_fragment():
+    """Builds and returns a random ActionInit."""
+
+    return _build_action_fragment()
+
+
+@pytest.fixture
+def event_fragment():
+    """Builds and returns a random EventInit."""
+
+    return _build_event_fragment()
 
 
 @pytest.fixture
@@ -140,9 +158,9 @@ def consumed_exposed_pair():
         yield tornado.gen.sleep(0)
         raise tornado.gen.Return(str(input_value).lower())
 
-    exp_thing.add_property(uuid.uuid4().hex, property_fragment())
-    exp_thing.add_action(uuid.uuid4().hex, action_fragment(), lower)
-    exp_thing.add_event(uuid.uuid4().hex, event_fragment())
+    exp_thing.add_property(uuid.uuid4().hex, _build_property_fragment())
+    exp_thing.add_action(uuid.uuid4().hex, _build_action_fragment(), lower)
+    exp_thing.add_event(uuid.uuid4().hex, _build_event_fragment())
 
     servient = Servient()
     servient.select_client = MagicMock(return_value=ExposedThingProxyClient(exp_thing))
