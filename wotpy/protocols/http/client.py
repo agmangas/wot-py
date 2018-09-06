@@ -22,7 +22,7 @@ from wotpy.wot.events import EmittedEvent, PropertyChangeEmittedEvent, PropertyC
 
 
 class HTTPClient(BaseProtocolClient):
-    """Implementation of the protocol client interface for the Websocket protocol."""
+    """Implementation of the protocol client interface for the HTTP protocol."""
 
     JSON_HEADERS = {"Content-Type": "application/json"}
 
