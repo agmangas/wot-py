@@ -192,9 +192,67 @@ def test_property_subscription(coap_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
+@tornado.gen.coroutine
+def _test_action_invoke(the_coap_server, input_value=None):
+    """Helper function to invoke an Action in the CoAP server."""
+
+    exposed_thing = next(the_coap_server.exposed_things)
+    action_name = next(six.iterkeys(exposed_thing.thing.actions))
+    href = _get_action_href(exposed_thing, action_name, the_coap_server)
+
+    coap_client = yield aiocoap.Context.create_client_context()
+
+    input_value = input_value if input_value is not None else Faker().pyint()
+    payload = json.dumps({"input": input_value}).encode("utf-8")
+    msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
+    response = yield coap_client.request(msg).response
+    invocation_id = json.loads(response.payload).get("invocation")
+
+    assert response.code.is_successful()
+    assert invocation_id
+
+    yield tornado.gen.sleep(0.01)
+
+    obsv_payload = json.dumps({"invocation": invocation_id}).encode("utf-8")
+    obsv_msg = aiocoap.Message(code=aiocoap.Code.GET, payload=obsv_payload, uri=href, observe=0)
+    obsv_response = yield coap_client.request(obsv_msg).response
+
+    raise tornado.gen.Return(obsv_response)
+
+
 @pytest.mark.flaky(reruns=5)
 def test_action_invoke(coap_server):
-    """Actions exposed in a CoAP server can be invoked and observed for their eventual results."""
+    """Actions exposed in a CoAP server can be invoked."""
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        input_value = Faker().pyint()
+        response = yield _test_action_invoke(coap_server, input_value=input_value)
+        data = json.loads(response.payload)
+        assert response.code.is_successful()
+        assert data.get("done") is True
+        assert data.get("error", None) is None
+        assert data.get("result") == input_value * 3
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+@pytest.mark.flaky(reruns=5)
+@pytest.mark.parametrize("coap_server", [{"action_clear_ms": 5}], indirect=True)
+def test_action_clear_invocation(coap_server):
+    """Completed Action invocations are removed from the CoAP server after a while."""
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        response = yield _test_action_invoke(coap_server)
+        assert not response.code.is_successful()
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+@pytest.mark.flaky(reruns=5)
+def test_action_invoke_parallel(coap_server):
+    """Actions exposed in a CoAP server can be invoked in parallel."""
 
     exposed_thing = next(coap_server.exposed_things)
     action_name = Faker().pystr()
@@ -291,37 +349,6 @@ def test_action_invoke(coap_server):
 
         observe_req_01.observation.cancel()
         observe_req_02.observation.cancel()
-
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
-
-
-@pytest.mark.flaky(reruns=5)
-@pytest.mark.parametrize("coap_server", [{"action_clear_ms": 5}], indirect=True)
-def test_action_clear(coap_server):
-    """Completed Action invocations are removed from the CoAP server after a while."""
-
-    exposed_thing = next(coap_server.exposed_things)
-    action_name = next(six.iterkeys(exposed_thing.thing.actions))
-    href = _get_action_href(exposed_thing, action_name, coap_server)
-
-    @tornado.gen.coroutine
-    def test_coroutine():
-        coap_client = yield aiocoap.Context.create_client_context()
-
-        payload = json.dumps({"input": Faker().pyint()}).encode("utf-8")
-        msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
-        response = yield coap_client.request(msg).response
-        invocation_id = json.loads(response.payload).get("invocation")
-
-        assert invocation_id
-
-        yield tornado.gen.sleep(0.01)
-
-        obsv_payload = json.dumps({"invocation": invocation_id}).encode("utf-8")
-        obsv_msg = aiocoap.Message(code=aiocoap.Code.GET, payload=obsv_payload, uri=href, observe=0)
-        obsv_response = yield coap_client.request(obsv_msg).response
-
-        assert not obsv_response.code.is_successful()
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 

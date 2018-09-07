@@ -75,10 +75,10 @@ def coap_servient():
     from wotpy.protocols.coap.server import CoAPServer
 
     coap_port = random.randint(20000, 40000)
-    coap_server = CoAPServer(port=coap_port)
+    the_coap_server = CoAPServer(port=coap_port)
 
     servient = Servient()
-    servient.add_server(coap_server)
+    servient.add_server(the_coap_server)
 
     wot = servient.start()
 
