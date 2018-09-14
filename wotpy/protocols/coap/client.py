@@ -10,15 +10,15 @@ import json
 import aiocoap
 import tornado.concurrent
 import tornado.gen
-from rx import Observable
 import tornado.platform.asyncio
+from rx import Observable
 
 from wotpy.protocols.client import BaseProtocolClient
 from wotpy.protocols.coap.enums import CoAPSchemes
 from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.exceptions import FormNotFoundException, ProtocolClientException
 from wotpy.protocols.utils import is_scheme_form
-from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent
+from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent, EmittedEvent
 
 
 class CoAPClient(BaseProtocolClient):
@@ -128,23 +128,11 @@ class CoAPClient(BaseProtocolClient):
 
         raise tornado.gen.Return(prop_value)
 
-    def on_event(self, td, name):
-        """Subscribes to an event on a remote Thing.
-        Returns an Observable."""
-
-        raise NotImplementedError
-
-    def on_property_change(self, td, name):
-        """Subscribes to property changes on a remote Thing.
-        Returns an Observable"""
-
-        href = self.pick_coap_href(td, td.get_property_forms(name), rel=InteractionVerbs.OBSERVE_PROPERTY)
-
-        if href is None:
-            raise FormNotFoundException()
+    def _build_subscribe(self, href, next_item_builder):
+        """"""
 
         def subscribe(observer):
-            """Subscription function to observe property updates using the CoAP protocol."""
+            """Subscription function to observe event emissions using the CoAP protocol."""
 
             state = {
                 "active": True,
@@ -154,9 +142,10 @@ class CoAPClient(BaseProtocolClient):
             def on_response(ft):
                 try:
                     response = ft.result()
-                    value = json.loads(response.payload).get("value")
-                    init = PropertyChangeEventInit(name=name, value=value)
-                    observer.on_next(PropertyChangeEmittedEvent(init=init))
+                    next_item = next_item_builder(response.payload)
+
+                    if next_item is not None:
+                        observer.on_next(next_item)
 
                     if state["active"]:
                         next_observation_gen = state["request"].observation.__aiter__().__anext__()
@@ -176,13 +165,54 @@ class CoAPClient(BaseProtocolClient):
                     observer.on_error(ex)
 
             def unsubscribe():
-                if state["request"]: state["request"].observation.cancel()
+                if state["request"]:
+                    state["request"].observation.cancel()
+
                 state["active"] = False
 
             future_coap_client = tornado.gen.convert_yielded(aiocoap.Context.create_client_context())
             tornado.concurrent.future_add_done_callback(future_coap_client, on_coap_client)
 
             return unsubscribe
+
+        return subscribe
+
+    def on_property_change(self, td, name):
+        """Subscribes to property changes on a remote Thing.
+        Returns an Observable"""
+
+        href = self.pick_coap_href(td, td.get_property_forms(name), rel=InteractionVerbs.OBSERVE_PROPERTY)
+
+        if href is None:
+            raise FormNotFoundException()
+
+        def next_item_builder(payload):
+            value = json.loads(payload).get("value")
+            init = PropertyChangeEventInit(name=name, value=value)
+            return PropertyChangeEmittedEvent(init=init)
+
+        subscribe = self._build_subscribe(href, next_item_builder)
+
+        # noinspection PyUnresolvedReferences
+        return Observable.create(subscribe)
+
+    def on_event(self, td, name):
+        """Subscribes to an event on a remote Thing.
+        Returns an Observable."""
+
+        href = self.pick_coap_href(td, td.get_event_forms(name))
+
+        if href is None:
+            raise FormNotFoundException()
+
+        def next_item_builder(payload):
+            try:
+                payload = json.loads(payload).get("data")
+                return EmittedEvent(init=payload, name=name)
+            except:
+                return None
+
+        subscribe = self._build_subscribe(href, next_item_builder)
 
         # noinspection PyUnresolvedReferences
         return Observable.create(subscribe)
