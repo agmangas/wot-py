@@ -8,13 +8,17 @@ Classes that contain the client logic for the CoAP protocol.
 import json
 
 import aiocoap
+import tornado.concurrent
 import tornado.gen
+from rx import Observable
+import tornado.platform.asyncio
 
 from wotpy.protocols.client import BaseProtocolClient
 from wotpy.protocols.coap.enums import CoAPSchemes
-from wotpy.protocols.enums import Protocols
+from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.exceptions import FormNotFoundException, ProtocolClientException
 from wotpy.protocols.utils import is_scheme_form
+from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent
 
 
 class CoAPClient(BaseProtocolClient):
@@ -134,7 +138,54 @@ class CoAPClient(BaseProtocolClient):
         """Subscribes to property changes on a remote Thing.
         Returns an Observable"""
 
-        raise NotImplementedError
+        href = self.pick_coap_href(td, td.get_property_forms(name), rel=InteractionVerbs.OBSERVE_PROPERTY)
+
+        if href is None:
+            raise FormNotFoundException()
+
+        def subscribe(observer):
+            """Subscription function to observe property updates using the CoAP protocol."""
+
+            state = {
+                "active": True,
+                "request": None
+            }
+
+            def on_response(ft):
+                try:
+                    response = ft.result()
+                    value = json.loads(response.payload).get("value")
+                    init = PropertyChangeEventInit(name=name, value=value)
+                    observer.on_next(PropertyChangeEmittedEvent(init=init))
+
+                    if state["active"]:
+                        next_observation_gen = state["request"].observation.__aiter__().__anext__()
+                        future_response = tornado.gen.convert_yielded(next_observation_gen)
+                        tornado.concurrent.future_add_done_callback(future_response, on_response)
+                except Exception as ex:
+                    observer.on_error(ex)
+
+            def on_coap_client(ft):
+                try:
+                    coap_client = ft.result()
+                    msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href, observe=0)
+                    state["request"] = coap_client.request(msg)
+                    future_first_response = state["request"].response
+                    tornado.concurrent.future_add_done_callback(future_first_response, on_response)
+                except Exception as ex:
+                    observer.on_error(ex)
+
+            def unsubscribe():
+                if state["request"]: state["request"].observation.cancel()
+                state["active"] = False
+
+            future_coap_client = tornado.gen.convert_yielded(aiocoap.Context.create_client_context())
+            tornado.concurrent.future_add_done_callback(future_coap_client, on_coap_client)
+
+            return unsubscribe
+
+        # noinspection PyUnresolvedReferences
+        return Observable.create(subscribe)
 
     def on_td_change(self, url):
         """Subscribes to Thing Description changes on a remote Thing.
