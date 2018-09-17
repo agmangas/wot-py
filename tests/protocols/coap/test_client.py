@@ -100,10 +100,7 @@ def test_on_property_change(coap_servient):
     @tornado.gen.coroutine
     def test_coroutine():
         coap_client = CoAPClient()
-
         property_name = next(six.iterkeys(td.properties))
-
-        observable = coap_client.on_property_change(td, property_name)
 
         values = [Faker().sentence() for _ in range(10)]
         values_observed = {value: tornado.concurrent.Future() for value in values}
@@ -117,6 +114,8 @@ def test_on_property_change(coap_servient):
             prop_value = ev.data.value
             if prop_value in values_observed and not values_observed[prop_value].done():
                 values_observed[prop_value].set_result(True)
+
+        observable = coap_client.on_property_change(td, property_name)
 
         subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
 
@@ -132,6 +131,45 @@ def test_on_property_change(coap_servient):
 
 
 @pytest.mark.flaky(reruns=5)
+def test_on_observe_error(coap_servient):
+    """CoAP errors that arise in the middle of an ongoing
+    observation are propagated to the subscription as expected."""
+
+    exposed_thing = next(coap_servient.exposed_things)
+    td = ThingDescription.from_thing(exposed_thing.thing)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        coap_client = CoAPClient()
+        property_name = next(six.iterkeys(td.properties))
+
+        coap_servient.shutdown()
+        yield tornado.gen.sleep(0)
+
+        future_err = tornado.concurrent.Future()
+
+        # noinspection PyUnusedLocal
+        def on_next(item):
+            future_err.set_exception(Exception("Should not have emitted any items"))
+
+        def on_error(err):
+            future_err.set_result(err)
+
+        observable = coap_client.on_property_change(td, property_name)
+
+        subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(
+            on_next=on_next, on_error=on_error)
+
+        observe_err = yield future_err
+
+        assert isinstance(observe_err, Exception)
+
+        subscription.dispose()
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+@pytest.mark.flaky(reruns=5)
 def test_on_event(coap_servient):
     """The CoAP client can subscribe to event emissions."""
 
@@ -141,10 +179,7 @@ def test_on_event(coap_servient):
     @tornado.gen.coroutine
     def test_coroutine():
         coap_client = CoAPClient()
-
         event_name = next(six.iterkeys(td.events))
-
-        observable = coap_client.on_event(td, event_name)
 
         payloads = [uuid.uuid4().hex for _ in range(10)]
         future_payloads = {key: tornado.concurrent.Future() for key in payloads}
@@ -157,6 +192,8 @@ def test_on_event(coap_servient):
         def on_next(ev):
             if ev.data in future_payloads and not future_payloads[ev.data].done():
                 future_payloads[ev.data].set_result(True)
+
+        observable = coap_client.on_event(td, event_name)
 
         subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
 
