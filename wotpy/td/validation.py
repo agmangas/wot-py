@@ -92,7 +92,12 @@ SCHEMA_FORM = {
             "type": "string",
             "default": "application/json"
         },
-        "rel": {"type": "string"},
+        "rel": {
+            "oneOf": [
+                {"type": "string"},
+                {"type": "array", "items": {"type": "string"}}
+            ]
+        },
         "security": SCHEMA_SECURITY_SCHEME
     },
     "required": [

@@ -53,9 +53,10 @@ class ThingDescription(object):
 
             ret = {
                 "href": form.href,
-                "mediaType": form.media_type,
-                "rel": form.rel
+                "mediaType": form.media_type
             }
+
+            ret.update({"rel": [form.rel] if isinstance(form.rel, six.string_types) else form.rel})
 
             if form.security:
                 ret.update({"security": filter_dict(form.security.to_dict())})

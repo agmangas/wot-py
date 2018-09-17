@@ -4,6 +4,7 @@
 """
 Class that represents the form entities exposed by interactions.
 """
+import six
 
 from wotpy.wot.dictionaries.link import FormDict
 
@@ -41,11 +42,17 @@ class Form(object):
         No two Forms with the same ID may exist within the same Interaction.
         The ID of a Form could change during its lifetime if some attributes are updated."""
 
+        try:
+            hash(self.rel)
+            rel_hashable = self.rel
+        except TypeError:
+            rel_hashable = tuple(sorted(self.rel))
+
         return hash((
             self.protocol,
             self.href,
             self.media_type,
-            self.rel
+            rel_hashable
         ))
 
     @property

@@ -21,9 +21,9 @@ class InteractionVerbs(EnumListMixin):
     interaction pattern.  Form Relations allow an interaction to have
     separate protocol mechanisms to support different interaction verbs."""
 
-    READ_PROPERTY = "readProperty"
-    WRITE_PROPERTY = "writeProperty"
-    OBSERVE_PROPERTY = "observeProperty"
-    INVOKE_ACTION = "invokeAction"
-    SUBSCRIBE_EVENT = "subscribeEvent"
-    UNSUBSCRIBE_EVENT = "unsubscribeEvent"
+    READ_PROPERTY = "readproperty"
+    WRITE_PROPERTY = "writeproperty"
+    OBSERVE_PROPERTY = "observeproperty"
+    INVOKE_ACTION = "invokeaction"
+    SUBSCRIBE_EVENT = "subscribeevent"
+    UNSUBSCRIBE_EVENT = "unsubscribeevent"

@@ -9,7 +9,7 @@ from tornado import web
 from tornado.httpserver import HTTPServer
 
 from wotpy.codecs.enums import MediaTypes
-from wotpy.protocols.enums import Protocols
+from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.server import BaseProtocolServer
 from wotpy.protocols.ws.enums import WebsocketSchemes
 from wotpy.protocols.ws.handler import WebsocketHandler
@@ -73,11 +73,20 @@ class WebsocketServer(BaseProtocolServer):
 
         base_url = self.build_base_url(hostname=hostname, thing=exposed_thing.thing)
 
+        rel = [
+            InteractionVerbs.WRITE_PROPERTY,
+            InteractionVerbs.READ_PROPERTY,
+            InteractionVerbs.OBSERVE_PROPERTY,
+            InteractionVerbs.INVOKE_ACTION,
+            InteractionVerbs.SUBSCRIBE_EVENT
+        ]
+
         form_ws = Form(
             interaction=interaction,
             protocol=self.protocol,
             href=base_url,
-            media_type=MediaTypes.JSON)
+            media_type=MediaTypes.JSON,
+            rel=rel)
 
         return [form_ws]
 

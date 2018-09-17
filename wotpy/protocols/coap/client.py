@@ -28,11 +28,17 @@ class CoAPClient(BaseProtocolClient):
     def pick_coap_href(cls, td, forms, rel=None):
         """Picks the most appropriate CoAP form href from the given list of forms."""
 
+        def is_rel_form(form):
+            try:
+                return rel is None or rel == form.rel or rel in form.rel
+            except TypeError:
+                return False
+
         def find_href(scheme):
             try:
                 return next(
                     form.href for form in forms
-                    if is_scheme_form(form, td.base, scheme) and (rel is None or form.rel == rel))
+                    if is_scheme_form(form, td.base, scheme) and is_rel_form(form))
             except StopIteration:
                 return None
 

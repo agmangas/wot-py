@@ -66,7 +66,8 @@ class CoAPServer(BaseProtocolServer):
             interaction=proprty,
             protocol=self.protocol,
             href=href_read_write,
-            media_type=MediaTypes.JSON)
+            media_type=MediaTypes.JSON,
+            rel=[InteractionVerbs.READ_PROPERTY, InteractionVerbs.WRITE_PROPERTY])
 
         href_observe = "{}/subscription".format(href_read_write)
 
@@ -75,7 +76,7 @@ class CoAPServer(BaseProtocolServer):
             protocol=self.protocol,
             href=href_observe,
             media_type=MediaTypes.JSON,
-            rel=InteractionVerbs.OBSERVE_PROPERTY)
+            rel=[InteractionVerbs.OBSERVE_PROPERTY])
 
         return [form_read_write, form_observe]
 
@@ -90,7 +91,8 @@ class CoAPServer(BaseProtocolServer):
             interaction=action,
             protocol=self.protocol,
             href=href_invoke,
-            media_type=MediaTypes.JSON)
+            media_type=MediaTypes.JSON,
+            rel=[InteractionVerbs.INVOKE_ACTION])
 
         return [form_invoke]
 
@@ -105,7 +107,8 @@ class CoAPServer(BaseProtocolServer):
             interaction=event,
             protocol=self.protocol,
             href=href,
-            media_type=MediaTypes.JSON)
+            media_type=MediaTypes.JSON,
+            rel=[InteractionVerbs.SUBSCRIBE_EVENT])
 
         return [form]
 
