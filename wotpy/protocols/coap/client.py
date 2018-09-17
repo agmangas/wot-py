@@ -25,7 +25,7 @@ class CoAPClient(BaseProtocolClient):
     """Implementation of the protocol client interface for the CoAP protocol."""
 
     @classmethod
-    def pick_coap_href(cls, td, forms, rel=None):
+    def _pick_coap_href(cls, td, forms, rel=None):
         """Picks the most appropriate CoAP form href from the given list of forms."""
 
         def is_rel_form(form):
@@ -45,6 +45,61 @@ class CoAPClient(BaseProtocolClient):
         form_coaps = find_href(CoAPSchemes.COAPS)
 
         return form_coaps if form_coaps is not None else find_href(CoAPSchemes.COAP)
+
+    @classmethod
+    def _build_subscribe(cls, href, next_item_builder):
+        """Builds the subscribe function that should be passed when
+        constructing an Observable linked to an observable CoAP resurce."""
+
+        def subscribe(observer):
+            """Subscription function to observe resources using the CoAP protocol."""
+
+            state = {
+                "active": True,
+                "request": None
+            }
+
+            def on_response(ft):
+                try:
+                    response = ft.result()
+                    next_item = next_item_builder(response.payload)
+
+                    if next_item is not None:
+                        observer.on_next(next_item)
+
+                    if state["active"]:
+                        next_observation_gen = state["request"].observation.__aiter__().__anext__()
+                        future_response = tornado.gen.convert_yielded(next_observation_gen)
+                        tornado.concurrent.future_add_done_callback(future_response, on_response)
+                except Exception as exc:
+                    observer.on_error(exc)
+
+            def on_coap_client(ft):
+                try:
+                    coap_client = ft.result()
+                    msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href, observe=0)
+                    state["request"] = coap_client.request(msg)
+                    future_first_response = state["request"].response
+                    tornado.concurrent.future_add_done_callback(future_first_response, on_response)
+                except Exception as exc:
+                    observer.on_error(exc)
+
+            def unsubscribe():
+                if state["request"]:
+                    state["request"].observation.cancel()
+
+                state["active"] = False
+
+            try:
+                coap_client_gen = aiocoap.Context.create_client_context()
+                future_coap_client = tornado.gen.convert_yielded(coap_client_gen)
+                tornado.concurrent.future_add_done_callback(future_coap_client, on_coap_client)
+            except Exception as ex:
+                observer.on_error(ex)
+
+            return unsubscribe
+
+        return subscribe
 
     @property
     def protocol(self):
@@ -71,7 +126,7 @@ class CoAPClient(BaseProtocolClient):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
 
-        href = self.pick_coap_href(td, td.get_action_forms(name))
+        href = self._pick_coap_href(td, td.get_action_forms(name))
 
         if href is None:
             raise FormNotFoundException()
@@ -104,7 +159,7 @@ class CoAPClient(BaseProtocolClient):
         """Updates the value of a Property on a remote Thing.
         Returns a Future."""
 
-        href = self.pick_coap_href(td, td.get_property_forms(name))
+        href = self._pick_coap_href(td, td.get_property_forms(name))
 
         if href is None:
             raise FormNotFoundException()
@@ -122,7 +177,7 @@ class CoAPClient(BaseProtocolClient):
         """Reads the value of a Property on a remote Thing.
         Returns a Future."""
 
-        href = self.pick_coap_href(td, td.get_property_forms(name))
+        href = self._pick_coap_href(td, td.get_property_forms(name))
 
         if href is None:
             raise FormNotFoundException()
@@ -134,60 +189,11 @@ class CoAPClient(BaseProtocolClient):
 
         raise tornado.gen.Return(prop_value)
 
-    def _build_subscribe(self, href, next_item_builder):
-        """"""
-
-        def subscribe(observer):
-            """Subscription function to observe event emissions using the CoAP protocol."""
-
-            state = {
-                "active": True,
-                "request": None
-            }
-
-            def on_response(ft):
-                try:
-                    response = ft.result()
-                    next_item = next_item_builder(response.payload)
-
-                    if next_item is not None:
-                        observer.on_next(next_item)
-
-                    if state["active"]:
-                        next_observation_gen = state["request"].observation.__aiter__().__anext__()
-                        future_response = tornado.gen.convert_yielded(next_observation_gen)
-                        tornado.concurrent.future_add_done_callback(future_response, on_response)
-                except Exception as ex:
-                    observer.on_error(ex)
-
-            def on_coap_client(ft):
-                try:
-                    coap_client = ft.result()
-                    msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href, observe=0)
-                    state["request"] = coap_client.request(msg)
-                    future_first_response = state["request"].response
-                    tornado.concurrent.future_add_done_callback(future_first_response, on_response)
-                except Exception as ex:
-                    observer.on_error(ex)
-
-            def unsubscribe():
-                if state["request"]:
-                    state["request"].observation.cancel()
-
-                state["active"] = False
-
-            future_coap_client = tornado.gen.convert_yielded(aiocoap.Context.create_client_context())
-            tornado.concurrent.future_add_done_callback(future_coap_client, on_coap_client)
-
-            return unsubscribe
-
-        return subscribe
-
     def on_property_change(self, td, name):
         """Subscribes to property changes on a remote Thing.
         Returns an Observable"""
 
-        href = self.pick_coap_href(td, td.get_property_forms(name), rel=InteractionVerbs.OBSERVE_PROPERTY)
+        href = self._pick_coap_href(td, td.get_property_forms(name), rel=InteractionVerbs.OBSERVE_PROPERTY)
 
         if href is None:
             raise FormNotFoundException()
@@ -206,16 +212,16 @@ class CoAPClient(BaseProtocolClient):
         """Subscribes to an event on a remote Thing.
         Returns an Observable."""
 
-        href = self.pick_coap_href(td, td.get_event_forms(name))
+        href = self._pick_coap_href(td, td.get_event_forms(name))
 
         if href is None:
             raise FormNotFoundException()
 
         def next_item_builder(payload):
-            try:
-                payload = json.loads(payload).get("data")
-                return EmittedEvent(init=payload, name=name)
-            except:
+            if payload:
+                data = json.loads(payload).get("data")
+                return EmittedEvent(init=data, name=name)
+            else:
                 return None
 
         subscribe = self._build_subscribe(href, next_item_builder)
