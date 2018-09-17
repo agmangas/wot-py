@@ -85,19 +85,24 @@ def test_start_stop():
         assert not (yield ping())
 
         coap_server.start()
+
         yield tornado.gen.sleep(0)
 
         assert (yield ping())
         assert (yield ping())
 
-        coap_server.stop()
+        for _ in range(5):
+            coap_server.stop()
+
         yield tornado.gen.sleep(0)
 
         assert not (yield ping())
 
         coap_server.stop()
-        coap_server.start()
-        coap_server.start()
+
+        for _ in range(5):
+            coap_server.start()
+
         yield tornado.gen.sleep(0)
 
         assert (yield ping())

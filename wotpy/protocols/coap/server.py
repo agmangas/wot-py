@@ -12,6 +12,7 @@ import tornado.concurrent
 import tornado.gen
 import tornado.httpserver
 import tornado.ioloop
+import tornado.locks
 import tornado.web
 
 from wotpy.codecs.enums import MediaTypes
@@ -32,7 +33,8 @@ class CoAPServer(BaseProtocolServer):
 
     def __init__(self, port=DEFAULT_PORT, ssl_context=None, action_clear_ms=None):
         super(CoAPServer, self).__init__(port=port)
-        self._future_server = None
+        self._server = None
+        self._server_lock = tornado.locks.Lock()
         self._ssl_context = ssl_context
         self._action_clear_ms = action_clear_ms
 
@@ -186,35 +188,25 @@ class CoAPServer(BaseProtocolServer):
     def start(self):
         """Starts the CoAP server."""
 
-        if self._future_server is not None:
-            return
-
-        self._future_server = tornado.concurrent.Future()
-
         @tornado.gen.coroutine
-        def yield_create_server():
-            root = self._build_root_site()
-            bind_address = ("::", self.port)
-            coap_server = yield aiocoap.Context.create_server_context(root, bind=bind_address)
-            self._future_server.set_result(coap_server)
+        def create_server():
+            with (yield self._server_lock.acquire()):
+                if self._server is None:
+                    root = self._build_root_site()
+                    bind_address = ("::", self.port)
+                    coap_server = yield aiocoap.Context.create_server_context(root, bind=bind_address)
+                    self._server = coap_server
 
-        tornado.ioloop.IOLoop.current().add_callback(yield_create_server)
+        tornado.ioloop.IOLoop.current().add_callback(create_server)
 
     def stop(self):
         """Stops the CoAP server."""
 
-        if self._future_server is None:
-            return
+        @tornado.gen.coroutine
+        def shutdown_server():
+            with (yield self._server_lock.acquire()):
+                if self._server is not None:
+                    yield self._server.shutdown()
+                    self._server = None
 
-        def shutdown(ft):
-            coap_server = ft.result()
-
-            @tornado.gen.coroutine
-            def yield_shutdown():
-                yield coap_server.shutdown()
-
-            tornado.ioloop.IOLoop.current().add_callback(yield_shutdown)
-
-        tornado.concurrent.future_add_done_callback(self._future_server, shutdown)
-
-        self._future_server = None
+        tornado.ioloop.IOLoop.current().add_callback(shutdown_server)
