@@ -14,6 +14,13 @@ class MQTTSchemes(EnumListMixin):
     MQTT = "mqtt"
 
 
+class MQTTListenerType(EnumListMixin):
+    """Enumeration of MQTT listener types."""
+
+    TCP = "tcp"
+    WEBSOCKET = "ws"
+
+
 class MQTTCommandCodes(EnumListMixin):
     """Enumeration of MQTT packet types."""
 
