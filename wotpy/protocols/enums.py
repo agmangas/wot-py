@@ -14,6 +14,7 @@ class Protocols(EnumListMixin):
     HTTP = "HTTP"
     WEBSOCKETS = "WEBSOCKETS"
     COAP = "COAP"
+    MQTT = "MQTT"
 
 
 class InteractionVerbs(EnumListMixin):
