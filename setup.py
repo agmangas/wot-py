@@ -4,7 +4,7 @@
 from setuptools import setup, find_packages
 
 from wotpy.__version__ import __version__
-from wotpy.protocols.support import is_coap_supported
+from wotpy.protocols.support import is_coap_supported, is_mqtt_supported
 
 install_requires = [
     'tornado>=5.0,<6.0',
@@ -17,6 +17,9 @@ install_requires = [
 if is_coap_supported():
     install_requires.append('aiocoap>=0.3.0,<1.0')
     install_requires.append('LinkHeader>=0.4.3,<1.0')
+
+if is_mqtt_supported():
+    install_requires.append('hbmqtt>=0.9.4,<1.0')
 
 setup(
     name='wotpy',
