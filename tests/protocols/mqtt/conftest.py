@@ -51,7 +51,8 @@ def mqtt_server():
         "output": {"type": "number"}
     }), triple)
 
-    server = MQTTServer()
+    # ToDo: Set broker URL
+    server = MQTTServer(broker_url=None)
     server.add_exposed_thing(exposed_thing)
     server.start()
 

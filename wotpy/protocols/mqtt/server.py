@@ -5,16 +5,27 @@
 Class that implements the MQTT server (broker).
 """
 
+import tornado.gen
+import tornado.ioloop
+import tornado.locks
+
 from wotpy.protocols.enums import Protocols
 from wotpy.protocols.mqtt.enums import MQTTSchemes
+from wotpy.protocols.mqtt.handlers.ping import PingMQTTHandler
 from wotpy.protocols.server import BaseProtocolServer
 
 
 class MQTTServer(BaseProtocolServer):
     """MQTT binding server implementation."""
 
-    def __init__(self):
+    def __init__(self, broker_url):
         super(MQTTServer, self).__init__(port=None)
+        self._broker_url = broker_url
+        self._server_lock = tornado.locks.Lock()
+
+        self._mqtt_handlers = [
+            PingMQTTHandler(self._broker_url)
+        ]
 
     @property
     def protocol(self):
@@ -49,9 +60,23 @@ class MQTTServer(BaseProtocolServer):
         """Starts the MQTT broker and all the MQTT clients
         that handle the WoT clients requests."""
 
-        pass
+        @tornado.gen.coroutine
+        def start_handlers():
+            with (yield self._server_lock.acquire()):
+                yield [handler.connect() for handler in self._mqtt_handlers]
+                for handler in self._mqtt_handlers:
+                    handler.start()
+
+        tornado.ioloop.IOLoop.current().add_callback(start_handlers)
 
     def stop(self):
         """Stops the MQTT broker and the MQTT clients."""
 
-        pass
+        @tornado.gen.coroutine
+        def stop_handlers():
+            with (yield self._server_lock.acquire()):
+                for handler in self._mqtt_handlers:
+                    handler.stop()
+                yield [handler.disconnect() for handler in self._mqtt_handlers]
+
+        tornado.ioloop.IOLoop.current().add_callback(stop_handlers)
