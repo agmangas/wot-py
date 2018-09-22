@@ -28,6 +28,8 @@ def is_test_broker_online():
         """"""
         broker_url = get_test_broker_url()
 
+        logging.warning("MQTT broker URL: {}".format(broker_url))
+
         if not get_test_broker_url():
             raise tornado.gen.Return(False)
 
@@ -35,8 +37,10 @@ def is_test_broker_online():
             hbmqtt_client = MQTTClient()
             ack_con = yield hbmqtt_client.connect(broker_url)
             if ack_con != MQTTCodesACK.CON_OK:
+                logging.warning("Error ACK on MQTT broker connection: {}".format(ack_con))
                 raise tornado.gen.Return(False)
-        except ConnectException:
+        except ConnectException as ex:
+            logging.warning("MQTT broker connection error: {}".format(ex))
             raise tornado.gen.Return(False)
 
         raise tornado.gen.Return(True)
