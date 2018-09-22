@@ -28,9 +28,8 @@ def is_test_broker_online():
         """"""
         broker_url = get_test_broker_url()
 
-        logging.warning("MQTT broker URL: {}".format(broker_url))
-
-        if not get_test_broker_url():
+        if not broker_url:
+            logging.warning("Undefined MQTT broker URL")
             raise tornado.gen.Return(False)
 
         try:

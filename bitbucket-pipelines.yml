@@ -8,21 +8,19 @@ pipelines:
     - step:
         image: python:3.6
         script:
+          - export WOTPY_TESTS_MQTT_BROKER_URL=mqtt://localhost
           - pip install -U .[tests]
           - pytest -sv --cov=wotpy
         services:
           - mosquitto
-        environment:
-          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://localhost
     - step:
         image: python:3.7
         script:
+          - export WOTPY_TESTS_MQTT_BROKER_URL=mqtt://localhost
           - pip install -U .[tests]
           - pytest -sv --cov=wotpy
         services:
           - mosquitto
-        environment:
-          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://localhost
 definitions:
   services:
     mosquitto:
