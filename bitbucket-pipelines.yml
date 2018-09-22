@@ -5,22 +5,20 @@ pipelines:
         script:
           - pip install -U .[tests]
           - pytest -sv --cov=wotpy
-        environment:
-          ENV_BROKER_URL: mqtt://mqttbroker
     - step:
         image: python:3.6
         script:
           - pip install -U .[tests]
           - pytest -sv --cov=wotpy
         environment:
-          ENV_BROKER_URL: mqtt://mqttbroker
+          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://mqttbroker
     - step:
         image: python:3.7
         script:
           - pip install -U .[tests]
           - pytest -sv --cov=wotpy
         environment:
-          ENV_BROKER_URL: mqtt://mqttbroker
+          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://mqttbroker
 definitions:
   services:
     mqttbroker:
