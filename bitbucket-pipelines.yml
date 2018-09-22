@@ -13,7 +13,7 @@ pipelines:
         services:
           - mosquitto
         environment:
-          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://mosquitto
+          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://localhost
     - step:
         image: python:3.7
         script:
@@ -22,7 +22,7 @@ pipelines:
         services:
           - mosquitto
         environment:
-          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://mosquitto
+          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://localhost
 definitions:
   services:
     mosquitto:
