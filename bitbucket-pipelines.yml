@@ -10,16 +10,20 @@ pipelines:
         script:
           - pip install -U .[tests]
           - pytest -sv --cov=wotpy
+        services:
+          - mosquitto
         environment:
-          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://mqttbroker
+          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://mosquitto
     - step:
         image: python:3.7
         script:
           - pip install -U .[tests]
           - pytest -sv --cov=wotpy
+        services:
+          - mosquitto
         environment:
-          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://mqttbroker
+          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://mosquitto
 definitions:
   services:
-    mqttbroker:
+    mosquitto:
       image: agmangas/mosquitto-websockets
