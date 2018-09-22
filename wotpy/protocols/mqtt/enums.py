@@ -47,3 +47,10 @@ class MQTTWoTTopics(EnumListMixin):
 
     PING = "/wotpy/ping"
     PONG = "/wotpy/pong"
+
+
+class MQTTCodesACK(EnumListMixin):
+    """Enumeration of MQTT ACK codes."""
+
+    CON_OK = 0
+    SUB_ERROR = 128

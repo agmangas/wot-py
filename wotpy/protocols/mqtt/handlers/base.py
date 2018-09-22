@@ -16,7 +16,7 @@ import tornado.locks
 import tornado.util
 from hbmqtt.client import MQTTClient, ConnectException
 
-from wotpy.protocols.mqtt.enums import MQTTWoTTopics
+from wotpy.protocols.mqtt.enums import MQTTWoTTopics, MQTTCodesACK
 
 
 class BaseMQTTHandler(object):
@@ -25,8 +25,6 @@ class BaseMQTTHandler(object):
     It may publish responses to those requests."""
 
     DEFAULT_TIMEOUT_DELIVER_SECS = 1.0
-    ACK_OK_CON = 0
-    ACK_ERROR_SUB = 128
 
     def __init__(self, broker_url, handle_message, topics,
                  timeout_deliver_secs=DEFAULT_TIMEOUT_DELIVER_SECS):
@@ -67,12 +65,12 @@ class BaseMQTTHandler(object):
 
             ack_con = yield hbmqtt_client.connect(self._broker_url)
 
-            if ack_con != self.ACK_OK_CON:
+            if ack_con != MQTTCodesACK.CON_OK:
                 raise ConnectException("Error code in connection ACK: {}".format(ack_con))
 
             ack_sub = yield hbmqtt_client.subscribe(self._topics)
 
-            if self.ACK_ERROR_SUB in ack_sub:
+            if MQTTCodesACK.SUB_ERROR in ack_sub:
                 raise ConnectException("Error code in subscription ACK: {}".format(ack_sub))
 
             self._client = hbmqtt_client
