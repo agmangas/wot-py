@@ -11,15 +11,17 @@ import tornado.ioloop
 from hbmqtt.client import MQTTClient
 from hbmqtt.mqtt.constants import QOS_2
 
+from tests.protocols.mqtt.broker import is_test_broker_online, BROKER_SKIP_REASON, get_test_broker_url
 from wotpy.protocols.mqtt.enums import MQTTWoTTopics
 from wotpy.protocols.mqtt.server import MQTTServer
 
+pytestmark = pytest.mark.skipif(is_test_broker_online() is False, reason=BROKER_SKIP_REASON)
 
-@pytest.mark.skip(reason="Hardcoded MQTT broker URL")
+
 def test_start_stop():
     """The MQTT server may be started and stopped."""
 
-    broker_url = "mqtt://localhost"
+    broker_url = get_test_broker_url()
     mqtt_server = MQTTServer(broker_url=broker_url)
 
     @tornado.gen.coroutine
