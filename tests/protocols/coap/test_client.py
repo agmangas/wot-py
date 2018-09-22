@@ -64,6 +64,49 @@ def test_write_property(coap_servient):
 
 
 @pytest.mark.flaky(reruns=5)
+def test_on_property_change(coap_servient):
+    """The CoAP client can subscribe to property updates."""
+
+    exposed_thing = next(coap_servient.exposed_things)
+    td = ThingDescription.from_thing(exposed_thing.thing)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        coap_client = CoAPClient()
+        property_name = next(six.iterkeys(td.properties))
+
+        values = [Faker().sentence() for _ in range(10)]
+        values_observed = {value: tornado.concurrent.Future() for value in values}
+
+        @tornado.gen.coroutine
+        def write_next_value():
+            try:
+                next_value = next(val for val, fut in six.iteritems(values_observed) if not fut.done())
+                yield exposed_thing.properties[property_name].write(next_value)
+            except StopIteration:
+                pass
+
+        def on_next(ev):
+            prop_value = ev.data.value
+            if prop_value in values_observed and not values_observed[prop_value].done():
+                values_observed[prop_value].set_result(True)
+
+        observable = coap_client.on_property_change(td, property_name)
+
+        subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
+
+        periodic_emit = tornado.ioloop.PeriodicCallback(write_next_value, 10)
+        periodic_emit.start()
+
+        yield list(values_observed.values())
+
+        periodic_emit.stop()
+        subscription.dispose()
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+@pytest.mark.flaky(reruns=5)
 def test_invoke_action(coap_servient):
     """The CoAP client can invoke actions."""
 
@@ -86,46 +129,6 @@ def test_invoke_action(coap_servient):
         result = yield coap_client.invoke_action(td, action_name, input_value)
 
         assert result == input_value * 2
-
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
-
-
-@pytest.mark.flaky(reruns=5)
-def test_on_property_change(coap_servient):
-    """The CoAP client can subscribe to property updates."""
-
-    exposed_thing = next(coap_servient.exposed_things)
-    td = ThingDescription.from_thing(exposed_thing.thing)
-
-    @tornado.gen.coroutine
-    def test_coroutine():
-        coap_client = CoAPClient()
-        property_name = next(six.iterkeys(td.properties))
-
-        values = [Faker().sentence() for _ in range(10)]
-        values_observed = {value: tornado.concurrent.Future() for value in values}
-
-        @tornado.gen.coroutine
-        def write_next_value():
-            next_value = next(val for val, fut in six.iteritems(values_observed) if not fut.done())
-            yield exposed_thing.properties[property_name].write(next_value)
-
-        def on_next(ev):
-            prop_value = ev.data.value
-            if prop_value in values_observed and not values_observed[prop_value].done():
-                values_observed[prop_value].set_result(True)
-
-        observable = coap_client.on_property_change(td, property_name)
-
-        subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
-
-        periodic_emit = tornado.ioloop.PeriodicCallback(write_next_value, 10)
-        periodic_emit.start()
-
-        yield list(values_observed.values())
-
-        periodic_emit.stop()
-        subscription.dispose()
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 

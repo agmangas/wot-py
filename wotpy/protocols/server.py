@@ -96,12 +96,13 @@ class BaseProtocolServer(object):
 
     @abstractmethod
     def start(self):
-        """Starts the server."""
+        """Coroutine that starts the server."""
 
         raise NotImplementedError()
 
     @abstractmethod
     def stop(self):
-        """Stops the server."""
+        """Coroutine that stops the server.
+        Some requests could be still in progress and would be served after the server has stopped."""
 
         raise NotImplementedError()

@@ -7,7 +7,6 @@ Class that implements the CoAP server.
 
 import aiocoap
 import aiocoap.resource
-import six
 import tornado.concurrent
 import tornado.gen
 import tornado.httpserver
@@ -60,7 +59,7 @@ class CoAPServer(BaseProtocolServer):
     def _build_forms_property(self, proprty, hostname):
         """Builds and returns the CoAP Form instances for the given Property interaction."""
 
-        href_read_write = "{}://{}:{}/{}/property/{}".format(
+        href_read_write = "{}://{}:{}/property?thing={}&name={}".format(
             self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
             proprty.thing.url_name, proprty.url_name)
 
@@ -71,7 +70,9 @@ class CoAPServer(BaseProtocolServer):
             media_type=MediaTypes.JSON,
             rel=[InteractionVerbs.READ_PROPERTY, InteractionVerbs.WRITE_PROPERTY])
 
-        href_observe = "{}/subscription".format(href_read_write)
+        href_observe = "{}://{}:{}/property/subscription?thing={}&name={}".format(
+            self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
+            proprty.thing.url_name, proprty.url_name)
 
         form_observe = Form(
             interaction=proprty,
@@ -85,7 +86,7 @@ class CoAPServer(BaseProtocolServer):
     def _build_forms_action(self, action, hostname):
         """Builds and returns the CoAP Form instances for the given Action interaction."""
 
-        href_invoke = "{}://{}:{}/{}/action/{}".format(
+        href_invoke = "{}://{}:{}/action?thing={}&name={}".format(
             self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
             action.thing.url_name, action.url_name)
 
@@ -101,7 +102,7 @@ class CoAPServer(BaseProtocolServer):
     def _build_forms_event(self, event, hostname):
         """Builds and returns the CoAP Form instances for the given Event interaction."""
 
-        href = "{}://{}:{}/{}/event/{}/subscription".format(
+        href = "{}://{}:{}/event/subscription?thing={}&name={}".format(
             self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
             event.thing.url_name, event.url_name)
 
@@ -139,37 +140,6 @@ class CoAPServer(BaseProtocolServer):
             self.scheme, hostname.rstrip("/").lstrip("/"),
             self.port, thing.url_name)
 
-    def _add_property_resources(self, root):
-        """Builds and adds all the Property CoAP resources on the given root resource."""
-
-        for exposed_thing in self.exposed_things:
-            for name, proprty in six.iteritems(exposed_thing.thing.properties):
-                root.add_resource(
-                    (exposed_thing.thing.url_name, "property", proprty.url_name),
-                    PropertyReadWriteResource(exposed_thing, proprty.name))
-
-                root.add_resource(
-                    (exposed_thing.thing.url_name, "property", proprty.url_name, "subscription"),
-                    PropertyObservableResource(exposed_thing, proprty.name))
-
-    def _add_action_resources(self, root):
-        """Builds and adds all the Action CoAP resources on the given root resource."""
-
-        for exposed_thing in self.exposed_things:
-            for name, action in six.iteritems(exposed_thing.thing.actions):
-                root.add_resource(
-                    (exposed_thing.thing.url_name, "action", action.url_name),
-                    ActionInvokeResource(exposed_thing, action.name, clear_ms=self._action_clear_ms))
-
-    def _add_event_resoures(self, root):
-        """Builds and adds all the Event CoAP resources on the given root resource."""
-
-        for exposed_thing in self.exposed_things:
-            for name, event in six.iteritems(exposed_thing.thing.events):
-                root.add_resource(
-                    (exposed_thing.thing.url_name, "event", event.url_name, "subscription"),
-                    EventObserveResource(exposed_thing, event.name))
-
     def _build_root_site(self):
         """Builds and returns the root CoAP Site."""
 
@@ -179,34 +149,44 @@ class CoAPServer(BaseProtocolServer):
             (".well-known", "core"),
             aiocoap.resource.WKCResource(root.get_resources_as_linkheader))
 
-        self._add_property_resources(root)
-        self._add_action_resources(root)
-        self._add_event_resoures(root)
+        root.add_resource(
+            ("property",),
+            PropertyReadWriteResource(self))
+
+        root.add_resource(
+            ("property", "subscription"),
+            PropertyObservableResource(self))
+
+        root.add_resource(
+            ("action",),
+            ActionInvokeResource(self, clear_ms=self._action_clear_ms))
+
+        root.add_resource(
+            ("event", "subscription"),
+            EventObserveResource(self))
 
         return root
 
+    @tornado.gen.coroutine
     def start(self):
         """Starts the CoAP server."""
 
-        @tornado.gen.coroutine
-        def create_server():
-            with (yield self._server_lock.acquire()):
-                if self._server is None:
-                    root = self._build_root_site()
-                    bind_address = ("::", self.port)
-                    coap_server = yield aiocoap.Context.create_server_context(root, bind=bind_address)
-                    self._server = coap_server
+        with (yield self._server_lock.acquire()):
+            if self._server is not None:
+                return
 
-        tornado.ioloop.IOLoop.current().add_callback(create_server)
+            root = self._build_root_site()
+            bind_address = ("::", self.port)
+            coap_server = yield aiocoap.Context.create_server_context(root, bind=bind_address)
+            self._server = coap_server
 
+    @tornado.gen.coroutine
     def stop(self):
         """Stops the CoAP server."""
 
-        @tornado.gen.coroutine
-        def shutdown_server():
-            with (yield self._server_lock.acquire()):
-                if self._server is not None:
-                    yield self._server.shutdown()
-                    self._server = None
+        with (yield self._server_lock.acquire()):
+            if self._server is None:
+                return
 
-        tornado.ioloop.IOLoop.current().add_callback(shutdown_server)
+            yield self._server.shutdown()
+            self._server = None

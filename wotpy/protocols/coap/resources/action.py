@@ -16,17 +16,42 @@ import tornado.concurrent
 import tornado.gen
 import tornado.ioloop
 
+from wotpy.protocols.coap.resources.utils import parse_request_opt_query
+
 JSON_CONTENT_FORMAT = 50
 DEFAULT_CLEAR_MS = 1000 * 60 * 60
+
+
+def get_thing_action(server, request):
+    """Takes a CoAP request and returns the Thing Action
+    identified by the request arguments."""
+
+    query = parse_request_opt_query(request)
+    url_name_thing = query.get("thing")
+    url_name_action = query.get("name")
+
+    if not url_name_thing or not url_name_action:
+        raise aiocoap.error.BadRequest(b"Missing query arguments")
+
+    exposed_thing = server.exposed_thing_group.find_by_thing_id(url_name_thing)
+
+    if not exposed_thing:
+        raise aiocoap.error.NotFound(b"Thing not found")
+
+    try:
+        return next(
+            exposed_thing.actions[key] for key in exposed_thing.actions
+            if exposed_thing.actions[key].url_name == url_name_action)
+    except StopIteration:
+        raise aiocoap.error.NotFound(b"Action not found")
 
 
 class ActionInvokeResource(aiocoap.resource.ObservableResource):
     """CoAP resource to invoke Actions and observe those invocations."""
 
-    def __init__(self, exposed_thing, name, clear_ms=None):
+    def __init__(self, server, clear_ms=None):
         super(ActionInvokeResource, self).__init__()
-        self._exposed_thing = exposed_thing
-        self._name = name
+        self._server = server
         self._clear_ms = DEFAULT_CLEAR_MS if clear_ms is None else clear_ms
         self._pending_actions = {}
 
@@ -85,19 +110,21 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
         if not future_result.done():
             raise_response({"invocation": invocation_id, "done": False})
 
-        resp_dict = {}
+        resp_dict = {"done": True, "invocation": invocation_id}
 
         try:
             result = future_result.result()
-            resp_dict.update({"invocation": invocation_id, "done": True, "result": result})
+            resp_dict.update({"result": result})
         except Exception as ex:
-            resp_dict.update({"invocation": invocation_id, "done": True, "error": str(ex)})
+            resp_dict.update({"error": str(ex)})
 
         raise_response(resp_dict)
 
     @tornado.gen.coroutine
     def render_post(self, request):
         """Handler for action invocations."""
+
+        thing_action = get_thing_action(self._server, request)
 
         request_payload = json.loads(request.payload)
 
@@ -115,7 +142,7 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
             loop.add_timeout(datetime.timedelta(milliseconds=self._clear_ms), clear_cb)
 
         input_value = request_payload.get("input")
-        future_action = self._exposed_thing.actions[self._name].invoke(input_value)
+        future_action = thing_action.invoke(input_value)
         tornado.concurrent.future_add_done_callback(future_action, done_cb)
         self._pending_actions[invocation_id] = future_action
         response_payload = json.dumps({"invocation": invocation_id}).encode("utf-8")

@@ -8,6 +8,9 @@ Class that represents a WoT servient.
 import socket
 
 import six
+import tornado.concurrent
+import tornado.gen
+import tornado.ioloop
 import tornado.web
 
 from wotpy.protocols.enums import Protocols
@@ -328,8 +331,17 @@ class Servient(object):
     def start(self):
         """Starts the servers and returns an instance of the WoT object."""
 
-        for server in self._servers.values():
-            server.start()
+        @tornado.gen.coroutine
+        def start_servers():
+            yield [server.start() for server in six.itervalues(self._servers)]
+
+        def start_servers_cb(fut):
+            if fut.exception():
+                tornado.ioloop.IOLoop.current().stop()
+                raise fut.exception()
+
+        start_servers_future = start_servers()
+        tornado.ioloop.IOLoop.current().add_future(start_servers_future, start_servers_cb)
 
         self._start_catalogue()
 
@@ -338,7 +350,16 @@ class Servient(object):
     def shutdown(self):
         """Stops the server configured under this servient."""
 
-        for server in self._servers.values():
-            server.stop()
+        @tornado.gen.coroutine
+        def stop_servers():
+            yield [server.stop() for server in six.itervalues(self._servers)]
+
+        def stop_servers_cb(fut):
+            if fut.exception():
+                tornado.ioloop.IOLoop.current().stop()
+                raise fut.exception()
+
+        stop_servers_future = stop_servers()
+        tornado.ioloop.IOLoop.current().add_future(stop_servers_future, stop_servers_cb)
 
         self._stop_catalogue()

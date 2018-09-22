@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import uuid
 # noinspection PyCompatibility
 from asyncio import TimeoutError
 
@@ -14,51 +15,48 @@ from wotpy.protocols.mqtt.enums import MQTTWoTTopics
 from wotpy.protocols.mqtt.server import MQTTServer
 
 
-@pytest.mark.skip(reason="Too slow. Unstable (relies on sleeps).")
-@pytest.mark.flaky(reruns=5)
+@pytest.mark.skip(reason="Hardcoded MQTT broker URL")
 def test_start_stop():
-    """"""
+    """The MQTT server may be started and stopped."""
 
     broker_url = "mqtt://localhost"
     mqtt_server = MQTTServer(broker_url=broker_url)
 
-    sleep_secs = 0.5
-
     @tornado.gen.coroutine
-    def ping():
+    def ping(timeout=None):
         try:
             hbmqtt_client = MQTTClient()
             yield hbmqtt_client.connect(broker_url)
             yield hbmqtt_client.subscribe([(MQTTWoTTopics.PONG, QOS_2)])
-            yield hbmqtt_client.publish(MQTTWoTTopics.PING, b"PING", qos=QOS_2)
-            message = yield hbmqtt_client.deliver_message(timeout=0.1)
-            assert message.data
+            bytes_payload = bytes(uuid.uuid4().hex, "utf8")
+            yield hbmqtt_client.publish(MQTTWoTTopics.PING, bytes_payload, qos=QOS_2)
+            message = yield hbmqtt_client.deliver_message(timeout=timeout)
+            assert message.data == bytes_payload
             yield hbmqtt_client.disconnect()
-        except (Exception, TimeoutError):
+        except TimeoutError:
             raise tornado.gen.Return(False)
 
         raise tornado.gen.Return(True)
 
+    default_timeout = 1.0
+
     @tornado.gen.coroutine
     def test_coroutine():
-        assert not (yield ping())
+        assert not (yield ping(default_timeout))
 
-        mqtt_server.start()
-        yield tornado.gen.sleep(sleep_secs)
+        yield mqtt_server.start()
 
         assert (yield ping())
         assert (yield ping())
 
-        mqtt_server.stop()
-        yield tornado.gen.sleep(sleep_secs)
+        yield mqtt_server.stop()
+        yield mqtt_server.start()
+        yield mqtt_server.stop()
 
-        assert not (yield ping())
+        assert not (yield ping(default_timeout))
 
-        mqtt_server.stop()
-        yield tornado.gen.sleep(sleep_secs)
-
-        mqtt_server.start()
-        yield tornado.gen.sleep(sleep_secs)
+        yield mqtt_server.stop()
+        yield mqtt_server.start()
 
         assert (yield ping())
 

@@ -5,6 +5,7 @@
 Class that implements the HTTP server.
 """
 
+import tornado.gen
 import tornado.httpserver
 import tornado.web
 
@@ -169,12 +170,14 @@ class HTTPServer(BaseProtocolServer):
             self.scheme, hostname.rstrip("/").lstrip("/"),
             self.port, thing.url_name)
 
+    @tornado.gen.coroutine
     def start(self):
         """Starts the HTTP server."""
 
         self._server = tornado.httpserver.HTTPServer(self.app, ssl_options=self._ssl_context)
         self._server.listen(self.port)
 
+    @tornado.gen.coroutine
     def stop(self):
         """Stops the HTTP server."""
 

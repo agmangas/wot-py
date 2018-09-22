@@ -6,6 +6,7 @@ import uuid
 
 import pytest
 import tornado.gen
+import tornado.ioloop
 from faker import Faker
 
 from wotpy.protocols.support import is_mqtt_supported
@@ -54,6 +55,11 @@ def mqtt_server():
     # ToDo: Set broker URL
     server = MQTTServer(broker_url=None)
     server.add_exposed_thing(exposed_thing)
-    server.start()
+
+    @tornado.gen.coroutine
+    def start():
+        yield server.start()
+
+    tornado.ioloop.IOLoop.current().add_callback(start)
 
     return server

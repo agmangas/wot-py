@@ -10,6 +10,7 @@ import json
 import aiocoap
 import tornado.concurrent
 import tornado.gen
+import tornado.ioloop
 import tornado.platform.asyncio
 from rx import Observable
 
@@ -56,11 +57,14 @@ class CoAPClient(BaseProtocolClient):
 
             state = {
                 "active": True,
-                "request": None
+                "request": None,
+                "pending_future": None
             }
 
             def on_response(ft):
                 try:
+                    state["pending_future"] = None
+
                     response = ft.result()
                     next_item = next_item_builder(response.payload)
 
@@ -70,7 +74,8 @@ class CoAPClient(BaseProtocolClient):
                     if state["active"]:
                         next_observation_gen = state["request"].observation.__aiter__().__anext__()
                         future_response = tornado.gen.convert_yielded(next_observation_gen)
-                        tornado.concurrent.future_add_done_callback(future_response, on_response)
+                        state["pending_future"] = future_response
+                        tornado.ioloop.IOLoop.current().add_future(future_response, on_response)
                 except Exception as exc:
                     observer.on_error(exc)
 
@@ -80,13 +85,17 @@ class CoAPClient(BaseProtocolClient):
                     msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href, observe=0)
                     state["request"] = coap_client.request(msg)
                     future_first_response = state["request"].response
-                    tornado.concurrent.future_add_done_callback(future_first_response, on_response)
+                    state["pending_future"] = future_first_response
+                    tornado.ioloop.IOLoop.current().add_future(future_first_response, on_response)
                 except Exception as exc:
                     observer.on_error(exc)
 
             def unsubscribe():
                 if state["request"]:
                     state["request"].observation.cancel()
+
+                if state["pending_future"]:
+                    state["pending_future"].cancel()
 
                 state["active"] = False
 

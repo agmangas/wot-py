@@ -84,26 +84,20 @@ def test_start_stop():
     def test_coroutine():
         assert not (yield ping())
 
-        coap_server.start()
-
-        yield tornado.gen.sleep(0)
+        yield coap_server.start()
 
         assert (yield ping())
         assert (yield ping())
 
         for _ in range(5):
-            coap_server.stop()
-
-        yield tornado.gen.sleep(0)
+            yield coap_server.stop()
 
         assert not (yield ping())
 
-        coap_server.stop()
+        yield coap_server.stop()
 
         for _ in range(5):
-            coap_server.start()
-
-        yield tornado.gen.sleep(0)
+            yield coap_server.start()
 
         assert (yield ping())
 
@@ -290,6 +284,7 @@ def test_action_invoke_parallel(coap_server):
 
         msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
         response = yield coap_client.request(msg).response
+        assert response.code.is_successful()
         invocation_id = json.loads(response.payload).get("invocation")
 
         raise tornado.gen.Return({

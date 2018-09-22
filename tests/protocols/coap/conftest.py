@@ -7,6 +7,7 @@ import uuid
 
 import pytest
 import tornado.gen
+import tornado.ioloop
 from faker import Faker
 
 from wotpy.protocols.support import is_coap_supported
@@ -64,6 +65,12 @@ def coap_server(request):
     server = CoAPServer(port=port, **request.param)
     server.add_exposed_thing(exposed_thing)
     server.start()
+
+    @tornado.gen.coroutine
+    def start():
+        yield server.start()
+
+    tornado.ioloop.IOLoop.current().add_callback(start)
 
     return server
 

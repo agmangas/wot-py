@@ -56,27 +56,23 @@ class MQTTServer(BaseProtocolServer):
             self.scheme, hostname.rstrip("/").lstrip("/"),
             self.port, thing.url_name)
 
+    @tornado.gen.coroutine
     def start(self):
         """Starts the MQTT broker and all the MQTT clients
         that handle the WoT clients requests."""
 
-        @tornado.gen.coroutine
-        def start_handlers():
-            with (yield self._server_lock.acquire()):
-                yield [handler.connect() for handler in self._mqtt_handlers]
-                for handler in self._mqtt_handlers:
-                    handler.start()
+        with (yield self._server_lock.acquire()):
+            yield [handler.connect() for handler in self._mqtt_handlers]
 
-        tornado.ioloop.IOLoop.current().add_callback(start_handlers)
+            for handler in self._mqtt_handlers:
+                handler.start()
 
+    @tornado.gen.coroutine
     def stop(self):
         """Stops the MQTT broker and the MQTT clients."""
 
-        @tornado.gen.coroutine
-        def stop_handlers():
-            with (yield self._server_lock.acquire()):
-                for handler in self._mqtt_handlers:
-                    handler.stop()
-                yield [handler.disconnect() for handler in self._mqtt_handlers]
+        with (yield self._server_lock.acquire()):
+            for handler in self._mqtt_handlers:
+                handler.stop()
 
-        tornado.ioloop.IOLoop.current().add_callback(stop_handlers)
+            yield [handler.disconnect() for handler in self._mqtt_handlers]

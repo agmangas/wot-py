@@ -5,6 +5,7 @@
 Class that implements the WebSockets server.
 """
 
+import tornado.gen
 from tornado import web
 from tornado.httpserver import HTTPServer
 
@@ -100,14 +101,16 @@ class WebsocketServer(BaseProtocolServer):
 
         return "{}://{}:{}/{}".format(self.scheme, hostname, self.port, thing.url_name)
 
+    @tornado.gen.coroutine
     def start(self):
-        """Starts the server."""
+        """Starts the WebSockets server."""
 
         self._server = HTTPServer(self.app, ssl_options=self._ssl_context)
         self._server.listen(self.port)
 
+    @tornado.gen.coroutine
     def stop(self):
-        """Stops the server."""
+        """Stops the WebSockets server."""
 
         if not self._server:
             return

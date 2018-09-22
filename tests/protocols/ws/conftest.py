@@ -107,7 +107,12 @@ def websocket_server():
     ws_server = WebsocketServer(port=ws_port)
     ws_server.add_exposed_thing(exposed_thing_01)
     ws_server.add_exposed_thing(exposed_thing_02)
-    ws_server.start()
+
+    @tornado.gen.coroutine
+    def start():
+        yield ws_server.start()
+
+    tornado.ioloop.IOLoop.current().add_callback(start)
 
     url_thing_01 = build_websocket_url(exposed_thing_01, ws_server, ws_port)
     url_thing_02 = build_websocket_url(exposed_thing_02, ws_server, ws_port)
