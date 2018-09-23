@@ -63,16 +63,12 @@ class MQTTServer(BaseProtocolServer):
 
         with (yield self._server_lock.acquire()):
             yield [handler.connect() for handler in self._mqtt_handlers]
-
-            for handler in self._mqtt_handlers:
-                handler.start()
+            yield [handler.start() for handler in self._mqtt_handlers]
 
     @tornado.gen.coroutine
     def stop(self):
         """Stops the MQTT broker and the MQTT clients."""
 
         with (yield self._server_lock.acquire()):
-            for handler in self._mqtt_handlers:
-                handler.stop()
-
+            yield [handler.stop() for handler in self._mqtt_handlers]
             yield [handler.disconnect() for handler in self._mqtt_handlers]

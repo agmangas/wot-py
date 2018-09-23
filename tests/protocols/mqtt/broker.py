@@ -24,8 +24,7 @@ def is_test_broker_online():
     """Returns True if the MQTT broker defined in the environment is online."""
 
     @tornado.gen.coroutine
-    def _is_online():
-        """"""
+    def check_conn():
         broker_url = get_test_broker_url()
 
         if not broker_url:
@@ -44,11 +43,11 @@ def is_test_broker_online():
 
         raise tornado.gen.Return(True)
 
-    is_online = tornado.ioloop.IOLoop.current().run_sync(_is_online)
+    conn_ok = tornado.ioloop.IOLoop.current().run_sync(check_conn)
 
-    if is_online is False:
+    if conn_ok is False:
         logging.warning(
             "Couldn't connect to the test MQTT broker. "
             "Please check the {} variable".format(ENV_BROKER_URL))
 
-    return is_online
+    return conn_ok
