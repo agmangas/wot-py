@@ -27,6 +27,7 @@ def mqtt_server():
     """Builds a MQTTServer instance that contains an ExposedThing."""
 
     from wotpy.protocols.mqtt.server import MQTTServer
+    from tests.protocols.mqtt.broker import get_test_broker_url
 
     exposed_thing = ExposedThing(servient=Servient(), thing=Thing(id=uuid.uuid4().urn))
 
@@ -52,14 +53,13 @@ def mqtt_server():
         "output": {"type": "number"}
     }), triple)
 
-    # ToDo: Set broker URL
-    server = MQTTServer(broker_url=None)
+    server = MQTTServer(broker_url=get_test_broker_url())
     server.add_exposed_thing(exposed_thing)
 
     @tornado.gen.coroutine
     def start():
         yield server.start()
 
-    tornado.ioloop.IOLoop.current().add_callback(start)
+    tornado.ioloop.IOLoop.current().run_sync(start)
 
     return server

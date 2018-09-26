@@ -70,7 +70,7 @@ def coap_server(request):
     def start():
         yield server.start()
 
-    tornado.ioloop.IOLoop.current().add_callback(start)
+    tornado.ioloop.IOLoop.current().run_sync(start)
 
     return server
 
