@@ -24,7 +24,7 @@ class BaseMQTTHandler(object):
     An MQTT handler is a MQTT client that subscribes to WoT request messages.
     It may publish responses to those requests."""
 
-    DEFAULT_TIMEOUT_DELIVER_SECS = 1.0
+    DEFAULT_TIMEOUT_DELIVER_SECS = 0.1
 
     def __init__(self, broker_url, handle_message, topics,
                  timeout_deliver_secs=DEFAULT_TIMEOUT_DELIVER_SECS):
