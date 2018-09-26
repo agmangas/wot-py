@@ -19,20 +19,17 @@ from hbmqtt.client import MQTTClient, ConnectException
 from wotpy.protocols.mqtt.enums import MQTTCodesACK
 
 
-class BaseMQTTHandler(object):
-    """Base class for all MQTT handlers.
-    An MQTT handler is a MQTT client that subscribes to WoT request messages.
-    It may publish responses to those requests."""
+class MQTTHandlerRunner(object):
+    """Class that wraps an MQTT handler. It handles connections to the
+    MQTT broker, delivers messages, and runs the handler in a loop."""
 
     DEFAULT_TIMEOUT_DELIVER_SECS = 0.1
 
-    def __init__(self, broker_url, handle_message, topics,
-                 timeout_deliver_secs=DEFAULT_TIMEOUT_DELIVER_SECS):
+    def __init__(self, broker_url, mqtt_handler, timeout_deliver_secs=DEFAULT_TIMEOUT_DELIVER_SECS):
         self._broker_url = broker_url
-        self._handle_message = handle_message
-        self._topics = topics
-        self._client = None
+        self._mqtt_handler = mqtt_handler
         self._timeout_deliver_secs = timeout_deliver_secs
+        self._client = None
         self._lock_conn = tornado.locks.Lock()
         self._lock_run = tornado.locks.Lock()
         self._event_stop_request = tornado.locks.Event()
@@ -52,7 +49,7 @@ class BaseMQTTHandler(object):
             if ack_con != MQTTCodesACK.CON_OK:
                 raise ConnectException("Error code in connection ACK: {}".format(ack_con))
 
-            ack_sub = yield hbmqtt_client.subscribe(self._topics)
+            ack_sub = yield hbmqtt_client.subscribe(self._mqtt_handler.topics)
 
             if MQTTCodesACK.SUB_ERROR in ack_sub:
                 raise ConnectException("Error code in subscription ACK: {}".format(ack_sub))
@@ -69,7 +66,7 @@ class BaseMQTTHandler(object):
         client = self._client
         self._client = None
 
-        yield client.unsubscribe([name for name, qos in self._topics])
+        yield client.unsubscribe([name for name, qos in self._mqtt_handler.topics])
         yield client.disconnect()
 
     @tornado.gen.coroutine
@@ -86,7 +83,7 @@ class BaseMQTTHandler(object):
 
         try:
             msg = yield self._client.deliver_message(timeout=self._timeout_deliver_secs)
-            yield self._handle_message(self._client, msg)
+            yield self._mqtt_handler.handle_message(self._client, msg)
         except asyncio.TimeoutError:
             pass
 
@@ -103,7 +100,7 @@ class BaseMQTTHandler(object):
                         try:
                             yield self.handle_next()
                         except Exception as ex:
-                            logging.warning("Error in MQTT handler {}: {}".format(self.__class__, ex))
+                            logging.warning("MQTT handler error ({}): {}".format(self._mqtt_handler.__class__, ex))
             except tornado.util.TimeoutError:
                 logging.warning("Attempted to start an MQTT handler loop when another was already running")
 
@@ -118,6 +115,8 @@ class BaseMQTTHandler(object):
         with (yield self._lock_run.acquire()):
             self._event_stop_request.clear()
 
+        yield self._mqtt_handler.init()
+
         self._add_loop_callback()
 
     @tornado.gen.coroutine
@@ -128,3 +127,5 @@ class BaseMQTTHandler(object):
 
         with (yield self._lock_run.acquire()):
             pass
+
+        yield self._mqtt_handler.teardown()
