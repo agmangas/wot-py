@@ -12,7 +12,7 @@ from hbmqtt.client import MQTTClient
 from hbmqtt.mqtt.constants import QOS_2
 
 from tests.protocols.mqtt.broker import is_test_broker_online, BROKER_SKIP_REASON, get_test_broker_url
-from wotpy.protocols.mqtt.enums import MQTTWoTTopics
+from wotpy.protocols.mqtt.handlers.ping import PingMQTTHandler
 from wotpy.protocols.mqtt.server import MQTTServer
 
 pytestmark = pytest.mark.skipif(is_test_broker_online() is False, reason=BROKER_SKIP_REASON)
@@ -29,9 +29,9 @@ def test_start_stop():
         try:
             hbmqtt_client = MQTTClient()
             yield hbmqtt_client.connect(broker_url)
-            yield hbmqtt_client.subscribe([(MQTTWoTTopics.PONG, QOS_2)])
+            yield hbmqtt_client.subscribe([(PingMQTTHandler.TOPIC_PONG, QOS_2)])
             bytes_payload = bytes(uuid.uuid4().hex, "utf8")
-            yield hbmqtt_client.publish(MQTTWoTTopics.PING, bytes_payload, qos=QOS_2)
+            yield hbmqtt_client.publish(PingMQTTHandler.TOPIC_PING, bytes_payload, qos=QOS_2)
             message = yield hbmqtt_client.deliver_message(timeout=timeout)
             assert message.data == bytes_payload
             yield hbmqtt_client.disconnect()

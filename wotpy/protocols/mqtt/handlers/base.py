@@ -16,7 +16,7 @@ import tornado.locks
 import tornado.util
 from hbmqtt.client import MQTTClient, ConnectException
 
-from wotpy.protocols.mqtt.enums import MQTTWoTTopics, MQTTCodesACK
+from wotpy.protocols.mqtt.enums import MQTTCodesACK
 
 
 class BaseMQTTHandler(object):
@@ -69,7 +69,7 @@ class BaseMQTTHandler(object):
         client = self._client
         self._client = None
 
-        yield client.unsubscribe([MQTTWoTTopics.PING])
+        yield client.unsubscribe([name for name, qos in self._topics])
         yield client.disconnect()
 
     @tornado.gen.coroutine

@@ -42,13 +42,6 @@ class MQTTVocabularyKeys(EnumListMixin):
     OPTION_NAME_DUP = "mqtt:dup"
 
 
-class MQTTWoTTopics(EnumListMixin):
-    """Enumeration of topics used by the MQTT protocol binding."""
-
-    PING = "/wotpy/ping"
-    PONG = "/wotpy/pong"
-
-
 class MQTTCodesACK(EnumListMixin):
     """Enumeration of MQTT ACK codes."""
 
