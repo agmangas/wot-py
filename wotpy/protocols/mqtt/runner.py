@@ -15,6 +15,7 @@ import tornado.ioloop
 import tornado.locks
 import tornado.util
 from hbmqtt.client import MQTTClient, ConnectException
+from tornado.queues import QueueEmpty
 
 from wotpy.protocols.mqtt.enums import MQTTCodesACK
 
@@ -77,15 +78,44 @@ class MQTTHandlerRunner(object):
             yield self._disconnect()
 
     @tornado.gen.coroutine
-    def handle_next(self):
+    def handle_delivered_message(self):
         """Listens and processes the next published message.
         It will wait for a finite amount of time before desisting."""
 
         try:
             msg = yield self._client.deliver_message(timeout=self._timeout_deliver_secs)
-            yield self._mqtt_handler.handle_message(self._client, msg)
+            yield self._mqtt_handler.handle_message(msg)
         except asyncio.TimeoutError:
             pass
+
+    @tornado.gen.coroutine
+    def publish_queued_messages(self):
+        """Gets the pending messages from the handler queue and publishes them on the broker."""
+
+        messages = []
+
+        try:
+            while self._mqtt_handler.queue.qsize() > 0:
+                messages.append(self._mqtt_handler.queue.get_nowait())
+        except QueueEmpty:
+            pass
+
+        def publish_msg(msg):
+            return self._client.publish(
+                topic=msg["topic"], message=msg["data"],
+                qos=msg.get("qos", None), retain=msg.get("retain", None))
+
+        yield [publish_msg(msg) for msg in messages]
+
+    @tornado.gen.coroutine
+    def handler_loop_iter(self):
+        """Process an iteration of the MQTT handler loop."""
+
+        try:
+            yield self.handle_delivered_message()
+            yield self.publish_queued_messages()
+        except Exception as ex:
+            logging.warning("MQTT handler error ({}): {}".format(self._mqtt_handler.__class__, ex))
 
     def _add_loop_callback(self):
         """Adds the callback that will start the infinite loop
@@ -97,10 +127,7 @@ class MQTTHandlerRunner(object):
             try:
                 with (yield self._lock_run.acquire(timeout=0)):
                     while not self._event_stop_request.is_set():
-                        try:
-                            yield self.handle_next()
-                        except Exception as ex:
-                            logging.warning("MQTT handler error ({}): {}".format(self._mqtt_handler.__class__, ex))
+                        yield self.handler_loop_iter()
             except tornado.util.TimeoutError:
                 logging.warning("Attempted to start an MQTT handler loop when another was already running")
 

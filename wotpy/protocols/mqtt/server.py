@@ -12,7 +12,7 @@ import tornado.locks
 from wotpy.protocols.enums import Protocols
 from wotpy.protocols.mqtt.enums import MQTTSchemes
 from wotpy.protocols.mqtt.handlers.ping import PingMQTTHandler
-from wotpy.protocols.mqtt.handlers.runner import MQTTHandlerRunner
+from wotpy.protocols.mqtt.runner import MQTTHandlerRunner
 from wotpy.protocols.server import BaseProtocolServer
 
 
