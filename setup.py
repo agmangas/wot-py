@@ -7,7 +7,7 @@ from wotpy.__version__ import __version__
 from wotpy.protocols.support import is_coap_supported, is_mqtt_supported
 
 install_requires = [
-    'tornado>=5.0,<6.0',
+    'tornado>=5.1,<6.0',
     'jsonschema>=2.0,<3.0',
     'six>=1.10.0,<2.0',
     'rx>=1.6.0,<2.0',
