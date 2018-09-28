@@ -9,11 +9,14 @@ import tornado.gen
 import tornado.ioloop
 import tornado.locks
 
-from wotpy.protocols.enums import Protocols
-from wotpy.protocols.mqtt.enums import MQTTSchemes
+from wotpy.codecs.enums import MediaTypes
+from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.mqtt.handlers.ping import PingMQTTHandler
+from wotpy.protocols.mqtt.handlers.property import PropertyMQTTHandler
 from wotpy.protocols.mqtt.runner import MQTTHandlerRunner
 from wotpy.protocols.server import BaseProtocolServer
+from wotpy.td.enums import InteractionTypes
+from wotpy.td.form import Form
 
 
 class MQTTServer(BaseProtocolServer):
@@ -28,7 +31,8 @@ class MQTTServer(BaseProtocolServer):
             return MQTTHandlerRunner(broker_url=self._broker_url, mqtt_handler=handler)
 
         self._handler_runners = [
-            build_runner(PingMQTTHandler(mqtt_server=self))
+            build_runner(PingMQTTHandler(mqtt_server=self)),
+            build_runner(PropertyMQTTHandler(mqtt_server=self))
         ]
 
     @property
@@ -38,27 +42,62 @@ class MQTTServer(BaseProtocolServer):
 
         return Protocols.MQTT
 
-    @property
-    def scheme(self):
-        """Returns the URL scheme for this server."""
+    def _build_forms_property(self, proprty):
+        """Builds and returns the MQTT Form instances for the given Property interaction."""
 
-        return MQTTSchemes.MQTT
+        href_rw = "{}/property/requests/{}/{}".format(
+            self._broker_url.rstrip("/"),
+            proprty.thing.url_name, proprty.url_name)
+
+        form_rw = Form(
+            interaction=proprty,
+            protocol=self.protocol,
+            href=href_rw,
+            media_type=MediaTypes.JSON,
+            rel=[InteractionVerbs.READ_PROPERTY, InteractionVerbs.WRITE_PROPERTY])
+
+        href_observe = "{}/property/updates/{}/{}".format(
+            self._broker_url.rstrip("/"),
+            proprty.thing.url_name, proprty.url_name)
+
+        form_observe = Form(
+            interaction=proprty,
+            protocol=self.protocol,
+            href=href_observe,
+            media_type=MediaTypes.JSON,
+            rel=[InteractionVerbs.OBSERVE_PROPERTY])
+
+        return [form_rw, form_observe]
+
+    def _build_forms_action(self, action):
+        """Builds and returns the MQTT Form instances for the given Action interaction."""
+
+        raise NotImplementedError
+
+    def _build_forms_event(self, event):
+        """Builds and returns the MQTT Form instances for the given Event interaction."""
+
+        raise NotImplementedError
 
     def build_forms(self, hostname, interaction):
         """Builds and returns a list with all Forms that are
         linked to this server for the given Interaction."""
 
-        return []
+        intrct_type_map = {
+            InteractionTypes.PROPERTY: self._build_forms_property,
+            InteractionTypes.ACTION: self._build_forms_action,
+            InteractionTypes.EVENT: self._build_forms_event
+        }
+
+        if interaction.interaction_type not in intrct_type_map:
+            raise ValueError("Unsupported interaction")
+
+        return intrct_type_map[interaction.interaction_type](interaction)
 
     def build_base_url(self, hostname, thing):
         """Returns the base URL for the given Thing in the context of this server."""
 
-        if not self.exposed_thing_group.find_by_thing_id(thing.id):
-            raise ValueError("Unknown Thing")
-
-        return "{}://{}:{}/{}".format(
-            self.scheme, hostname.rstrip("/").lstrip("/"),
-            self.port, thing.url_name)
+        raise NotImplementedError
 
     @tornado.gen.coroutine
     def start(self):
