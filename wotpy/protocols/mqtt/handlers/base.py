@@ -27,7 +27,7 @@ class BaseMQTTHandler(object):
     def topics(self):
         """List of topics that this MQTT handler wants to subscribe to."""
 
-        return []
+        return None
 
     @property
     def queue(self):
