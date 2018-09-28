@@ -8,6 +8,7 @@ Base class for MQTT handlers.
 # noinspection PyCompatibility
 import asyncio
 import logging
+import traceback
 
 import tornado.concurrent
 import tornado.gen
@@ -50,10 +51,11 @@ class MQTTHandlerRunner(object):
             if ack_con != MQTTCodesACK.CON_OK:
                 raise ConnectException("Error code in connection ACK: {}".format(ack_con))
 
-            ack_sub = yield hbmqtt_client.subscribe(self._mqtt_handler.topics)
+            if self._mqtt_handler.topics:
+                ack_sub = yield hbmqtt_client.subscribe(self._mqtt_handler.topics)
 
-            if MQTTCodesACK.SUB_ERROR in ack_sub:
-                raise ConnectException("Error code in subscription ACK: {}".format(ack_sub))
+                if MQTTCodesACK.SUB_ERROR in ack_sub:
+                    raise ConnectException("Error code in subscription ACK: {}".format(ack_sub))
 
             self._client = hbmqtt_client
 
@@ -67,7 +69,9 @@ class MQTTHandlerRunner(object):
         client = self._client
         self._client = None
 
-        yield client.unsubscribe([name for name, qos in self._mqtt_handler.topics])
+        if self._mqtt_handler.topics:
+            yield client.unsubscribe([name for name, qos in self._mqtt_handler.topics])
+
         yield client.disconnect()
 
     @tornado.gen.coroutine
@@ -115,7 +119,8 @@ class MQTTHandlerRunner(object):
             yield self.handle_delivered_message()
             yield self.publish_queued_messages()
         except Exception as ex:
-            logging.warning("MQTT handler error ({}): {}".format(self._mqtt_handler.__class__, ex))
+            logging.warning("MQTT handler error ({}): {}\n{}".format(
+                self._mqtt_handler.__class__, ex, traceback.format_exc()))
 
     def _add_loop_callback(self):
         """Adds the callback that will start the infinite loop
