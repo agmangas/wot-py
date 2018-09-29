@@ -13,17 +13,20 @@ import tornado.gen
 import tornado.ioloop
 from faker import Faker
 from hbmqtt.client import MQTTClient
-from hbmqtt.mqtt.constants import QOS_2
+from hbmqtt.mqtt.constants import QOS_2, QOS_0
 
 from tests.protocols.mqtt.broker import is_test_broker_online, BROKER_SKIP_REASON, get_test_broker_url
 from wotpy.protocols.enums import InteractionVerbs
 from wotpy.protocols.mqtt.handlers.ping import PingMQTTHandler
 from wotpy.protocols.mqtt.server import MQTTServer
+from wotpy.wot.dictionaries.interaction import PropertyFragment
 
 pytestmark = pytest.mark.skipif(is_test_broker_online() is False, reason=BROKER_SKIP_REASON)
 
+PROP_CALLBACK_MS = 50
 
-def get_interaction_topic(server, interaction, interaction_verb):
+
+def build_topic(server, interaction, interaction_verb):
     """Returns the topic for the given interaction and verb."""
 
     forms = server.build_forms(None, interaction)
@@ -35,7 +38,7 @@ def get_interaction_topic(server, interaction, interaction_verb):
 def connect_broker(topics):
     """Connects to the test MQTT broker and subscribes to the topics."""
 
-    topics = [(topics, QOS_2)] if isinstance(topics, six.string_types) else topics
+    topics = [(topics, QOS_0)] if isinstance(topics, six.string_types) else topics
 
     hbmqtt_client = MQTTClient()
     yield hbmqtt_client.connect(get_test_broker_url())
@@ -97,16 +100,14 @@ def test_property_read(mqtt_server):
     exposed_thing = next(mqtt_server.exposed_things)
     prop_name = next(six.iterkeys(exposed_thing.thing.properties))
     prop = exposed_thing.thing.properties[prop_name]
-    topic_read = get_interaction_topic(mqtt_server, prop, InteractionVerbs.READ_PROPERTY)
-    topic_observe = get_interaction_topic(mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY)
+    topic_read = build_topic(mqtt_server, prop, InteractionVerbs.READ_PROPERTY)
+    topic_observe = build_topic(mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY)
 
     observe_timeout_secs = 1.0
 
     @tornado.gen.coroutine
     def test_coroutine():
-        prop_value = Faker().sentence()
-
-        yield exposed_thing.properties[prop_name].write(prop_value)
+        prop_value = yield exposed_thing.properties[prop_name].read()
 
         client_read = yield connect_broker(topic_read)
         client_observe = yield connect_broker(topic_observe)
@@ -122,14 +123,14 @@ def test_property_read(mqtt_server):
             payload = json.dumps({"action": "read"}).encode()
             yield client_read.publish(topic_read, payload, qos=QOS_2)
 
-        periodic_write = tornado.ioloop.PeriodicCallback(read_value, 50)
-        periodic_write.start()
+        periodic_read = tornado.ioloop.PeriodicCallback(read_value, 50)
+        periodic_read.start()
 
-        msg_observe = yield client_observe.deliver_message()
+        msg = yield client_observe.deliver_message()
 
-        periodic_write.stop()
+        periodic_read.stop()
 
-        assert json.loads(msg_observe.data.decode()).get("value") == prop_value
+        assert json.loads(msg.data.decode()).get("value") == prop_value
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
@@ -140,17 +141,14 @@ def test_property_write(mqtt_server):
     exposed_thing = next(mqtt_server.exposed_things)
     prop_name = next(six.iterkeys(exposed_thing.thing.properties))
     prop = exposed_thing.thing.properties[prop_name]
-    topic_write = get_interaction_topic(mqtt_server, prop, InteractionVerbs.WRITE_PROPERTY)
-    topic_observe = get_interaction_topic(mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY)
+    topic_write = build_topic(mqtt_server, prop, InteractionVerbs.WRITE_PROPERTY)
+    topic_observe = build_topic(mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY)
 
     observe_timeout_secs = 1.0
 
     @tornado.gen.coroutine
     def test_coroutine():
-        old_value = Faker().sentence()
-        new_value = Faker().sentence()
-
-        yield exposed_thing.properties[prop_name].write(old_value)
+        updated_value = Faker().sentence()
 
         client_write = yield connect_broker(topic_write)
         client_observe = yield connect_broker(topic_observe)
@@ -160,17 +158,17 @@ def test_property_write(mqtt_server):
         @tornado.gen.coroutine
         def resolve_future_on_update():
             msg_observe = yield client_observe.deliver_message()
-            assert json.loads(msg_observe.data.decode()).get("value") == new_value
+            assert json.loads(msg_observe.data.decode()).get("value") == updated_value
             future_observe.set_result(True)
 
         tornado.ioloop.IOLoop.current().spawn_callback(resolve_future_on_update)
 
         @tornado.gen.coroutine
-        def write_value():
-            payload = json.dumps({"action": "write", "value": new_value}).encode()
+        def publish_write():
+            payload = json.dumps({"action": "write", "value": updated_value}).encode()
             yield client_write.publish(topic_write, payload, qos=QOS_2)
 
-        periodic_write = tornado.ioloop.PeriodicCallback(write_value, 50)
+        periodic_write = tornado.ioloop.PeriodicCallback(publish_write, 50)
         periodic_write.start()
 
         yield future_observe
@@ -188,12 +186,10 @@ def test_observe_property_changes(mqtt_server):
     exposed_thing = next(mqtt_server.exposed_things)
     prop_name = next(six.iterkeys(exposed_thing.thing.properties))
     prop = exposed_thing.thing.properties[prop_name]
-    topic_observe = get_interaction_topic(mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY)
+    topic_observe = build_topic(mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY)
 
     @tornado.gen.coroutine
     def test_coroutine():
-        yield exposed_thing.properties[prop_name].write(Faker().sentence())
-
         client_observe = yield connect_broker(topic_observe)
 
         updated_value = Faker().sentence()
@@ -205,9 +201,9 @@ def test_observe_property_changes(mqtt_server):
         periodic_write = tornado.ioloop.PeriodicCallback(write_value, 50)
         periodic_write.start()
 
-        msg_observe = yield client_observe.deliver_message()
+        msg = yield client_observe.deliver_message()
 
-        assert json.loads(msg_observe.data.decode()).get("value") == updated_value
+        assert json.loads(msg.data.decode()).get("value") == updated_value
 
         periodic_write.stop()
 
