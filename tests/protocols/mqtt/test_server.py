@@ -180,6 +180,101 @@ def test_property_write(mqtt_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
+@pytest.mark.parametrize("mqtt_server", [{"property_callback_ms": PROP_CALLBACK_MS}], indirect=True)
+def test_property_add_remove(mqtt_server):
+    """The MQTT binding reacts appropriately to Properties
+    being added and removed from ExposedThings."""
+
+    exposed_thing = next(mqtt_server.exposed_things)
+    prop_names = list(six.iterkeys(exposed_thing.thing.properties))
+
+    for name in prop_names:
+        exposed_thing.remove_property(name)
+
+    def add_prop(pname):
+        exposed_thing.add_property(pname, PropertyFragment({
+            "type": "number",
+            "writable": True,
+            "observable": True
+        }), value=Faker().pyint())
+
+    def del_prop(pname):
+        exposed_thing.remove_property(pname)
+
+    sleep_secs = (PROP_CALLBACK_MS / 1000.0) * 4
+    timeout_deliver_secs = 1.0
+    publish_ms = 50
+
+    @tornado.gen.coroutine
+    def is_prop_active(prop):
+        topic_observe = build_topic(mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY)
+        topic_write = build_topic(mqtt_server, prop, InteractionVerbs.WRITE_PROPERTY)
+
+        client_observe = yield connect_broker(topic_observe)
+        client_write = yield connect_broker(topic_write)
+
+        value = Faker().pyint()
+
+        @tornado.gen.coroutine
+        def publish_write():
+            payload = json.dumps({"action": "write", "value": value}).encode()
+            yield client_write.publish(topic_write, payload, qos=QOS_0)
+
+        periodic_write = tornado.ioloop.PeriodicCallback(publish_write, publish_ms)
+        periodic_write.start()
+
+        try:
+            msg = yield client_observe.deliver_message(timeout=timeout_deliver_secs)
+            assert json.loads(msg.data.decode()).get("value") == value
+            raise tornado.gen.Return(True)
+        except TimeoutError:
+            raise tornado.gen.Return(False)
+        finally:
+            periodic_write.stop()
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        prop_01_name = uuid.uuid4().hex
+        prop_02_name = uuid.uuid4().hex
+        prop_03_name = uuid.uuid4().hex
+
+        add_prop(prop_01_name)
+        add_prop(prop_02_name)
+        add_prop(prop_03_name)
+
+        prop_01 = exposed_thing.thing.properties[prop_01_name]
+        prop_02 = exposed_thing.thing.properties[prop_02_name]
+        prop_03 = exposed_thing.thing.properties[prop_03_name]
+
+        yield tornado.gen.sleep(sleep_secs)
+
+        assert (yield is_prop_active(prop_01))
+        assert (yield is_prop_active(prop_02))
+        assert (yield is_prop_active(prop_03))
+
+        del_prop(prop_01_name)
+
+        assert not (yield is_prop_active(prop_01))
+        assert (yield is_prop_active(prop_02))
+        assert (yield is_prop_active(prop_03))
+
+        del_prop(prop_03_name)
+
+        assert not (yield is_prop_active(prop_01))
+        assert (yield is_prop_active(prop_02))
+        assert not (yield is_prop_active(prop_03))
+
+        add_prop(prop_01_name)
+
+        prop_01 = exposed_thing.thing.properties[prop_01_name]
+
+        assert (yield is_prop_active(prop_01))
+        assert (yield is_prop_active(prop_02))
+        assert not (yield is_prop_active(prop_03))
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
 def test_observe_property_changes(mqtt_server):
     """Property updates may be observed using the MQTT binding."""
 
