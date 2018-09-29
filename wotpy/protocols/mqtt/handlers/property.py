@@ -109,6 +109,7 @@ class PropertyMQTTHandler(BaseMQTTHandler):
         """Initializes the MQTT handler.
         Called when the MQTT runner starts."""
 
+        self._refresh_subs()
         self._periodic_refresh_subs.start()
 
         yield None
