@@ -35,7 +35,7 @@ def mqtt_server():
         "type": "string",
         "writable": True,
         "observable": True
-    }), value=Faker().pyint())
+    }), value=Faker().sentence())
 
     exposed_thing.add_event(uuid.uuid4().hex, EventFragment({
         "type": "number"
