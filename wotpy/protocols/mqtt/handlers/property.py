@@ -29,8 +29,10 @@ class PropertyMQTTHandler(BaseMQTTHandler):
     DEFAULT_CALLBACK_MS = 2000
     DEFAULT_JITTER = 0.2
 
-    def __init__(self, mqtt_server, qos_observe=QOS_0, qos_rw=QOS_2, callback_ms=DEFAULT_CALLBACK_MS):
+    def __init__(self, mqtt_server, qos_observe=QOS_0, qos_rw=QOS_2, callback_ms=None):
         super(PropertyMQTTHandler, self).__init__(mqtt_server)
+
+        callback_ms = self.DEFAULT_CALLBACK_MS if callback_ms is None else callback_ms
 
         self._qos_observe = qos_observe
         self._qos_rw = qos_rw

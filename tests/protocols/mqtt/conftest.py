@@ -22,8 +22,8 @@ if not is_mqtt_supported():
     collect_ignore += ["test_server.py"]
 
 
-@pytest.fixture
-def mqtt_server():
+@pytest.fixture(params=[{"property_callback_ms": None}])
+def mqtt_server(request):
     """Builds a MQTTServer instance that contains an ExposedThing."""
 
     from wotpy.protocols.mqtt.server import MQTTServer
@@ -53,7 +53,7 @@ def mqtt_server():
         "output": {"type": "number"}
     }), triple)
 
-    server = MQTTServer(broker_url=get_test_broker_url())
+    server = MQTTServer(broker_url=get_test_broker_url(), **request.param)
     server.add_exposed_thing(exposed_thing)
 
     @tornado.gen.coroutine

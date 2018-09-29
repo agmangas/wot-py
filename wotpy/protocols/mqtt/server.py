@@ -22,7 +22,7 @@ from wotpy.td.form import Form
 class MQTTServer(BaseProtocolServer):
     """MQTT binding server implementation."""
 
-    def __init__(self, broker_url):
+    def __init__(self, broker_url, property_callback_ms=None):
         super(MQTTServer, self).__init__(port=None)
         self._broker_url = broker_url
         self._server_lock = tornado.locks.Lock()
@@ -32,7 +32,7 @@ class MQTTServer(BaseProtocolServer):
 
         self._handler_runners = [
             build_runner(PingMQTTHandler(mqtt_server=self)),
-            build_runner(PropertyMQTTHandler(mqtt_server=self))
+            build_runner(PropertyMQTTHandler(mqtt_server=self, callback_ms=property_callback_ms))
         ]
 
     @property
