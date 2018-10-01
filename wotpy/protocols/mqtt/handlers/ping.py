@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-MQTT clients to handle PING messages published on the MQTT server's broker.
+MQTT handler for PING requests published on the MQTT broker.
 """
 
 import tornado.gen
@@ -12,7 +12,7 @@ from wotpy.protocols.mqtt.handlers.base import BaseMQTTHandler
 
 
 class PingMQTTHandler(BaseMQTTHandler):
-    """MQTT handler for PING requests."""
+    """MQTT handler for PING requests published on the MQTT broker."""
 
     TOPIC_PING = "/wotpy/ping"
     TOPIC_PONG = "/wotpy/pong"

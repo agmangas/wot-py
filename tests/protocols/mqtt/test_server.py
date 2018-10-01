@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import time
 import uuid
 # noinspection PyCompatibility
 from asyncio import TimeoutError
@@ -203,7 +204,6 @@ def test_property_add_remove(mqtt_server):
 
     sleep_secs = (PROP_CALLBACK_MS / 1000.0) * 4
     timeout_deliver_secs = 1.0
-    publish_ms = 50
 
     @tornado.gen.coroutine
     def is_prop_active(prop):
@@ -220,7 +220,7 @@ def test_property_add_remove(mqtt_server):
             payload = json.dumps({"action": "write", "value": value}).encode()
             yield client_write.publish(topic_write, payload, qos=QOS_0)
 
-        periodic_write = tornado.ioloop.PeriodicCallback(publish_write, publish_ms)
+        periodic_write = tornado.ioloop.PeriodicCallback(publish_write, 50)
         periodic_write.start()
 
         try:
@@ -301,5 +301,41 @@ def test_observe_property_changes(mqtt_server):
         assert json.loads(msg.data.decode()).get("value") == updated_value
 
         periodic_write.stop()
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_observe_event(mqtt_server):
+    """Events may be observed using the MQTT binding."""
+
+    now_ms = int(time.time() * 1000)
+
+    exposed_thing = next(mqtt_server.exposed_things)
+    event_name = next(six.iterkeys(exposed_thing.thing.events))
+    event = exposed_thing.thing.events[event_name]
+    topic = build_topic(mqtt_server, event, InteractionVerbs.SUBSCRIBE_EVENT)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        client = yield connect_broker(topic)
+
+        emitted_value = Faker().pyint()
+
+        @tornado.gen.coroutine
+        def emit_value():
+            yield exposed_thing.events[event_name].emit(emitted_value)
+
+        periodic_emit = tornado.ioloop.PeriodicCallback(emit_value, 50)
+        periodic_emit.start()
+
+        msg = yield client.deliver_message()
+
+        event_data = json.loads(msg.data.decode())
+
+        assert event_data.get("name") == event_name
+        assert event_data.get("data") == emitted_value
+        assert event_data.get("time") >= now_ms
+
+        periodic_emit.stop()
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)

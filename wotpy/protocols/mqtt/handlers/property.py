@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-MQTT clients that expose Property verbs.
+MQTT handler for Property reads, writes and subscriptions to value updates.
 """
 
 import json
@@ -19,7 +19,7 @@ from wotpy.utils.serialization import to_json_obj
 
 
 class PropertyMQTTHandler(BaseMQTTHandler):
-    """MQTT handler that responds to Property reads, writes and update subscriptions."""
+    """MQTT handler for Property reads, writes and subscriptions to value updates."""
 
     KEY_ACTION = "action"
     KEY_VALUE = "value"

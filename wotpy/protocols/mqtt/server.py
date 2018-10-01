@@ -11,6 +11,7 @@ import tornado.locks
 
 from wotpy.codecs.enums import MediaTypes
 from wotpy.protocols.enums import Protocols, InteractionVerbs
+from wotpy.protocols.mqtt.handlers.event import EventMQTTHandler
 from wotpy.protocols.mqtt.handlers.ping import PingMQTTHandler
 from wotpy.protocols.mqtt.handlers.property import PropertyMQTTHandler
 from wotpy.protocols.mqtt.runner import MQTTHandlerRunner
@@ -22,7 +23,7 @@ from wotpy.td.form import Form
 class MQTTServer(BaseProtocolServer):
     """MQTT binding server implementation."""
 
-    def __init__(self, broker_url, property_callback_ms=None):
+    def __init__(self, broker_url, property_callback_ms=None, event_callback_ms=None):
         super(MQTTServer, self).__init__(port=None)
         self._broker_url = broker_url
         self._server_lock = tornado.locks.Lock()
@@ -32,7 +33,8 @@ class MQTTServer(BaseProtocolServer):
 
         self._handler_runners = [
             build_runner(PingMQTTHandler(mqtt_server=self)),
-            build_runner(PropertyMQTTHandler(mqtt_server=self, callback_ms=property_callback_ms))
+            build_runner(PropertyMQTTHandler(mqtt_server=self, callback_ms=property_callback_ms)),
+            build_runner(EventMQTTHandler(mqtt_server=self, callback_ms=event_callback_ms))
         ]
 
     @property
@@ -77,7 +79,18 @@ class MQTTServer(BaseProtocolServer):
     def _build_forms_event(self, event):
         """Builds and returns the MQTT Form instances for the given Event interaction."""
 
-        raise NotImplementedError
+        href = "{}/event/{}/{}".format(
+            self._broker_url.rstrip("/"),
+            event.thing.url_name, event.url_name)
+
+        form = Form(
+            interaction=event,
+            protocol=self.protocol,
+            href=href,
+            media_type=MediaTypes.JSON,
+            rel=[InteractionVerbs.SUBSCRIBE_EVENT])
+
+        return [form]
 
     def build_forms(self, hostname, interaction):
         """Builds and returns a list with all Forms that are
