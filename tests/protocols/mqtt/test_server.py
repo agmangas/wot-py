@@ -339,3 +339,89 @@ def test_observe_event(mqtt_server):
         periodic_emit.stop()
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def build_result_topic(topic_invoke):
+    """Takes an Action invocation MQTT topic and returns the related results topic."""
+
+    splitted_topic = topic_invoke.split("/")
+    splitted_topic[1] = "result"
+    return "/".join(splitted_topic)
+
+
+def test_action_invoke(mqtt_server):
+    """Actions can be invoked using the MQTT binding."""
+
+    exposed_thing = next(mqtt_server.exposed_things)
+    action_name = next(six.iterkeys(exposed_thing.thing.actions))
+    action = exposed_thing.thing.actions[action_name]
+
+    topic_invoke = build_topic(mqtt_server, action, InteractionVerbs.INVOKE_ACTION)
+    topic_result = build_result_topic(topic_invoke)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        client_invoke = yield connect_broker(topic_invoke)
+        client_result = yield connect_broker(topic_result)
+
+        data = {
+            "id": uuid.uuid4().hex,
+            "input": Faker().pyint()
+        }
+
+        now_ms = int(time.time() * 1000)
+
+        yield client_invoke.publish(topic_invoke, json.dumps(data).encode(), qos=QOS_2)
+
+        msg = yield client_result.deliver_message()
+        msg_data = json.loads(msg.data.decode())
+
+        assert msg_data.get("id") == data.get("id")
+        assert msg_data.get("result") == "{:f}".format(data.get("input"))
+        assert msg_data.get("timestamp") >= now_ms
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_action_invoke_parallel(mqtt_server):
+    """Multiple Actions can be invoked in parallel using the MQTT binding."""
+
+    exposed_thing = next(mqtt_server.exposed_things)
+    action_name = next(six.iterkeys(exposed_thing.thing.actions))
+    action = exposed_thing.thing.actions[action_name]
+
+    topic_invoke = build_topic(mqtt_server, action, InteractionVerbs.INVOKE_ACTION)
+    topic_result = build_result_topic(topic_invoke)
+
+    num_requests = 10
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        client_invoke = yield connect_broker(topic_invoke)
+        client_result = yield connect_broker(topic_result)
+
+        requests = []
+
+        for idx in range(num_requests):
+            requests.append({
+                "id": uuid.uuid4().hex,
+                "input": Faker().pyint()
+            })
+
+        now_ms = int(time.time() * 1000)
+
+        yield [
+            client_invoke.publish(topic_invoke, json.dumps(requests[idx]).encode(), qos=QOS_2)
+            for idx in range(num_requests)
+        ]
+
+        for idx in range(num_requests):
+            msg = yield client_result.deliver_message()
+            msg_data = json.loads(msg.data.decode())
+            expected = next(item for item in requests if item.get("id") == msg_data.get("id"))
+
+            assert msg_data.get("id") == expected.get("id")
+            assert msg_data.get("result") == "{:f}".format(expected.get("input"))
+            assert msg_data.get("timestamp") >= now_ms
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
