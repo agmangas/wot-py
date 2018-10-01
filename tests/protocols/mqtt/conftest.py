@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import random
 import uuid
 
 import pytest
@@ -44,14 +45,15 @@ def mqtt_server(request):
     action_name = uuid.uuid4().hex
 
     @tornado.gen.coroutine
-    def triple(parameters):
+    def handler(parameters):
         input_value = parameters.get("input")
-        raise tornado.gen.Return(input_value * 3)
+        yield tornado.gen.sleep(random.random() * 0.1)
+        raise tornado.gen.Return("{:f}".format(input_value))
 
     exposed_thing.add_action(action_name, ActionFragment({
         "input": {"type": "number"},
-        "output": {"type": "number"}
-    }), triple)
+        "output": {"type": "string"}
+    }), handler)
 
     server = MQTTServer(broker_url=get_test_broker_url(), **request.param)
     server.add_exposed_thing(exposed_thing)
