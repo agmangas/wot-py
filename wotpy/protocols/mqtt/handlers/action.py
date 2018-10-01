@@ -84,12 +84,14 @@ class ActionMQTTHandler(BaseMQTTHandler):
         result = yield exp_thing.actions[action.name].invoke(input_value)
         topic = self.build_action_result_topic(exp_thing.thing, action)
 
+        data = {
+            "id": parsed_msg.get(self.KEY_INVOCATION_ID, None),
+            "result": to_json_obj(result),
+            "timestamp": now_ms
+        }
+
         yield self.queue.put({
             "topic": topic,
-            "data": json.dumps({
-                "id": parsed_msg.get(self.KEY_INVOCATION_ID, None),
-                "result": to_json_obj(result),
-                "timestamp": now_ms
-            }).encode(),
+            "data": json.dumps(data).encode(),
             "qos": self._qos
         })
