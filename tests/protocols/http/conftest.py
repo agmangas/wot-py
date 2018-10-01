@@ -63,7 +63,13 @@ def http_server():
 
     tornado.ioloop.IOLoop.current().run_sync(start)
 
-    return server
+    yield server
+
+    @tornado.gen.coroutine
+    def stop():
+        yield server.stop()
+
+    tornado.ioloop.IOLoop.current().run_sync(stop)
 
 
 @pytest.fixture

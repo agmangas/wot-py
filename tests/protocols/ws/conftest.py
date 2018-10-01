@@ -117,7 +117,7 @@ def websocket_server():
     url_thing_01 = build_websocket_url(exposed_thing_01, ws_server, ws_port)
     url_thing_02 = build_websocket_url(exposed_thing_02, ws_server, ws_port)
 
-    return {
+    yield {
         "exposed_thing_01": exposed_thing_01,
         "exposed_thing_02": exposed_thing_02,
         "prop_name_01": prop_name_01,
@@ -138,6 +138,12 @@ def websocket_server():
         "url_thing_02": url_thing_02,
         "ws_port": ws_port
     }
+
+    @tornado.gen.coroutine
+    def stop():
+        yield ws_server.stop()
+
+    tornado.ioloop.IOLoop.current().run_sync(stop)
 
 
 @pytest.fixture

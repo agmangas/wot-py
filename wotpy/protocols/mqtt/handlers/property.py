@@ -121,7 +121,7 @@ class PropertyMQTTHandler(BaseMQTTHandler):
 
         self._periodic_refresh_subs.stop()
 
-        for exp_thing in self._subs:
+        for exp_thing in list(six.iterkeys(self._subs)):
             self._dispose_exposed_thing_subs(exp_thing)
 
         yield None
