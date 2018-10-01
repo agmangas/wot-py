@@ -87,7 +87,7 @@ class EventMQTTHandler(BaseMQTTHandler):
                     "data": json.dumps({
                         "name": item.name,
                         "data": to_json_obj(item.data),
-                        "time": int(time.time() * 1000)
+                        "timestamp": int(time.time() * 1000)
                     }).encode(),
                     "qos": self._qos
                 }

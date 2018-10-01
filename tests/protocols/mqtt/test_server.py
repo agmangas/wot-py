@@ -334,7 +334,7 @@ def test_observe_event(mqtt_server):
 
         assert event_data.get("name") == event_name
         assert event_data.get("data") == emitted_value
-        assert event_data.get("time") >= now_ms
+        assert event_data.get("timestamp") >= now_ms
 
         periodic_emit.stop()
 
