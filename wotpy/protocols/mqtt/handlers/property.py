@@ -8,13 +8,14 @@ MQTT handler for Property reads, writes and subscriptions to value updates.
 import json
 from json import JSONDecodeError
 
-import six
 import tornado.gen
 import tornado.ioloop
 from hbmqtt.mqtt.constants import QOS_0, QOS_2
 from tornado.queues import QueueFull
 
 from wotpy.protocols.mqtt.handlers.base import BaseMQTTHandler
+from wotpy.protocols.mqtt.handlers.subs import InteractionsSubscriber
+from wotpy.td.enums import InteractionTypes
 from wotpy.utils.serialization import to_json_obj
 
 
@@ -39,8 +40,17 @@ class PropertyMQTTHandler(BaseMQTTHandler):
         self._callback_ms = callback_ms
         self._subs = {}
 
+        self._interaction_subscriber = InteractionsSubscriber(
+            interaction_type=InteractionTypes.PROPERTY,
+            server=self.mqtt_server,
+            on_next_builder=self._build_on_next)
+
+        @tornado.gen.coroutine
+        def refresh_subs():
+            self._interaction_subscriber.refresh()
+
         self._periodic_refresh_subs = tornado.ioloop.PeriodicCallback(
-            self._refresh_subs, self._callback_ms, jitter=self.DEFAULT_JITTER)
+            refresh_subs, self._callback_ms, jitter=self.DEFAULT_JITTER)
 
     @classmethod
     def build_property_requests_topic(cls, thing, prop):
@@ -109,7 +119,7 @@ class PropertyMQTTHandler(BaseMQTTHandler):
         """Initializes the MQTT handler.
         Called when the MQTT runner starts."""
 
-        self._refresh_subs()
+        self._interaction_subscriber.refresh()
         self._periodic_refresh_subs.start()
 
         yield None
@@ -120,9 +130,7 @@ class PropertyMQTTHandler(BaseMQTTHandler):
         Called when the MQTT runner stops."""
 
         self._periodic_refresh_subs.stop()
-
-        for exp_thing in list(six.iterkeys(self._subs)):
-            self._dispose_exposed_thing_subs(exp_thing)
+        self._interaction_subscriber.dispose()
 
         yield None
 
@@ -134,17 +142,6 @@ class PropertyMQTTHandler(BaseMQTTHandler):
             "data": json.dumps({"value": to_json_obj(value)}).encode(),
             "qos": self._qos_observe
         }
-
-    def _dispose_exposed_thing_subs(self, exp_thing):
-        """Disposes of all currently active subscriptions for the given ExposedThing."""
-
-        if exp_thing not in self._subs:
-            return
-
-        for prop in self._subs[exp_thing]:
-            self._subs[exp_thing][prop].dispose()
-
-        self._subs.pop(exp_thing)
 
     def _build_on_next(self, exp_thing, prop):
         """Builds the on_next function to use when subscribing to the given Property."""
@@ -159,38 +156,3 @@ class PropertyMQTTHandler(BaseMQTTHandler):
                 pass
 
         return on_next
-
-    def _refresh_exposed_thing_subs(self, exp_thing):
-        """Refresh the subscriptions for the given ExposedThing."""
-
-        if exp_thing not in self._subs:
-            self._subs[exp_thing] = {}
-
-        thing_subs = self._subs[exp_thing]
-
-        props_expected = set(six.itervalues(exp_thing.thing.properties))
-        props_current = set(thing_subs.keys())
-        props_remove = props_current.difference(props_expected)
-
-        for prop in props_remove:
-            thing_subs[prop].dispose()
-            thing_subs.pop(prop)
-
-        props_new = [item for item in props_expected if item not in thing_subs]
-
-        for prop in props_new:
-            on_next = self._build_on_next(exp_thing, prop)
-            thing_subs[prop] = exp_thing.properties[prop.name].subscribe(on_next)
-
-    def _refresh_subs(self):
-        """Refresh all subscriptions for the entire set of ExposedThings."""
-
-        things_expected = set(self.mqtt_server.exposed_things)
-        things_current = set(self._subs.keys())
-        things_remove = things_current.difference(things_expected)
-
-        for exp_thing in things_remove:
-            self._dispose_exposed_thing_subs(exp_thing)
-
-        for exp_thing in things_expected:
-            self._refresh_exposed_thing_subs(exp_thing)
