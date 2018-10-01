@@ -24,8 +24,6 @@ from wotpy.wot.dictionaries.interaction import PropertyFragment
 
 pytestmark = pytest.mark.skipif(is_test_broker_online() is False, reason=BROKER_SKIP_REASON)
 
-PROP_CALLBACK_MS = 50
-
 
 def build_topic(server, interaction, interaction_verb):
     """Returns the topic for the given interaction and verb."""
@@ -181,7 +179,10 @@ def test_property_write(mqtt_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.parametrize("mqtt_server", [{"property_callback_ms": PROP_CALLBACK_MS}], indirect=True)
+CALLBACK_MS = 50
+
+
+@pytest.mark.parametrize("mqtt_server", [{"property_callback_ms": CALLBACK_MS}], indirect=True)
 def test_property_add_remove(mqtt_server):
     """The MQTT binding reacts appropriately to Properties
     being added and removed from ExposedThings."""
@@ -202,11 +203,8 @@ def test_property_add_remove(mqtt_server):
     def del_prop(pname):
         exposed_thing.remove_property(pname)
 
-    sleep_secs = (PROP_CALLBACK_MS / 1000.0) * 4
-    timeout_deliver_secs = 1.0
-
     @tornado.gen.coroutine
-    def is_prop_active(prop):
+    def is_prop_active(prop, timeout_secs=1.0):
         topic_observe = build_topic(mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY)
         topic_write = build_topic(mqtt_server, prop, InteractionVerbs.WRITE_PROPERTY)
 
@@ -224,7 +222,7 @@ def test_property_add_remove(mqtt_server):
         periodic_write.start()
 
         try:
-            msg = yield client_observe.deliver_message(timeout=timeout_deliver_secs)
+            msg = yield client_observe.deliver_message(timeout=timeout_secs)
             assert json.loads(msg.data.decode()).get("value") == value
             raise tornado.gen.Return(True)
         except TimeoutError:
@@ -234,6 +232,8 @@ def test_property_add_remove(mqtt_server):
 
     @tornado.gen.coroutine
     def test_coroutine():
+        sleep_secs = (CALLBACK_MS / 1000.0) * 4
+
         prop_01_name = uuid.uuid4().hex
         prop_02_name = uuid.uuid4().hex
         prop_03_name = uuid.uuid4().hex
