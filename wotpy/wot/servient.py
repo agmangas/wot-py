@@ -224,7 +224,7 @@ class Servient(object):
                 interaction.add_form(form)
 
     def _regenerate_server_forms(self, server):
-        """Cleans and regenerates Links for the given server in all ExposedThings."""
+        """Cleans and regenerates Forms for the given server in all ExposedThings."""
 
         assert server in self._servers.values()
 
@@ -273,6 +273,13 @@ class Servient(object):
         """Removes the Protocol Binding server with the given protocol from this servient."""
 
         self._servers.pop(protocol, None)
+
+    def refresh_forms(self):
+        """Cleans and regenerates Forms for all the
+        ExposedThings and servers contained in this servient."""
+
+        for server in self._servers.values():
+            self._regenerate_server_forms(server)
 
     def enable_exposed_thing(self, thing_id):
         """Enables the ExposedThing with the given ID.
