@@ -3,9 +3,11 @@
 
 import pytest
 import six
+import tornado.concurrent
 import tornado.gen
 import tornado.ioloop
 from faker import Faker
+from rx.concurrency import IOLoopScheduler
 
 from tests.protocols.mqtt.broker import is_test_broker_online, BROKER_SKIP_REASON
 from wotpy.protocols.mqtt.client import MQTTClient
@@ -104,5 +106,48 @@ def test_invoke_action_error(mqtt_servient):
         with pytest.raises(Exception) as ex:
             yield mqtt_client.invoke_action(td, action_name, input_value)
             assert err_message in str(ex)
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+@pytest.mark.flaky(reruns=5)
+def test_on_property_change(mqtt_servient):
+    """Property updates may be observed using the MQTT binding client."""
+
+    exposed_thing = next(mqtt_servient.exposed_things)
+    td = ThingDescription.from_thing(exposed_thing.thing)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        mqtt_client = MQTTClient()
+        property_name = next(six.iterkeys(td.properties))
+
+        values = [Faker().sentence() for _ in range(10)]
+        values_observed = {value: tornado.concurrent.Future() for value in values}
+
+        @tornado.gen.coroutine
+        def write_next():
+            try:
+                next_value = next(val for val, fut in six.iteritems(values_observed) if not fut.done())
+                yield exposed_thing.properties[property_name].write(next_value)
+            except StopIteration:
+                pass
+
+        def on_next(ev):
+            prop_value = ev.data.value
+            if prop_value in values_observed and not values_observed[prop_value].done():
+                values_observed[prop_value].set_result(True)
+
+        observable = mqtt_client.on_property_change(td, property_name)
+
+        subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
+
+        periodic_emit = tornado.ioloop.PeriodicCallback(write_next, 10)
+        periodic_emit.start()
+
+        yield list(values_observed.values())
+
+        periodic_emit.stop()
+        subscription.dispose()
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)

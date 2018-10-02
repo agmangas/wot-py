@@ -9,8 +9,11 @@ import json
 import uuid
 
 import hbmqtt.client
+import tornado.concurrent
 import tornado.gen
+import tornado.ioloop
 from hbmqtt.mqtt.constants import QOS_0
+from rx import Observable
 from six.moves.urllib import parse
 
 from wotpy.protocols.client import BaseProtocolClient
@@ -19,10 +22,16 @@ from wotpy.protocols.exceptions import FormNotFoundException
 from wotpy.protocols.mqtt.enums import MQTTSchemes
 from wotpy.protocols.mqtt.handlers.action import ActionMQTTHandler
 from wotpy.protocols.utils import is_scheme_form
+from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent
 
 
 class MQTTClient(BaseProtocolClient):
     """Implementation of the protocol client interface for the MQTT protocol."""
+
+    DEFAULT_DELIVER_TIMEOUT_SECS = 0.1
+
+    def __init__(self, deliver_timeout_secs=DEFAULT_DELIVER_TIMEOUT_SECS):
+        self._deliver_timeout_secs = deliver_timeout_secs
 
     @classmethod
     def _pick_mqtt_href(cls, td, forms, rel=None):
@@ -194,7 +203,84 @@ class MQTTClient(BaseProtocolClient):
         """Subscribes to property changes on a remote Thing.
         Returns an Observable"""
 
-        raise NotImplementedError
+        forms = td.get_property_forms(name)
+        href = self._pick_mqtt_href(td, forms, rel=InteractionVerbs.OBSERVE_PROPERTY)
+
+        if href is None:
+            raise FormNotFoundException()
+
+        parsed_href = self._parse_href(href)
+
+        broker_url = parsed_href["broker_url"]
+        topic = parsed_href["topic"]
+
+        def subscribe(observer):
+            """Subscriber function that listens for MQTT messages
+            on a given topic and passes them to the Observer."""
+
+            state = {
+                "active": True
+            }
+
+            client = hbmqtt.client.MQTTClient()
+
+            def on_message(fut):
+                is_timeout = fut and isinstance(fut.exception(), tornado.concurrent.futures.TimeoutError)
+
+                if fut is not None and fut.exception() and not is_timeout:
+                    observer.on_error(fut.exception())
+                    return
+                elif fut is not None and fut.exception() is None:
+                    msg = fut.result()
+                    msg_data = json.loads(msg.data.decode())
+                    msg_value = msg_data.get("value")
+                    init = PropertyChangeEventInit(name=name, value=msg_value)
+                    observer.on_next(PropertyChangeEmittedEvent(init=init))
+
+                if not state["active"]:
+                    return
+
+                timeout = self._deliver_timeout_secs
+                fut_msg = tornado.gen.convert_yielded(client.deliver_message(timeout=timeout))
+                tornado.concurrent.future_add_done_callback(fut_msg, on_message)
+
+            def on_subscribe(fut):
+                if fut.exception():
+                    observer.on_error(fut.exception())
+                    return
+
+                on_message(None)
+
+            def on_connect(fut):
+                if fut.exception():
+                    observer.on_error(fut.exception())
+                    return
+
+                topics = [(topic, QOS_0)]
+                fut_sub = tornado.gen.convert_yielded(client.subscribe(topics))
+                tornado.concurrent.future_add_done_callback(fut_sub, on_subscribe)
+
+            fut_con = tornado.gen.convert_yielded(client.connect(broker_url))
+            tornado.concurrent.future_add_done_callback(fut_con, on_connect)
+
+            def unsubscribe():
+                """Disconnects from the MQTT broker and stops the message delivering loop."""
+
+                @tornado.gen.coroutine
+                def disconnect():
+                    try:
+                        yield client.disconnect()
+                    except AttributeError:
+                        pass
+
+                tornado.ioloop.IOLoop.current().add_callback(disconnect)
+
+                state["active"] = False
+
+            return unsubscribe
+
+        # noinspection PyUnresolvedReferences
+        return Observable.create(subscribe)
 
     def on_event(self, td, name):
         """Subscribes to an event on a remote Thing.
