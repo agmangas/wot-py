@@ -30,6 +30,14 @@ class ActionMQTTHandler(BaseMQTTHandler):
         self._qos = qos
 
     @classmethod
+    def to_result_topic(cls, invocation_topic):
+        """Takes an Action invocation MQTT topic and returns the related result topic."""
+
+        splitted_topic = invocation_topic.split("/")
+        splitted_topic[1] = "result"
+        return "/".join(splitted_topic)
+
+    @classmethod
     def build_action_invocation_topic(cls, thing, action):
         """Returns the MQTT topic for Action invocations."""
 

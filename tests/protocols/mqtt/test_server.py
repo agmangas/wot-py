@@ -18,6 +18,7 @@ from hbmqtt.mqtt.constants import QOS_2, QOS_0
 
 from tests.protocols.mqtt.broker import is_test_broker_online, BROKER_SKIP_REASON, get_test_broker_url
 from wotpy.protocols.enums import InteractionVerbs
+from wotpy.protocols.mqtt.handlers.action import ActionMQTTHandler
 from wotpy.protocols.mqtt.handlers.ping import PingMQTTHandler
 from wotpy.protocols.mqtt.server import MQTTServer
 from wotpy.wot.dictionaries.interaction import PropertyFragment
@@ -341,14 +342,6 @@ def test_observe_event(mqtt_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def build_result_topic(topic_invoke):
-    """Takes an Action invocation MQTT topic and returns the related results topic."""
-
-    splitted_topic = topic_invoke.split("/")
-    splitted_topic[1] = "result"
-    return "/".join(splitted_topic)
-
-
 def test_action_invoke(mqtt_server):
     """Actions can be invoked using the MQTT binding."""
 
@@ -357,7 +350,7 @@ def test_action_invoke(mqtt_server):
     action = exposed_thing.thing.actions[action_name]
 
     topic_invoke = build_topic(mqtt_server, action, InteractionVerbs.INVOKE_ACTION)
-    topic_result = build_result_topic(topic_invoke)
+    topic_result = ActionMQTTHandler.to_result_topic(topic_invoke)
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -391,7 +384,7 @@ def test_action_invoke_parallel(mqtt_server):
     action = exposed_thing.thing.actions[action_name]
 
     topic_invoke = build_topic(mqtt_server, action, InteractionVerbs.INVOKE_ACTION)
-    topic_result = build_result_topic(topic_invoke)
+    topic_result = ActionMQTTHandler.to_result_topic(topic_invoke)
 
     num_requests = 10
 
