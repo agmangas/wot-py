@@ -114,7 +114,10 @@ class MQTTClient(BaseProtocolClient):
                 else:
                     raise tornado.gen.Return(msg_data.get("result"))
         finally:
-            yield client.disconnect()
+            try:
+                yield client.disconnect()
+            except AttributeError:
+                pass
 
     @tornado.gen.coroutine
     def write_property(self, td, name, value):
@@ -139,7 +142,10 @@ class MQTTClient(BaseProtocolClient):
             write_payload = json.dumps({"action": "write", "value": value}).encode()
             yield client_write.publish(parsed_href_write["topic"], write_payload, qos=QOS_0)
         finally:
-            yield client_write.disconnect()
+            try:
+                yield client_write.disconnect()
+            except AttributeError:
+                pass
 
     @tornado.gen.coroutine
     def read_property(self, td, name):
@@ -174,8 +180,15 @@ class MQTTClient(BaseProtocolClient):
 
             raise tornado.gen.Return(msg_data.get("value"))
         finally:
-            yield client_read.disconnect()
-            yield client_obsv.disconnect()
+            try:
+                yield client_read.disconnect()
+            except AttributeError:
+                pass
+
+            try:
+                yield client_obsv.disconnect()
+            except AttributeError:
+                pass
 
     def on_property_change(self, td, name):
         """Subscribes to property changes on a remote Thing.
