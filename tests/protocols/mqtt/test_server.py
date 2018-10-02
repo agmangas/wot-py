@@ -21,7 +21,7 @@ from wotpy.protocols.enums import InteractionVerbs
 from wotpy.protocols.mqtt.handlers.action import ActionMQTTHandler
 from wotpy.protocols.mqtt.handlers.ping import PingMQTTHandler
 from wotpy.protocols.mqtt.server import MQTTServer
-from wotpy.wot.dictionaries.interaction import PropertyFragment
+from wotpy.wot.dictionaries.interaction import PropertyFragment, ActionFragment
 
 pytestmark = pytest.mark.skipif(is_test_broker_online() is False, reason=BROKER_SKIP_REASON)
 
@@ -372,6 +372,50 @@ def test_action_invoke(mqtt_server):
         assert msg_data.get("id") == data.get("id")
         assert msg_data.get("result") == "{:f}".format(data.get("input"))
         assert msg_data.get("timestamp") >= now_ms
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_action_invoke_error(mqtt_server):
+    """Action errors are handled appropriately by the MQTT binding."""
+
+    exposed_thing = next(mqtt_server.exposed_things)
+
+    action_name = uuid.uuid4().hex
+    err_message = Faker().sentence()
+
+    # noinspection PyUnusedLocal
+    def handler(parameters):
+        raise TypeError(err_message)
+
+    exposed_thing.add_action(action_name, ActionFragment({
+        "input": {"type": "string"},
+        "output": {"type": "string"}
+    }), handler)
+
+    action = exposed_thing.thing.actions[action_name]
+
+    topic_invoke = build_topic(mqtt_server, action, InteractionVerbs.INVOKE_ACTION)
+    topic_result = ActionMQTTHandler.to_result_topic(topic_invoke)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        client_invoke = yield connect_broker(topic_invoke)
+        client_result = yield connect_broker(topic_result)
+
+        data = {
+            "id": uuid.uuid4().hex,
+            "input": Faker().pyint()
+        }
+
+        yield client_invoke.publish(topic_invoke, json.dumps(data).encode(), qos=QOS_2)
+
+        msg = yield client_result.deliver_message()
+        msg_data = json.loads(msg.data.decode())
+
+        assert msg_data.get("id") == data.get("id")
+        assert msg_data.get("error") == err_message
+        assert msg_data.get("result", None) is None
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
