@@ -30,8 +30,9 @@ class MQTTClient(BaseProtocolClient):
 
     DEFAULT_DELIVER_TIMEOUT_SECS = 0.1
 
-    def __init__(self, deliver_timeout_secs=DEFAULT_DELIVER_TIMEOUT_SECS):
+    def __init__(self, deliver_timeout_secs=DEFAULT_DELIVER_TIMEOUT_SECS, qos=QOS_0):
         self._deliver_timeout_secs = deliver_timeout_secs
+        self._qos = qos
 
     @classmethod
     def _pick_mqtt_href(cls, td, forms, rel=None):
@@ -100,7 +101,7 @@ class MQTTClient(BaseProtocolClient):
 
         try:
             yield client.connect(parsed_href["broker_url"])
-            yield client.subscribe([(topic_result, QOS_0)])
+            yield client.subscribe([(topic_result, self._qos)])
 
             data = {
                 "id": uuid.uuid4().hex,
@@ -109,7 +110,7 @@ class MQTTClient(BaseProtocolClient):
 
             input_payload = json.dumps(data).encode()
 
-            yield client.publish(topic_invoke, input_payload, qos=QOS_0)
+            yield client.publish(topic_invoke, input_payload, qos=self._qos)
 
             while True:
                 msg = yield client.deliver_message()
@@ -149,7 +150,7 @@ class MQTTClient(BaseProtocolClient):
         try:
             yield client_write.connect(parsed_href_write["broker_url"])
             write_payload = json.dumps({"action": "write", "value": value}).encode()
-            yield client_write.publish(parsed_href_write["topic"], write_payload, qos=QOS_0)
+            yield client_write.publish(parsed_href_write["topic"], write_payload, qos=self._qos)
         finally:
             try:
                 yield client_write.disconnect()
@@ -179,10 +180,10 @@ class MQTTClient(BaseProtocolClient):
             yield client_read.connect(parsed_href_read["broker_url"])
             yield client_obsv.connect(parsed_href_obsv["broker_url"])
 
-            yield client_obsv.subscribe([(parsed_href_obsv["topic"], QOS_0)])
+            yield client_obsv.subscribe([(parsed_href_obsv["topic"], self._qos)])
 
             read_payload = json.dumps({"action": "read"}).encode()
-            yield client_read.publish(parsed_href_read["topic"], read_payload, qos=QOS_0)
+            yield client_read.publish(parsed_href_read["topic"], read_payload, qos=self._qos)
 
             msg = yield client_obsv.deliver_message()
             msg_data = json.loads(msg.data.decode())
@@ -243,7 +244,7 @@ class MQTTClient(BaseProtocolClient):
                     observer.on_error(fut.exception())
                     return
 
-                topics = [(topic, QOS_0)]
+                topics = [(topic, self._qos)]
                 fut_sub = tornado.gen.convert_yielded(client.subscribe(topics))
                 tornado.concurrent.future_add_done_callback(fut_sub, on_subscribe)
 
