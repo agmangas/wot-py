@@ -11,6 +11,7 @@ import tornado.ioloop
 from faker import Faker
 
 from wotpy.protocols.support import is_mqtt_supported
+from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
 from wotpy.wot.dictionaries.interaction import ActionFragment, EventFragment, PropertyFragment
 from wotpy.wot.exposed.thing import ExposedThing
@@ -20,7 +21,7 @@ collect_ignore = []
 
 if not is_mqtt_supported():
     logging.warning("Skipping MQTT tests due to unsupported platform")
-    collect_ignore += ["test_server.py"]
+    collect_ignore += ["test_server.py", "test_client.py"]
 
 
 @pytest.fixture(params=[{"property_callback_ms": None}])
@@ -71,3 +72,73 @@ def mqtt_server(request):
         yield server.stop()
 
     tornado.ioloop.IOLoop.current().run_sync(stop)
+
+
+@pytest.fixture
+def mqtt_servient():
+    """Returns a Servient that exposes a CoAP server and one ExposedThing."""
+
+    from wotpy.protocols.mqtt.server import MQTTServer
+    from tests.protocols.mqtt.broker import get_test_broker_url
+
+    server = MQTTServer(broker_url=get_test_broker_url())
+
+    servient = Servient()
+    servient.add_server(server)
+
+    @tornado.gen.coroutine
+    def start():
+        raise tornado.gen.Return((yield servient.start()))
+
+    wot = tornado.ioloop.IOLoop.current().run_sync(start)
+
+    property_name_01 = uuid.uuid4().hex
+    action_name_01 = uuid.uuid4().hex
+    event_name_01 = uuid.uuid4().hex
+
+    td_dict = {
+        "id": uuid.uuid4().urn,
+        "name": uuid.uuid4().hex,
+        "properties": {
+            property_name_01: {
+                "writable": True,
+                "observable": True,
+                "type": "string"
+            }
+        },
+        "actions": {
+            action_name_01: {
+                "input": {
+                    "type": "number"
+                },
+                "output": {
+                    "type": "number"
+                },
+            }
+        },
+        "events": {
+            event_name_01: {
+                "type": "string"
+            }
+        },
+    }
+
+    td = ThingDescription(td_dict)
+
+    exposed_thing = wot.produce(td.to_str())
+    exposed_thing.expose()
+
+    @tornado.gen.coroutine
+    def action_handler(parameters):
+        input_value = parameters.get("input")
+        raise tornado.gen.Return(int(input_value) * 2)
+
+    exposed_thing.set_action_handler(action_name_01, action_handler)
+
+    yield servient
+
+    @tornado.gen.coroutine
+    def shutdown():
+        yield servient.shutdown()
+
+    tornado.ioloop.IOLoop.current().run_sync(shutdown)
