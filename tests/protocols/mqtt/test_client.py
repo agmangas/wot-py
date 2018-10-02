@@ -14,6 +14,55 @@ from wotpy.td.description import ThingDescription
 pytestmark = pytest.mark.skipif(is_test_broker_online() is False, reason=BROKER_SKIP_REASON)
 
 
+def test_read_property(mqtt_servient):
+    """Property values may be retrieved using the MQTT binding client."""
+
+    exposed_thing = next(mqtt_servient.exposed_things)
+    td = ThingDescription.from_thing(exposed_thing.thing)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        mqtt_client = MQTTClient()
+        prop_name = next(six.iterkeys(td.properties))
+        prop_value = Faker().sentence()
+
+        coap_prop_value = yield mqtt_client.read_property(td, prop_name)
+        assert coap_prop_value != prop_value
+
+        yield exposed_thing.properties[prop_name].write(prop_value)
+
+        coap_prop_value = yield mqtt_client.read_property(td, prop_name)
+        assert coap_prop_value == prop_value
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_write_property(mqtt_servient):
+    """Properties may be updated using the MQTT binding client."""
+
+    exposed_thing = next(mqtt_servient.exposed_things)
+    td = ThingDescription.from_thing(exposed_thing.thing)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        mqtt_client = MQTTClient()
+        prop_name = next(six.iterkeys(td.properties))
+        prop_value = Faker().sentence()
+
+        prev_value = yield exposed_thing.properties[prop_name].read()
+        assert prev_value != prop_value
+
+        yield mqtt_client.write_property(td, prop_name, prop_value)
+
+        curr_value = None
+
+        while curr_value != prop_value:
+            curr_value = yield exposed_thing.properties[prop_name].read()
+            yield None
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
 def test_invoke_action(mqtt_servient):
     """Actions may be invoked using the MQTT binding client."""
 

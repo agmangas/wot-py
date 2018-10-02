@@ -14,7 +14,7 @@ from hbmqtt.mqtt.constants import QOS_0
 from six.moves.urllib import parse
 
 from wotpy.protocols.client import BaseProtocolClient
-from wotpy.protocols.enums import Protocols
+from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.exceptions import FormNotFoundException
 from wotpy.protocols.mqtt.enums import MQTTSchemes
 from wotpy.protocols.mqtt.handlers.action import ActionMQTTHandler
@@ -87,44 +87,95 @@ class MQTTClient(BaseProtocolClient):
         topic_invoke = parsed_href["topic"]
         topic_result = ActionMQTTHandler.to_result_topic(topic_invoke)
 
-        hbmqtt_client = hbmqtt.client.MQTTClient()
-        yield hbmqtt_client.connect(parsed_href["broker_url"])
-        yield hbmqtt_client.subscribe([(topic_result, QOS_0)])
+        client = hbmqtt.client.MQTTClient()
 
-        data = {
-            "id": uuid.uuid4().hex,
-            "input": input_value
-        }
+        try:
+            yield client.connect(parsed_href["broker_url"])
+            yield client.subscribe([(topic_result, QOS_0)])
 
-        input_payload = json.dumps(data).encode()
+            data = {
+                "id": uuid.uuid4().hex,
+                "input": input_value
+            }
 
-        yield hbmqtt_client.publish(topic_invoke, input_payload, qos=QOS_0)
+            input_payload = json.dumps(data).encode()
 
-        while True:
-            msg = yield hbmqtt_client.deliver_message()
-            msg_data = json.loads(msg.data.decode())
+            yield client.publish(topic_invoke, input_payload, qos=QOS_0)
 
-            if msg_data.get("id") != data.get("id"):
-                continue
+            while True:
+                msg = yield client.deliver_message()
+                msg_data = json.loads(msg.data.decode())
 
-            if msg_data.get("error", None) is not None:
-                raise Exception(msg_data.get("error"))
-            else:
-                raise tornado.gen.Return(msg_data.get("result"))
+                if msg_data.get("id") != data.get("id"):
+                    continue
+
+                if msg_data.get("error", None) is not None:
+                    raise Exception(msg_data.get("error"))
+                else:
+                    raise tornado.gen.Return(msg_data.get("result"))
+        finally:
+            yield client.disconnect()
 
     @tornado.gen.coroutine
     def write_property(self, td, name, value):
         """Updates the value of a Property on a remote Thing.
+        Due to the MQTT binding design this coroutine yields as soon as the write message has
+        been published and will not wait for a custom write handler that yields to another coroutine
         Returns a Future."""
 
-        raise NotImplementedError
+        forms = td.get_property_forms(name)
+
+        href_write = self._pick_mqtt_href(td, forms, rel=InteractionVerbs.WRITE_PROPERTY)
+
+        if href_write is None:
+            raise FormNotFoundException()
+
+        parsed_href_write = self._parse_href(href_write)
+
+        client_write = hbmqtt.client.MQTTClient()
+
+        try:
+            yield client_write.connect(parsed_href_write["broker_url"])
+            write_payload = json.dumps({"action": "write", "value": value}).encode()
+            yield client_write.publish(parsed_href_write["topic"], write_payload, qos=QOS_0)
+        finally:
+            yield client_write.disconnect()
 
     @tornado.gen.coroutine
     def read_property(self, td, name):
         """Reads the value of a Property on a remote Thing.
         Returns a Future."""
 
-        raise NotImplementedError
+        forms = td.get_property_forms(name)
+
+        href_read = self._pick_mqtt_href(td, forms, rel=InteractionVerbs.READ_PROPERTY)
+        href_obsv = self._pick_mqtt_href(td, forms, rel=InteractionVerbs.OBSERVE_PROPERTY)
+
+        if href_read is None or href_obsv is None:
+            raise FormNotFoundException()
+
+        parsed_href_read = self._parse_href(href_read)
+        parsed_href_obsv = self._parse_href(href_obsv)
+
+        client_read = hbmqtt.client.MQTTClient()
+        client_obsv = hbmqtt.client.MQTTClient()
+
+        try:
+            yield client_read.connect(parsed_href_read["broker_url"])
+            yield client_obsv.connect(parsed_href_obsv["broker_url"])
+
+            yield client_obsv.subscribe([(parsed_href_obsv["topic"], QOS_0)])
+
+            read_payload = json.dumps({"action": "read"}).encode()
+            yield client_read.publish(parsed_href_read["topic"], read_payload, qos=QOS_0)
+
+            msg = yield client_obsv.deliver_message()
+            msg_data = json.loads(msg.data.decode())
+
+            raise tornado.gen.Return(msg_data.get("value"))
+        finally:
+            yield client_read.disconnect()
+            yield client_obsv.disconnect()
 
     def on_property_change(self, td, name):
         """Subscribes to property changes on a remote Thing.
