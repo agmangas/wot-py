@@ -22,7 +22,7 @@ from wotpy.protocols.exceptions import FormNotFoundException
 from wotpy.protocols.mqtt.enums import MQTTSchemes
 from wotpy.protocols.mqtt.handlers.action import ActionMQTTHandler
 from wotpy.protocols.utils import is_scheme_form
-from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent
+from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent, EmittedEvent
 
 
 class MQTTClient(BaseProtocolClient):
@@ -304,7 +304,31 @@ class MQTTClient(BaseProtocolClient):
         """Subscribes to an event on a remote Thing.
         Returns an Observable."""
 
-        raise NotImplementedError
+        forms = td.get_event_forms(name)
+        href = self._pick_mqtt_href(td, forms, rel=InteractionVerbs.SUBSCRIBE_EVENT)
+
+        if href is None:
+            raise FormNotFoundException()
+
+        parsed_href = self._parse_href(href)
+
+        broker_url = parsed_href["broker_url"]
+        topic = parsed_href["topic"]
+
+        def next_item_builder(msg):
+            try:
+                msg_data = json.loads(msg.data.decode())
+                return EmittedEvent(init=msg_data.get("data"), name=name)
+            except (TypeError, ValueError, json.decoder.JSONDecodeError):
+                return None
+
+        subscribe = self._build_subscribe(
+            broker_url=broker_url,
+            topic=topic,
+            next_item_builder=next_item_builder)
+
+        # noinspection PyUnresolvedReferences
+        return Observable.create(subscribe)
 
     def on_td_change(self, url):
         """Subscribes to Thing Description changes on a remote Thing.

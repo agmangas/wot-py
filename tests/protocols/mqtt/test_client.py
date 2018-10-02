@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import uuid
+
 import pytest
 import six
 import tornado.concurrent
@@ -110,7 +112,6 @@ def test_invoke_action_error(mqtt_servient):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_on_property_change(mqtt_servient):
     """Property updates may be observed using the MQTT binding client."""
 
@@ -146,6 +147,44 @@ def test_on_property_change(mqtt_servient):
         periodic_emit.start()
 
         yield list(values_observed.values())
+
+        periodic_emit.stop()
+        subscription.dispose()
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_on_event(mqtt_servient):
+    """Event emissions may be observed using the MQTT binding client."""
+
+    exposed_thing = next(mqtt_servient.exposed_things)
+    td = ThingDescription.from_thing(exposed_thing.thing)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        coap_client = MQTTClient()
+        event_name = next(six.iterkeys(td.events))
+
+        payloads = [uuid.uuid4().hex for _ in range(10)]
+        future_payloads = {key: tornado.concurrent.Future() for key in payloads}
+
+        @tornado.gen.coroutine
+        def emit_next():
+            next_value = next(val for val, fut in six.iteritems(future_payloads) if not fut.done())
+            exposed_thing.events[event_name].emit(next_value)
+
+        def on_next(ev):
+            if ev.data in future_payloads and not future_payloads[ev.data].done():
+                future_payloads[ev.data].set_result(True)
+
+        observable = coap_client.on_event(td, event_name)
+
+        subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
+
+        periodic_emit = tornado.ioloop.PeriodicCallback(emit_next, 10)
+        periodic_emit.start()
+
+        yield list(future_payloads.values())
 
         periodic_emit.stop()
         subscription.dispose()
