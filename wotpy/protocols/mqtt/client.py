@@ -199,20 +199,9 @@ class MQTTClient(BaseProtocolClient):
             except AttributeError:
                 pass
 
-    def on_property_change(self, td, name):
-        """Subscribes to property changes on a remote Thing.
-        Returns an Observable"""
-
-        forms = td.get_property_forms(name)
-        href = self._pick_mqtt_href(td, forms, rel=InteractionVerbs.OBSERVE_PROPERTY)
-
-        if href is None:
-            raise FormNotFoundException()
-
-        parsed_href = self._parse_href(href)
-
-        broker_url = parsed_href["broker_url"]
-        topic = parsed_href["topic"]
+    def _build_subscribe(self, broker_url, topic, next_item_builder):
+        """Builds the subscribe function that should be passed when
+        constructing an Observable to listen for messages on an MQTT topic."""
 
         def subscribe(observer):
             """Subscriber function that listens for MQTT messages
@@ -231,11 +220,9 @@ class MQTTClient(BaseProtocolClient):
                     observer.on_error(fut.exception())
                     return
                 elif fut is not None and fut.exception() is None:
-                    msg = fut.result()
-                    msg_data = json.loads(msg.data.decode())
-                    msg_value = msg_data.get("value")
-                    init = PropertyChangeEventInit(name=name, value=msg_value)
-                    observer.on_next(PropertyChangeEmittedEvent(init=init))
+                    next_item = next_item_builder(fut.result())
+                    if next_item is not None:
+                        observer.on_next(next_item)
 
                 if not state["active"]:
                     return
@@ -278,6 +265,37 @@ class MQTTClient(BaseProtocolClient):
                 state["active"] = False
 
             return unsubscribe
+
+        return subscribe
+
+    def on_property_change(self, td, name):
+        """Subscribes to property changes on a remote Thing.
+        Returns an Observable"""
+
+        forms = td.get_property_forms(name)
+        href = self._pick_mqtt_href(td, forms, rel=InteractionVerbs.OBSERVE_PROPERTY)
+
+        if href is None:
+            raise FormNotFoundException()
+
+        parsed_href = self._parse_href(href)
+
+        broker_url = parsed_href["broker_url"]
+        topic = parsed_href["topic"]
+
+        def next_item_builder(msg):
+            try:
+                msg_data = json.loads(msg.data.decode())
+                msg_value = msg_data.get("value")
+                init = PropertyChangeEventInit(name=name, value=msg_value)
+                return PropertyChangeEmittedEvent(init=init)
+            except (TypeError, ValueError, json.decoder.JSONDecodeError):
+                return None
+
+        subscribe = self._build_subscribe(
+            broker_url=broker_url,
+            topic=topic,
+            next_item_builder=next_item_builder)
 
         # noinspection PyUnresolvedReferences
         return Observable.create(subscribe)
