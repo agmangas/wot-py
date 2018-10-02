@@ -17,7 +17,9 @@ BROKER_SKIP_REASON = "The test MQTT broker is offline"
 def get_test_broker_url():
     """Returns the MQTT broker URL defined in the environment."""
 
-    return os.environ.get(ENV_BROKER_URL, None)
+    broker_url = os.environ.get(ENV_BROKER_URL, None)
+    assert broker_url, "Attempted to read the test MQTT broker URL env var but it was empty"
+    return broker_url
 
 
 def is_test_broker_online():
