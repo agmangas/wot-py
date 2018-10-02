@@ -14,6 +14,7 @@ from faker import Faker
 from rx.concurrency import IOLoopScheduler
 from tornado.concurrent import Future
 
+from tests.protocols.utils import client_test_on_property_change
 from wotpy.protocols.http.client import HTTPClient
 from wotpy.td.description import ThingDescription
 
@@ -136,38 +137,4 @@ def test_on_event(http_servient):
 def test_on_property_change(http_servient):
     """The HTTP client can subscribe to property updates."""
 
-    exposed_thing = next(http_servient.exposed_things)
-    td = ThingDescription.from_thing(exposed_thing.thing)
-
-    @tornado.gen.coroutine
-    def test_coroutine():
-        http_client = HTTPClient()
-
-        property_name = next(six.iterkeys(td.properties))
-
-        observable = http_client.on_property_change(td, property_name)
-
-        values = [Faker().sentence() for _ in range(10)]
-        future_values = {value: Future() for value in values}
-
-        @tornado.gen.coroutine
-        def write_next_value():
-            next_value = next(val for val, fut in six.iteritems(future_values) if not fut.done())
-            yield exposed_thing.properties[property_name].write(next_value)
-
-        def on_next(ev):
-            prop_value = ev.data.value
-            if prop_value in future_values and not future_values[prop_value].done():
-                future_values[prop_value].set_result(True)
-
-        subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
-
-        periodic_emit = tornado.ioloop.PeriodicCallback(write_next_value, 10)
-        periodic_emit.start()
-
-        yield list(future_values.values())
-
-        periodic_emit.stop()
-        subscription.dispose()
-
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    client_test_on_property_change(http_servient, HTTPClient)
