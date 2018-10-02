@@ -33,8 +33,10 @@ class ActionMQTTHandler(BaseMQTTHandler):
     def to_result_topic(cls, invocation_topic):
         """Takes an Action invocation MQTT topic and returns the related result topic."""
 
+        invocation_topic = invocation_topic.lstrip("/")
         splitted_topic = invocation_topic.split("/")
         splitted_topic[1] = "result"
+
         return "/".join(splitted_topic)
 
     @classmethod
