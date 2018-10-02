@@ -144,8 +144,6 @@ def test_property_write(mqtt_server):
     topic_write = build_topic(mqtt_server, prop, InteractionVerbs.WRITE_PROPERTY)
     topic_observe = build_topic(mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY)
 
-    observe_timeout_secs = 1.0
-
     @tornado.gen.coroutine
     def test_coroutine():
         updated_value = Faker().sentence()
