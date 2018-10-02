@@ -82,7 +82,11 @@ def http_servient():
     servient = Servient()
     servient.add_server(http_server)
 
-    wot = servient.start()
+    @tornado.gen.coroutine
+    def start():
+        raise tornado.gen.Return((yield servient.start()))
+
+    wot = tornado.ioloop.IOLoop.current().run_sync(start)
 
     property_name_01 = uuid.uuid4().hex
     property_name_02 = uuid.uuid4().hex
@@ -133,4 +137,10 @@ def http_servient():
 
     exposed_thing.set_action_handler(action_name_01, action_handler)
 
-    return servient
+    yield servient
+
+    @tornado.gen.coroutine
+    def shutdown():
+        yield servient.shutdown()
+
+    tornado.ioloop.IOLoop.current().run_sync(shutdown)

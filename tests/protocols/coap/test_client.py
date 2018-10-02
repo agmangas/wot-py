@@ -147,8 +147,7 @@ def test_on_observe_error(coap_servient):
         coap_client = CoAPClient()
         property_name = next(six.iterkeys(td.properties))
 
-        coap_servient.shutdown()
-        yield tornado.gen.sleep(0)
+        yield coap_servient.shutdown()
 
         future_err = tornado.concurrent.Future()
 

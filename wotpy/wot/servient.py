@@ -328,38 +328,18 @@ class Servient(object):
 
         self._catalogue_port = None
 
+    @tornado.gen.coroutine
     def start(self):
         """Starts the servers and returns an instance of the WoT object."""
 
-        @tornado.gen.coroutine
-        def start_servers():
-            yield [server.start() for server in six.itervalues(self._servers)]
-
-        def start_servers_cb(fut):
-            if fut.exception():
-                tornado.ioloop.IOLoop.current().stop()
-                raise fut.exception()
-
-        start_servers_future = start_servers()
-        tornado.ioloop.IOLoop.current().add_future(start_servers_future, start_servers_cb)
-
+        yield [server.start() for server in six.itervalues(self._servers)]
         self._start_catalogue()
 
-        return WoT(servient=self)
+        raise tornado.gen.Return(WoT(servient=self))
 
+    @tornado.gen.coroutine
     def shutdown(self):
         """Stops the server configured under this servient."""
 
-        @tornado.gen.coroutine
-        def stop_servers():
-            yield [server.stop() for server in six.itervalues(self._servers)]
-
-        def stop_servers_cb(fut):
-            if fut.exception():
-                tornado.ioloop.IOLoop.current().stop()
-                raise fut.exception()
-
-        stop_servers_future = stop_servers()
-        tornado.ioloop.IOLoop.current().add_future(stop_servers_future, stop_servers_cb)
-
+        yield [server.stop() for server in six.itervalues(self._servers)]
         self._stop_catalogue()

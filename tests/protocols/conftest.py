@@ -5,6 +5,8 @@ import random
 import uuid
 
 import pytest
+import tornado.gen
+import tornado.ioloop
 
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.support import is_coap_supported
@@ -39,7 +41,11 @@ def all_protocols_servient():
         coap_server = CoAPServer(port=coap_port)
         servient.add_server(coap_server)
 
-    wot = servient.start()
+    @tornado.gen.coroutine
+    def start():
+        raise tornado.gen.Return((yield servient.start()))
+
+    wot = tornado.ioloop.IOLoop.current().run_sync(start)
 
     td_dict = {
         "id": uuid.uuid4().urn,
@@ -58,4 +64,10 @@ def all_protocols_servient():
     exposed_thing = wot.produce(td.to_str())
     exposed_thing.expose()
 
-    return servient
+    yield servient
+
+    @tornado.gen.coroutine
+    def shutdown():
+        yield servient.shutdown()
+
+    tornado.ioloop.IOLoop.current().run_sync(shutdown)

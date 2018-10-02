@@ -30,7 +30,11 @@ def test_servient_td_catalogue():
     servient = Servient()
     servient.enable_td_catalogue(port=catalogue_port)
 
-    wot = servient.start()
+    @tornado.gen.coroutine
+    def start():
+        raise tornado.gen.Return((yield servient.start()))
+
+    wot = tornado.ioloop.IOLoop.current().run_sync(start)
 
     td_doc_01 = {
         "id": uuid.uuid4().urn,
@@ -90,6 +94,8 @@ def test_servient_td_catalogue():
         assert td_doc_02["id"] in expanded_map
         assert len(expanded_map[td_doc_01["id"]]["properties"]) == num_props
 
+        yield servient.shutdown()
+
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
@@ -105,7 +111,11 @@ def test_servient_start_stop():
     servient = Servient()
     servient.add_server(ws_server)
 
-    wot = servient.start()
+    @tornado.gen.coroutine
+    def start():
+        raise tornado.gen.Return((yield servient.start()))
+
+    wot = tornado.ioloop.IOLoop.current().run_sync(start)
 
     thing_id = uuid.uuid4().urn
     name_prop_string = fake.user_name()
@@ -172,7 +182,7 @@ def test_servient_start_stop():
         with pytest.raises(Exception):
             exposed_thing.expose()
 
-        servient.shutdown()
+        yield servient.shutdown()
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
@@ -203,10 +213,21 @@ def test_duplicated_thing_names():
     description_03_str = json.dumps(description_03)
 
     servient = Servient()
-    wot = servient.start()
+
+    @tornado.gen.coroutine
+    def start():
+        raise tornado.gen.Return((yield servient.start()))
+
+    wot = tornado.ioloop.IOLoop.current().run_sync(start)
 
     wot.produce(description_01_str)
     wot.produce(description_02_str)
 
     with pytest.raises(ValueError):
         wot.produce(description_03_str)
+
+    @tornado.gen.coroutine
+    def shutdown():
+        yield servient.shutdown()
+
+    tornado.ioloop.IOLoop.current().run_sync(shutdown)
