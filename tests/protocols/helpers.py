@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import random
 import uuid
 
 import six
@@ -11,7 +12,7 @@ from faker import Faker
 from rx.concurrency import IOLoopScheduler
 
 from wotpy.td.description import ThingDescription
-from wotpy.wot.dictionaries.interaction import PropertyFragment, EventFragment
+from wotpy.wot.dictionaries.interaction import PropertyFragment, EventFragment, ActionFragment
 
 
 def client_test_on_property_change(servient, protocol_client_cls):
@@ -174,5 +175,127 @@ def client_test_write_property(servient, protocol_client_cls):
 
         curr_value = yield exposed_thing.properties[prop_name].read()
         assert curr_value == prop_value
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def client_test_invoke_action(servient, protocol_client_cls):
+    """Helper function to test Action invocations on bindings clients."""
+
+    exposed_thing = next(servient.exposed_things)
+
+    action_name = uuid.uuid4().hex
+
+    @tornado.gen.coroutine
+    def action_handler(parameters):
+        input_value = parameters.get("input")
+        yield tornado.gen.sleep(random.random() * 0.1)
+        raise tornado.gen.Return("{:f}".format(input_value))
+
+    exposed_thing.add_action(action_name, ActionFragment({
+        "input": {"type": "number"},
+        "output": {"type": "string"}
+    }), action_handler)
+
+    servient.refresh_forms()
+
+    td = ThingDescription.from_thing(exposed_thing.thing)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        protocol_client = protocol_client_cls()
+
+        input_value = Faker().pyint()
+
+        result = yield protocol_client.invoke_action(td, action_name, input_value)
+        result_expected = yield action_handler({"input": input_value})
+
+        assert result == result_expected
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def client_test_invoke_action_error(servient, protocol_client_cls):
+    """Helper function to test Action invocations that raise errors on bindings clients."""
+
+    exposed_thing = next(servient.exposed_things)
+
+    action_name = uuid.uuid4().hex
+
+    err_message = Faker().sentence()
+
+    # noinspection PyUnusedLocal
+    def action_handler(parameters):
+        raise ValueError(err_message)
+
+    exposed_thing.add_action(action_name, ActionFragment({
+        "input": {"type": "number"},
+        "output": {"type": "string"}
+    }), action_handler)
+
+    servient.refresh_forms()
+
+    td = ThingDescription.from_thing(exposed_thing.thing)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        protocol_client = protocol_client_cls()
+
+        try:
+            yield protocol_client.invoke_action(td, action_name, Faker().pyint())
+            raise AssertionError("Did not raise Exception")
+        except Exception as ex:
+            assert err_message in str(ex)
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def client_test_on_property_change_error(servient, protocol_client_cls):
+    """Helper function to test propagation of errors raised
+    during observation of Property updates on bindings clients."""
+
+    exposed_thing = next(servient.exposed_things)
+
+    prop_name = uuid.uuid4().hex
+
+    exposed_thing.add_property(prop_name, PropertyFragment({
+        "type": "string",
+        "writable": True,
+        "observable": True
+    }), value=Faker().sentence())
+
+    servient.refresh_forms()
+
+    td = ThingDescription.from_thing(exposed_thing.thing)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        protocol_client = protocol_client_cls()
+
+        yield servient.shutdown()
+
+        future_err = tornado.concurrent.Future()
+
+        # noinspection PyUnusedLocal
+        def on_next(item):
+            future_err.set_exception(Exception("Should not have emitted any items"))
+
+        def on_error(err):
+            future_err.set_result(err)
+
+        observable = protocol_client.on_property_change(td, prop_name)
+
+        subscribe_kwargs = {
+            "on_next": on_next,
+            "on_error": on_error
+        }
+
+        subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(**subscribe_kwargs)
+
+        observe_err = yield future_err
+
+        assert isinstance(observe_err, Exception)
+
+        subscription.dispose()
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)

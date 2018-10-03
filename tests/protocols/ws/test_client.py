@@ -16,7 +16,10 @@ from tornado.concurrent import Future
 from tests.protocols.helpers import \
     client_test_on_event, \
     client_test_read_property, \
-    client_test_write_property
+    client_test_write_property, \
+    client_test_invoke_action, \
+    client_test_invoke_action_error, \
+    client_test_on_property_change_error
 from wotpy.protocols.exceptions import ProtocolClientException
 from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.td.description import ThingDescription
@@ -58,23 +61,14 @@ def test_write_property(websocket_servient):
 def test_invoke_action(websocket_servient):
     """The Websockets client can invoke actions."""
 
-    exposed_thing = next(websocket_servient.exposed_things)
-    td = ThingDescription.from_thing(exposed_thing.thing)
+    client_test_invoke_action(websocket_servient, WebsocketClient)
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        ws_client = WebsocketClient()
 
-        action_name = next(six.iterkeys(td.actions))
+@pytest.mark.flaky(reruns=5)
+def test_invoke_action_error(websocket_servient):
+    """Errors raised by Actions are propagated propertly by the WebSockets binding client."""
 
-        arg_a = uuid.uuid4().hex
-        arg_b = uuid.uuid4().hex
-
-        result = yield ws_client.invoke_action(td, action_name, {"arg_a": arg_a, "arg_b": arg_b})
-
-        assert result == arg_a + arg_b
-
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    client_test_invoke_action_error(websocket_servient, WebsocketClient)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -152,6 +146,14 @@ def test_on_property_change(websocket_servient):
         subscription_02.dispose()
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+@pytest.mark.flaky(reruns=5)
+def test_on_property_change_error(websocket_servient):
+    """Errors that arise in the middle of an ongoing Property
+    observation are propagated to the subscription as expected."""
+
+    client_test_on_property_change_error(websocket_servient, WebsocketClient)
 
 
 @pytest.mark.flaky(reruns=5)
