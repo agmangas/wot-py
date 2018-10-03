@@ -8,7 +8,7 @@ import tornado.ioloop
 from faker import Faker
 
 from wotpy.protocols.http.client import HTTPClient
-from wotpy.protocols.support import is_coap_supported
+from wotpy.protocols.support import is_coap_supported, is_mqtt_supported
 from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.td.description import ThingDescription
 
@@ -29,6 +29,10 @@ def test_all_protocols_combined(all_protocols_servient):
     if is_coap_supported():
         from wotpy.protocols.coap.client import CoAPClient
         clients.append(CoAPClient())
+
+    if is_mqtt_supported():
+        from wotpy.protocols.mqtt.client import MQTTClient
+        clients.append(MQTTClient())
 
     prop_name = next(six.iterkeys(td.properties))
 

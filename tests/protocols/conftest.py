@@ -9,7 +9,7 @@ import tornado.gen
 import tornado.ioloop
 
 from wotpy.protocols.http.server import HTTPServer
-from wotpy.protocols.support import is_coap_supported
+from wotpy.protocols.support import is_coap_supported, is_mqtt_supported
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.td.description import ThingDescription
 from wotpy.wot.servient import Servient
@@ -40,6 +40,12 @@ def all_protocols_servient():
         coap_port = pop_random_port()
         coap_server = CoAPServer(port=coap_port)
         servient.add_server(coap_server)
+
+    if is_mqtt_supported():
+        from wotpy.protocols.mqtt.server import MQTTServer
+        from tests.protocols.mqtt.broker import get_test_broker_url
+        mqtt_server = MQTTServer(broker_url=get_test_broker_url())
+        servient.add_server(mqtt_server)
 
     @tornado.gen.coroutine
     def start():
