@@ -24,6 +24,7 @@ class PropertyMQTTHandler(BaseMQTTHandler):
 
     KEY_ACTION = "action"
     KEY_VALUE = "value"
+    KEY_ACK = "ack"
     ACTION_READ = "read"
     ACTION_WRITE = "write"
     TOPIC_PROPERTY_WILDCARD = "property/requests/#"
@@ -65,6 +66,15 @@ class PropertyMQTTHandler(BaseMQTTHandler):
         """Returns the MQTT topic for Property updates."""
 
         return "property/updates/{}/{}".format(thing.url_name, prop.url_name)
+
+    @classmethod
+    def to_write_ack_topic(cls, requests_topic):
+        """Takes a Property requests topic and returns the related write ACK topic."""
+
+        topic_split = requests_topic.split("/")
+        thing_url_name, prop_url_name = topic_split[-2], topic_split[-1]
+
+        return "property/ack/{}/{}".format(thing_url_name, prop_url_name)
 
     @property
     def topics(self):
@@ -109,10 +119,34 @@ class PropertyMQTTHandler(BaseMQTTHandler):
         if action == self.ACTION_READ:
             value = yield exp_thing.properties[prop.name].read()
             topic = self.build_property_updates_topic(exp_thing.thing, prop)
-            msg = self._build_update_message(topic, value)
-            yield self.queue.put(msg)
+            update_msg = self._build_update_message(topic, value)
+            yield self.queue.put(update_msg)
         elif action == self.ACTION_WRITE and self.KEY_VALUE in parsed_msg:
             yield exp_thing.properties[prop.name].write(parsed_msg[self.KEY_VALUE])
+            yield self.publish_write_ack(msg)
+
+    @tornado.gen.coroutine
+    def publish_write_ack(self, msg):
+        """Takes a Property write request message and publishes the related write ACK message."""
+
+        try:
+            parsed_msg = json.loads(msg.data.decode())
+        except (JSONDecodeError, TypeError):
+            return
+
+        action = parsed_msg.get(self.KEY_ACTION, None)
+        ack_code = parsed_msg.get(self.KEY_ACK, None)
+
+        if not action or not ack_code or action != self.ACTION_WRITE:
+            return
+
+        topic_ack = self.to_write_ack_topic(msg.topic)
+
+        yield self.queue.put({
+            "topic": topic_ack,
+            "data": json.dumps({self.KEY_ACK: ack_code}).encode(),
+            "qos": self._qos_rw
+        })
 
     @tornado.gen.coroutine
     def init(self):
