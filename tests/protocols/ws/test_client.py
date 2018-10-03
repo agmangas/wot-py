@@ -13,8 +13,12 @@ import tornado.websocket
 from rx.concurrency import IOLoopScheduler
 from tornado.concurrent import Future
 
-from wotpy.protocols.ws.client import WebsocketClient
+from tests.protocols.helpers import \
+    client_test_on_event, \
+    client_test_read_property, \
+    client_test_write_property
 from wotpy.protocols.exceptions import ProtocolClientException
+from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.td.description import ThingDescription
 from wotpy.wot.dictionaries.interaction import ActionFragment
 
@@ -23,23 +27,7 @@ from wotpy.wot.dictionaries.interaction import ActionFragment
 def test_read_property(websocket_servient):
     """The Websockets client can read properties."""
 
-    exposed_thing = next(websocket_servient.exposed_things)
-    td = ThingDescription.from_thing(exposed_thing.thing)
-
-    @tornado.gen.coroutine
-    def test_coroutine():
-        ws_client = WebsocketClient()
-
-        prop_name = next(six.iterkeys(td.properties))
-        prop_value = uuid.uuid4().hex
-
-        yield exposed_thing.write_property(prop_name, prop_value)
-
-        result = yield ws_client.read_property(td, prop_name)
-
-        assert result == prop_value
-
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    client_test_read_property(websocket_servient, WebsocketClient)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -63,23 +51,7 @@ def test_read_property_unknown(websocket_servient):
 def test_write_property(websocket_servient):
     """The Websockets client can write properties."""
 
-    exposed_thing = next(websocket_servient.exposed_things)
-    td = ThingDescription.from_thing(exposed_thing.thing)
-
-    @tornado.gen.coroutine
-    def test_coroutine():
-        ws_client = WebsocketClient()
-
-        prop_name = next(six.iterkeys(td.properties))
-        prop_value = uuid.uuid4().hex
-
-        yield ws_client.write_property(td, prop_name, prop_value)
-
-        curr_value = yield exposed_thing.read_property(prop_name)
-
-        assert curr_value == prop_value
-
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    client_test_write_property(websocket_servient, WebsocketClient)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -109,42 +81,7 @@ def test_invoke_action(websocket_servient):
 def test_on_event(websocket_servient):
     """The Websockets client can observe events."""
 
-    exposed_thing = next(websocket_servient.exposed_things)
-    td = ThingDescription.from_thing(exposed_thing.thing)
-
-    @tornado.gen.coroutine
-    def test_coroutine():
-        ws_client = WebsocketClient()
-
-        event_name = next(six.iterkeys(td.events))
-
-        observable = ws_client.on_event(td, event_name)
-
-        payloads = [uuid.uuid4().hex for _ in range(10)]
-        future_payloads = {key: Future() for key in payloads}
-        future_conn = Future()
-
-        def on_next(ev):
-            if not future_conn.done():
-                future_conn.set_result(True)
-
-            if ev.data in future_payloads:
-                future_payloads[ev.data].set_result(True)
-
-        subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
-
-        while not future_conn.done():
-            yield exposed_thing.emit_event(event_name, uuid.uuid4().hex)
-            yield tornado.gen.sleep(0)
-
-        for payload in future_payloads:
-            yield exposed_thing.emit_event(event_name, payload)
-
-        yield list(future_payloads.values())
-
-        subscription.dispose()
-
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    client_test_on_event(websocket_servient, WebsocketClient)
 
 
 @pytest.mark.flaky(reruns=5)
