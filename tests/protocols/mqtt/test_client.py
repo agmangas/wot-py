@@ -11,7 +11,8 @@ from faker import Faker
 from tests.protocols.helpers import \
     client_test_on_property_change, \
     client_test_on_event, \
-    client_test_read_property
+    client_test_read_property, \
+    client_test_write_property
 from tests.protocols.mqtt.broker import is_test_broker_online, BROKER_SKIP_REASON
 from wotpy.protocols.mqtt.client import MQTTClient
 from wotpy.td.description import ThingDescription
@@ -28,27 +29,7 @@ def test_read_property(mqtt_servient):
 def test_write_property(mqtt_servient):
     """Properties may be updated using the MQTT binding client."""
 
-    exposed_thing = next(mqtt_servient.exposed_things)
-    td = ThingDescription.from_thing(exposed_thing.thing)
-
-    @tornado.gen.coroutine
-    def test_coroutine():
-        mqtt_client = MQTTClient()
-        prop_name = next(six.iterkeys(td.properties))
-        prop_value = Faker().sentence()
-
-        prev_value = yield exposed_thing.properties[prop_name].read()
-        assert prev_value != prop_value
-
-        yield mqtt_client.write_property(td, prop_name, prop_value)
-
-        curr_value = None
-
-        while curr_value != prop_value:
-            curr_value = yield exposed_thing.properties[prop_name].read()
-            yield None
-
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    client_test_write_property(mqtt_servient, MQTTClient)
 
 
 def test_invoke_action(mqtt_servient):

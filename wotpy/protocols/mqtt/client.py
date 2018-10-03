@@ -21,6 +21,7 @@ from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.exceptions import FormNotFoundException
 from wotpy.protocols.mqtt.enums import MQTTSchemes
 from wotpy.protocols.mqtt.handlers.action import ActionMQTTHandler
+from wotpy.protocols.mqtt.handlers.property import PropertyMQTTHandler
 from wotpy.protocols.utils import is_scheme_form
 from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent, EmittedEvent
 
@@ -28,10 +29,9 @@ from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent
 class MQTTClient(BaseProtocolClient):
     """Implementation of the protocol client interface for the MQTT protocol."""
 
-    DEFAULT_DELIVER_TIMEOUT_SECS = 0.1
-
-    def __init__(self, deliver_timeout_secs=DEFAULT_DELIVER_TIMEOUT_SECS, qos=QOS_0):
-        self._deliver_timeout_secs = deliver_timeout_secs
+    def __init__(self, sub_deliver_timeout_secs=0.1, wait_on_write=True, qos=QOS_0):
+        self._sub_deliver_timeout_secs = sub_deliver_timeout_secs
+        self._wait_on_write = wait_on_write
         self._qos = qos
 
     @classmethod
@@ -145,15 +145,34 @@ class MQTTClient(BaseProtocolClient):
 
         parsed_href_write = self._parse_href(href_write)
 
-        client_write = hbmqtt.client.MQTTClient()
+        broker_url = parsed_href_write["broker_url"]
+
+        topic_write = parsed_href_write["topic"]
+        topic_ack = PropertyMQTTHandler.to_write_ack_topic(topic_write)
+
+        client = hbmqtt.client.MQTTClient()
 
         try:
-            yield client_write.connect(parsed_href_write["broker_url"])
-            write_payload = json.dumps({"action": "write", "value": value}).encode()
-            yield client_write.publish(parsed_href_write["topic"], write_payload, qos=self._qos)
+            yield client.connect(broker_url)
+            yield client.subscribe([(topic_ack, self._qos)])
+
+            write_data = {
+                "action": "write",
+                "value": value,
+                "ack": uuid.uuid4().hex
+            }
+
+            yield client.publish(topic_write, json.dumps(write_data).encode(), qos=self._qos)
+
+            while self._wait_on_write:
+                msg_ack = yield client.deliver_message()
+                msg_ack_data = json.loads(msg_ack.data.decode())
+
+                if msg_ack_data.get("ack") == write_data.get("ack"):
+                    break
         finally:
             try:
-                yield client_write.disconnect()
+                yield client.disconnect()
             except AttributeError:
                 pass
 
@@ -228,7 +247,7 @@ class MQTTClient(BaseProtocolClient):
                 if not state["active"]:
                     return
 
-                timeout = self._deliver_timeout_secs
+                timeout = self._sub_deliver_timeout_secs
                 fut_msg = tornado.gen.convert_yielded(client.deliver_message(timeout=timeout))
                 tornado.concurrent.future_add_done_callback(fut_msg, on_message)
 
