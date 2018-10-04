@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import random
+import uuid
+
+import pytest
 import six
 import tornado.gen
 import tornado.ioloop
@@ -8,7 +12,12 @@ from faker import Faker
 from rx.concurrency import IOLoopScheduler
 from tornado.concurrent import Future
 
+from wotpy.protocols.http.client import HTTPClient
+from wotpy.protocols.http.server import HTTPServer
+from wotpy.protocols.ws.client import WebsocketClient
+from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.td.description import ThingDescription
+from wotpy.wot.servient import Servient
 
 
 def _test_property_change_events(exposed_thing, subscribe_func):
@@ -337,3 +346,72 @@ def test_thing_interaction_dict_behaviour(consumed_exposed_pair):
     assert prop_name
     assert len(consumed_thing.properties) > 0
     assert prop_name in consumed_thing.properties
+
+
+@pytest.mark.flaky(reruns=5)
+def test_consumed_client_protocols_preference():
+    """The Servient selects different protocol clients to consume Things
+    depending on the protocol choices displayed on the Thing Description."""
+
+    servient = Servient()
+
+    @tornado.gen.coroutine
+    def servient_start():
+        raise tornado.gen.Return((yield servient.start()))
+
+    @tornado.gen.coroutine
+    def servient_shutdown():
+        yield servient.shutdown()
+
+    http_port = random.randint(20000, 40000)
+    http_server = HTTPServer(port=http_port)
+
+    servient.add_server(http_server)
+
+    ws_port = random.randint(20000, 40000)
+    ws_server = WebsocketServer(port=ws_port)
+
+    servient.add_server(ws_server)
+
+    client_server_map = {
+        HTTPClient: http_server,
+        WebsocketClient: ws_server
+    }
+
+    wot = tornado.ioloop.IOLoop.current().run_sync(servient_start)
+
+    prop_name = uuid.uuid4().hex
+
+    td_produce = ThingDescription({
+        "id": uuid.uuid4().urn,
+        "name": uuid.uuid4().hex,
+        "properties": {
+            prop_name: {
+                "writable": True,
+                "observable": True,
+                "type": "string"
+            }
+        }
+    })
+
+    exposed_thing = wot.produce(td_produce.to_str())
+    exposed_thing.expose()
+
+    td_forms_all = ThingDescription.from_thing(exposed_thing.thing)
+
+    client_01 = servient.select_client(td_forms_all, prop_name)
+    client_01_class = client_01.__class__
+
+    assert client_01_class in six.iterkeys(client_server_map)
+
+    tornado.ioloop.IOLoop.current().run_sync(servient_shutdown)
+    servient.remove_server(client_server_map[client_01_class].protocol)
+    tornado.ioloop.IOLoop.current().run_sync(servient_start)
+
+    td_forms_removed = ThingDescription.from_thing(exposed_thing.thing)
+
+    client_02 = servient.select_client(td_forms_removed, prop_name)
+    client_02_class = client_02.__class__
+
+    assert client_02_class != client_01_class
+    assert client_02_class in six.iterkeys(client_server_map)
