@@ -14,6 +14,8 @@ import tornado.ioloop
 import tornado.web
 
 from wotpy.protocols.enums import Protocols
+from wotpy.protocols.http.client import HTTPClient
+from wotpy.protocols.support import is_coap_supported, is_mqtt_supported
 from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.td.description import ThingDescription
 from wotpy.td.enums import InteractionTypes
@@ -91,9 +93,24 @@ class Servient(object):
         a Protocol Binding client for an Interaction."""
 
         protocol_preference_map = {
-            InteractionTypes.PROPERTY: [],
-            InteractionTypes.ACTION: [Protocols.WEBSOCKETS],
-            InteractionTypes.EVENT: [Protocols.WEBSOCKETS]
+            InteractionTypes.PROPERTY: [
+                Protocols.HTTP,
+                Protocols.COAP,
+                Protocols.WEBSOCKETS,
+                Protocols.MQTT
+            ],
+            InteractionTypes.ACTION: [
+                Protocols.WEBSOCKETS,
+                Protocols.MQTT,
+                Protocols.COAP,
+                Protocols.HTTP
+            ],
+            InteractionTypes.EVENT: [
+                Protocols.WEBSOCKETS,
+                Protocols.MQTT,
+                Protocols.COAP,
+                Protocols.HTTP
+            ]
         }
 
         supported_protocols = [
@@ -157,8 +174,17 @@ class Servient(object):
         """Builds the default Protocol Binding clients."""
 
         self._clients.update({
-            Protocols.WEBSOCKETS: WebsocketClient()
+            Protocols.WEBSOCKETS: WebsocketClient(),
+            Protocols.HTTP: HTTPClient()
         })
+
+        if is_coap_supported():
+            from wotpy.protocols.coap.client import CoAPClient
+            self._clients.update({Protocols.COAP: CoAPClient()})
+
+        if is_mqtt_supported():
+            from wotpy.protocols.mqtt.client import MQTTClient
+            self._clients.update({Protocols.MQTT: MQTTClient()})
 
     def _build_td_catalogue_app(self):
         """Returns a Tornado app that provides one endpoint to retrieve the
