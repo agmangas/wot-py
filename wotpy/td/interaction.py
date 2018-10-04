@@ -68,6 +68,11 @@ class InteractionPattern(object):
 
         return self._forms
 
+    def clean_forms(self):
+        """Removes all the Forms from this Interaction."""
+
+        self._forms = []
+
     def add_form(self, form):
         """Add a new Form."""
 
