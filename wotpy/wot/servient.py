@@ -187,6 +187,13 @@ class Servient(object):
         self._catalogue_server.stop()
         self._catalogue_server = None
 
+    def _clean_forms(self):
+        """Cleans all the Forms from all the ExposedThings contained in this Servient."""
+
+        for exposed_thing in self._exposed_thing_group.exposed_things:
+            for interaction in exposed_thing.thing.interactions:
+                interaction.clean_forms()
+
     def _clean_protocol_forms(self, exposed_thing, protocol):
         """Removes all interaction forms linked to this
         server protocol for the given ExposedThing."""
@@ -277,6 +284,8 @@ class Servient(object):
     def refresh_forms(self):
         """Cleans and regenerates Forms for all the
         ExposedThings and servers contained in this servient."""
+
+        self._clean_forms()
 
         for server in self._servers.values():
             self._regenerate_server_forms(server)
