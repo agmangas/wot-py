@@ -5,6 +5,7 @@
 Class that represents a WoT servient.
 """
 
+import functools
 import socket
 
 import six
@@ -63,6 +64,29 @@ class TDCatalogueHandler(tornado.web.RequestHandler):
             response[thing_id] = val
 
         self.write(response)
+
+
+class ServientStateException(Exception):
+    """Exception raised when the user modifies the Servient while
+    the Servient is in an inappropriate state."""
+
+    pass
+
+
+def _stopped_servient_only(func):
+    """Decorator that raises an Exception when attempting
+    to call the function while the Servient is running."""
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        servient = args[0]
+
+        if servient.is_running:
+            raise ServientStateException("Attempted to modify the Servient while it was running")
+
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 class Servient(object):
@@ -297,21 +321,25 @@ class Servient(object):
 
         return Servient._default_select_client(self.clients.values(), td, name)
 
+    @_stopped_servient_only
     def add_client(self, client):
         """Adds a new Protocol Binding client to this servient."""
 
         self._clients[client.protocol] = client
 
+    @_stopped_servient_only
     def remove_client(self, protocol):
         """Removes the Protocol Binding client with the given protocol from this servient."""
 
         self._clients.pop(protocol, None)
 
+    @_stopped_servient_only
     def add_server(self, server):
         """Adds a new Protocol Binding server to this servient."""
 
         self._servers[server.protocol] = server
 
+    @_stopped_servient_only
     def remove_server(self, protocol):
         """Removes the Protocol Binding server with the given protocol from this servient."""
 
@@ -370,11 +398,13 @@ class Servient(object):
 
         return exp_thing
 
+    @_stopped_servient_only
     def enable_td_catalogue(self, port):
         """Enables the servient TD catalogue in the given port."""
 
         self._catalogue_port = port
 
+    @_stopped_servient_only
     def disable_td_catalogue(self):
         """Disables the servient TD catalogue."""
 
