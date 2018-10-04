@@ -15,7 +15,6 @@ import tornado.ioloop
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 
 from wotpy.wot.servient import Servient
-from wotpy.wot.wot import WoT
 
 CATALOGUE_URL = "http://localhost:9292"
 NAME_EVENT_TEMP_HIGH = "high-temperature"
@@ -46,20 +45,18 @@ def fetch_td_url():
 
 
 @tornado.gen.coroutine
-def main_coroutine():
+def main():
     """Consumes the Thing Description document and starts listening for events."""
 
-    wot = WoT(servient=Servient())
+    wot = yield Servient().start()
 
     td_url = yield fetch_td_url()
     consumed_thing = yield wot.consume_from_url(td_url)
 
-    event_observer = consumed_thing.on_event(NAME_EVENT_TEMP_HIGH)
-
     def on_next_event(ev):
         LOGGER.info("Event {} payload: {}".format(NAME_EVENT_TEMP_HIGH, ev.data))
 
-    subscription = event_observer.subscribe(on_next_event)
+    subscription = consumed_thing.events[NAME_EVENT_TEMP_HIGH].subscribe(on_next_event)
 
     LOGGER.info("Listening for event: {}".format(NAME_EVENT_TEMP_HIGH))
 
@@ -69,4 +66,4 @@ def main_coroutine():
 
 
 if __name__ == "__main__":
-    tornado.ioloop.IOLoop.current().run_sync(main_coroutine)
+    tornado.ioloop.IOLoop.current().run_sync(main)
