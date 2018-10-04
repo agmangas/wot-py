@@ -12,6 +12,7 @@ import tornado.concurrent
 import tornado.gen
 import tornado.ioloop
 import tornado.web
+import tornado.locks
 
 from wotpy.protocols.enums import Protocols
 from wotpy.protocols.http.client import HTTPClient
@@ -84,6 +85,8 @@ class Servient(object):
         self._catalogue_port = None
         self._catalogue_server = None
         self._exposed_thing_group = ExposedThingGroup()
+        self._servient_lock = tornado.locks.Lock()
+        self._is_running = False
 
         self._build_default_clients()
 
@@ -138,6 +141,13 @@ class Servient(object):
         protocol = next(proto for proto in protocol_prefs if proto in protocol_choices)
 
         return next(client for client in clients if client.protocol == protocol)
+
+    @property
+    def is_running(self):
+        """Returns True if the Servient is currently running
+        (i.e. the attached servers have been started)."""
+
+        return self._is_running
 
     @property
     def hostname(self):
@@ -374,16 +384,19 @@ class Servient(object):
     def start(self):
         """Starts the servers and returns an instance of the WoT object."""
 
-        self.refresh_forms()
+        with (yield self._servient_lock.acquire()):
+            self.refresh_forms()
+            yield [server.start() for server in six.itervalues(self._servers)]
+            self._start_catalogue()
+            self._is_running = True
 
-        yield [server.start() for server in six.itervalues(self._servers)]
-        self._start_catalogue()
-
-        raise tornado.gen.Return(WoT(servient=self))
+            raise tornado.gen.Return(WoT(servient=self))
 
     @tornado.gen.coroutine
     def shutdown(self):
         """Stops the server configured under this servient."""
 
-        yield [server.stop() for server in six.itervalues(self._servers)]
-        self._stop_catalogue()
+        with (yield self._servient_lock.acquire()):
+            yield [server.stop() for server in six.itervalues(self._servers)]
+            self._stop_catalogue()
+            self._is_running = False
