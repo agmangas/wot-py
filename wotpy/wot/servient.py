@@ -348,6 +348,8 @@ class Servient(object):
     def start(self):
         """Starts the servers and returns an instance of the WoT object."""
 
+        self.refresh_forms()
+
         yield [server.start() for server in six.itervalues(self._servers)]
         self._start_catalogue()
 
