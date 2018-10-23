@@ -14,11 +14,7 @@ Inspired by the exploratory implementations located in the [thingweb GitHub page
 
 > WoTPy uses the [Tornado Framework](https://www.tornadoweb.org) to enable coroutines in Python 2.7. Python 3 applications may use the built-in package `asyncio`.
 
-* Client and server [Protocol Binding](https://github.com/w3c/wot-architecture/blob/master/terminology.md#protocol-binding) implementations:
-    * HTTP.
-    * CoAP.
-    * MQTT.
-    * WebSockets.
+* Client and server [Protocol Binding](https://github.com/w3c/wot-architecture/blob/master/terminology.md#protocol-binding) implementations for HTTP, CoAP, WebSockets and MQTT.
 
 ## ToDo
 
