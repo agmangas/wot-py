@@ -11,8 +11,9 @@ Inspired by the exploratory implementations located in the [thingweb GitHub page
 * Supports Python 2.7, 3.6 and 3.7.
 * Fully-implemented `WoT` interface.
 * Asynchronous I/O programming model based on coroutines.
-    * WoTPy uses the [Tornado Framework](https://www.tornadoweb.org) to enable coroutines in Python 2.7.
-    * Python 3 applications may use the built-in package `asyncio`.
+
+> WoTPy uses the [Tornado Framework](https://www.tornadoweb.org) to enable coroutines in Python 2.7. Python 3 applications may use the built-in package `asyncio`.
+
 * Client and server [Protocol Binding](https://github.com/w3c/wot-architecture/blob/master/terminology.md#protocol-binding) implementations:
     * HTTP.
     * CoAP.
