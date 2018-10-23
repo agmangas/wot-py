@@ -31,8 +31,10 @@ def test_all_protocols_combined(all_protocols_servient):
         clients.append(CoAPClient())
 
     if is_mqtt_supported():
+        from tests.protocols.mqtt.broker import is_test_broker_online
         from wotpy.protocols.mqtt.client import MQTTClient
-        clients.append(MQTTClient())
+        if is_test_broker_online():
+            clients.append(MQTTClient())
 
     prop_name = next(six.iterkeys(td.properties))
 

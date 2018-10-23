@@ -43,9 +43,10 @@ def all_protocols_servient():
 
     if is_mqtt_supported():
         from wotpy.protocols.mqtt.server import MQTTServer
-        from tests.protocols.mqtt.broker import get_test_broker_url
-        mqtt_server = MQTTServer(broker_url=get_test_broker_url())
-        servient.add_server(mqtt_server)
+        from tests.protocols.mqtt.broker import get_test_broker_url, is_test_broker_online
+        if is_test_broker_online():
+            mqtt_server = MQTTServer(broker_url=get_test_broker_url())
+            servient.add_server(mqtt_server)
 
     @tornado.gen.coroutine
     def start():
