@@ -1,4 +1,4 @@
-# W3C WoT Python
+# WoTPy
 
 ## Introduction
 
