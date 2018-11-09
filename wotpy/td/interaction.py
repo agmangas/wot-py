@@ -44,6 +44,12 @@ class InteractionPattern(object):
         raise NotImplementedError()
 
     @property
+    def interaction_fragment(self):
+        """The InteractionFragment dictionary of this interaction."""
+
+        return self._init_dict
+
+    @property
     def thing(self):
         """Thing that contains this Interaction."""
 

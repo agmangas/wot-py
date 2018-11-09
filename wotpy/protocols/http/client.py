@@ -28,12 +28,12 @@ class HTTPClient(BaseProtocolClient):
     JSON_HEADERS = {"Content-Type": "application/json"}
 
     @classmethod
-    def pick_http_href(cls, td, forms, rel=None):
+    def pick_http_href(cls, td, forms, op=None):
         """Picks the most appropriate HTTP form href from the given list of forms."""
 
-        def is_rel_form(form):
+        def is_op_form(form):
             try:
-                return rel is None or rel == form.rel or rel in form.rel
+                return op is None or op == form.op or op in form.op
             except TypeError:
                 return False
 
@@ -41,7 +41,7 @@ class HTTPClient(BaseProtocolClient):
             try:
                 return next(
                     form.href for form in forms
-                    if is_scheme_form(form, td.base, scheme) and is_rel_form(form))
+                    if is_scheme_form(form, td.base, scheme) and is_op_form(form))
             except StopIteration:
                 return None
 
@@ -187,7 +187,7 @@ class HTTPClient(BaseProtocolClient):
         """Subscribes to property changes on a remote Thing.
         Returns an Observable"""
 
-        href = self.pick_http_href(td, td.get_property_forms(name), rel=InteractionVerbs.OBSERVE_PROPERTY)
+        href = self.pick_http_href(td, td.get_property_forms(name), op=InteractionVerbs.OBSERVE_PROPERTY)
 
         if href is None:
             raise FormNotFoundException()

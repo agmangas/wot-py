@@ -7,72 +7,55 @@ Wrapper classes for link dictionaries defined in the Scripting API.
 
 from six.moves import urllib
 
+from wotpy.wot.dictionaries.base import WotBaseDict
 from wotpy.wot.dictionaries.security import SecuritySchemeDict
-from wotpy.wot.dictionaries.utils import build_init_dict
 
 
-class LinkDict(object):
-    """A link to an external resource that may be related to the Thing in any way."""
+class LinkDict(WotBaseDict):
+    """A Web link, as specified by IETF RFC 8288."""
 
-    def __init__(self, *args, **kwargs):
-        self._init = build_init_dict(args, kwargs)
+    class Meta:
+        fields = {
+            "href",
+            "type",
+            "rel",
+            "anchor"
+        }
 
-        if self.href is None:
-            raise ValueError("Property 'href' is required")
-
-    def to_dict(self):
-        """The internal dictionary that contains the entire set of properties."""
-
-        return self._init
-
-    @property
-    def href(self):
-        """The href property is a hypertext reference that defines the Link."""
-
-        return self._init.get("href")
-
-    @property
-    def media_type(self):
-        """The mediaType property represents the IANA media type associated with the Link."""
-
-        return self._init.get("mediaType", self._init.get("media_type"))
-
-    @property
-    def rel(self):
-        """The rel property represents a semantic label that
-        specifies how to interact with the linked resource."""
-
-        return self._init.get("rel")
-
-
-class WebLinkDict(LinkDict):
-    """A Link from a Thing to a resource that exists on the Web."""
-
-    def __init__(self, *args, **kwargs):
-        super(WebLinkDict, self).__init__(*args, **kwargs)
-
-    @property
-    def anchor(self):
-        """The anchor property represents a URI that
-        overrides the default context of a Link."""
-
-        return self._init.get("anchor")
+        required = {
+            "href"
+        }
 
 
 class FormDict(LinkDict):
-    """A dictionary that describes a connection endpoint for an interaction."""
+    """Communication metadata indicating where a service can be accessed
+    by a client application. An interaction might have more than one form."""
 
-    def __init__(self, *args, **kwargs):
-        super(FormDict, self).__init__(*args, **kwargs)
+    class Meta:
+        fields = LinkDict.Meta.fields.union({
+            "href",
+            "contentType",
+            "op",
+            "subprotocol",
+            "security",
+            "scopes"
+        })
+
+        required = LinkDict.Meta.required.union({
+            "href"
+        })
+
+        defaults = {
+            "contentType": "application/json"
+        }
 
     @property
     def security(self):
-        """The security property represents the security
-        requirements for the linked resource."""
+        """Set of security configurations, provided as an array,
+        that must all be satisfied for access to resources at or
+        below the current level, if not overridden at a lower level"""
 
-        val = self._init.get("security")
-
-        return SecuritySchemeDict.build(val) if val is not None else None
+        return [SecuritySchemeDict.build(item) for item in self._init.get("security", [])]
 
     def resolve_uri(self, base=None):
         """Resolves and returns the Link URI.

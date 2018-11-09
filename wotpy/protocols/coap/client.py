@@ -26,12 +26,12 @@ class CoAPClient(BaseProtocolClient):
     """Implementation of the protocol client interface for the CoAP protocol."""
 
     @classmethod
-    def _pick_coap_href(cls, td, forms, rel=None):
+    def _pick_coap_href(cls, td, forms, op=None):
         """Picks the most appropriate CoAP form href from the given list of forms."""
 
-        def is_rel_form(form):
+        def is_op_form(form):
             try:
-                return rel is None or rel == form.rel or rel in form.rel
+                return op is None or op == form.op or op in form.op
             except TypeError:
                 return False
 
@@ -39,7 +39,7 @@ class CoAPClient(BaseProtocolClient):
             try:
                 return next(
                     form.href for form in forms
-                    if is_scheme_form(form, td.base, scheme) and is_rel_form(form))
+                    if is_scheme_form(form, td.base, scheme) and is_op_form(form))
             except StopIteration:
                 return None
 
@@ -135,7 +135,9 @@ class CoAPClient(BaseProtocolClient):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
 
-        href = self._pick_coap_href(td, td.get_action_forms(name))
+        href = self._pick_coap_href(
+            td, td.get_action_forms(name),
+            op=InteractionVerbs.INVOKE_ACTION)
 
         if href is None:
             raise FormNotFoundException()
@@ -168,7 +170,9 @@ class CoAPClient(BaseProtocolClient):
         """Updates the value of a Property on a remote Thing.
         Returns a Future."""
 
-        href = self._pick_coap_href(td, td.get_property_forms(name))
+        href = self._pick_coap_href(
+            td, td.get_property_forms(name),
+            op=InteractionVerbs.WRITE_PROPERTY)
 
         if href is None:
             raise FormNotFoundException()
@@ -186,7 +190,9 @@ class CoAPClient(BaseProtocolClient):
         """Reads the value of a Property on a remote Thing.
         Returns a Future."""
 
-        href = self._pick_coap_href(td, td.get_property_forms(name))
+        href = self._pick_coap_href(
+            td, td.get_property_forms(name),
+            op=InteractionVerbs.READ_PROPERTY)
 
         if href is None:
             raise FormNotFoundException()
@@ -202,7 +208,9 @@ class CoAPClient(BaseProtocolClient):
         """Subscribes to property changes on a remote Thing.
         Returns an Observable"""
 
-        href = self._pick_coap_href(td, td.get_property_forms(name), rel=InteractionVerbs.OBSERVE_PROPERTY)
+        href = self._pick_coap_href(
+            td, td.get_property_forms(name),
+            op=InteractionVerbs.OBSERVE_PROPERTY)
 
         if href is None:
             raise FormNotFoundException()
@@ -221,7 +229,9 @@ class CoAPClient(BaseProtocolClient):
         """Subscribes to an event on a remote Thing.
         Returns an Observable."""
 
-        href = self._pick_coap_href(td, td.get_event_forms(name))
+        href = self._pick_coap_href(
+            td, td.get_event_forms(name),
+            op=InteractionVerbs.SUBSCRIBE_EVENT)
 
         if href is None:
             raise FormNotFoundException()

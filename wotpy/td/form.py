@@ -24,6 +24,12 @@ class Form(object):
         return getattr(self._form_dict, name)
 
     @property
+    def form_dict(self):
+        """The Form dictionary of this Form."""
+
+        return self._form_dict
+
+    @property
     def interaction(self):
         """Interaction that contains this Form."""
 
@@ -42,22 +48,9 @@ class Form(object):
         No two Forms with the same ID may exist within the same Interaction.
         The ID of a Form could change during its lifetime if some attributes are updated."""
 
-        try:
-            hash(self.rel)
-            rel_hashable = self.rel
-        except TypeError:
-            rel_hashable = tuple(sorted(self.rel))
-
         return hash((
             self.protocol,
             self.href,
-            self.media_type,
-            rel_hashable
+            self.content_type,
+            self.op
         ))
-
-    @property
-    def security(self):
-        """Returns a SecurityScheme object that represents
-        the security strategy implemented on this Form."""
-
-        return None

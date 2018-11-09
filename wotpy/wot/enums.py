@@ -18,7 +18,7 @@ class DiscoveryMethod(EnumListMixin):
 
 
 class JSONType(EnumListMixin):
-    """Enumeration of the types that values can take"""
+    """Enumeration of the types that values can take."""
 
     BOOLEAN = "boolean"
     NUMBER = "number"
@@ -69,10 +69,14 @@ class DataType(EnumListMixin):
 class SecuritySchemeType(EnumListMixin):
     """Defines the supported security schemes."""
 
+    NOSEC = "nosec"
     BASIC = "basic"
+    CERT = "cert"
     DIGEST = "digest"
     BEARER = "bearer"
     POP = "pop"
+    PSK = "psk"
+    PUBLIC = "public"
     OAUTH2 = "oauth2"
     APIKEY = "apikey"
 

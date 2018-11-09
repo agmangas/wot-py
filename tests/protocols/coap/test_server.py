@@ -23,7 +23,7 @@ def _get_property_href(exp_thing, prop_name, server):
 
     prop = exp_thing.thing.properties[prop_name]
     prop_forms = server.build_forms("127.0.0.1", prop)
-    return next(item.href for item in prop_forms if InteractionVerbs.READ_PROPERTY in item.rel)
+    return next(item.href for item in prop_forms if InteractionVerbs.READ_PROPERTY == item.op)
 
 
 def _get_property_observe_href(exp_thing, prop_name, server):
@@ -31,7 +31,7 @@ def _get_property_observe_href(exp_thing, prop_name, server):
 
     prop = exp_thing.thing.properties[prop_name]
     prop_forms = server.build_forms("127.0.0.1", prop)
-    return next(item.href for item in prop_forms if InteractionVerbs.OBSERVE_PROPERTY in item.rel)
+    return next(item.href for item in prop_forms if InteractionVerbs.OBSERVE_PROPERTY == item.op)
 
 
 def _get_action_href(exp_thing, action_name, server):
@@ -39,7 +39,7 @@ def _get_action_href(exp_thing, action_name, server):
 
     action = exp_thing.thing.actions[action_name]
     action_forms = server.build_forms("127.0.0.1", action)
-    return next(item.href for item in action_forms if InteractionVerbs.INVOKE_ACTION in item.rel)
+    return next(item.href for item in action_forms if InteractionVerbs.INVOKE_ACTION == item.op)
 
 
 def _get_event_href(exp_thing, event_name, server):
@@ -47,7 +47,7 @@ def _get_event_href(exp_thing, event_name, server):
 
     event = exp_thing.thing.events[event_name]
     event_forms = server.build_forms("127.0.0.1", event)
-    return next(item.href for item in event_forms if InteractionVerbs.SUBSCRIBE_EVENT in item.rel)
+    return next(item.href for item in event_forms if InteractionVerbs.SUBSCRIBE_EVENT == item.op)
 
 
 @tornado.gen.coroutine

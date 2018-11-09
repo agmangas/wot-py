@@ -140,12 +140,12 @@ def test_duplicated_forms():
     mtype_01 = "application/json"
     mtype_02 = "text/html"
 
-    form_01 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_01, media_type=mtype_01)
-    form_02 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_01, media_type=mtype_01)
-    form_03 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_01, media_type=mtype_02)
-    form_04 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_02, media_type=mtype_01)
-    form_05 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_02, media_type=mtype_02)
-    form_06 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_02, media_type=mtype_02)
+    form_01 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_01, content_type=mtype_01)
+    form_02 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_01, content_type=mtype_01)
+    form_03 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_01, content_type=mtype_02)
+    form_04 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_02, content_type=mtype_01)
+    form_05 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_02, content_type=mtype_02)
+    form_06 = Form(interaction=interaction, protocol=Protocols.HTTP, href=href_02, content_type=mtype_02)
 
     interaction.add_form(form_01)
 

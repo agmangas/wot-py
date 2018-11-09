@@ -35,18 +35,18 @@ class MQTTClient(BaseProtocolClient):
         self._qos = qos
 
     @classmethod
-    def _pick_mqtt_href(cls, td, forms, rel=None):
+    def _pick_mqtt_href(cls, td, forms, op=None):
         """Picks the most appropriate MQTT form href from the given list of forms."""
 
-        def is_rel_form(form):
+        def is_op_form(form):
             try:
-                return rel is None or rel == form.rel or rel in form.rel
+                return op is None or op == form.op or op in form.op
             except TypeError:
                 return False
 
         return next((
             form.href for form in forms
-            if is_scheme_form(form, td.base, MQTTSchemes.MQTT) and is_rel_form(form)
+            if is_scheme_form(form, td.base, MQTTSchemes.MQTT) and is_op_form(form)
         ), None)
 
     @classmethod
@@ -138,7 +138,7 @@ class MQTTClient(BaseProtocolClient):
 
         forms = td.get_property_forms(name)
 
-        href_write = self._pick_mqtt_href(td, forms, rel=InteractionVerbs.WRITE_PROPERTY)
+        href_write = self._pick_mqtt_href(td, forms, op=InteractionVerbs.WRITE_PROPERTY)
 
         if href_write is None:
             raise FormNotFoundException()
@@ -183,8 +183,8 @@ class MQTTClient(BaseProtocolClient):
 
         forms = td.get_property_forms(name)
 
-        href_read = self._pick_mqtt_href(td, forms, rel=InteractionVerbs.READ_PROPERTY)
-        href_obsv = self._pick_mqtt_href(td, forms, rel=InteractionVerbs.OBSERVE_PROPERTY)
+        href_read = self._pick_mqtt_href(td, forms, op=InteractionVerbs.READ_PROPERTY)
+        href_obsv = self._pick_mqtt_href(td, forms, op=InteractionVerbs.OBSERVE_PROPERTY)
 
         if href_read is None or href_obsv is None:
             raise FormNotFoundException()
@@ -293,7 +293,7 @@ class MQTTClient(BaseProtocolClient):
         Returns an Observable"""
 
         forms = td.get_property_forms(name)
-        href = self._pick_mqtt_href(td, forms, rel=InteractionVerbs.OBSERVE_PROPERTY)
+        href = self._pick_mqtt_href(td, forms, op=InteractionVerbs.OBSERVE_PROPERTY)
 
         if href is None:
             raise FormNotFoundException()
@@ -325,7 +325,7 @@ class MQTTClient(BaseProtocolClient):
         Returns an Observable."""
 
         forms = td.get_event_forms(name)
-        href = self._pick_mqtt_href(td, forms, rel=InteractionVerbs.SUBSCRIBE_EVENT)
+        href = self._pick_mqtt_href(td, forms, op=InteractionVerbs.SUBSCRIBE_EVENT)
 
         if href is None:
             raise FormNotFoundException()

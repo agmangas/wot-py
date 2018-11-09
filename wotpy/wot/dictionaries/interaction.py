@@ -5,39 +5,60 @@
 Wrapper classes for dictionaries for interaction initialization that are defined in the Scripting API.
 """
 
+import six
+
+from wotpy.wot.dictionaries.base import WotBaseDict
+from wotpy.wot.dictionaries.link import FormDict
 from wotpy.wot.dictionaries.schema import DataSchema
-from wotpy.wot.dictionaries.utils import build_init_dict
+from wotpy.wot.dictionaries.security import SecuritySchemeDict
 
 
-class InteractionFragment(object):
-    """A dictionary wrapper class that contains data to initialize an Interaction."""
+class InteractionFragment(WotBaseDict):
+    """Base class for the three types of Interaction patterns
+    (Properties, Actions and Events)."""
 
-    def __init__(self, *args, **kwargs):
-        self._init = build_init_dict(args, kwargs)
-
-    def to_dict(self):
-        """The internal dictionary that contains the entire set of properties"""
-
-        return {
-            "label": self.label,
-            "description": self.description
+    class Meta:
+        fields = {
+            "forms",
+            "title",
+            "uriVariables",
+            "description",
+            "security",
+            "scopes"
         }
 
     @property
-    def label(self):
-        """The label property initializes the text label for the interaction."""
+    def forms(self):
+        """Indicates one or more endpoints from which
+        an interaction pattern is accessible."""
 
-        return self._init.get("label")
+        return [FormDict(item) for item in self._init.get("forms", [])]
 
     @property
-    def description(self):
-        """The description property initializes the description for the interaction."""
+    def uri_variables(self):
+        """Define URI template variables as collection based on DataSchema declarations."""
 
-        return self._init.get("description")
+        return {
+            key: DataSchema.build(val)
+            for key, val in six.iteritems(self._init.get("uriVariables", {}))
+        }
+
+    @property
+    def security(self):
+        """Set of security configurations, provided as an array,
+        that must all be satisfied for access to resources at or
+        below the current level, if not overridden at a lower level."""
+
+        return [SecuritySchemeDict.build(item) for item in self._init.get("security", [])]
 
 
 class PropertyFragment(InteractionFragment):
     """A dictionary wrapper class that contains data to initialize a Property."""
+
+    class Meta:
+        fields = InteractionFragment.Meta.fields.union({
+            "observable"
+        })
 
     def __init__(self, *args, **kwargs):
         super(PropertyFragment, self).__init__(*args, **kwargs)
@@ -47,66 +68,51 @@ class PropertyFragment(InteractionFragment):
         """Search for members that raised an AttributeError in
         the internal ValueType before propagating the exception."""
 
-        return getattr(self.data_schema, name)
+        try:
+            return super(PropertyFragment, self).__getattr__(name)
+        except AttributeError:
+            return getattr(self.data_schema, name)
 
     def to_dict(self):
-        """The internal dictionary that contains the entire set of properties"""
+        """Returns the pure dict (JSON-serializable) representation of this WoT dictionary."""
 
-        base_dict = super(PropertyFragment, self).to_dict()
+        ret = super(PropertyFragment, self).to_dict()
+        ret.update(self.data_schema.to_dict())
 
-        base_dict.update({
-            "writable": self.writable,
-            "observable": self.observable
-        })
-
-        base_dict.update(self.data_schema.to_dict())
-
-        return base_dict
+        return ret
 
     @property
     def data_schema(self):
-        """The DataSchemaDictionary wrapper that represents the schema of this interaction."""
+        """The DataSchema that represents the schema of this property."""
 
         return self._data_schema
 
     @property
     def writable(self):
-        """The writable property initializes access to the Property value.
-        The default value is false."""
+        """Returns True if this Property is writable."""
 
-        return self._init.get("writable", False)
-
-    @property
-    def observable(self):
-        """The observable property initializes observability access to the Property.
-        The default value is false."""
-
-        return self._init.get("observable", False)
+        return not self.data_schema.read_only
 
 
 class ActionFragment(InteractionFragment):
     """A dictionary wrapper class that contains data to initialize an Action."""
 
-    def __init__(self, *args, **kwargs):
-        super(ActionFragment, self).__init__(*args, **kwargs)
+    class Meta:
+        fields = InteractionFragment.Meta.fields.union({
+            "input",
+            "output",
+            "safe",
+            "idempotent"
+        })
 
-    def to_dict(self):
-        """The internal dictionary that contains the entire set of properties"""
-
-        base_dict = super(ActionFragment, self).to_dict()
-
-        if self.input:
-            base_dict.update({"input": self.input.to_dict()})
-
-        if self.output:
-            base_dict.update({"output": self.output.to_dict()})
-
-        return base_dict
+        defaults = {
+            "safe": False,
+            "idempotent": False
+        }
 
     @property
     def input(self):
-        """The input property initializes the input of type ValueType to the ThingAction.
-        Multiple arguments can be provided by applications as an array or as an object."""
+        """Used to define the input data schema of the action."""
 
         init = self._init.get("input")
 
@@ -114,15 +120,45 @@ class ActionFragment(InteractionFragment):
 
     @property
     def output(self):
-        """The output property initializes the output of type ValueType of the ThingAction.
-        The value is overridden when the action is executed."""
+        """Used to define the output data schema of the action."""
 
         init = self._init.get("output")
 
         return DataSchema.build(init) if init else None
 
 
-class EventFragment(PropertyFragment):
+class EventFragment(InteractionFragment):
     """A dictionary wrapper class that contains data to initialize an Event."""
 
-    pass
+    class Meta:
+        fields = InteractionFragment.Meta.fields.union({
+            "subscription",
+            "data",
+            "cancellation"
+        })
+
+    @property
+    def subscription(self):
+        """Defines data that needs to be passed upon subscription,
+        e.g., filters or message format for setting up Webhooks."""
+
+        init = self._init.get("subscription")
+
+        return DataSchema.build(init) if init else None
+
+    @property
+    def data(self):
+        """Defines the data schema of the Event instance messages pushed by the Thing."""
+
+        init = self._init.get("data")
+
+        return DataSchema.build(init) if init else None
+
+    @property
+    def cancellation(self):
+        """Defines any data that needs to be passed to cancel a subscription,
+        e.g., a specific message to remove a Webhook."""
+
+        init = self._init.get("cancellation")
+
+        return DataSchema.build(init) if init else None

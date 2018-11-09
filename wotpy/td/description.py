@@ -11,11 +11,9 @@ import json
 import jsonschema
 import six
 
-from wotpy.td.constants import WOT_TD_CONTEXT_URL, WOT_COMMON_CONTEXT_URL
 from wotpy.td.thing import Thing
 from wotpy.td.validation import SCHEMA_THING, InvalidDescription
-from wotpy.wot.dictionaries.link import FormDict
-from wotpy.wot.dictionaries.wot import ThingFragment
+from wotpy.wot.dictionaries.thing import ThingFragment
 
 
 class ThingDescription(object):
@@ -27,7 +25,10 @@ class ThingDescription(object):
         Validates that the document conforms to the TD schema."""
 
         self._doc = json.loads(doc) if isinstance(doc, six.string_types) else doc
-        self.validate(doc=self._doc)
+        self._thing_fragment = ThingFragment(self._doc)
+        self._doc_clean = self._thing_fragment.to_dict()
+
+        self.validate(doc=self._doc_clean)
 
     @classmethod
     def validate(cls, doc):
@@ -43,159 +44,67 @@ class ThingDescription(object):
     def from_thing(cls, thing):
         """Builds an instance of a JSON-serialized Thing Description from a Thing object."""
 
-        def filter_dict(the_dict):
-            """Filters all the None values in the given dict."""
+        def json_interaction(intrct):
+            """Returns the JSON serialization of an Interaction instance."""
 
-            return {key: the_dict[key] for key in the_dict if the_dict[key] is not None}
+            ret = intrct.interaction_fragment.to_dict()
 
-        def json_form(form):
-            """Returns the JSON serialization of a Form instance."""
+            ret.update({
+                "forms": [form.form_dict.to_dict() for form in intrct.forms]
+            })
 
-            ret = {
-                "href": form.href,
-                "mediaType": form.media_type
-            }
+            return ret
 
-            ret.update({"rel": [form.rel] if isinstance(form.rel, six.string_types) else form.rel})
+        doc = thing.thing_fragment.to_dict()
 
-            if form.security:
-                ret.update({"security": filter_dict(form.security.to_dict())})
-
-            return filter_dict(ret)
-
-        def json_property(prop):
-            """Returns the JSON serialization of a Property instance."""
-
-            ret = {
-                "label": prop.label,
-                "observable": prop.observable,
-                "writable": prop.writable,
-                "forms": [json_form(form) for form in prop.forms]
-            }
-
-            ret.update(filter_dict(prop.data_schema.to_dict()))
-
-            return filter_dict(ret)
-
-        def json_action(action):
-            """Returns the JSON serialization of an Action instance."""
-
-            ret = {
-                "label": action.label,
-                "forms": [json_form(form) for form in action.forms]
-            }
-
-            if action.input:
-                ret.update({"input": filter_dict(action.input.to_dict())})
-
-            if action.output:
-                ret.update({"output": filter_dict(action.output.to_dict())})
-
-            return filter_dict(ret)
-
-        def json_event(event):
-            """Returns the JSON serialization of an Event instance."""
-
-            ret = {
-                "label": event.label,
-                "forms": [json_form(form) for form in event.forms]
-            }
-
-            ret.update(filter_dict(event.data_schema.to_dict()))
-
-            return filter_dict(ret)
-
-        doc = {
-            "@context": [
-                WOT_TD_CONTEXT_URL,
-                WOT_COMMON_CONTEXT_URL
-            ],
-            "id": thing.id,
-            "name": thing.name,
-            "description": thing.description,
-            "support": thing.support,
+        doc.update({
             "properties": {
-                key: json_property(val)
+                key: json_interaction(val)
                 for key, val in six.iteritems(thing.properties)
-            },
+            }
+        })
+
+        doc.update({
             "actions": {
-                key: json_action(val)
+                key: json_interaction(val)
                 for key, val in six.iteritems(thing.actions)
-            },
+            }
+        })
+
+        doc.update({
             "events": {
-                key: json_event(val)
+                key: json_interaction(val)
                 for key, val in six.iteritems(thing.events)
             }
-        }
-
-        if thing.security:
-            doc.update({"security": [item.to_dict() for item in thing.security]})
-
-        doc = filter_dict(doc)
+        })
 
         return ThingDescription(doc)
 
-    @property
-    def id(self):
-        """Thing ID."""
+    def __getattr__(self, name):
+        """Search for members that raised an AttributeError in
+        the internal ThingFragment before propagating the exception."""
 
-        return self._doc.get("id")
-
-    @property
-    def name(self):
-        """Name (ID) of the Thing."""
-
-        return self._doc.get("name")
-
-    @property
-    def description(self):
-        """Human description of the Thing."""
-
-        return self._doc.get("description")
-
-    @property
-    def base(self):
-        """Base URI that is valid for all defined local interaction resources."""
-
-        return self._doc.get("base")
-
-    @property
-    def properties(self):
-        """Property interactions."""
-
-        return self._doc.get("properties", {})
-
-    @property
-    def actions(self):
-        """Action interactions."""
-
-        return self._doc.get("actions", {})
-
-    @property
-    def events(self):
-        """Event interactions."""
-
-        return self._doc.get("events", {})
+        return getattr(self._thing_fragment, name)
 
     def to_dict(self):
         """Returns the JSON Thing Description as a dict."""
 
-        return copy.deepcopy(self._doc)
+        return copy.deepcopy(self._doc_clean)
 
     def to_str(self):
         """Returns the JSON Thing Description as a string."""
 
-        return json.dumps(self._doc)
+        return json.dumps(self._doc_clean)
 
-    def to_thing_template(self):
-        """Returns a ThingTemplate dictionary built from this TD."""
+    def to_thing_fragment(self):
+        """Returns a ThingFragment dictionary built from this TD."""
 
-        return ThingFragment(**self._doc)
+        return self._thing_fragment
 
     def build_thing(self):
         """Builds a new Thing object from the serialized Thing Description."""
 
-        return Thing(thing_template=self.to_thing_template())
+        return Thing(thing_template=self.to_thing_fragment())
 
     def get_forms(self, name):
         """Returns a list of FormDict for the interaction that matches the given name."""
@@ -214,23 +123,23 @@ class ThingDescription(object):
     def get_property_forms(self, name):
         """Returns a list of FormDict for the property that matches the given name."""
 
-        return [
-            FormDict(item) for item in
-            self._doc.get("properties", {}).get(name, {}).get("forms", [])
-        ]
+        if name not in self.properties:
+            raise ValueError("Missing property: {}".format(name))
+
+        return self.properties[name].forms
 
     def get_action_forms(self, name):
         """Returns a list of FormDict for the action that matches the given name."""
 
-        return [
-            FormDict(item) for item in
-            self._doc.get("actions", {}).get(name, {}).get("forms", [])
-        ]
+        if name not in self.actions:
+            raise ValueError("Missing action: {}".format(name))
+
+        return self.actions[name].forms
 
     def get_event_forms(self, name):
         """Returns a list of FormDict for the event that matches the given name."""
 
-        return [
-            FormDict(item) for item in
-            self._doc.get("events", {}).get(name, {}).get("forms", [])
-        ]
+        if name not in self.events:
+            raise ValueError("Missing event: {}".format(name))
+
+        return self.events[name].forms

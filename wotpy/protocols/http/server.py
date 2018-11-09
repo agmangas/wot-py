@@ -95,12 +95,19 @@ class HTTPServer(BaseProtocolServer):
             self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
             proprty.thing.url_name, proprty.url_name)
 
-        form_read_write = Form(
+        form_read = Form(
             interaction=proprty,
             protocol=self.protocol,
             href=href_read_write,
-            media_type=MediaTypes.JSON,
-            rel=[InteractionVerbs.WRITE_PROPERTY, InteractionVerbs.READ_PROPERTY])
+            content_type=MediaTypes.JSON,
+            op=InteractionVerbs.READ_PROPERTY)
+
+        form_write = Form(
+            interaction=proprty,
+            protocol=self.protocol,
+            href=href_read_write,
+            content_type=MediaTypes.JSON,
+            op=InteractionVerbs.WRITE_PROPERTY)
 
         href_observe = "{}/subscription".format(href_read_write)
 
@@ -108,10 +115,10 @@ class HTTPServer(BaseProtocolServer):
             interaction=proprty,
             protocol=self.protocol,
             href=href_observe,
-            media_type=MediaTypes.JSON,
-            rel=[InteractionVerbs.OBSERVE_PROPERTY])
+            content_type=MediaTypes.JSON,
+            op=InteractionVerbs.OBSERVE_PROPERTY)
 
-        return [form_read_write, form_observe]
+        return [form_read, form_write, form_observe]
 
     def _build_forms_action(self, action, hostname):
         """Builds and returns the HTTP Form instances for the given Action interaction."""
@@ -124,8 +131,8 @@ class HTTPServer(BaseProtocolServer):
             interaction=action,
             protocol=self.protocol,
             href=href_invoke,
-            media_type=MediaTypes.JSON,
-            rel=[InteractionVerbs.INVOKE_ACTION])
+            content_type=MediaTypes.JSON,
+            op=InteractionVerbs.INVOKE_ACTION)
 
         return [form_invoke]
 
@@ -140,8 +147,8 @@ class HTTPServer(BaseProtocolServer):
             interaction=event,
             protocol=self.protocol,
             href=href_observe,
-            media_type=MediaTypes.JSON,
-            rel=[InteractionVerbs.SUBSCRIBE_EVENT])
+            content_type=MediaTypes.JSON,
+            op=InteractionVerbs.SUBSCRIBE_EVENT)
 
         return [form_observe]
 

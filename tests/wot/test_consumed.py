@@ -100,13 +100,11 @@ def test_thing_template_getters(consumed_exposed_pair):
     """ThingTemplate properties can be accessed from the ConsumedThing."""
 
     consumed_thing = consumed_exposed_pair.pop("consumed_thing")
-    thing_template = consumed_thing.td.to_thing_template()
+    thing_template = consumed_thing.td.to_thing_fragment()
 
     assert consumed_thing.id == thing_template.id
     assert consumed_thing.name == thing_template.name
     assert consumed_thing.description == thing_template.description
-    assert consumed_thing.type == thing_template.type
-    assert consumed_thing.context == thing_template.context
 
 
 def test_read_property(consumed_exposed_pair):
@@ -228,7 +226,7 @@ def test_thing_property_set(consumed_exposed_pair):
         updated_value = Faker().sentence()
         curr_value = yield exposed_thing.read_property(prop_name)
 
-        assert consumed_thing.td.properties[prop_name].get("writable")
+        assert consumed_thing.td.properties[prop_name].writable
         assert curr_value != updated_value
 
         yield consumed_thing.properties[prop_name].write(updated_value)
@@ -301,8 +299,8 @@ def test_thing_action_getters(consumed_exposed_pair):
         thing_action_con = consumed_thing.actions[action_name]
         thing_action_exp = exposed_thing.actions[action_name]
 
-        assert thing_action_con.input.get("type") == thing_action_exp.input.type
-        assert thing_action_con.output.get("type") == thing_action_exp.output.type
+        assert thing_action_con.input.type == thing_action_exp.input.type
+        assert thing_action_con.output.type == thing_action_exp.output.type
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
@@ -331,7 +329,7 @@ def test_thing_event_getters(consumed_exposed_pair):
         thing_action_con = consumed_thing.events[event_name]
         thing_action_exp = exposed_thing.events[event_name]
 
-        assert thing_action_con.type == thing_action_exp.type
+        assert thing_action_con.data.type == thing_action_exp.data.type
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
@@ -387,7 +385,6 @@ def test_consumed_client_protocols_preference():
         "name": uuid.uuid4().hex,
         "properties": {
             prop_name: {
-                "writable": True,
                 "observable": True,
                 "type": "string"
             }

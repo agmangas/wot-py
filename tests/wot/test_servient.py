@@ -126,12 +126,10 @@ def test_servient_start_stop():
         "name": Faker().sentence(),
         "properties": {
             name_prop_string: {
-                "writable": True,
                 "observable": True,
                 "type": "string"
             },
             name_prop_boolean: {
-                "writable": True,
                 "observable": True,
                 "type": "boolean"
             }

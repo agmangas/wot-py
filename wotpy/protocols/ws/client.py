@@ -14,9 +14,9 @@ from six.moves import urllib
 from tornado.concurrent import Future
 
 from wotpy.protocols.client import BaseProtocolClient
-from wotpy.protocols.enums import Protocols
+from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.exceptions import FormNotFoundException
-from wotpy.protocols.utils import pick_form_for_schemes, is_scheme_form
+from wotpy.protocols.utils import pick_form, is_scheme_form
 from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketSchemes
 from wotpy.protocols.ws.messages import \
     WebsocketMessageRequest, \
@@ -34,12 +34,6 @@ from wotpy.wot.events import \
 
 class WebsocketClient(BaseProtocolClient):
     """Implementation of the protocol client interface for the Websocket protocol."""
-
-    @classmethod
-    def _select_form(cls, td, forms):
-        """Picks the Form that will be used to connect to the remote Thing."""
-
-        return pick_form_for_schemes(td, forms, WebsocketSchemes.list())
 
     @classmethod
     def _parse_response(cls, raw_msg, msg_id):
@@ -218,7 +212,13 @@ class WebsocketClient(BaseProtocolClient):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
 
-        form = self._select_form(td, td.get_action_forms(name))
+        if name not in td.actions:
+            raise FormNotFoundException()
+
+        form = pick_form(
+            td, td.get_action_forms(name),
+            WebsocketSchemes.list(),
+            op=InteractionVerbs.INVOKE_ACTION)
 
         if not form:
             raise FormNotFoundException()
@@ -239,7 +239,13 @@ class WebsocketClient(BaseProtocolClient):
         """Updates the value of a Property on a remote Thing.
         Returns a Future."""
 
-        form = self._select_form(td, td.get_property_forms(name))
+        if name not in td.properties:
+            raise FormNotFoundException()
+
+        form = pick_form(
+            td, td.get_property_forms(name),
+            WebsocketSchemes.list(),
+            op=InteractionVerbs.WRITE_PROPERTY)
 
         if not form:
             raise FormNotFoundException()
@@ -260,7 +266,13 @@ class WebsocketClient(BaseProtocolClient):
         """Reads the value of a Property on a remote Thing.
         Returns a Future."""
 
-        form = self._select_form(td, td.get_property_forms(name))
+        if name not in td.properties:
+            raise FormNotFoundException()
+
+        form = pick_form(
+            td, td.get_property_forms(name),
+            WebsocketSchemes.list(),
+            op=InteractionVerbs.READ_PROPERTY)
 
         if not form:
             raise FormNotFoundException()
@@ -280,7 +292,14 @@ class WebsocketClient(BaseProtocolClient):
         """Subscribes to an event on a remote Thing.
         Returns an Observable."""
 
-        form = self._select_form(td, td.get_event_forms(name))
+        if name not in td.events:
+            # noinspection PyUnresolvedReferences
+            return Observable.throw(FormNotFoundException())
+
+        form = pick_form(
+            td, td.get_event_forms(name),
+            WebsocketSchemes.list(),
+            op=InteractionVerbs.SUBSCRIBE_EVENT)
 
         if not form:
             # noinspection PyUnresolvedReferences
@@ -305,7 +324,14 @@ class WebsocketClient(BaseProtocolClient):
         """Subscribes to property changes on a remote Thing.
         Returns an Observable."""
 
-        form = self._select_form(td, td.get_property_forms(name))
+        if name not in td.properties:
+            # noinspection PyUnresolvedReferences
+            return Observable.throw(FormNotFoundException())
+
+        form = pick_form(
+            td, td.get_property_forms(name),
+            WebsocketSchemes.list(),
+            op=InteractionVerbs.OBSERVE_PROPERTY)
 
         if not form:
             # noinspection PyUnresolvedReferences
@@ -333,32 +359,4 @@ class WebsocketClient(BaseProtocolClient):
         """Subscribes to Thing Description changes on a remote Thing.
         Returns an Observable."""
 
-        parsed_url = urllib.parse.urlparse(url)
-
-        if parsed_url.scheme not in WebsocketSchemes.list():
-            raise ValueError("URL should point to a Websockets server")
-
-        msg_req = WebsocketMessageRequest(
-            method=WebsocketMethods.ON_TD_CHANGE,
-            params={},
-            msg_id=uuid.uuid4().hex)
-
-        def on_next(observer, msg_item):
-            item_data = msg_item.data or {}
-
-            init_kwargs = {
-                "td_change_type": item_data.get("td_change_type"),
-                "method": item_data.get("method"),
-                "name": item_data.get("name"),
-                "description": item_data.get("description"),
-                "data": item_data.get("data")
-            }
-
-            init = ThingDescriptionChangeEventInit(**init_kwargs)
-
-            observer.on_next(ThingDescriptionChangeEmittedEvent(init=init))
-
-        subscribe = self._build_subscribe(url, msg_req, on_next)
-
-        # noinspection PyUnresolvedReferences
-        return Observable.create(subscribe)
+        raise NotImplementedError

@@ -24,8 +24,8 @@ def _build_property_fragment():
     """Builds and returns a random Property init fragment."""
 
     return PropertyFragment({
-        "label": Faker().sentence(),
-        "writable": True,
+        "description": Faker().sentence(),
+        "readOnly": False,
         "observable": True,
         "type": "string"
     })
@@ -35,9 +35,8 @@ def _build_event_fragment():
     """Builds and returns a random Event init fragment."""
 
     return EventFragment({
-        "label": Faker().sentence(),
-        "type": "string",
-        "value": Faker().sentence()
+        "description": Faker().sentence(),
+        "data": {"type": "string"}
     })
 
 
@@ -45,7 +44,7 @@ def _build_action_fragment():
     """Builds and returns a random Action init fragment."""
 
     return ActionFragment({
-        "label": Faker().sentence(),
+        "description": Faker().sentence(),
         "input": {
             "type": "string",
             "description": Faker().sentence()

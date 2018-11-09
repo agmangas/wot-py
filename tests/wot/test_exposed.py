@@ -75,13 +75,11 @@ def _test_td_change_events(exposed_thing, property_fragment, event_fragment, act
 def test_thing_template_getters(exposed_thing):
     """ThingTemplate properties can be accessed from the ExposedThing."""
 
-    thing_template = exposed_thing.thing.thing_template
+    thing_template = exposed_thing.thing.thing_fragment
 
     assert exposed_thing.id == thing_template.id
     assert exposed_thing.name == thing_template.name
     assert exposed_thing.description == thing_template.description
-    assert exposed_thing.type == thing_template.type
-    assert exposed_thing.context == thing_template.context
 
 
 def test_read_property(exposed_thing, property_fragment):
@@ -124,7 +122,7 @@ def test_write_non_writable_property(exposed_thing):
 
     prop_init_non_writable = PropertyFragment({
         "type": "string",
-        "writable": False
+        "readOnly": True
     })
 
     @tornado.gen.coroutine
@@ -246,7 +244,6 @@ def test_on_property_change_non_observable(exposed_thing):
 
     prop_init_non_observable = PropertyFragment({
         "type": "string",
-        "writable": True,
         "observable": False
     })
 
@@ -387,10 +384,8 @@ def test_thing_property_getters(exposed_thing, property_fragment):
         exposed_thing.add_property(prop_name, property_fragment, value=prop_init_value)
         thing_property = exposed_thing.properties[prop_name]
 
-        assert thing_property.label == property_fragment.label
-        assert thing_property.writable == property_fragment.writable
+        assert thing_property.description == property_fragment.description
         assert thing_property.observable == property_fragment.observable
-        assert thing_property.type == property_fragment.type
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
@@ -426,7 +421,6 @@ def test_thing_action_getters(exposed_thing, action_fragment):
         exposed_thing.add_action(action_name, action_fragment)
         thing_action = exposed_thing.actions[action_name]
 
-        assert thing_action.label == action_fragment.label
         assert thing_action.description == action_fragment.description
         assert thing_action.input.type == action_fragment.input.type
         assert thing_action.output.type == action_fragment.output.type
@@ -473,8 +467,8 @@ def test_thing_event_getters(exposed_thing, event_fragment):
         exposed_thing.add_event(event_name, event_fragment)
         thing_event = exposed_thing.events[event_name]
 
-        assert thing_event.label == event_fragment.label
-        assert thing_event.type == event_fragment.type
+        assert thing_event.description == event_fragment.description
+        assert thing_event.data.type == event_fragment.data.type
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 

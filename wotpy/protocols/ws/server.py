@@ -74,7 +74,15 @@ class WebsocketServer(BaseProtocolServer):
 
         base_url = self.build_base_url(hostname=hostname, thing=exposed_thing.thing)
 
-        rel = [
+        def build_op_form(the_op):
+            return Form(
+                interaction=interaction,
+                protocol=self.protocol,
+                href=base_url,
+                content_type=MediaTypes.JSON,
+                op=the_op)
+
+        ops = [
             InteractionVerbs.WRITE_PROPERTY,
             InteractionVerbs.READ_PROPERTY,
             InteractionVerbs.OBSERVE_PROPERTY,
@@ -82,14 +90,7 @@ class WebsocketServer(BaseProtocolServer):
             InteractionVerbs.SUBSCRIBE_EVENT
         ]
 
-        form_ws = Form(
-            interaction=interaction,
-            protocol=self.protocol,
-            href=base_url,
-            media_type=MediaTypes.JSON,
-            rel=rel)
-
-        return [form_ws]
+        return [build_op_form(op) for op in ops]
 
     def build_base_url(self, hostname, thing):
         """Returns the base URL for the given Thing in the context of this server."""

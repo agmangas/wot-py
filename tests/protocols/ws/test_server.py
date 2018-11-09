@@ -374,52 +374,6 @@ def test_on_undefined_event(websocket_server):
 
 
 @pytest.mark.flaky(reruns=5)
-def test_on_td_change(websocket_server):
-    """Thing description changes can be observed using Websockets."""
-
-    url_thing_01 = websocket_server.pop("url_thing_01")
-    exposed_thing_01 = websocket_server.pop("exposed_thing_01")
-
-    @tornado.gen.coroutine
-    def test_coroutine():
-        td_change_msg_id = Faker().pyint()
-
-        conn = yield tornado.websocket.websocket_connect(url_thing_01)
-
-        msg_observe_req = WebsocketMessageRequest(
-            method=WebsocketMethods.ON_TD_CHANGE,
-            params={},
-            msg_id=td_change_msg_id)
-
-        conn.write_message(msg_observe_req.to_json())
-
-        td_change_resp_raw = yield conn.read_message()
-        td_change_resp = WebsocketMessageResponse.from_raw(td_change_resp_raw)
-
-        assert td_change_resp.id == td_change_msg_id
-
-        new_prop_name = uuid.uuid4().hex
-        new_prop_value = Faker().sentence()
-
-        new_prop_init = PropertyFragment({
-            "type": "string",
-            "writable": False,
-            "observable": True
-        })
-
-        exposed_thing_01.add_property(new_prop_name, new_prop_init, value=new_prop_value)
-
-        msg_emitted_raw = yield conn.read_message()
-        msg_emitted = WebsocketMessageEmittedItem.from_raw(msg_emitted_raw)
-
-        assert msg_emitted.data.get("name") == new_prop_name
-        assert msg_emitted.data.get("data", {}).get("writable") == new_prop_init.writable
-        assert msg_emitted.data.get("data", {}).get("observable") == new_prop_init.observable
-
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
-
-
-@pytest.mark.flaky(reruns=5)
 def test_dispose(websocket_server):
     """Observable subscriptions can be disposed using Websockets."""
 

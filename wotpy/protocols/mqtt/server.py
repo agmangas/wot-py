@@ -53,12 +53,19 @@ class MQTTServer(BaseProtocolServer):
             self._broker_url.rstrip("/"),
             proprty.thing.url_name, proprty.url_name)
 
-        form_rw = Form(
+        form_read = Form(
             interaction=proprty,
             protocol=self.protocol,
             href=href_rw,
-            media_type=MediaTypes.JSON,
-            rel=[InteractionVerbs.READ_PROPERTY, InteractionVerbs.WRITE_PROPERTY])
+            content_type=MediaTypes.JSON,
+            op=InteractionVerbs.READ_PROPERTY)
+
+        form_write = Form(
+            interaction=proprty,
+            protocol=self.protocol,
+            href=href_rw,
+            content_type=MediaTypes.JSON,
+            op=InteractionVerbs.WRITE_PROPERTY)
 
         href_observe = "{}/property/updates/{}/{}".format(
             self._broker_url.rstrip("/"),
@@ -68,10 +75,10 @@ class MQTTServer(BaseProtocolServer):
             interaction=proprty,
             protocol=self.protocol,
             href=href_observe,
-            media_type=MediaTypes.JSON,
-            rel=[InteractionVerbs.OBSERVE_PROPERTY])
+            content_type=MediaTypes.JSON,
+            op=InteractionVerbs.OBSERVE_PROPERTY)
 
-        return [form_rw, form_observe]
+        return [form_read, form_write, form_observe]
 
     def _build_forms_action(self, action):
         """Builds and returns the MQTT Form instances for the given Action interaction."""
@@ -84,8 +91,8 @@ class MQTTServer(BaseProtocolServer):
             interaction=action,
             protocol=self.protocol,
             href=href,
-            media_type=MediaTypes.JSON,
-            rel=[InteractionVerbs.INVOKE_ACTION])
+            content_type=MediaTypes.JSON,
+            op=InteractionVerbs.INVOKE_ACTION)
 
         return [form]
 
@@ -100,8 +107,8 @@ class MQTTServer(BaseProtocolServer):
             interaction=event,
             protocol=self.protocol,
             href=href,
-            media_type=MediaTypes.JSON,
-            rel=[InteractionVerbs.SUBSCRIBE_EVENT])
+            content_type=MediaTypes.JSON,
+            op=InteractionVerbs.SUBSCRIBE_EVENT)
 
         return [form]
 

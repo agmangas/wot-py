@@ -4,16 +4,14 @@
 import copy
 import uuid
 
-# noinspection PyPackageRequirements
 import pytest
-# noinspection PyPackageRequirements
 from faker import Faker
 
 from tests.td_examples import TD_EXAMPLE
 from wotpy.protocols.enums import Protocols
 from wotpy.td.description import ThingDescription
 from wotpy.td.form import Form
-from wotpy.td.interaction import Action
+from wotpy.td.interaction import Action, Property, Event
 from wotpy.td.thing import Thing
 from wotpy.td.validation import InvalidDescription
 
@@ -59,23 +57,35 @@ def test_from_thing():
 
     thing_id = uuid.uuid4().urn
     action_id = uuid.uuid4().hex
-    form_href = fake.url()
+    prop_id = uuid.uuid4().hex
+    event_id = uuid.uuid4().hex
+    action_form_href = fake.url()
+    prop_form_href = fake.url()
 
     thing = Thing(id=thing_id)
-    action = Action(thing=thing, name=action_id)
-    form = Form(interaction=action, protocol=Protocols.HTTP, href=form_href)
 
-    action.add_form(form)
+    action = Action(thing=thing, name=action_id)
+    action_form = Form(interaction=action, protocol=Protocols.HTTP, href=action_form_href)
+    action.add_form(action_form)
     thing.add_interaction(action)
+
+    prop = Property(thing=thing, name=prop_id, type="string")
+    prop_form = Form(interaction=prop, protocol=Protocols.HTTP, href=prop_form_href)
+    prop.add_form(prop_form)
+    thing.add_interaction(prop)
+
+    event = Event(thing=thing, name=event_id)
+    thing.add_interaction(event)
 
     json_td = ThingDescription.from_thing(thing)
     td_dict = json_td.to_dict()
 
     assert td_dict["id"] == thing_id
-    assert len(td_dict["properties"]) == 0
+    assert len(td_dict["properties"]) == 1
     assert len(td_dict["actions"]) == 1
+    assert len(td_dict["events"]) == 1
     assert len(td_dict["actions"][action_id]["forms"]) == 1
-    assert td_dict["actions"][action_id]["forms"][0]["href"] == form_href
+    assert td_dict["actions"][action_id]["forms"][0]["href"] == action_form_href
 
 
 def test_build_thing():

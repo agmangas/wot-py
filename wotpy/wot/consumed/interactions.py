@@ -101,12 +101,7 @@ class ConsumedThingProperty(object):
         """Search for members that raised an AttributeError in
         the private init dict before propagating the exception."""
 
-        proprty = self._consumed_thing.td.properties[self._name]
-
-        if name in proprty:
-            return proprty[name]
-
-        raise AttributeError(name)
+        return getattr(self._consumed_thing.td.properties[self._name], name)
 
     @tornado.gen.coroutine
     def read(self):
@@ -143,12 +138,7 @@ class ConsumedThingAction(object):
         """Search for members that raised an AttributeError in
         the private init dict before propagating the exception."""
 
-        action = self._consumed_thing.td.actions[self._name]
-
-        if name in action:
-            return action[name]
-
-        raise AttributeError(name)
+        return getattr(self._consumed_thing.td.actions[self._name], name)
 
     @tornado.gen.coroutine
     def invoke(self, input_value):
@@ -170,12 +160,7 @@ class ConsumedThingEvent(object):
         """Search for members that raised an AttributeError in
         the private init dict before propagating the exception."""
 
-        event = self._consumed_thing.td.events[self._name]
-
-        if name in event:
-            return event[name]
-
-        raise AttributeError(name)
+        return getattr(self._consumed_thing.td.events[self._name], name)
 
     def subscribe(self, *args, **kwargs):
         """Subscribe to an stream of emissions of this event."""

@@ -63,12 +63,19 @@ class CoAPServer(BaseProtocolServer):
             self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
             proprty.thing.url_name, proprty.url_name)
 
-        form_read_write = Form(
+        form_read = Form(
             interaction=proprty,
             protocol=self.protocol,
             href=href_read_write,
-            media_type=MediaTypes.JSON,
-            rel=[InteractionVerbs.READ_PROPERTY, InteractionVerbs.WRITE_PROPERTY])
+            content_type=MediaTypes.JSON,
+            op=InteractionVerbs.READ_PROPERTY)
+
+        form_write = Form(
+            interaction=proprty,
+            protocol=self.protocol,
+            href=href_read_write,
+            content_type=MediaTypes.JSON,
+            op=InteractionVerbs.WRITE_PROPERTY)
 
         href_observe = "{}://{}:{}/property/subscription?thing={}&name={}".format(
             self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
@@ -78,10 +85,10 @@ class CoAPServer(BaseProtocolServer):
             interaction=proprty,
             protocol=self.protocol,
             href=href_observe,
-            media_type=MediaTypes.JSON,
-            rel=[InteractionVerbs.OBSERVE_PROPERTY])
+            content_type=MediaTypes.JSON,
+            op=InteractionVerbs.OBSERVE_PROPERTY)
 
-        return [form_read_write, form_observe]
+        return [form_read, form_write, form_observe]
 
     def _build_forms_action(self, action, hostname):
         """Builds and returns the CoAP Form instances for the given Action interaction."""
@@ -94,8 +101,8 @@ class CoAPServer(BaseProtocolServer):
             interaction=action,
             protocol=self.protocol,
             href=href_invoke,
-            media_type=MediaTypes.JSON,
-            rel=[InteractionVerbs.INVOKE_ACTION])
+            content_type=MediaTypes.JSON,
+            op=InteractionVerbs.INVOKE_ACTION)
 
         return [form_invoke]
 
@@ -110,8 +117,8 @@ class CoAPServer(BaseProtocolServer):
             interaction=event,
             protocol=self.protocol,
             href=href,
-            media_type=MediaTypes.JSON,
-            rel=[InteractionVerbs.SUBSCRIBE_EVENT])
+            content_type=MediaTypes.JSON,
+            op=InteractionVerbs.SUBSCRIBE_EVENT)
 
         return [form]
 

@@ -13,7 +13,8 @@ import six
 from slugify import slugify
 
 from wotpy.td.interaction import Property, Action, Event
-from wotpy.wot.dictionaries.wot import ThingFragment
+from wotpy.wot.dictionaries.security import NoSecuritySchemeDict
+from wotpy.wot.dictionaries.thing import ThingFragment
 
 
 class Thing(object):
@@ -29,28 +30,28 @@ class Thing(object):
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
-        the internal ThingTemplate dict before propagating the exception."""
+        the internal ThingFragment dict before propagating the exception."""
 
         return getattr(self._thing_templt, name)
 
     def _init_template_interactions(self):
-        """Adds the interactions declared in the ThingTemplate to the instance private dicts."""
+        """Adds the interactions declared in the ThingFragment to the instance private dicts."""
 
-        for name, property_init in six.iteritems(self.thing_template.properties):
+        for name, property_init in six.iteritems(self.thing_fragment.properties):
             prop = Property(thing=self, name=name, init_dict=property_init)
             self.add_interaction(prop)
 
-        for name, action_init in six.iteritems(self.thing_template.actions):
+        for name, action_init in six.iteritems(self.thing_fragment.actions):
             action = Action(thing=self, name=name, init_dict=action_init)
             self.add_interaction(action)
 
-        for name, event_init in six.iteritems(self.thing_template.events):
+        for name, event_init in six.iteritems(self.thing_fragment.events):
             event = Event(thing=self, name=name, init_dict=event_init)
             self.add_interaction(event)
 
     @property
-    def thing_template(self):
-        """The ThingTemplate dictionary of this Thing."""
+    def thing_fragment(self):
+        """The ThingFragment dictionary of this Thing."""
 
         return self._thing_templt
 
@@ -58,13 +59,13 @@ class Thing(object):
     def id(self):
         """Thing ID."""
 
-        return self.thing_template.id
+        return self.thing_fragment.id
 
     @property
     def name(self):
         """Thing name."""
 
-        return self.thing_template.name
+        return self.thing_fragment.name
 
     @property
     def uuid(self):
@@ -83,7 +84,7 @@ class Thing(object):
         """Returns the URL-safe name of this Thing.
         The URL name of a Thing is always unique and stable as long as the ID is unique."""
 
-        name_raw = self.thing_template.to_dict().get("name")
+        name_raw = self.thing_fragment.to_dict().get("name")
 
         return slugify("{}-{}".format(name_raw, self.uuid)) if name_raw else self.uuid
 
@@ -113,13 +114,6 @@ class Thing(object):
             self._properties.values(),
             self._actions.values(),
             self._events.values())
-
-    @property
-    def security(self):
-        """Returns a list of SecurityScheme objects that represents
-        the security strategies implemented on this Thing."""
-
-        return None
 
     def find_interaction(self, name):
         """Finds an existing Interaction by name.

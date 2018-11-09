@@ -24,9 +24,9 @@ class ConsumedThing(object):
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
-        the private ThingTemplate instance before propagating the exception."""
+        the private ThingFragment instance before propagating the exception."""
 
-        return getattr(self.td.to_thing_template(), name)
+        return getattr(self.td.to_thing_fragment(), name)
 
     @property
     def servient(self):

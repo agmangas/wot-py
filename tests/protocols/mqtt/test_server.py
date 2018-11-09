@@ -30,7 +30,7 @@ def build_topic(server, interaction, interaction_verb):
     """Returns the topic for the given interaction and verb."""
 
     forms = server.build_forms(None, interaction)
-    form = next(item for item in forms if interaction_verb in item.rel)
+    form = next(item for item in forms if interaction_verb == item.op)
     return "/".join(form.href.split("/")[3:])
 
 
