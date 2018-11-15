@@ -34,13 +34,11 @@ def coap_server(request):
 
     exposed_thing.add_property(uuid.uuid4().hex, PropertyFragmentDict({
         "type": "number",
-        "writable": True,
         "observable": True
     }), value=Faker().pyint())
 
     exposed_thing.add_property(uuid.uuid4().hex, PropertyFragmentDict({
         "type": "string",
-        "writable": True,
         "observable": True
     }), value=Faker().pyint())
 
@@ -108,7 +106,6 @@ def coap_servient():
         "name": uuid.uuid4().hex,
         "properties": {
             property_name_01: {
-                "writable": True,
                 "observable": True,
                 "type": "string"
             }

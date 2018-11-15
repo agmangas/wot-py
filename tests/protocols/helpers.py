@@ -24,7 +24,6 @@ def client_test_on_property_change(servient, protocol_client_cls):
 
     exposed_thing.add_property(prop_name, PropertyFragmentDict({
         "type": "string",
-        "writable": True,
         "observable": True
     }), value=Faker().sentence())
 
@@ -122,7 +121,6 @@ def client_test_read_property(servient, protocol_client_cls):
 
     exposed_thing.add_property(prop_name, PropertyFragmentDict({
         "type": "string",
-        "writable": True,
         "observable": True
     }), value=Faker().sentence())
 
@@ -155,7 +153,6 @@ def client_test_write_property(servient, protocol_client_cls):
 
     exposed_thing.add_property(prop_name, PropertyFragmentDict({
         "type": "string",
-        "writable": True,
         "observable": True
     }), value=Faker().sentence())
 
@@ -260,7 +257,6 @@ def client_test_on_property_change_error(servient, protocol_client_cls):
 
     exposed_thing.add_property(prop_name, PropertyFragmentDict({
         "type": "string",
-        "writable": True,
         "observable": True
     }), value=Faker().sentence())
 

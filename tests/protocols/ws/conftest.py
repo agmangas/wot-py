@@ -65,19 +65,16 @@ def websocket_server():
 
     prop_init_01 = PropertyFragmentDict({
         "type": "string",
-        "writable": True,
         "observable": True
     })
 
     prop_init_02 = PropertyFragmentDict({
         "type": "string",
-        "writable": True,
         "observable": True
     })
 
     prop_init_03 = PropertyFragmentDict({
         "type": "string",
-        "writable": True,
         "observable": True
     })
 
@@ -172,12 +169,10 @@ def websocket_servient():
         "name": uuid.uuid4().hex,
         "properties": {
             property_name_01: {
-                "writable": True,
                 "observable": True,
                 "type": "string"
             },
             property_name_02: {
-                "writable": True,
                 "observable": True,
                 "type": "string"
             }

@@ -35,7 +35,6 @@ def mqtt_server(request):
 
     exposed_thing.add_property(uuid.uuid4().hex, PropertyFragmentDict({
         "type": "string",
-        "writable": True,
         "observable": True
     }), value=Faker().sentence())
 
@@ -101,7 +100,6 @@ def mqtt_servient():
         "name": uuid.uuid4().hex,
         "properties": {
             property_name_01: {
-                "writable": True,
                 "observable": True,
                 "type": "string"
             }

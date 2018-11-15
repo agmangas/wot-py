@@ -59,7 +59,6 @@ def all_protocols_servient():
         "name": uuid.uuid4().hex,
         "properties": {
             uuid.uuid4().hex: {
-                "writable": True,
                 "observable": True,
                 "type": "string"
             }

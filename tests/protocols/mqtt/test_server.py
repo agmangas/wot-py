@@ -195,7 +195,6 @@ def test_property_add_remove(mqtt_server):
     def add_prop(pname):
         exposed_thing.add_property(pname, PropertyFragmentDict({
             "type": "number",
-            "writable": True,
             "observable": True
         }), value=Faker().pyint())
 
