@@ -104,7 +104,7 @@ class ThingDescription(object):
     def build_thing(self):
         """Builds a new Thing object from the serialized Thing Description."""
 
-        return Thing(thing_template=self.to_thing_fragment())
+        return Thing(thing_fragment=self.to_thing_fragment())
 
     def get_forms(self, name):
         """Returns a list of FormDict for the interaction that matches the given name."""

@@ -13,7 +13,6 @@ import six
 from slugify import slugify
 
 from wotpy.td.interaction import Property, Action, Event
-from wotpy.wot.dictionaries.security import NoSecuritySchemeDict
 from wotpy.wot.dictionaries.thing import ThingFragment
 
 
@@ -21,39 +20,39 @@ class Thing(object):
     """An abstraction of a physical or virtual entity whose metadata
     and interfaces are described by a WoT Thing Description."""
 
-    def __init__(self, thing_template=None, **kwargs):
-        self._thing_templt = thing_template if thing_template else ThingFragment(**kwargs)
+    def __init__(self, thing_fragment=None, **kwargs):
+        self._thing_fragment = thing_fragment if thing_fragment else ThingFragment(**kwargs)
         self._properties = {}
         self._actions = {}
         self._events = {}
-        self._init_template_interactions()
+        self._init_fragment_interactions()
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
         the internal ThingFragment dict before propagating the exception."""
 
-        return getattr(self._thing_templt, name)
+        return getattr(self._thing_fragment, name)
 
-    def _init_template_interactions(self):
+    def _init_fragment_interactions(self):
         """Adds the interactions declared in the ThingFragment to the instance private dicts."""
 
-        for name, property_init in six.iteritems(self.thing_fragment.properties):
-            prop = Property(thing=self, name=name, init_dict=property_init)
+        for name, prop_fragment in six.iteritems(self.thing_fragment.properties):
+            prop = Property(thing=self, name=name, init_dict=prop_fragment)
             self.add_interaction(prop)
 
-        for name, action_init in six.iteritems(self.thing_fragment.actions):
-            action = Action(thing=self, name=name, init_dict=action_init)
+        for name, action_fragment in six.iteritems(self.thing_fragment.actions):
+            action = Action(thing=self, name=name, init_dict=action_fragment)
             self.add_interaction(action)
 
-        for name, event_init in six.iteritems(self.thing_fragment.events):
-            event = Event(thing=self, name=name, init_dict=event_init)
+        for name, event_fragment in six.iteritems(self.thing_fragment.events):
+            event = Event(thing=self, name=name, init_dict=event_fragment)
             self.add_interaction(event)
 
     @property
     def thing_fragment(self):
         """The ThingFragment dictionary of this Thing."""
 
-        return self._thing_templt
+        return self._thing_fragment
 
     @property
     def id(self):

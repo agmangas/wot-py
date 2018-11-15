@@ -73,7 +73,7 @@ class WoT(object):
         if isinstance(model, six.string_types):
             thing = ThingDescription(doc=model).build_thing()
         elif isinstance(model, ThingFragment):
-            thing = Thing(thing_template=model)
+            thing = Thing(thing_fragment=model)
         else:
             thing = model.td.build_thing()
 
