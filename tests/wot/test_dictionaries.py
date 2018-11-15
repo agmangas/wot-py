@@ -12,6 +12,7 @@ from wotpy.wot.dictionaries.link import LinkDict, FormDict
 from wotpy.wot.dictionaries.schema import DataSchemaDict
 from wotpy.wot.dictionaries.security import SecuritySchemeDict
 from wotpy.wot.dictionaries.thing import ThingFragment
+from wotpy.wot.dictionaries.version import VersioningDict
 
 
 def test_link_dict():
@@ -149,6 +150,7 @@ def test_thing_fragment():
         "name": "MyLampThing",
         "description": "MyLampThing uses JSON-LD 1.1 serialization",
         "security": [{"scheme": "nosec"}],
+        "version": {"instance": "1.2.1"},
         "properties": {
             "status": {
                 "description": "Shows the current status of the lamp",
@@ -187,6 +189,7 @@ def test_thing_fragment():
     assert isinstance(next(six.itervalues(thing_fragment.events)), EventFragmentDict)
     assert json.dumps(thing_fragment.to_dict())
     assert next(six.itervalues(thing_fragment.to_dict()["properties"]))["type"]
+    assert thing_fragment.version.instance == init["version"]["instance"]
 
     with pytest.raises(Exception):
         ThingFragment({})

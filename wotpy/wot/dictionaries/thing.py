@@ -11,6 +11,7 @@ from wotpy.wot.dictionaries.base import WotBaseDict
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.wot.dictionaries.link import LinkDict
 from wotpy.wot.dictionaries.security import SecuritySchemeDict
+from wotpy.wot.dictionaries.version import VersioningDict
 from wotpy.wot.enums import SecuritySchemeType
 
 
@@ -95,3 +96,9 @@ class ThingFragment(WotBaseDict):
         """The links optional attribute represents an array of Link objects."""
 
         return [LinkDict(item) for item in self._init.get("links", [])]
+
+    @property
+    def version(self):
+        """Provides version information."""
+
+        return VersioningDict(self._init.get("version")) if self._init.get("version") else None
