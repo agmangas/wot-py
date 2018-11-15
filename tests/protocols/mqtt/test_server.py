@@ -21,7 +21,7 @@ from wotpy.protocols.enums import InteractionVerbs
 from wotpy.protocols.mqtt.handlers.action import ActionMQTTHandler
 from wotpy.protocols.mqtt.handlers.ping import PingMQTTHandler
 from wotpy.protocols.mqtt.server import MQTTServer
-from wotpy.wot.dictionaries.interaction import PropertyFragment, ActionFragment
+from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict
 
 pytestmark = pytest.mark.skipif(is_test_broker_online() is False, reason=BROKER_SKIP_REASON)
 
@@ -193,7 +193,7 @@ def test_property_add_remove(mqtt_server):
         exposed_thing.remove_property(name)
 
     def add_prop(pname):
-        exposed_thing.add_property(pname, PropertyFragment({
+        exposed_thing.add_property(pname, PropertyFragmentDict({
             "type": "number",
             "writable": True,
             "observable": True
@@ -386,7 +386,7 @@ def test_action_invoke_error(mqtt_server):
     def handler(parameters):
         raise TypeError(err_message)
 
-    exposed_thing.add_action(action_name, ActionFragment({
+    exposed_thing.add_action(action_name, ActionFragmentDict({
         "input": {"type": "string"},
         "output": {"type": "string"}
     }), handler)

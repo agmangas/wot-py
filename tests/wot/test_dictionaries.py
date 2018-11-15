@@ -7,9 +7,9 @@ import pytest
 import six
 from faker import Faker
 
-from wotpy.wot.dictionaries.interaction import PropertyFragment, ActionFragment, EventFragment
+from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.wot.dictionaries.link import LinkDict, FormDict
-from wotpy.wot.dictionaries.schema import DataSchema
+from wotpy.wot.dictionaries.schema import DataSchemaDict
 from wotpy.wot.dictionaries.security import SecuritySchemeDict
 from wotpy.wot.dictionaries.thing import ThingFragment
 
@@ -67,12 +67,12 @@ def test_property_fragment():
         }]
     }
 
-    prop_fragment = PropertyFragment(init)
+    prop_fragment = PropertyFragmentDict(init)
 
     assert prop_fragment.read_only == init["readOnly"]
     assert prop_fragment.write_only is False
     assert prop_fragment.observable == init["observable"]
-    assert isinstance(prop_fragment.data_schema, DataSchema)
+    assert isinstance(prop_fragment.data_schema, DataSchemaDict)
     assert prop_fragment.data_schema.type == init["type"]
     assert len(prop_fragment.forms) == len(init["forms"])
     assert prop_fragment.forms[0].href == init["forms"][0]["href"]
@@ -80,7 +80,7 @@ def test_property_fragment():
     assert json.dumps(prop_fragment.to_dict())
 
     with pytest.raises(Exception):
-        PropertyFragment({})
+        PropertyFragmentDict({})
 
 
 def test_action_fragment():
@@ -107,11 +107,11 @@ def test_action_fragment():
         }
     }
 
-    action_fragment = ActionFragment(init)
+    action_fragment = ActionFragmentDict(init)
 
     assert action_fragment.description == init["description"]
-    assert isinstance(action_fragment.input, DataSchema)
-    assert isinstance(action_fragment.output, DataSchema)
+    assert isinstance(action_fragment.input, DataSchemaDict)
+    assert isinstance(action_fragment.output, DataSchemaDict)
     assert action_fragment.to_dict()["output"]["type"] == init["output"]["type"]
     assert json.dumps(action_fragment.to_dict())
 
@@ -132,11 +132,11 @@ def test_event_fragment():
         }
     }
 
-    event_fragment = EventFragment(init)
+    event_fragment = EventFragmentDict(init)
 
     assert event_fragment.description == init["description"]
-    assert isinstance(event_fragment.data, DataSchema)
-    assert isinstance(next(six.itervalues(event_fragment.uri_variables)), DataSchema)
+    assert isinstance(event_fragment.data, DataSchemaDict)
+    assert isinstance(next(six.itervalues(event_fragment.uri_variables)), DataSchemaDict)
     assert event_fragment.to_dict()["forms"][0]["href"] == init["forms"][0]["href"]
     assert json.dumps(event_fragment.to_dict())
 
@@ -182,9 +182,9 @@ def test_thing_fragment():
     assert thing_fragment.id == init["id"]
     assert thing_fragment.name == init["name"]
     assert thing_fragment.description == init["description"]
-    assert isinstance(next(six.itervalues(thing_fragment.properties)), PropertyFragment)
-    assert isinstance(next(six.itervalues(thing_fragment.actions)), ActionFragment)
-    assert isinstance(next(six.itervalues(thing_fragment.events)), EventFragment)
+    assert isinstance(next(six.itervalues(thing_fragment.properties)), PropertyFragmentDict)
+    assert isinstance(next(six.itervalues(thing_fragment.actions)), ActionFragmentDict)
+    assert isinstance(next(six.itervalues(thing_fragment.events)), EventFragmentDict)
     assert json.dumps(thing_fragment.to_dict())
     assert next(six.itervalues(thing_fragment.to_dict()["properties"]))["type"]
 

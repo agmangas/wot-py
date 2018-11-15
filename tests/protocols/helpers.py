@@ -12,7 +12,7 @@ from faker import Faker
 from rx.concurrency import IOLoopScheduler
 
 from wotpy.td.description import ThingDescription
-from wotpy.wot.dictionaries.interaction import PropertyFragment, EventFragment, ActionFragment
+from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, EventFragmentDict, ActionFragmentDict
 
 
 def client_test_on_property_change(servient, protocol_client_cls):
@@ -22,7 +22,7 @@ def client_test_on_property_change(servient, protocol_client_cls):
 
     prop_name = uuid.uuid4().hex
 
-    exposed_thing.add_property(prop_name, PropertyFragment({
+    exposed_thing.add_property(prop_name, PropertyFragmentDict({
         "type": "string",
         "writable": True,
         "observable": True
@@ -74,7 +74,7 @@ def client_test_on_event(servient, protocol_client_cls):
 
     event_name = uuid.uuid4().hex
 
-    exposed_thing.add_event(event_name, EventFragment({
+    exposed_thing.add_event(event_name, EventFragmentDict({
         "type": "number"
     }))
 
@@ -120,7 +120,7 @@ def client_test_read_property(servient, protocol_client_cls):
 
     prop_name = uuid.uuid4().hex
 
-    exposed_thing.add_property(prop_name, PropertyFragment({
+    exposed_thing.add_property(prop_name, PropertyFragmentDict({
         "type": "string",
         "writable": True,
         "observable": True
@@ -153,7 +153,7 @@ def client_test_write_property(servient, protocol_client_cls):
 
     prop_name = uuid.uuid4().hex
 
-    exposed_thing.add_property(prop_name, PropertyFragment({
+    exposed_thing.add_property(prop_name, PropertyFragmentDict({
         "type": "string",
         "writable": True,
         "observable": True
@@ -192,7 +192,7 @@ def client_test_invoke_action(servient, protocol_client_cls):
         yield tornado.gen.sleep(random.random() * 0.1)
         raise tornado.gen.Return("{:f}".format(input_value))
 
-    exposed_thing.add_action(action_name, ActionFragment({
+    exposed_thing.add_action(action_name, ActionFragmentDict({
         "input": {"type": "number"},
         "output": {"type": "string"}
     }), action_handler)
@@ -228,7 +228,7 @@ def client_test_invoke_action_error(servient, protocol_client_cls):
     def action_handler(parameters):
         raise ValueError(err_message)
 
-    exposed_thing.add_action(action_name, ActionFragment({
+    exposed_thing.add_action(action_name, ActionFragmentDict({
         "input": {"type": "number"},
         "output": {"type": "string"}
     }), action_handler)
@@ -258,7 +258,7 @@ def client_test_on_property_change_error(servient, protocol_client_cls):
 
     prop_name = uuid.uuid4().hex
 
-    exposed_thing.add_property(prop_name, PropertyFragment({
+    exposed_thing.add_property(prop_name, PropertyFragmentDict({
         "type": "string",
         "writable": True,
         "observable": True

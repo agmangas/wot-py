@@ -23,7 +23,7 @@ from six.moves.urllib.parse import urlparse, urlunparse
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
-from wotpy.wot.dictionaries.interaction import PropertyFragment, ActionFragment, EventFragment
+from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 
@@ -63,29 +63,29 @@ def websocket_server():
     prop_value_02 = Faker().sentence()
     prop_value_03 = Faker().sentence()
 
-    prop_init_01 = PropertyFragment({
+    prop_init_01 = PropertyFragmentDict({
         "type": "string",
         "writable": True,
         "observable": True
     })
 
-    prop_init_02 = PropertyFragment({
+    prop_init_02 = PropertyFragmentDict({
         "type": "string",
         "writable": True,
         "observable": True
     })
 
-    prop_init_03 = PropertyFragment({
+    prop_init_03 = PropertyFragmentDict({
         "type": "string",
         "writable": True,
         "observable": True
     })
 
-    event_init_01 = EventFragment({
+    event_init_01 = EventFragmentDict({
         "type": "object"
     })
 
-    action_init_01 = ActionFragment({
+    action_init_01 = ActionFragmentDict({
         "input": {"type": "string"},
         "output": {"type": "string"}
     })

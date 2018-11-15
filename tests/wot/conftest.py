@@ -15,7 +15,7 @@ from wotpy.protocols.client import BaseProtocolClient
 from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
 from wotpy.wot.consumed.thing import ConsumedThing
-from wotpy.wot.dictionaries.interaction import PropertyFragment, ActionFragment, EventFragment
+from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 
@@ -23,7 +23,7 @@ from wotpy.wot.servient import Servient
 def _build_property_fragment():
     """Builds and returns a random Property init fragment."""
 
-    return PropertyFragment({
+    return PropertyFragmentDict({
         "description": Faker().sentence(),
         "readOnly": False,
         "observable": True,
@@ -34,7 +34,7 @@ def _build_property_fragment():
 def _build_event_fragment():
     """Builds and returns a random Event init fragment."""
 
-    return EventFragment({
+    return EventFragmentDict({
         "description": Faker().sentence(),
         "data": {"type": "string"}
     })
@@ -43,7 +43,7 @@ def _build_event_fragment():
 def _build_action_fragment():
     """Builds and returns a random Action init fragment."""
 
-    return ActionFragment({
+    return ActionFragmentDict({
         "description": Faker().sentence(),
         "input": {
             "type": "string",

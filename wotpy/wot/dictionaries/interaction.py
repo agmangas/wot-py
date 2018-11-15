@@ -9,11 +9,11 @@ import six
 
 from wotpy.wot.dictionaries.base import WotBaseDict
 from wotpy.wot.dictionaries.link import FormDict
-from wotpy.wot.dictionaries.schema import DataSchema
+from wotpy.wot.dictionaries.schema import DataSchemaDict
 from wotpy.wot.dictionaries.security import SecuritySchemeDict
 
 
-class InteractionFragment(WotBaseDict):
+class InteractionFragmentDict(WotBaseDict):
     """Base class for the three types of Interaction patterns
     (Properties, Actions and Events)."""
 
@@ -39,7 +39,7 @@ class InteractionFragment(WotBaseDict):
         """Define URI template variables as collection based on DataSchema declarations."""
 
         return {
-            key: DataSchema.build(val)
+            key: DataSchemaDict.build(val)
             for key, val in six.iteritems(self._init.get("uriVariables", {}))
         }
 
@@ -52,31 +52,31 @@ class InteractionFragment(WotBaseDict):
         return [SecuritySchemeDict.build(item) for item in self._init.get("security", [])]
 
 
-class PropertyFragment(InteractionFragment):
+class PropertyFragmentDict(InteractionFragmentDict):
     """A dictionary wrapper class that contains data to initialize a Property."""
 
     class Meta:
-        fields = InteractionFragment.Meta.fields.union({
+        fields = InteractionFragmentDict.Meta.fields.union({
             "observable"
         })
 
     def __init__(self, *args, **kwargs):
-        super(PropertyFragment, self).__init__(*args, **kwargs)
-        self._data_schema = DataSchema.build(self._init)
+        super(PropertyFragmentDict, self).__init__(*args, **kwargs)
+        self._data_schema = DataSchemaDict.build(self._init)
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
         the internal ValueType before propagating the exception."""
 
         try:
-            return super(PropertyFragment, self).__getattr__(name)
+            return super(PropertyFragmentDict, self).__getattr__(name)
         except AttributeError:
             return getattr(self.data_schema, name)
 
     def to_dict(self):
         """Returns the pure dict (JSON-serializable) representation of this WoT dictionary."""
 
-        ret = super(PropertyFragment, self).to_dict()
+        ret = super(PropertyFragmentDict, self).to_dict()
         ret.update(self.data_schema.to_dict())
 
         return ret
@@ -94,11 +94,11 @@ class PropertyFragment(InteractionFragment):
         return not self.data_schema.read_only
 
 
-class ActionFragment(InteractionFragment):
+class ActionFragmentDict(InteractionFragmentDict):
     """A dictionary wrapper class that contains data to initialize an Action."""
 
     class Meta:
-        fields = InteractionFragment.Meta.fields.union({
+        fields = InteractionFragmentDict.Meta.fields.union({
             "input",
             "output",
             "safe",
@@ -116,7 +116,7 @@ class ActionFragment(InteractionFragment):
 
         init = self._init.get("input")
 
-        return DataSchema.build(init) if init else None
+        return DataSchemaDict.build(init) if init else None
 
     @property
     def output(self):
@@ -124,14 +124,14 @@ class ActionFragment(InteractionFragment):
 
         init = self._init.get("output")
 
-        return DataSchema.build(init) if init else None
+        return DataSchemaDict.build(init) if init else None
 
 
-class EventFragment(InteractionFragment):
+class EventFragmentDict(InteractionFragmentDict):
     """A dictionary wrapper class that contains data to initialize an Event."""
 
     class Meta:
-        fields = InteractionFragment.Meta.fields.union({
+        fields = InteractionFragmentDict.Meta.fields.union({
             "subscription",
             "data",
             "cancellation"
@@ -144,7 +144,7 @@ class EventFragment(InteractionFragment):
 
         init = self._init.get("subscription")
 
-        return DataSchema.build(init) if init else None
+        return DataSchemaDict.build(init) if init else None
 
     @property
     def data(self):
@@ -152,7 +152,7 @@ class EventFragment(InteractionFragment):
 
         init = self._init.get("data")
 
-        return DataSchema.build(init) if init else None
+        return DataSchemaDict.build(init) if init else None
 
     @property
     def cancellation(self):
@@ -161,4 +161,4 @@ class EventFragment(InteractionFragment):
 
         init = self._init.get("cancellation")
 
-        return DataSchema.build(init) if init else None
+        return DataSchemaDict.build(init) if init else None

@@ -12,7 +12,7 @@ from slugify import slugify
 
 from wotpy.td.enums import InteractionTypes
 from wotpy.td.validation import is_valid_safe_name
-from wotpy.wot.dictionaries.interaction import PropertyFragment, ActionFragment, EventFragment
+from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 
 
 class InteractionPattern(object):
@@ -109,7 +109,7 @@ class Property(InteractionPattern):
     def init_class(self):
         """Returns the init dict class for this type of interaction."""
 
-        return PropertyFragment
+        return PropertyFragmentDict
 
     @property
     def interaction_type(self):
@@ -126,7 +126,7 @@ class Action(InteractionPattern):
     def init_class(self):
         """Returns the init dict class for this type of interaction."""
 
-        return ActionFragment
+        return ActionFragmentDict
 
     @property
     def interaction_type(self):
@@ -143,7 +143,7 @@ class Event(InteractionPattern):
     def init_class(self):
         """Returns the init dict class for this type of interaction."""
 
-        return EventFragment
+        return EventFragmentDict
 
     @property
     def interaction_type(self):

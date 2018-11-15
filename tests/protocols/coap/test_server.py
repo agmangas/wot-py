@@ -15,7 +15,7 @@ from faker import Faker
 
 from wotpy.protocols.coap.server import CoAPServer
 from wotpy.protocols.enums import InteractionVerbs
-from wotpy.wot.dictionaries.interaction import ActionFragment
+from wotpy.wot.dictionaries.interaction import ActionFragmentDict
 
 
 def _get_property_href(exp_thing, prop_name, server):
@@ -264,7 +264,7 @@ def test_action_invoke_parallel(coap_server):
         yield handler_futures[inp.get("future")]
         raise tornado.gen.Return(inp.get("number") * 3)
 
-    exposed_thing.add_action(action_name, ActionFragment({
+    exposed_thing.add_action(action_name, ActionFragmentDict({
         "input": {"type": "object"},
         "output": {"type": "number"}
     }), handler)

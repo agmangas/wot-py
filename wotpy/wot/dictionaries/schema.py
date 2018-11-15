@@ -12,7 +12,7 @@ from wotpy.wot.dictionaries.utils import build_init_dict
 from wotpy.wot.enums import DataType
 
 
-class DataSchema(WotBaseDict):
+class DataSchemaDict(WotBaseDict):
     """Represents the common properties of a value type definition."""
 
     class Meta:
@@ -39,11 +39,11 @@ class DataSchema(WotBaseDict):
         init_dict = build_init_dict(args, kwargs)
 
         klass_map = {
-            DataType.NUMBER: NumberSchema,
-            DataType.BOOLEAN: BooleanSchema,
-            DataType.STRING: StringSchema,
-            DataType.OBJECT: ObjectSchema,
-            DataType.ARRAY: ArraySchema,
+            DataType.NUMBER: NumberSchemaDict,
+            DataType.BOOLEAN: BooleanSchemaDict,
+            DataType.STRING: StringSchemaDict,
+            DataType.OBJECT: ObjectSchemaDict,
+            DataType.ARRAY: ArraySchemaDict,
             DataType.INTEGER: IntegerSchema
         }
 
@@ -56,16 +56,16 @@ class DataSchema(WotBaseDict):
         return klass(*args, **kwargs)
 
 
-class NumberSchema(DataSchema):
+class NumberSchemaDict(DataSchemaDict):
     """Properties to describe a numeric type."""
 
     class Meta:
-        fields = DataSchema.Meta.fields.union({
+        fields = DataSchemaDict.Meta.fields.union({
             "minimum",
             "maximum"
         })
 
-        defaults = DataSchema.Meta.defaults
+        defaults = DataSchemaDict.Meta.defaults
 
     @property
     def type(self):
@@ -74,7 +74,7 @@ class NumberSchema(DataSchema):
         return DataType.NUMBER
 
 
-class BooleanSchema(DataSchema):
+class BooleanSchemaDict(DataSchemaDict):
     """Properties to describe a boolean type."""
 
     @property
@@ -84,7 +84,7 @@ class BooleanSchema(DataSchema):
         return DataType.BOOLEAN
 
 
-class StringSchema(DataSchema):
+class StringSchemaDict(DataSchemaDict):
     """Properties to describe a string type."""
 
     @property
@@ -94,16 +94,16 @@ class StringSchema(DataSchema):
         return DataType.STRING
 
 
-class ObjectSchema(DataSchema):
+class ObjectSchemaDict(DataSchemaDict):
     """Properties to describe an object type."""
 
     class Meta:
-        fields = DataSchema.Meta.fields.union({
+        fields = DataSchemaDict.Meta.fields.union({
             "properties",
             "required"
         })
 
-        defaults = DataSchema.Meta.defaults
+        defaults = DataSchemaDict.Meta.defaults
 
     @property
     def type(self):
@@ -116,22 +116,22 @@ class ObjectSchema(DataSchema):
         """Data schema nested definitions."""
 
         return {
-            key: DataSchema.build(val)
+            key: DataSchemaDict.build(val)
             for key, val in six.iteritems(self._init.get("properties", {}))
         }
 
 
-class ArraySchema(DataSchema):
+class ArraySchemaDict(DataSchemaDict):
     """Properties to describe an array type."""
 
     class Meta:
-        fields = DataSchema.Meta.fields.union({
+        fields = DataSchemaDict.Meta.fields.union({
             "items",
             "minItems",
             "maxItems"
         })
 
-        defaults = DataSchema.Meta.defaults
+        defaults = DataSchemaDict.Meta.defaults
 
     @property
     def type(self):
@@ -143,10 +143,10 @@ class ArraySchema(DataSchema):
     def items(self):
         """Used to define the characteristics of an array."""
 
-        return DataSchema.build(self._init["items"]) if "items" in self._init else None
+        return DataSchemaDict.build(self._init["items"]) if "items" in self._init else None
 
 
-class IntegerSchema(NumberSchema):
+class IntegerSchema(NumberSchemaDict):
     """Properties to describe an integer type."""
 
     @property

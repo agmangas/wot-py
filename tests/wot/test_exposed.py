@@ -14,7 +14,7 @@ import tornado.ioloop
 from faker import Faker
 from tornado.concurrent import Future
 
-from wotpy.wot.dictionaries.interaction import PropertyFragment
+from wotpy.wot.dictionaries.interaction import PropertyFragmentDict
 from wotpy.wot.enums import TDChangeMethod, TDChangeType
 
 
@@ -120,7 +120,7 @@ def test_write_property(exposed_thing, property_fragment):
 def test_write_non_writable_property(exposed_thing):
     """Attempts to write a non-writable property should return an error."""
 
-    prop_init_non_writable = PropertyFragment({
+    prop_init_non_writable = PropertyFragmentDict({
         "type": "string",
         "readOnly": True
     })
@@ -242,7 +242,7 @@ def test_on_property_change(exposed_thing, property_fragment):
 def test_on_property_change_non_observable(exposed_thing):
     """Observe requests to non-observable properties are rejected."""
 
-    prop_init_non_observable = PropertyFragment({
+    prop_init_non_observable = PropertyFragmentDict({
         "type": "string",
         "observable": False
     })

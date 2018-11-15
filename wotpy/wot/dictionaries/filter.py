@@ -9,7 +9,7 @@ from wotpy.wot.dictionaries.thing import ThingFragment
 from wotpy.wot.dictionaries.utils import build_init_dict
 
 
-class ThingFilter(object):
+class ThingFilterDict(object):
     """The ThingFilter dictionary that represents the
     constraints for discovering Things as key-value pairs."""
 

@@ -12,7 +12,7 @@ from faker import Faker
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
-from wotpy.wot.dictionaries.interaction import PropertyFragment, ActionFragment, EventFragment
+from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 
@@ -23,19 +23,19 @@ def http_server():
 
     exposed_thing = ExposedThing(servient=Servient(), thing=Thing(id=uuid.uuid4().urn))
 
-    exposed_thing.add_property(uuid.uuid4().hex, PropertyFragment({
+    exposed_thing.add_property(uuid.uuid4().hex, PropertyFragmentDict({
         "type": "number",
         "writable": True,
         "observable": True
     }), value=Faker().pyint())
 
-    exposed_thing.add_property(uuid.uuid4().hex, PropertyFragment({
+    exposed_thing.add_property(uuid.uuid4().hex, PropertyFragmentDict({
         "type": "number",
         "writable": True,
         "observable": True
     }), value=Faker().pyint())
 
-    exposed_thing.add_event(uuid.uuid4().hex, EventFragment({
+    exposed_thing.add_event(uuid.uuid4().hex, EventFragmentDict({
         "type": "object"
     }))
 
@@ -47,7 +47,7 @@ def http_server():
         yield tornado.gen.sleep(0)
         raise tornado.gen.Return(input_value * 3)
 
-    exposed_thing.add_action(action_name, ActionFragment({
+    exposed_thing.add_action(action_name, ActionFragmentDict({
         "input": {"type": "number"},
         "output": {"type": "number"}
     }), triple)

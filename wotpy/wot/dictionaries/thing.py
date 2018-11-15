@@ -8,7 +8,7 @@ Wrapper class for dictionaries to represent Things.
 import six
 
 from wotpy.wot.dictionaries.base import WotBaseDict
-from wotpy.wot.dictionaries.interaction import PropertyFragment, ActionFragment, EventFragment
+from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.wot.dictionaries.link import LinkDict
 from wotpy.wot.dictionaries.security import SecuritySchemeDict
 from wotpy.wot.enums import SecuritySchemeType
@@ -66,7 +66,7 @@ class ThingFragment(WotBaseDict):
         that correspond to Property names and values of type PropertyFragment."""
 
         return {
-            key: PropertyFragment(val)
+            key: PropertyFragmentDict(val)
             for key, val in six.iteritems(self._init.get("properties", {}))
         }
 
@@ -76,7 +76,7 @@ class ThingFragment(WotBaseDict):
         that correspond to Action names and values of type ActionFragment."""
 
         return {
-            key: ActionFragment(val)
+            key: ActionFragmentDict(val)
             for key, val in six.iteritems(self._init.get("actions", {}))
         }
 
@@ -86,7 +86,7 @@ class ThingFragment(WotBaseDict):
         that correspond to Event names and values of type EventFragment."""
 
         return {
-            key: EventFragment(val)
+            key: EventFragmentDict(val)
             for key, val in six.iteritems(self._init.get("events", {}))
         }
 

@@ -13,7 +13,7 @@ from faker import Faker
 from wotpy.protocols.support import is_coap_supported
 from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
-from wotpy.wot.dictionaries.interaction import PropertyFragment, EventFragment, ActionFragment
+from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, EventFragmentDict, ActionFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 
@@ -32,19 +32,19 @@ def coap_server(request):
 
     exposed_thing = ExposedThing(servient=Servient(), thing=Thing(id=uuid.uuid4().urn))
 
-    exposed_thing.add_property(uuid.uuid4().hex, PropertyFragment({
+    exposed_thing.add_property(uuid.uuid4().hex, PropertyFragmentDict({
         "type": "number",
         "writable": True,
         "observable": True
     }), value=Faker().pyint())
 
-    exposed_thing.add_property(uuid.uuid4().hex, PropertyFragment({
+    exposed_thing.add_property(uuid.uuid4().hex, PropertyFragmentDict({
         "type": "string",
         "writable": True,
         "observable": True
     }), value=Faker().pyint())
 
-    exposed_thing.add_event(uuid.uuid4().hex, EventFragment({
+    exposed_thing.add_event(uuid.uuid4().hex, EventFragmentDict({
         "type": "object"
     }))
 
@@ -55,7 +55,7 @@ def coap_server(request):
         input_value = parameters.get("input")
         raise tornado.gen.Return(input_value * 3)
 
-    exposed_thing.add_action(action_name, ActionFragment({
+    exposed_thing.add_action(action_name, ActionFragmentDict({
         "input": {"type": "number"},
         "output": {"type": "number"}
     }), triple)

@@ -23,7 +23,7 @@ from tests.protocols.helpers import \
 from wotpy.protocols.exceptions import ProtocolClientException
 from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.td.description import ThingDescription
-from wotpy.wot.dictionaries.interaction import ActionFragment
+from wotpy.wot.dictionaries.interaction import ActionFragmentDict
 
 
 @pytest.mark.flaky(reruns=5)

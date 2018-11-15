@@ -13,7 +13,7 @@ from faker import Faker
 from wotpy.protocols.support import is_mqtt_supported
 from wotpy.td.description import ThingDescription
 from wotpy.td.thing import Thing
-from wotpy.wot.dictionaries.interaction import ActionFragment, EventFragment, PropertyFragment
+from wotpy.wot.dictionaries.interaction import ActionFragmentDict, EventFragmentDict, PropertyFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 
@@ -33,13 +33,13 @@ def mqtt_server(request):
 
     exposed_thing = ExposedThing(servient=Servient(), thing=Thing(id=uuid.uuid4().urn))
 
-    exposed_thing.add_property(uuid.uuid4().hex, PropertyFragment({
+    exposed_thing.add_property(uuid.uuid4().hex, PropertyFragmentDict({
         "type": "string",
         "writable": True,
         "observable": True
     }), value=Faker().sentence())
 
-    exposed_thing.add_event(uuid.uuid4().hex, EventFragment({
+    exposed_thing.add_event(uuid.uuid4().hex, EventFragmentDict({
         "type": "number"
     }))
 
@@ -51,7 +51,7 @@ def mqtt_server(request):
         yield tornado.gen.sleep(random.random() * 0.1)
         raise tornado.gen.Return("{:f}".format(input_value))
 
-    exposed_thing.add_action(action_name, ActionFragment({
+    exposed_thing.add_action(action_name, ActionFragmentDict({
         "input": {"type": "number"},
         "output": {"type": "string"}
     }), handler)
