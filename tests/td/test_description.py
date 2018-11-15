@@ -80,12 +80,15 @@ def test_from_thing():
     json_td = ThingDescription.from_thing(thing)
     td_dict = json_td.to_dict()
 
-    assert td_dict["id"] == thing_id
+    assert td_dict["id"] == thing.id
+    assert td_dict["name"] == thing.name
     assert len(td_dict["properties"]) == 1
     assert len(td_dict["actions"]) == 1
     assert len(td_dict["events"]) == 1
     assert len(td_dict["actions"][action_id]["forms"]) == 1
+    assert len(td_dict["properties"][prop_id]["forms"]) == 1
     assert td_dict["actions"][action_id]["forms"][0]["href"] == action_form_href
+    assert td_dict["properties"][prop_id]["forms"][0]["href"] == prop_form_href
 
 
 def test_build_thing():
