@@ -4,7 +4,6 @@
 """
 Class that represents the form entities exposed by interactions.
 """
-import six
 
 from wotpy.wot.dictionaries.link import FormDict
 
