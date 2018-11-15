@@ -17,16 +17,6 @@ class DiscoveryMethod(EnumListMixin):
     MULTICAST = "multicast"
 
 
-class JSONType(EnumListMixin):
-    """Enumeration of the types that values can take."""
-
-    BOOLEAN = "boolean"
-    NUMBER = "number"
-    STRING = "string"
-    OBJECT = "object"
-    ARRAY = "array"
-
-
 class TDChangeType(EnumListMixin):
     """Represents the change type, whether has it been
     applied on properties, Actions or Events."""
@@ -79,12 +69,3 @@ class SecuritySchemeType(EnumListMixin):
     PUBLIC = "public"
     OAUTH2 = "oauth2"
     APIKEY = "apikey"
-
-
-class AuthenticationType(EnumListMixin):
-    """Defines the location of the authentication information."""
-
-    HEADER = "header"
-    BODY = "body"
-    QUERY = "query"
-    COOKIE = "cookie"
