@@ -2,17 +2,28 @@
 # -*- coding: utf-8 -*-
 
 import json
+import os
 import random
+import ssl
+import tempfile
+import uuid
 
+import pytest
 import six
 import tornado.gen
 import tornado.httpclient
 import tornado.ioloop
+from OpenSSL import crypto
 from faker import Faker
 from six.moves.urllib import parse
 from tornado.concurrent import Future
 
 from wotpy.protocols.enums import InteractionVerbs
+from wotpy.protocols.http.server import HTTPServer
+from wotpy.td.thing import Thing
+from wotpy.wot.dictionaries.interaction import PropertyFragmentDict
+from wotpy.wot.exposed.thing import ExposedThing
+from wotpy.wot.servient import Servient
 
 JSON_HEADERS = {"Content-Type": "application/json"}
 
@@ -257,3 +268,76 @@ def test_event_subscribe(http_server):
         assert json.loads(response.body).get("payload") == payload
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_ssl_context():
+    """An SSL context can be passed to the HTTP server to enable encryption."""
+
+    certfile = os.path.join(tempfile.gettempdir(), "{}.pem".format(uuid.uuid4().hex))
+    keyfile = os.path.join(tempfile.gettempdir(), "{}.pem".format(uuid.uuid4().hex))
+
+    pkey = crypto.PKey()
+    pkey.generate_key(crypto.TYPE_RSA, 2048)
+
+    cert = crypto.X509()
+    cert.get_subject().C = "ES"
+    cert.get_subject().ST = Faker().pystr()
+    cert.get_subject().L = Faker().pystr()
+    cert.get_subject().O = Faker().pystr()
+    cert.get_subject().OU = Faker().pystr()
+    cert.get_subject().CN = Faker().pystr()
+    cert.set_serial_number(Faker().pyint())
+    cert.gmtime_adj_notBefore(0)
+    cert.gmtime_adj_notAfter(3600)
+    cert.set_issuer(cert.get_subject())
+    cert.set_pubkey(pkey)
+    # noinspection PyTypeChecker
+    cert.sign(pkey, "sha384")
+
+    with open(certfile, "wb") as fh:
+        fh.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
+
+    with open(keyfile, "wb") as fh:
+        fh.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, pkey))
+
+    ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    ssl_context.load_cert_chain(certfile=certfile, keyfile=keyfile)
+
+    exposed_thing = ExposedThing(servient=Servient(), thing=Thing(id=uuid.uuid4().urn))
+
+    prop_name = uuid.uuid4().hex
+
+    exposed_thing.add_property(prop_name, PropertyFragmentDict({
+        "type": "string",
+        "observable": True
+    }), value=Faker().pystr())
+
+    port = random.randint(20000, 40000)
+
+    server = HTTPServer(port=port, ssl_context=ssl_context)
+    server.add_exposed_thing(exposed_thing)
+
+    href = _get_property_href(exposed_thing, prop_name, server)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        yield server.start()
+
+        prop_value = Faker().pystr()
+        yield exposed_thing.properties[prop_name].write(prop_value)
+        http_client = tornado.httpclient.AsyncHTTPClient()
+
+        with pytest.raises(ssl.SSLError):
+            yield http_client.fetch(tornado.httpclient.HTTPRequest(href, method="GET"))
+
+        http_request = tornado.httpclient.HTTPRequest(href, method="GET", validate_cert=False)
+        response = yield http_client.fetch(http_request)
+
+        assert json.loads(response.body).get("value") == prop_value
+
+        yield server.stop()
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+    os.remove(certfile)
+    os.remove(keyfile)

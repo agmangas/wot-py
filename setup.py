@@ -51,7 +51,8 @@ setup(
             'faker',
             'Sphinx',
             'sphinx-rtd-theme',
-            'futures'
+            'futures',
+            'pyOpenSSL>=18.0.0,<19.0.0'
         ]
     }
 )
