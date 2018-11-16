@@ -55,7 +55,10 @@ class FormDict(LinkDict):
         that must all be satisfied for access to resources at or
         below the current level, if not overridden at a lower level"""
 
-        return [SecuritySchemeDict.build(item) for item in self._init.get("security", [])]
+        if "security" not in self._init:
+            return None
+
+        return [SecuritySchemeDict.build(item) for item in self._init.get("security")]
 
     def resolve_uri(self, base=None):
         """Resolves and returns the Link URI.

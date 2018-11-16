@@ -38,9 +38,12 @@ class InteractionFragmentDict(WotBaseDict):
     def uri_variables(self):
         """Define URI template variables as collection based on DataSchema declarations."""
 
+        if "uriVariables" not in self._init:
+            return None
+
         return {
             key: DataSchemaDict.build(val)
-            for key, val in six.iteritems(self._init.get("uriVariables", {}))
+            for key, val in six.iteritems(self._init.get("uriVariables"))
         }
 
     @property
@@ -49,7 +52,10 @@ class InteractionFragmentDict(WotBaseDict):
         that must all be satisfied for access to resources at or
         below the current level, if not overridden at a lower level."""
 
-        return [SecuritySchemeDict.build(item) for item in self._init.get("security", [])]
+        if "security" not in self._init:
+            return None
+
+        return [SecuritySchemeDict.build(item) for item in self._init.get("security")]
 
 
 class PropertyFragmentDict(InteractionFragmentDict):
