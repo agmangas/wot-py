@@ -217,8 +217,7 @@ class WebsocketClient(BaseProtocolClient):
 
         form = pick_form(
             td, td.get_action_forms(name),
-            WebsocketSchemes.list(),
-            op=InteractionVerbs.INVOKE_ACTION)
+            WebsocketSchemes.list())
 
         if not form:
             raise FormNotFoundException()
@@ -244,8 +243,7 @@ class WebsocketClient(BaseProtocolClient):
 
         form = pick_form(
             td, td.get_property_forms(name),
-            WebsocketSchemes.list(),
-            op=InteractionVerbs.WRITE_PROPERTY)
+            WebsocketSchemes.list())
 
         if not form:
             raise FormNotFoundException()
@@ -271,8 +269,7 @@ class WebsocketClient(BaseProtocolClient):
 
         form = pick_form(
             td, td.get_property_forms(name),
-            WebsocketSchemes.list(),
-            op=InteractionVerbs.READ_PROPERTY)
+            WebsocketSchemes.list())
 
         if not form:
             raise FormNotFoundException()
@@ -298,8 +295,7 @@ class WebsocketClient(BaseProtocolClient):
 
         form = pick_form(
             td, td.get_event_forms(name),
-            WebsocketSchemes.list(),
-            op=InteractionVerbs.SUBSCRIBE_EVENT)
+            WebsocketSchemes.list())
 
         if not form:
             # noinspection PyUnresolvedReferences
@@ -330,8 +326,7 @@ class WebsocketClient(BaseProtocolClient):
 
         form = pick_form(
             td, td.get_property_forms(name),
-            WebsocketSchemes.list(),
-            op=InteractionVerbs.OBSERVE_PROPERTY)
+            WebsocketSchemes.list())
 
         if not form:
             # noinspection PyUnresolvedReferences

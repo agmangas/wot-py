@@ -16,6 +16,7 @@ from tornado.ioloop import IOLoop, PeriodicCallback
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.wot.servient import Servient
+from wotpy.protocols.coap.server import CoAPServer
 
 CATALOGUE_PORT = 9292
 WEBSOCKET_PORT = 9393
@@ -103,6 +104,7 @@ def main():
     servient = Servient()
     servient.add_server(ws_server)
     servient.add_server(http_server)
+    servient.add_server(CoAPServer())
     servient.enable_td_catalogue(CATALOGUE_PORT)
 
     LOGGER.info("Starting servient")

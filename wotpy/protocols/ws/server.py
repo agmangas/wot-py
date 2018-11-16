@@ -10,7 +10,7 @@ from tornado import web
 from tornado.httpserver import HTTPServer
 
 from wotpy.codecs.enums import MediaTypes
-from wotpy.protocols.enums import Protocols, InteractionVerbs
+from wotpy.protocols.enums import Protocols
 from wotpy.protocols.server import BaseProtocolServer
 from wotpy.protocols.ws.enums import WebsocketSchemes
 from wotpy.protocols.ws.handler import WebsocketHandler
@@ -74,23 +74,13 @@ class WebsocketServer(BaseProtocolServer):
 
         base_url = self.build_base_url(hostname=hostname, thing=exposed_thing.thing)
 
-        def build_op_form(the_op):
-            return Form(
+        return [
+            Form(
                 interaction=interaction,
                 protocol=self.protocol,
                 href=base_url,
-                content_type=MediaTypes.JSON,
-                op=the_op)
-
-        ops = [
-            InteractionVerbs.WRITE_PROPERTY,
-            InteractionVerbs.READ_PROPERTY,
-            InteractionVerbs.OBSERVE_PROPERTY,
-            InteractionVerbs.INVOKE_ACTION,
-            InteractionVerbs.SUBSCRIBE_EVENT
+                content_type=MediaTypes.JSON)
         ]
-
-        return [build_op_form(op) for op in ops]
 
     def build_base_url(self, hostname, thing):
         """Returns the base URL for the given Thing in the context of this server."""
