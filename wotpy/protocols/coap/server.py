@@ -143,9 +143,10 @@ class CoAPServer(BaseProtocolServer):
         if not self.exposed_thing_group.find_by_thing_id(thing.id):
             raise ValueError("Unknown Thing")
 
-        return "{}://{}:{}/{}".format(
-            self.scheme, hostname.rstrip("/").lstrip("/"),
-            self.port, thing.url_name)
+        return "{}://{}:{}".format(
+            self.scheme,
+            hostname.rstrip("/").lstrip("/"),
+            self.port)
 
     def _build_root_site(self):
         """Builds and returns the root CoAP Site."""

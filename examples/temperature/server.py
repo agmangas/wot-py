@@ -13,14 +13,15 @@ import random
 import tornado.gen
 from tornado.ioloop import IOLoop, PeriodicCallback
 
+from wotpy.protocols.coap.server import CoAPServer
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.wot.servient import Servient
-from wotpy.protocols.coap.server import CoAPServer
 
 CATALOGUE_PORT = 9292
 WEBSOCKET_PORT = 9393
 HTTP_PORT = 9494
+COAP_PORT = 9595
 
 GLOBAL_TEMPERATURE = None
 PERIODIC_MS = 3000
@@ -99,12 +100,16 @@ def main():
 
     http_server = HTTPServer(port=HTTP_PORT)
 
+    LOGGER.info("Creating CoAP server on: {}".format(COAP_PORT))
+
+    coap_server = CoAPServer(port=COAP_PORT)
+
     LOGGER.info("Creating servient with TD catalogue on: {}".format(CATALOGUE_PORT))
 
     servient = Servient()
     servient.add_server(ws_server)
     servient.add_server(http_server)
-    servient.add_server(CoAPServer())
+    servient.add_server(coap_server)
     servient.enable_td_catalogue(CATALOGUE_PORT)
 
     LOGGER.info("Starting servient")
