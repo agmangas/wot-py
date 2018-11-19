@@ -2,24 +2,30 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import random
+import ssl
 import uuid
 
-# noinspection PyPackageRequirements
 import pytest
 import tornado.gen
+import tornado.httpclient
 import tornado.ioloop
 import tornado.testing
 import tornado.websocket
-# noinspection PyPackageRequirements
 from faker import Faker
 
-from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketErrors
+from tests.protocols.ws.conftest import build_websocket_url
+from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketErrors, WebsocketSchemes
 from wotpy.protocols.ws.messages import \
     WebsocketMessageRequest, \
     WebsocketMessageResponse, \
     WebsocketMessageError, \
     WebsocketMessageEmittedItem
+from wotpy.protocols.ws.server import WebsocketServer
+from wotpy.td.thing import Thing
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict
+from wotpy.wot.exposed.thing import ExposedThing
+from wotpy.wot.servient import Servient
 
 
 @pytest.mark.flaky(reruns=5)
@@ -45,9 +51,6 @@ def test_read_property(websocket_server):
 
     url_thing_01 = websocket_server.pop("url_thing_01")
     url_thing_02 = websocket_server.pop("url_thing_02")
-    prop_init_01 = websocket_server.pop("prop_init_01")
-    prop_init_02 = websocket_server.pop("prop_init_02")
-    prop_init_03 = websocket_server.pop("prop_init_03")
     prop_name_01 = websocket_server.pop("prop_name_01")
     prop_name_02 = websocket_server.pop("prop_name_02")
     prop_name_03 = websocket_server.pop("prop_name_03")
@@ -92,12 +95,6 @@ def test_read_property(websocket_server):
         ws_resp_01 = WebsocketMessageResponse.from_raw(raw_resp_01)
         ws_resp_02 = WebsocketMessageResponse.from_raw(raw_resp_02)
         ws_resp_03 = WebsocketMessageResponse.from_raw(raw_resp_03)
-
-        prop_init_map = {
-            request_id_01: prop_init_01,
-            request_id_02: prop_init_02,
-            request_id_03: prop_init_03
-        }
 
         assert ws_resp_01.result == prop_value_01
         assert ws_resp_02.result == prop_value_02
@@ -435,5 +432,62 @@ def test_dispose(websocket_server):
             yield tornado.gen.with_timeout(
                 timeout=datetime.timedelta(milliseconds=200),
                 future=conn.read_message())
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+@pytest.mark.flaky(reruns=5)
+def test_ssl_context(self_signed_ssl_context):
+    """An SSL context can be passed to the WebSockets server to enable encryption."""
+
+    exposed_thing = ExposedThing(servient=Servient(), thing=Thing(id=uuid.uuid4().urn))
+
+    prop_name = uuid.uuid4().hex
+
+    exposed_thing.add_property(prop_name, PropertyFragmentDict({
+        "type": "string",
+        "observable": True
+    }), value=Faker().pystr())
+
+    port = random.randint(20000, 40000)
+
+    server = WebsocketServer(port=port, ssl_context=self_signed_ssl_context)
+    server.add_exposed_thing(exposed_thing)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        yield server.start()
+
+        ws_url = build_websocket_url(exposed_thing, server, port)
+
+        assert WebsocketSchemes.WSS in ws_url
+
+        with pytest.raises(ssl.SSLError):
+            http_req = tornado.httpclient.HTTPRequest(ws_url, method="GET")
+            yield tornado.websocket.websocket_connect(http_req)
+
+        http_req = tornado.httpclient.HTTPRequest(ws_url, method="GET", validate_cert=False)
+        conn = yield tornado.websocket.websocket_connect(http_req)
+
+        request_id = Faker().pyint()
+
+        msg_req = WebsocketMessageRequest(
+            method=WebsocketMethods.READ_PROPERTY,
+            params={"name": prop_name},
+            msg_id=request_id)
+
+        conn.write_message(msg_req.to_json())
+
+        msg_resp_raw = yield conn.read_message()
+        msg_resp = WebsocketMessageResponse.from_raw(msg_resp_raw)
+
+        assert msg_resp.id == request_id
+
+        value = yield exposed_thing.read_property(prop_name)
+
+        assert value == msg_resp.result
+
+        yield conn.close()
+        yield server.stop()
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
