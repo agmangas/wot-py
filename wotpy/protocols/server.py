@@ -7,7 +7,7 @@ Class that represents the abstract server interface.
 
 from abc import ABCMeta, abstractmethod
 
-from wotpy.wot.exposed.group import ExposedThingGroup
+from wotpy.wot.exposed.group import ExposedThingSet
 
 
 class BaseProtocolServer(object):
@@ -19,7 +19,7 @@ class BaseProtocolServer(object):
     def __init__(self, port):
         self._port = port
         self._codecs = []
-        self._exposed_thing_group = ExposedThingGroup()
+        self._exposed_thing_group = ExposedThingSet()
 
     @property
     @abstractmethod
@@ -36,7 +36,7 @@ class BaseProtocolServer(object):
 
     @property
     def exposed_thing_group(self):
-        """Returns the ExposedThingGroup instance that
+        """Returns the ExposedThingSet instance that
         contains the ExposedThings of this server."""
 
         return self._exposed_thing_group

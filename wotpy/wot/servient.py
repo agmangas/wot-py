@@ -21,7 +21,7 @@ from wotpy.protocols.support import is_coap_supported, is_mqtt_supported
 from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.td.description import ThingDescription
 from wotpy.td.enums import InteractionTypes
-from wotpy.wot.exposed.group import ExposedThingGroup
+from wotpy.wot.exposed.group import ExposedThingSet
 from wotpy.wot.wot import WoT
 
 
@@ -108,7 +108,7 @@ class Servient(object):
         self._clients = {}
         self._catalogue_port = None
         self._catalogue_server = None
-        self._exposed_thing_group = ExposedThingGroup()
+        self._exposed_thing_group = ExposedThingSet()
         self._servient_lock = tornado.locks.Lock()
         self._is_running = False
 
@@ -181,7 +181,7 @@ class Servient(object):
 
     @property
     def exposed_thing_group(self):
-        """Returns the ExposedThingGroup instance that
+        """Returns the ExposedThingSet instance that
         contains the ExposedThings of this servient."""
 
         return self._exposed_thing_group

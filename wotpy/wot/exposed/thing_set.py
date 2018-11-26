@@ -6,7 +6,7 @@ Class that represents a group or set of ExposedThing instances that exist in the
 """
 
 
-class ExposedThingGroup(object):
+class ExposedThingSet(object):
     """Represents a group of ExposedThing objects.
     A group cannot contain two ExposedThing with the same Thing ID."""
 
