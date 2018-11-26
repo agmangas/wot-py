@@ -147,9 +147,13 @@ def consumed_exposed_pair():
     ConsumedThing has been patched to use the ExposedThingProxyClient Protocol Binding client.
     * exposed_thing: The ExposedThing behind the previous ConsumedThing (for assertion purposes)."""
 
+    servient = Servient()
+
     exp_thing = ExposedThing(
-        servient=Servient(),
+        servient=servient,
         thing=Thing(id=uuid.uuid4().urn))
+
+    servient.select_client = MagicMock(return_value=ExposedThingProxyClient(exp_thing))
 
     @tornado.gen.coroutine
     def lower(parameters):
@@ -161,8 +165,6 @@ def consumed_exposed_pair():
     exp_thing.add_action(uuid.uuid4().hex, _build_action_fragment(), lower)
     exp_thing.add_event(uuid.uuid4().hex, _build_event_fragment())
 
-    servient = Servient()
-    servient.select_client = MagicMock(return_value=ExposedThingProxyClient(exp_thing))
     td = ThingDescription.from_thing(exp_thing.thing)
 
     return {

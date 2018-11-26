@@ -9,7 +9,6 @@ import json
 
 import six
 import tornado.gen
-# noinspection PyCompatibility
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 
 from wotpy.td.description import ThingDescription

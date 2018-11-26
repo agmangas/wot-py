@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import collections
 import random
 import uuid
 
@@ -250,7 +250,8 @@ def test_thing_property_subscribe(consumed_exposed_pair):
 
 
 def test_thing_property_getters(consumed_exposed_pair):
-    """Property init attributes can be accessed using the map-like interface."""
+    """ThingProperty retrieved from ConsumedThing expose the attributes
+    from the Interaction, InteractionFragment and PropertyFragment interfaces."""
 
     consumed_thing = consumed_exposed_pair.pop("consumed_thing")
     exposed_thing = consumed_exposed_pair.pop("exposed_thing")
@@ -261,7 +262,9 @@ def test_thing_property_getters(consumed_exposed_pair):
         thing_prop_con = consumed_thing.properties[prop_name]
         thing_prop_exp = exposed_thing.properties[prop_name]
 
-        assert thing_prop_con.writable == thing_prop_exp.writable
+        assert isinstance(thing_prop_con.forms, collections.Sequence)
+        assert thing_prop_con.title == thing_prop_exp.title
+        assert thing_prop_con.description == thing_prop_exp.description
         assert thing_prop_con.observable == thing_prop_exp.observable
         assert thing_prop_con.type == thing_prop_exp.type
 
@@ -288,7 +291,8 @@ def test_thing_action_run(consumed_exposed_pair):
 
 
 def test_thing_action_getters(consumed_exposed_pair):
-    """Action init attributes can be accessed using the map-like interface."""
+    """ThingAction retrieved from ConsumedThing expose the attributes
+    from the Interaction, InteractionFragment and ActionFragment interfaces."""
 
     consumed_thing = consumed_exposed_pair.pop("consumed_thing")
     exposed_thing = consumed_exposed_pair.pop("exposed_thing")
@@ -299,6 +303,9 @@ def test_thing_action_getters(consumed_exposed_pair):
         thing_action_con = consumed_thing.actions[action_name]
         thing_action_exp = exposed_thing.actions[action_name]
 
+        assert isinstance(thing_action_con.forms, collections.Sequence)
+        assert thing_action_con.title == thing_action_exp.title
+        assert thing_action_con.description == thing_action_exp.description
         assert thing_action_con.input.type == thing_action_exp.input.type
         assert thing_action_con.output.type == thing_action_exp.output.type
 
@@ -318,7 +325,8 @@ def test_thing_event_subscribe(consumed_exposed_pair):
 
 
 def test_thing_event_getters(consumed_exposed_pair):
-    """Event init attributes can be accessed using the map-like interface."""
+    """ThingEvent retrieved from ConsumedThing expose the attributes
+    from the Interaction, InteractionFragment and EventFragment interfaces."""
 
     consumed_thing = consumed_exposed_pair.pop("consumed_thing")
     exposed_thing = consumed_exposed_pair.pop("exposed_thing")
@@ -326,10 +334,13 @@ def test_thing_event_getters(consumed_exposed_pair):
     @tornado.gen.coroutine
     def test_coroutine():
         event_name = next(six.iterkeys(consumed_thing.td.events))
-        thing_action_con = consumed_thing.events[event_name]
-        thing_action_exp = exposed_thing.events[event_name]
+        thing_event_con = consumed_thing.events[event_name]
+        thing_event_exp = exposed_thing.events[event_name]
 
-        assert thing_action_con.data.type == thing_action_exp.data.type
+        assert isinstance(thing_event_con.forms, collections.Sequence)
+        assert thing_event_con.title == thing_event_exp.title
+        assert thing_event_con.description == thing_event_exp.description
+        assert thing_event_con.data.type == thing_event_exp.data.type
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
