@@ -13,7 +13,9 @@ from tornado.concurrent import Future
 
 from wotpy.td.description import ThingDescription
 from wotpy.td.interaction import Property, Action, Event
+from wotpy.td.thing import Thing
 from wotpy.utils.enums import EnumListMixin
+from wotpy.wot.dictionaries.utils import to_camel
 from wotpy.wot.enums import DefaultThingEvent, TDChangeMethod, TDChangeType
 from wotpy.wot.events import \
     EmittedEvent, \
@@ -24,9 +26,9 @@ from wotpy.wot.events import \
     ActionInvocationEventInit, \
     ThingDescriptionChangeEventInit
 from wotpy.wot.exposed.interactions import \
-    ExposedThingPropertyDict, \
+    ExposedThingEventDict, \
     ExposedThingActionDict, \
-    ExposedThingEventDict
+    ExposedThingPropertyDict
 
 
 class ExposedThing(object):
@@ -79,6 +81,16 @@ class ExposedThing(object):
         the private Thing instance before propagating the exception."""
 
         return getattr(self.thing, name)
+
+    def __setattr__(self, name, value):
+        """Setter for ThingFragment attributes."""
+
+        name_camel = to_camel(name)
+
+        if name_camel not in Thing.THING_FRAGMENT_WRITABLE_FIELDS:
+            return super(ExposedThing, self).__setattr__(name, value)
+
+        return self._thing.__setattr__(name, value)
 
     def _set_property_value(self, prop, value):
         """Sets a Property value."""
@@ -146,6 +158,12 @@ class ExposedThing(object):
         return future_invoke
 
     @property
+    def id(self):
+        """Returns the ID of the Thing."""
+
+        return self.thing.id
+
+    @property
     def servient(self):
         """Servient that contains this ExposedThing."""
 
@@ -156,6 +174,24 @@ class ExposedThing(object):
         """Returns the object that represents the Thing beneath this ExposedThing."""
 
         return self._thing
+
+    @property
+    def properties(self):
+        """Returns a dictionary of ThingProperty items."""
+
+        return ExposedThingPropertyDict(exposed_thing=self)
+
+    @property
+    def actions(self):
+        """Returns a dictionary of ThingAction items."""
+
+        return ExposedThingActionDict(exposed_thing=self)
+
+    @property
+    def events(self):
+        """Returns a dictionary of ThingEvent items."""
+
+        return ExposedThingEventDict(exposed_thing=self)
 
     @tornado.gen.coroutine
     def read_property(self, name):
@@ -418,30 +454,6 @@ class ExposedThing(object):
             interaction=proprty)
 
         return self
-
-    @property
-    def properties(self):
-        """Returns a dictionary of ThingProperty items."""
-
-        return ExposedThingPropertyDict(exposed_thing=self)
-
-    @property
-    def actions(self):
-        """Returns a dictionary of ThingAction items."""
-
-        return ExposedThingActionDict(exposed_thing=self)
-
-    @property
-    def events(self):
-        """Returns a dictionary of ThingEvent items."""
-
-        return ExposedThingEventDict(exposed_thing=self)
-
-    @property
-    def links(self):
-        """Returns a dictionary of WebLink items."""
-
-        raise NotImplementedError()
 
     def subscribe(self, *args, **kwargs):
         """Subscribes to changes on the TD of this thing."""

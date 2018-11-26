@@ -14,11 +14,26 @@ from slugify import slugify
 
 from wotpy.td.interaction import Property, Action, Event
 from wotpy.wot.dictionaries.thing import ThingFragment
+from wotpy.wot.dictionaries.utils import to_camel
 
 
 class Thing(object):
     """An abstraction of a physical or virtual entity whose metadata
     and interfaces are described by a WoT Thing Description."""
+
+    THING_FRAGMENT_WRITABLE_FIELDS = {
+        "version",
+        "name",
+        "description",
+        "support",
+        "created",
+        "lastModified",
+        "base",
+        "links",
+        "security"
+    }
+
+    assert THING_FRAGMENT_WRITABLE_FIELDS.issubset(ThingFragment.Meta.fields)
 
     def __init__(self, thing_fragment=None, **kwargs):
         self._thing_fragment = thing_fragment if thing_fragment else ThingFragment(**kwargs)
@@ -29,9 +44,19 @@ class Thing(object):
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
-        the internal ThingFragment dict before propagating the exception."""
+        the private ThingFragment before propagating the exception."""
 
         return getattr(self._thing_fragment, name)
+
+    def __setattr__(self, name, value):
+        """Setter for ThingFragment attributes."""
+
+        name_camel = to_camel(name)
+
+        if name_camel not in self.THING_FRAGMENT_WRITABLE_FIELDS:
+            return super(Thing, self).__setattr__(name, value)
+
+        return self._thing_fragment.__setattr__(name, value)
 
     def _init_fragment_interactions(self):
         """Adds the interactions declared in the ThingFragment to the instance private dicts."""
