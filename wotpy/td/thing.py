@@ -83,9 +83,7 @@ class Thing(object):
         """Returns the URL-safe name of this Thing.
         The URL name of a Thing is always unique and stable as long as the ID is unique."""
 
-        name_raw = self.thing_fragment.to_dict().get("name")
-
-        return slugify("{}-{}".format(name_raw, self.uuid)) if name_raw else self.uuid
+        return slugify("{}-{}".format(self.name, self.uuid))
 
     @property
     def properties(self):
@@ -126,8 +124,11 @@ class Thing(object):
     def add_interaction(self, interaction):
         """Add a new Interaction."""
 
-        assert isinstance(interaction, (Property, Event, Action))
-        assert interaction.thing is self
+        if not isinstance(interaction, (Property, Event, Action)):
+            raise ValueError("Not an Interaction")
+
+        if interaction.thing is not self:
+            raise ValueError("Interaction related to another Thing")
 
         if self.find_interaction(interaction.name) is not None:
             raise ValueError("Duplicate Interaction: {}".format(interaction.name))
