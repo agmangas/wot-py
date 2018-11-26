@@ -32,7 +32,15 @@ class SecuritySchemeDict(WotBaseDict):
 
         klass_map = {
             SecuritySchemeType.NOSEC: NoSecuritySchemeDict,
-            SecuritySchemeType.BASIC: BasicSecuritySchemeDict
+            SecuritySchemeType.BASIC: BasicSecuritySchemeDict,
+            SecuritySchemeType.CERT: CertSecuritySchemeDict,
+            SecuritySchemeType.DIGEST: DigestSecuritySchemeDict,
+            SecuritySchemeType.BEARER: BearerSecuritySchemeDict,
+            SecuritySchemeType.PSK: PSKSecuritySchemeDict,
+            SecuritySchemeType.PUBLIC: PublicSecuritySchemeDict,
+            SecuritySchemeType.OAUTH2: OAuth2SecuritySchemeDict,
+            SecuritySchemeType.APIKEY: APIKeySecuritySchemeDict,
+            SecuritySchemeType.POP: PoPSecuritySchemeDict
         }
 
         scheme_type = init_dict.get("scheme")
