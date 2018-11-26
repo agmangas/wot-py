@@ -304,13 +304,17 @@ class Servient(object):
         """Return the base URL for the given ExposedThing
         for one of the currently active servers."""
 
+        if exposed_thing.thing.base:
+            return exposed_thing.base
+
         if not self.exposed_thing_group.contains(exposed_thing):
             raise ValueError("Unknown ExposedThing")
 
         if not len(self.servers):
             return None
 
-        protocol = sorted(list(self.servers.keys()))[0]
+        protocol_default = sorted(six.iterkeys(self.servers))[0]
+        protocol = Protocols.HTTP if Protocols.HTTP in self.servers else protocol_default
         server = self.servers[protocol]
 
         return server.build_base_url(hostname=self.hostname, thing=exposed_thing.thing)

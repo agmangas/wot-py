@@ -2,20 +2,23 @@
 # -*- coding: utf-8 -*-
 
 import time
+import uuid
 # noinspection PyCompatibility
 from concurrent.futures import ThreadPoolExecutor
 
-# noinspection PyPackageRequirements
 import pytest
 import six
 import tornado.gen
 import tornado.ioloop
-# noinspection PyPackageRequirements
 from faker import Faker
 from tornado.concurrent import Future
 
+from wotpy.td.thing import Thing
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict
-from wotpy.wot.enums import TDChangeMethod, TDChangeType
+from wotpy.wot.dictionaries.thing import ThingFragment
+from wotpy.wot.enums import TDChangeMethod, TDChangeType, DataType
+from wotpy.wot.exposed.thing import ExposedThing
+from wotpy.wot.servient import Servient
 
 
 def _test_td_change_events(exposed_thing, property_fragment, event_fragment, action_fragment, subscribe_func):
@@ -534,3 +537,56 @@ def test_thing_interaction_dict_behaviour(exposed_thing, property_fragment):
     assert len(exposed_thing.properties) == 1
     assert prop_name in exposed_thing.properties
     assert next(key for key in exposed_thing.properties if key == prop_name)
+
+
+def test_thing_fragment_getters_setters():
+    """ThingFragment attributes can be get and set from the ExposedThing."""
+
+    thing_fragment = ThingFragment({
+        "id": uuid.uuid4().urn,
+        "name": Faker().pystr(),
+        "description": Faker().pystr(),
+        "properties": {
+            uuid.uuid4().hex: {
+                "description": Faker().pystr(),
+                "type": DataType.STRING
+            }
+        }
+    })
+
+    thing = Thing(thing_fragment=thing_fragment)
+    exp_thing = ExposedThing(servient=Servient(), thing=thing)
+
+    assert exp_thing.name == thing_fragment.name
+    assert exp_thing.description == thing_fragment.description
+    assert list(exp_thing.properties) == list(six.iterkeys(thing_fragment.properties))
+
+    name_original = thing_fragment.name
+    name_updated = Faker().pystr()
+
+    description_original = thing_fragment.description
+    description_updated = Faker().pystr()
+
+    exp_thing.name = name_updated
+    exp_thing.description = description_updated
+
+    assert exp_thing.name == name_updated
+    assert exp_thing.name != name_original
+    assert exp_thing.description == description_updated
+    assert exp_thing.description != description_original
+
+    with pytest.raises(AttributeError):
+        # noinspection PyPropertyAccess
+        exp_thing.id = Faker().pystr()
+
+    with pytest.raises(AttributeError):
+        # noinspection PyPropertyAccess
+        exp_thing.properties = Faker().pylist()
+
+    with pytest.raises(AttributeError):
+        # noinspection PyPropertyAccess
+        exp_thing.actions = Faker().pylist()
+
+    with pytest.raises(AttributeError):
+        # noinspection PyPropertyAccess
+        exp_thing.events = Faker().pylist()
