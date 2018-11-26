@@ -11,6 +11,7 @@ from wotpy.wot.dictionaries.base import WotBaseDict
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.wot.dictionaries.link import LinkDict
 from wotpy.wot.dictionaries.security import SecuritySchemeDict
+from wotpy.wot.dictionaries.utils import to_camel
 from wotpy.wot.dictionaries.version import VersioningDict
 from wotpy.wot.enums import SecuritySchemeType
 
@@ -41,6 +42,64 @@ class ThingFragment(WotBaseDict):
         required = {
             "id"
         }
+
+        fields_readonly = [
+            "id"
+        ]
+
+        fields_str = [
+            "name",
+            "description",
+            "support",
+            "created",
+            "lastModified",
+            "base"
+        ]
+
+        fields_dict = [
+            "properties",
+            "actions",
+            "events"
+        ]
+
+        fields_list = [
+            "links",
+            "security"
+        ]
+
+        fields_instance = [
+            "version"
+        ]
+
+        assert set(fields_readonly + fields_str + fields_dict + fields_list + fields_instance) == fields
+
+    def __setattr__(self, name, value):
+        """Checks to see if the attribute that is being set is a
+        Thing fragment property and updates the internal dict."""
+
+        name_camel = to_camel(name)
+
+        if name_camel not in self.Meta.fields:
+            return super(ThingFragment, self).__setattr__(name, value)
+
+        if name_camel in self.Meta.fields_readonly:
+            raise AttributeError("Can't set attribute {}".format(name))
+
+        if name_camel in self.Meta.fields_str:
+            self._init[name_camel] = value
+            return
+
+        if name_camel in self.Meta.fields_dict:
+            self._init[name_camel] = {key: val.to_dict() for key, val in six.iteritems(value)}
+            return
+
+        if name_camel in self.Meta.fields_list:
+            self._init[name_camel] = [item.to_dict() for item in value]
+            return
+
+        if name_camel in self.Meta.fields_instance:
+            self._init[name_camel] = value.to_dict()
+            return
 
     @property
     def name(self):

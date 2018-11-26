@@ -13,6 +13,7 @@ from wotpy.wot.dictionaries.schema import DataSchemaDict
 from wotpy.wot.dictionaries.security import SecuritySchemeDict
 from wotpy.wot.dictionaries.thing import ThingFragment
 from wotpy.wot.dictionaries.version import VersioningDict
+from wotpy.wot.enums import SecuritySchemeType, DataType
 
 
 def test_link_dict():
@@ -142,54 +143,96 @@ def test_event_fragment():
     assert json.dumps(event_fragment.to_dict())
 
 
+THING_INIT = {
+    "id": "urn:dev:wot:com:example:servient:lamp",
+    "name": "MyLampThing",
+    "description": "MyLampThing uses JSON-LD 1.1 serialization",
+    "security": [{"scheme": "nosec"}],
+    "version": {"instance": "1.2.1"},
+    "properties": {
+        "status": {
+            "description": "Shows the current status of the lamp",
+            "type": "string",
+            "forms": [{
+                "href": "coaps://mylamp.example.com/status"
+            }]
+        }
+    },
+    "actions": {
+        "toggle": {
+            "description": "Turn on or off the lamp",
+            "forms": [{
+                "href": "coaps://mylamp.example.com/toggle"
+            }]
+        }
+    },
+    "events": {
+        "overheating": {
+            "description": "Lamp reaches a critical temperature (overheating)",
+            "data": {"type": "string"},
+            "forms": [{
+                "href": "coaps://mylamp.example.com/oh"
+            }]
+        }
+    }
+}
+
+
 def test_thing_fragment():
     """Thing fragment dictionaries can be represented and serialized."""
 
-    init = {
-        "id": "urn:dev:wot:com:example:servient:lamp",
-        "name": "MyLampThing",
-        "description": "MyLampThing uses JSON-LD 1.1 serialization",
-        "security": [{"scheme": "nosec"}],
-        "version": {"instance": "1.2.1"},
-        "properties": {
-            "status": {
-                "description": "Shows the current status of the lamp",
-                "type": "string",
-                "forms": [{
-                    "href": "coaps://mylamp.example.com/status"
-                }]
-            }
-        },
-        "actions": {
-            "toggle": {
-                "description": "Turn on or off the lamp",
-                "forms": [{
-                    "href": "coaps://mylamp.example.com/toggle"
-                }]
-            }
-        },
-        "events": {
-            "overheating": {
-                "description": "Lamp reaches a critical temperature (overheating)",
-                "data": {"type": "string"},
-                "forms": [{
-                    "href": "coaps://mylamp.example.com/oh"
-                }]
-            }
-        }
-    }
+    thing_fragment = ThingFragment(THING_INIT)
 
-    thing_fragment = ThingFragment(init)
-
-    assert thing_fragment.id == init["id"]
-    assert thing_fragment.name == init["name"]
-    assert thing_fragment.description == init["description"]
+    assert thing_fragment.id == THING_INIT["id"]
+    assert thing_fragment.name == THING_INIT["name"]
+    assert thing_fragment.description == THING_INIT["description"]
     assert isinstance(next(six.itervalues(thing_fragment.properties)), PropertyFragmentDict)
     assert isinstance(next(six.itervalues(thing_fragment.actions)), ActionFragmentDict)
     assert isinstance(next(six.itervalues(thing_fragment.events)), EventFragmentDict)
     assert json.dumps(thing_fragment.to_dict())
     assert next(six.itervalues(thing_fragment.to_dict()["properties"]))["type"]
-    assert thing_fragment.version.instance == init["version"]["instance"]
+    assert thing_fragment.version.instance == THING_INIT["version"]["instance"]
 
     with pytest.raises(Exception):
         ThingFragment({})
+
+
+def test_thing_fragment_setters():
+    """Thing fragment properties can be set."""
+
+    thing_fragment = ThingFragment(THING_INIT)
+
+    with pytest.raises(AttributeError):
+        thing_fragment.id = Faker().pystr()
+
+    assert thing_fragment.name == THING_INIT["name"]
+
+    name = Faker().pystr()
+
+    # noinspection PyPropertyAccess
+    thing_fragment.name = name
+
+    assert thing_fragment.name != THING_INIT["name"]
+    assert thing_fragment.name == name
+
+    prop_fragment = PropertyFragmentDict(description=Faker().pystr(), type=DataType.NUMBER)
+    props_updated = {Faker().pystr(): prop_fragment}
+
+    # noinspection PyPropertyAccess
+    thing_fragment.properties = props_updated
+
+    assert next(six.itervalues(thing_fragment.properties)).description == prop_fragment.description
+
+    security_updated = [SecuritySchemeDict(scheme=SecuritySchemeType.PSK)]
+
+    # noinspection PyPropertyAccess
+    thing_fragment.security = security_updated
+
+    assert thing_fragment.security[0].scheme == security_updated[0].scheme
+
+    version_updated = VersioningDict(instance=Faker().pystr())
+
+    # noinspection PyPropertyAccess
+    thing_fragment.version = version_updated
+
+    assert thing_fragment.version.instance == version_updated.instance
