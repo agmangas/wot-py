@@ -378,7 +378,8 @@ def test_thing_property_subscribe(exposed_thing, property_fragment):
 
 
 def test_thing_property_getters(exposed_thing, property_fragment):
-    """Property init attributes can be accessed using the map-like interface."""
+    """ThingProperty retrieved from ExposedThing expose the attributes
+    from the Interaction, InteractionFragment and PropertyFragment interfaces."""
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -387,8 +388,11 @@ def test_thing_property_getters(exposed_thing, property_fragment):
         exposed_thing.add_property(prop_name, property_fragment, value=prop_init_value)
         thing_property = exposed_thing.properties[prop_name]
 
+        assert len(thing_property.forms) == 0
+        assert thing_property.title == property_fragment.title
         assert thing_property.description == property_fragment.description
         assert thing_property.observable == property_fragment.observable
+        assert thing_property.type == property_fragment.type
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
@@ -416,7 +420,8 @@ def test_thing_action_run(exposed_thing, action_fragment):
 
 
 def test_thing_action_getters(exposed_thing, action_fragment):
-    """Action init attributes can be accessed using the map-like interface."""
+    """ThingAction retrieved from ExposedThing expose the attributes
+    from the Interaction, InteractionFragment and ActionFragment interfaces."""
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -424,6 +429,8 @@ def test_thing_action_getters(exposed_thing, action_fragment):
         exposed_thing.add_action(action_name, action_fragment)
         thing_action = exposed_thing.actions[action_name]
 
+        assert len(thing_action.forms) == 0
+        assert thing_action.title == action_fragment.title
         assert thing_action.description == action_fragment.description
         assert thing_action.input.type == action_fragment.input.type
         assert thing_action.output.type == action_fragment.output.type
@@ -462,7 +469,8 @@ def test_thing_event_subscribe(exposed_thing, event_fragment):
 
 
 def test_thing_event_getters(exposed_thing, event_fragment):
-    """Event init attributes can be accessed using the map-like interface."""
+    """ThingEvent retrieved from ExposedThing expose the attributes
+    from the Interaction, InteractionFragment and EventFragment interfaces."""
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -470,6 +478,8 @@ def test_thing_event_getters(exposed_thing, event_fragment):
         exposed_thing.add_event(event_name, event_fragment)
         thing_event = exposed_thing.events[event_name]
 
+        assert len(thing_event.forms) == 0
+        assert thing_event.title == event_fragment.title
         assert thing_event.description == event_fragment.description
         assert thing_event.data.type == event_fragment.data.type
 

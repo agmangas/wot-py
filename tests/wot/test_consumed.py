@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import collections
+
 import random
 import uuid
 
@@ -262,7 +262,7 @@ def test_thing_property_getters(consumed_exposed_pair):
         thing_prop_con = consumed_thing.properties[prop_name]
         thing_prop_exp = exposed_thing.properties[prop_name]
 
-        assert isinstance(thing_prop_con.forms, collections.Sequence)
+        assert len(thing_prop_con.forms) == 0
         assert thing_prop_con.title == thing_prop_exp.title
         assert thing_prop_con.description == thing_prop_exp.description
         assert thing_prop_con.observable == thing_prop_exp.observable
@@ -303,7 +303,7 @@ def test_thing_action_getters(consumed_exposed_pair):
         thing_action_con = consumed_thing.actions[action_name]
         thing_action_exp = exposed_thing.actions[action_name]
 
-        assert isinstance(thing_action_con.forms, collections.Sequence)
+        assert len(thing_action_con.forms) == 0
         assert thing_action_con.title == thing_action_exp.title
         assert thing_action_con.description == thing_action_exp.description
         assert thing_action_con.input.type == thing_action_exp.input.type
@@ -337,7 +337,7 @@ def test_thing_event_getters(consumed_exposed_pair):
         thing_event_con = consumed_thing.events[event_name]
         thing_event_exp = exposed_thing.events[event_name]
 
-        assert isinstance(thing_event_con.forms, collections.Sequence)
+        assert len(thing_event_con.forms) == 0
         assert thing_event_con.title == thing_event_exp.title
         assert thing_event_con.description == thing_event_exp.description
         assert thing_event_con.data.type == thing_event_exp.data.type
