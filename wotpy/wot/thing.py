@@ -12,9 +12,9 @@ import uuid
 import six
 from slugify import slugify
 
-from wotpy.wot.interaction import Property, Action, Event
-from wotpy.wot.dictionaries.thing import ThingFragment
 from wotpy.utils.utils import to_camel
+from wotpy.wot.dictionaries.thing import ThingFragment
+from wotpy.wot.interaction import Property, Action, Event
 
 
 class Thing(object):
@@ -61,15 +61,15 @@ class Thing(object):
     def _init_fragment_interactions(self):
         """Adds the interactions declared in the ThingFragment to the instance private dicts."""
 
-        for name, prop_fragment in six.iteritems(self.thing_fragment.properties):
+        for name, prop_fragment in six.iteritems(self._thing_fragment.properties):
             prop = Property(thing=self, name=name, init_dict=prop_fragment)
             self.add_interaction(prop)
 
-        for name, action_fragment in six.iteritems(self.thing_fragment.actions):
+        for name, action_fragment in six.iteritems(self._thing_fragment.actions):
             action = Action(thing=self, name=name, init_dict=action_fragment)
             self.add_interaction(action)
 
-        for name, event_fragment in six.iteritems(self.thing_fragment.events):
+        for name, event_fragment in six.iteritems(self._thing_fragment.events):
             event = Event(thing=self, name=name, init_dict=event_fragment)
             self.add_interaction(event)
 
@@ -77,7 +77,41 @@ class Thing(object):
     def thing_fragment(self):
         """The ThingFragment dictionary of this Thing."""
 
-        return self._thing_fragment
+        def interaction_to_json(intrct):
+            """Returns the JSON serialization of an Interaction instance."""
+
+            ret = intrct.interaction_fragment.to_dict()
+
+            ret.update({
+                "forms": [form.form_dict.to_dict() for form in intrct.forms]
+            })
+
+            return ret
+
+        doc = self._thing_fragment.to_dict()
+
+        doc.update({
+            "properties": {
+                key: interaction_to_json(val)
+                for key, val in six.iteritems(self.properties)
+            }
+        })
+
+        doc.update({
+            "actions": {
+                key: interaction_to_json(val)
+                for key, val in six.iteritems(self.actions)
+            }
+        })
+
+        doc.update({
+            "events": {
+                key: interaction_to_json(val)
+                for key, val in six.iteritems(self.events)
+            }
+        })
+
+        return ThingFragment(doc)
 
     @property
     def id(self):

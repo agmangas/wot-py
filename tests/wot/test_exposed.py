@@ -13,12 +13,12 @@ import tornado.ioloop
 from faker import Faker
 from tornado.concurrent import Future
 
-from wotpy.wot.thing import Thing
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict
 from wotpy.wot.dictionaries.thing import ThingFragment
 from wotpy.wot.enums import TDChangeMethod, TDChangeType, DataType
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
+from wotpy.wot.thing import Thing
 
 
 def _test_td_change_events(exposed_thing, property_fragment, event_fragment, action_fragment, subscribe_func):
