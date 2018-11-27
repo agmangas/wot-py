@@ -40,7 +40,7 @@ def get_thing_property(server, request):
     if not url_name_thing or not url_name_prop:
         raise aiocoap.error.BadRequest(b"Missing query arguments")
 
-    exposed_thing = server.exposed_thing_group.find_by_thing_id(url_name_thing)
+    exposed_thing = server.exposed_thing_set.find_by_thing_id(url_name_thing)
 
     if not exposed_thing:
         raise aiocoap.error.NotFound(b"Thing not found")

@@ -19,9 +19,9 @@ from wotpy.protocols.enums import Protocols
 from wotpy.protocols.http.client import HTTPClient
 from wotpy.protocols.support import is_coap_supported, is_mqtt_supported
 from wotpy.protocols.ws.client import WebsocketClient
-from wotpy.wot.td import ThingDescription
 from wotpy.wot.enums import InteractionTypes
 from wotpy.wot.exposed.thing_set import ExposedThingSet
+from wotpy.wot.td import ThingDescription
 from wotpy.wot.wot import WoT
 
 
@@ -33,7 +33,7 @@ class TDHandler(tornado.web.RequestHandler):
         self.servient = servient
 
     def get(self, thing_url_name):
-        exp_thing = self.servient.exposed_thing_group.find_by_thing_id(thing_url_name)
+        exp_thing = self.servient.exposed_thing_set.find_by_thing_id(thing_url_name)
 
         td_doc = ThingDescription.from_thing(exp_thing.thing).to_dict()
         td_doc.update({"base": self.servient.get_thing_base_url(exp_thing)})
@@ -52,7 +52,7 @@ class TDCatalogueHandler(tornado.web.RequestHandler):
     def get(self):
         response = {}
 
-        for exp_thing in self.servient.exposed_thing_group.exposed_things:
+        for exp_thing in self.servient.exposed_thing_set.exposed_things:
             thing_id = exp_thing.thing.id
 
             if self.get_argument("expanded", False):
@@ -108,7 +108,7 @@ class Servient(object):
         self._clients = {}
         self._catalogue_port = None
         self._catalogue_server = None
-        self._exposed_thing_group = ExposedThingSet()
+        self._exposed_thing_set = ExposedThingSet()
         self._servient_lock = tornado.locks.Lock()
         self._is_running = False
 
@@ -180,17 +180,17 @@ class Servient(object):
         return self._hostname
 
     @property
-    def exposed_thing_group(self):
+    def exposed_thing_set(self):
         """Returns the ExposedThingSet instance that
         contains the ExposedThings of this servient."""
 
-        return self._exposed_thing_group
+        return self._exposed_thing_set
 
     @property
     def exposed_things(self):
         """Returns an iterator for the ExposedThings contained in this Sevient."""
 
-        return self.exposed_thing_group.exposed_things
+        return self.exposed_thing_set.exposed_things
 
     @property
     def servers(self):
@@ -250,7 +250,7 @@ class Servient(object):
     def _clean_forms(self):
         """Cleans all the Forms from all the ExposedThings contained in this Servient."""
 
-        for exposed_thing in self._exposed_thing_group.exposed_things:
+        for exposed_thing in self._exposed_thing_set.exposed_things:
             for interaction in exposed_thing.thing.interactions:
                 interaction.clean_forms()
 
@@ -258,7 +258,7 @@ class Servient(object):
         """Removes all interaction forms linked to this
         server protocol for the given ExposedThing."""
 
-        assert self._exposed_thing_group.contains(exposed_thing)
+        assert self._exposed_thing_set.contains(exposed_thing)
         assert protocol in self._servers
 
         for interaction in exposed_thing.thing.interactions:
@@ -274,15 +274,15 @@ class Servient(object):
         """Returns True if the given server contains the ExposedThing."""
 
         assert server in self._servers.values()
-        assert self._exposed_thing_group.contains(exposed_thing)
+        assert self._exposed_thing_set.contains(exposed_thing)
 
-        return server.exposed_thing_group.contains(exposed_thing)
+        return server.exposed_thing_set.contains(exposed_thing)
 
     def _add_interaction_forms(self, server, exposed_thing):
         """Builds and adds to the ExposedThing the Links related to the given server."""
 
         assert server in self._servers.values()
-        assert self._exposed_thing_group.contains(exposed_thing)
+        assert self._exposed_thing_set.contains(exposed_thing)
 
         for interaction in exposed_thing.thing.interactions:
             forms = server.build_forms(hostname=self._hostname, interaction=interaction)
@@ -295,7 +295,7 @@ class Servient(object):
 
         assert server in self._servers.values()
 
-        for exp_thing in self._exposed_thing_group.exposed_things:
+        for exp_thing in self._exposed_thing_set.exposed_things:
             self._clean_protocol_forms(exp_thing, server.protocol)
             if self._server_has_exposed_thing(server, exp_thing):
                 self._add_interaction_forms(server, exp_thing)
@@ -307,7 +307,7 @@ class Servient(object):
         if exposed_thing.thing.base:
             return exposed_thing.base
 
-        if not self.exposed_thing_group.contains(exposed_thing):
+        if not self.exposed_thing_set.contains(exposed_thing):
             raise ValueError("Unknown ExposedThing")
 
         if not len(self.servers):
@@ -382,20 +382,20 @@ class Servient(object):
         """Adds a ExposedThing to this servient.
         ExposedThings are disabled by default."""
 
-        self._exposed_thing_group.add(exposed_thing)
+        self._exposed_thing_set.add(exposed_thing)
 
     def remove_exposed_thing(self, thing_id):
         """Adds a ExposedThing to this servient.
         ExposedThings are disabled by default."""
 
         self.disable_exposed_thing(thing_id)
-        self._exposed_thing_group.remove(thing_id)
+        self._exposed_thing_set.remove(thing_id)
 
     def get_exposed_thing(self, thing_id):
         """Finds and returns an ExposedThing contained in this servient by Thing ID.
         Raises ValueError if the ExposedThing is not present."""
 
-        exp_thing = self._exposed_thing_group.find_by_thing_id(thing_id)
+        exp_thing = self._exposed_thing_set.find_by_thing_id(thing_id)
 
         if exp_thing is None:
             raise ValueError("Unknown Exposed Thing: {}".format(thing_id))

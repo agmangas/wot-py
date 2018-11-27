@@ -19,7 +19,7 @@ class BaseProtocolServer(object):
     def __init__(self, port):
         self._port = port
         self._codecs = []
-        self._exposed_thing_group = ExposedThingSet()
+        self._exposed_thing_set = ExposedThingSet()
 
     @property
     @abstractmethod
@@ -35,17 +35,17 @@ class BaseProtocolServer(object):
         return self._port
 
     @property
-    def exposed_thing_group(self):
+    def exposed_thing_set(self):
         """Returns the ExposedThingSet instance that
         contains the ExposedThings of this server."""
 
-        return self._exposed_thing_group
+        return self._exposed_thing_set
 
     @property
     def exposed_things(self):
         """Returns an iterator for all the ExposedThings contained in this server."""
 
-        return self._exposed_thing_group.exposed_things
+        return self._exposed_thing_set.exposed_things
 
     def codec_for_media_type(self, media_type):
         """Returns a BaseCodec to serialize or deserialize content for the given media type."""
@@ -63,18 +63,18 @@ class BaseProtocolServer(object):
     def add_exposed_thing(self, exposed_thing):
         """Adds the given ExposedThing to this server."""
 
-        self._exposed_thing_group.add(exposed_thing)
+        self._exposed_thing_set.add(exposed_thing)
 
     def remove_exposed_thing(self, thing_id):
         """Removes the given ExposedThing from this server."""
 
-        self._exposed_thing_group.remove(thing_id)
+        self._exposed_thing_set.remove(thing_id)
 
     def get_exposed_thing(self, name):
         """Finds and returns an ExposedThing contained in this server by name.
         Raises ValueError if the ExposedThing is not present."""
 
-        exposed_thing = self._exposed_thing_group.find_by_thing_id(name)
+        exposed_thing = self._exposed_thing_set.find_by_thing_id(name)
 
         if exposed_thing is None:
             raise ValueError("Unknown Exposed Thing: {}".format(name))
