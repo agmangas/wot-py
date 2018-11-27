@@ -22,10 +22,12 @@ class ConsumedThingInteractionDict(UserDict):
     def __getitem__(self, name):
         """Lazily build and return an object that implements the Interaction interface."""
 
-        if name not in self.thing_interaction_dict:
+        try:
+            key = next(key for key in self.thing_interaction_dict if key.lower() == name.lower())
+        except StopIteration:
             raise KeyError("Unknown interaction: {}".format(name))
 
-        return self.thing_interaction_class(self._consumed_thing, name)
+        return self.thing_interaction_class(self._consumed_thing, key)
 
     def __len__(self):
         return len(self.thing_interaction_dict)

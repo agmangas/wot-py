@@ -600,3 +600,43 @@ def test_thing_fragment_getters_setters():
     with pytest.raises(AttributeError):
         # noinspection PyPropertyAccess
         exp_thing.events = Faker().pylist()
+
+
+def test_interaction_name_case_insensitive():
+    """An ExposedThing treats interaction names in a case-insensitive fashion."""
+
+    thing = Thing(id=uuid.uuid4().urn)
+    exp_thing = ExposedThing(servient=Servient(), thing=thing)
+
+    prop_name_camel = "onOff"
+    prop_name_lower = prop_name_camel.lower()
+
+    exp_thing.add_property(prop_name_camel, {"type": DataType.BOOLEAN})
+
+    with pytest.raises(ValueError):
+        exp_thing.add_property(prop_name_lower, {"type": DataType.BOOLEAN})
+
+    assert exp_thing.properties[prop_name_camel]
+    assert exp_thing.properties[prop_name_lower]
+
+    action_name_camel = "toggleOnOff"
+    action_name_lower = action_name_camel.lower()
+
+    exp_thing.add_action(action_name_camel, {})
+
+    with pytest.raises(ValueError):
+        exp_thing.add_action(action_name_lower, {})
+
+    assert exp_thing.actions[action_name_camel]
+    assert exp_thing.actions[action_name_lower]
+
+    event_name_camel = "onOffToggled"
+    event_name_lower = event_name_camel.lower()
+
+    exp_thing.add_event(event_name_camel, {})
+
+    with pytest.raises(ValueError):
+        exp_thing.add_event(event_name_lower, {})
+
+    assert exp_thing.events[event_name_camel]
+    assert exp_thing.events[event_name_lower]
