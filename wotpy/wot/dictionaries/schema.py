@@ -8,7 +8,7 @@ Wrapper classes for data schema dictionaries defined in the Scripting API.
 import six
 
 from wotpy.wot.dictionaries.base import WotBaseDict
-from wotpy.wot.dictionaries.utils import build_init_dict
+from wotpy.utils.utils import merge_args_kwargs_dict
 from wotpy.wot.enums import DataType
 
 
@@ -36,7 +36,7 @@ class DataSchemaDict(WotBaseDict):
     def build(cls, *args, **kwargs):
         """Builds an instance of the appropriate subclass for the given ValueType."""
 
-        init_dict = build_init_dict(args, kwargs)
+        init_dict = merge_args_kwargs_dict(args, kwargs)
 
         klass_map = {
             DataType.NUMBER: NumberSchemaDict,

@@ -14,7 +14,7 @@ import tornado.ioloop
 from hbmqtt.mqtt.constants import QOS_2
 
 from wotpy.protocols.mqtt.handlers.base import BaseMQTTHandler
-from wotpy.utils.serialization import to_json_obj
+from wotpy.utils.utils import to_json_obj
 
 
 class ActionMQTTHandler(BaseMQTTHandler):

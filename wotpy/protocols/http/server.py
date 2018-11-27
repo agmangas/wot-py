@@ -16,8 +16,8 @@ from wotpy.protocols.http.handlers.action import ActionInvokeHandler, PendingInv
 from wotpy.protocols.http.handlers.event import EventObserverHandler
 from wotpy.protocols.http.handlers.property import PropertyObserverHandler, PropertyReadWriteHandler
 from wotpy.protocols.server import BaseProtocolServer
-from wotpy.td.enums import InteractionTypes
-from wotpy.td.form import Form
+from wotpy.wot.enums import InteractionTypes
+from wotpy.wot.form import Form
 
 
 class HTTPServer(BaseProtocolServer):

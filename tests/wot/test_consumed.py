@@ -16,7 +16,7 @@ from wotpy.protocols.http.client import HTTPClient
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.protocols.ws.server import WebsocketServer
-from wotpy.td.description import ThingDescription
+from wotpy.wot.td import ThingDescription
 from wotpy.wot.servient import Servient
 
 

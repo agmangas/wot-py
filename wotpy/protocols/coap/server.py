@@ -21,8 +21,8 @@ from wotpy.protocols.coap.resources.event import EventObserveResource
 from wotpy.protocols.coap.resources.property import PropertyReadWriteResource, PropertyObservableResource
 from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.server import BaseProtocolServer
-from wotpy.td.enums import InteractionTypes
-from wotpy.td.form import Form
+from wotpy.wot.enums import InteractionTypes
+from wotpy.wot.form import Form
 
 
 class CoAPServer(BaseProtocolServer):

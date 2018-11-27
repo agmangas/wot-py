@@ -11,7 +11,7 @@ from wotpy.wot.dictionaries.base import WotBaseDict
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.wot.dictionaries.link import LinkDict
 from wotpy.wot.dictionaries.security import SecuritySchemeDict
-from wotpy.wot.dictionaries.utils import to_camel
+from wotpy.utils.utils import to_camel
 from wotpy.wot.dictionaries.version import VersioningDict
 from wotpy.wot.enums import SecuritySchemeType
 

@@ -10,7 +10,7 @@ from faker import Faker
 from wotpy.protocols.http.client import HTTPClient
 from wotpy.protocols.support import is_coap_supported, is_mqtt_supported
 from wotpy.protocols.ws.client import WebsocketClient
-from wotpy.td.description import ThingDescription
+from wotpy.wot.td import ThingDescription
 
 
 @pytest.mark.flaky(reruns=5)

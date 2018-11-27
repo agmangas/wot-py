@@ -18,7 +18,7 @@ from tornado.concurrent import Future
 from wotpy.protocols.enums import InteractionVerbs
 from wotpy.protocols.http.enums import HTTPSchemes
 from wotpy.protocols.http.server import HTTPServer
-from wotpy.td.thing import Thing
+from wotpy.wot.thing import Thing
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient

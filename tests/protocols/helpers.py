@@ -11,7 +11,7 @@ import tornado.ioloop
 from faker import Faker
 from rx.concurrency import IOLoopScheduler
 
-from wotpy.td.description import ThingDescription
+from wotpy.wot.td import ThingDescription
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, EventFragmentDict, ActionFragmentDict
 
 

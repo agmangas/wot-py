@@ -11,8 +11,8 @@ import json
 import jsonschema
 import six
 
-from wotpy.td.thing import Thing
-from wotpy.td.validation import SCHEMA_THING, InvalidDescription
+from wotpy.wot.thing import Thing
+from wotpy.wot.validation import SCHEMA_THING, InvalidDescription
 from wotpy.wot.dictionaries.thing import ThingFragment
 
 

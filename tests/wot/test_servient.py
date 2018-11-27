@@ -15,8 +15,8 @@ import tornado.websocket
 from faker import Faker
 
 from wotpy.protocols.ws.server import WebsocketServer
-from wotpy.td.constants import WOT_TD_CONTEXT_URL
-from wotpy.td.description import ThingDescription
+from wotpy.wot.constants import WOT_TD_CONTEXT_URL
+from wotpy.wot.td import ThingDescription
 from wotpy.wot.consumed.thing import ConsumedThing
 from wotpy.wot.servient import Servient
 

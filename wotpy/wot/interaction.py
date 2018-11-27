@@ -10,8 +10,8 @@ from abc import ABCMeta, abstractmethod
 # noinspection PyPackageRequirements
 from slugify import slugify
 
-from wotpy.td.enums import InteractionTypes
-from wotpy.td.validation import is_valid_safe_name
+from wotpy.wot.enums import InteractionTypes
+from wotpy.wot.validation import is_valid_safe_name
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 
 

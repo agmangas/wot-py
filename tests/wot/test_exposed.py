@@ -13,7 +13,7 @@ import tornado.ioloop
 from faker import Faker
 from tornado.concurrent import Future
 
-from wotpy.td.thing import Thing
+from wotpy.wot.thing import Thing
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict
 from wotpy.wot.dictionaries.thing import ThingFragment
 from wotpy.wot.enums import TDChangeMethod, TDChangeType, DataType

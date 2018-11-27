@@ -8,7 +8,7 @@ Class that represents a Thing consumed by a servient.
 import tornado.gen
 from rx.concurrency import IOLoopScheduler
 
-from wotpy.wot.consumed.interactions import \
+from wotpy.wot.consumed.interaction_map import \
     ConsumedThingPropertyDict, \
     ConsumedThingActionDict, \
     ConsumedThingEventDict

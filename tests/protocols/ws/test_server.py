@@ -22,7 +22,7 @@ from wotpy.protocols.ws.messages import \
     WebsocketMessageError, \
     WebsocketMessageEmittedItem
 from wotpy.protocols.ws.server import WebsocketServer
-from wotpy.td.thing import Thing
+from wotpy.wot.thing import Thing
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient

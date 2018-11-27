@@ -9,11 +9,11 @@ from faker import Faker
 
 from tests.td_examples import TD_EXAMPLE
 from wotpy.protocols.enums import Protocols
-from wotpy.td.description import ThingDescription
-from wotpy.td.form import Form
-from wotpy.td.interaction import Action, Property, Event
-from wotpy.td.thing import Thing
-from wotpy.td.validation import InvalidDescription
+from wotpy.wot.td import ThingDescription
+from wotpy.wot.form import Form
+from wotpy.wot.interaction import Action, Property, Event
+from wotpy.wot.thing import Thing
+from wotpy.wot.validation import InvalidDescription
 
 
 def test_validate():

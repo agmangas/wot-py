@@ -11,8 +11,8 @@ import six
 import tornado.gen
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 
-from wotpy.td.description import ThingDescription
-from wotpy.td.thing import Thing
+from wotpy.wot.td import ThingDescription
+from wotpy.wot.thing import Thing
 from wotpy.wot.consumed.thing import ConsumedThing
 from wotpy.wot.dictionaries.thing import ThingFragment
 from wotpy.wot.exposed.thing import ExposedThing

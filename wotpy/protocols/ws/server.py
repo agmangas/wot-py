@@ -14,7 +14,7 @@ from wotpy.protocols.enums import Protocols
 from wotpy.protocols.server import BaseProtocolServer
 from wotpy.protocols.ws.enums import WebsocketSchemes
 from wotpy.protocols.ws.handler import WebsocketHandler
-from wotpy.td.form import Form
+from wotpy.wot.form import Form
 
 
 class WebsocketServer(BaseProtocolServer):

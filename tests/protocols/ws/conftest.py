@@ -21,8 +21,8 @@ from faker import Faker
 from six.moves.urllib.parse import urlparse, urlunparse
 
 from wotpy.protocols.ws.server import WebsocketServer
-from wotpy.td.description import ThingDescription
-from wotpy.td.thing import Thing
+from wotpy.wot.td import ThingDescription
+from wotpy.wot.thing import Thing
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient

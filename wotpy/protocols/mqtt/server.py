@@ -17,8 +17,8 @@ from wotpy.protocols.mqtt.handlers.ping import PingMQTTHandler
 from wotpy.protocols.mqtt.handlers.property import PropertyMQTTHandler
 from wotpy.protocols.mqtt.runner import MQTTHandlerRunner
 from wotpy.protocols.server import BaseProtocolServer
-from wotpy.td.enums import InteractionTypes
-from wotpy.td.form import Form
+from wotpy.wot.enums import InteractionTypes
+from wotpy.wot.form import Form
 
 
 class MQTTServer(BaseProtocolServer):

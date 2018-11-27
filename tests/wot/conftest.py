@@ -12,8 +12,8 @@ from mock import MagicMock
 
 from tests.td_examples import TD_EXAMPLE
 from wotpy.protocols.client import BaseProtocolClient
-from wotpy.td.description import ThingDescription
-from wotpy.td.thing import Thing
+from wotpy.wot.td import ThingDescription
+from wotpy.wot.thing import Thing
 from wotpy.wot.consumed.thing import ConsumedThing
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing

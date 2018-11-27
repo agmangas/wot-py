@@ -12,9 +12,9 @@ import uuid
 import six
 from slugify import slugify
 
-from wotpy.td.interaction import Property, Action, Event
+from wotpy.wot.interaction import Property, Action, Event
 from wotpy.wot.dictionaries.thing import ThingFragment
-from wotpy.wot.dictionaries.utils import to_camel
+from wotpy.utils.utils import to_camel
 
 
 class Thing(object):

@@ -69,3 +69,11 @@ class SecuritySchemeType(EnumListMixin):
     PUBLIC = "public"
     OAUTH2 = "oauth2"
     APIKEY = "apikey"
+
+
+class InteractionTypes(EnumListMixin):
+    """Enumeration of interaction types."""
+
+    PROPERTY = "Property"
+    ACTION = "Action"
+    EVENT = "Event"

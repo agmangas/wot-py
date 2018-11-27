@@ -6,7 +6,7 @@ Wrapper classes for security dictionaries defined in the Scripting API.
 """
 
 from wotpy.wot.dictionaries.base import WotBaseDict
-from wotpy.wot.dictionaries.utils import build_init_dict
+from wotpy.utils.utils import merge_args_kwargs_dict
 from wotpy.wot.enums import SecuritySchemeType
 
 
@@ -28,7 +28,7 @@ class SecuritySchemeDict(WotBaseDict):
     def build(cls, *args, **kwargs):
         """Builds an instance of the appropriate subclass for the given SecurityScheme."""
 
-        init_dict = build_init_dict(args, kwargs)
+        init_dict = merge_args_kwargs_dict(args, kwargs)
 
         klass_map = {
             SecuritySchemeType.NOSEC: NoSecuritySchemeDict,

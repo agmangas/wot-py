@@ -7,7 +7,7 @@ Schemas following the JSON Schema specification used to validate the shape of Th
 
 import re
 
-from wotpy.td.enums import InteractionTypes
+from wotpy.wot.enums import InteractionTypes
 
 REGEX_SAFE_NAME = r"^[a-zA-Z0-9_-]+$"
 REGEX_ANY_URI = r"^((\w+:(\/?\/?)[^\s]+)|((..\/)+)[^\s]*)$"

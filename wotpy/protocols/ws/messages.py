@@ -16,7 +16,7 @@ from wotpy.protocols.ws.schemas import \
     SCHEMA_EMITTED_ITEM, \
     SCHEMA_ERROR, \
     JSON_RPC_VERSION
-from wotpy.utils.serialization import to_json_obj
+from wotpy.utils.utils import to_json_obj
 
 
 def parse_ws_message(raw_msg):

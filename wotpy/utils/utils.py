@@ -5,12 +5,15 @@
 Some utility functions for the WoT data type wrappers.
 """
 
+import json
+
 import six
 
 
-def build_init_dict(args, kwargs):
-    """Takes a tuple of args and dict of kwargs and updates the kwargs dict
-    with the first argument of args (if that item is a dict)."""
+def merge_args_kwargs_dict(args, kwargs):
+    """Takes a tuple of args and dict of kwargs.
+    Returns a dict that is the result of merging the first item
+    of args (if that item is a dict) and the kwargs dict."""
 
     init_dict = {}
 
@@ -41,3 +44,20 @@ def to_snake(val):
         raise ValueError
 
     return "".join(["_" + x.lower() if x.isupper() else x for x in val])
+
+
+def to_json_obj(obj):
+    """Recursive function that attempts to convert
+    any given object to a JSON-serializable object."""
+
+    if isinstance(obj, set):
+        return list(obj)
+
+    try:
+        json.dumps(obj)
+        return obj
+    except TypeError:
+        return {
+            key: to_json_obj(val)
+            for key, val in six.iteritems(vars(obj))
+        }

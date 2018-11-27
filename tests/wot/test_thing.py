@@ -8,15 +8,14 @@ import uuid
 # noinspection PyPackageRequirements
 import pytest
 # noinspection PyPackageRequirements
-from faker import Faker
 # noinspection PyPackageRequirements
 from slugify import slugify
 
 from wotpy.protocols.enums import Protocols
-from wotpy.td.description import ThingDescription
-from wotpy.td.form import Form
-from wotpy.td.interaction import Action
-from wotpy.td.thing import Thing
+from wotpy.wot.td import ThingDescription
+from wotpy.wot.form import Form
+from wotpy.wot.interaction import Action
+from wotpy.wot.thing import Thing
 
 
 def test_unique_url_name():

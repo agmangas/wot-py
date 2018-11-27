@@ -6,7 +6,7 @@ Wrapper class for dictionaries to represent Thing filters.
 """
 
 from wotpy.wot.dictionaries.thing import ThingFragment
-from wotpy.wot.dictionaries.utils import build_init_dict
+from wotpy.utils.utils import merge_args_kwargs_dict
 
 
 class ThingFilterDict(object):
@@ -14,7 +14,7 @@ class ThingFilterDict(object):
     constraints for discovering Things as key-value pairs."""
 
     def __init__(self, *args, **kwargs):
-        self._init = build_init_dict(args, kwargs)
+        self._init = merge_args_kwargs_dict(args, kwargs)
 
     def to_dict(self):
         """The internal dictionary that contains the entire set of properties."""

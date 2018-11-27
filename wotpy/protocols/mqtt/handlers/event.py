@@ -15,8 +15,8 @@ from tornado.queues import QueueFull
 
 from wotpy.protocols.mqtt.handlers.base import BaseMQTTHandler
 from wotpy.protocols.mqtt.handlers.subs import InteractionsSubscriber
-from wotpy.td.enums import InteractionTypes
-from wotpy.utils.serialization import to_json_obj
+from wotpy.wot.enums import InteractionTypes
+from wotpy.utils.utils import to_json_obj
 
 
 class EventMQTTHandler(BaseMQTTHandler):

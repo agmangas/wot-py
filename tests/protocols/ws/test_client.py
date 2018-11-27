@@ -22,8 +22,7 @@ from tests.protocols.helpers import \
     client_test_on_property_change_error
 from wotpy.protocols.exceptions import ProtocolClientException
 from wotpy.protocols.ws.client import WebsocketClient
-from wotpy.td.description import ThingDescription
-from wotpy.wot.dictionaries.interaction import ActionFragmentDict
+from wotpy.wot.td import ThingDescription
 
 
 @pytest.mark.flaky(reruns=5)

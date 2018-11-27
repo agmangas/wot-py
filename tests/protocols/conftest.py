@@ -16,7 +16,7 @@ from faker import Faker
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.support import is_coap_supported, is_mqtt_supported
 from wotpy.protocols.ws.server import WebsocketServer
-from wotpy.td.description import ThingDescription
+from wotpy.wot.td import ThingDescription
 from wotpy.wot.servient import Servient
 
 

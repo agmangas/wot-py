@@ -11,8 +11,8 @@ import tornado.ioloop
 from faker import Faker
 
 from wotpy.protocols.support import is_mqtt_supported
-from wotpy.td.description import ThingDescription
-from wotpy.td.thing import Thing
+from wotpy.wot.td import ThingDescription
+from wotpy.wot.thing import Thing
 from wotpy.wot.dictionaries.interaction import ActionFragmentDict, EventFragmentDict, PropertyFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient

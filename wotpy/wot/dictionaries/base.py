@@ -7,7 +7,7 @@ Base class for WoT dictionaries.
 
 import six
 
-from wotpy.wot.dictionaries.utils import build_init_dict, to_camel, to_snake
+from wotpy.utils.utils import merge_args_kwargs_dict, to_camel, to_snake
 
 
 class WotBaseDict(object):
@@ -23,7 +23,7 @@ class WotBaseDict(object):
         """Constructor.
         Will raise ValueError if there is some required field missing."""
 
-        init_dict = build_init_dict(args, kwargs)
+        init_dict = merge_args_kwargs_dict(args, kwargs)
 
         self._init = {}
 

@@ -8,7 +8,7 @@ all the ExposedThings contained by a Protocol Binding server.
 
 import six
 
-from wotpy.td.enums import InteractionTypes
+from wotpy.wot.enums import InteractionTypes
 
 
 class InteractionsSubscriber(object):
