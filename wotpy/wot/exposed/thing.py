@@ -15,6 +15,7 @@ from wotpy.td.description import ThingDescription
 from wotpy.td.interaction import Property, Action, Event
 from wotpy.td.thing import Thing
 from wotpy.utils.enums import EnumListMixin
+from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.wot.dictionaries.utils import to_camel
 from wotpy.wot.enums import DefaultThingEvent, TDChangeMethod, TDChangeType
 from wotpy.wot.events import \
@@ -323,6 +324,9 @@ class ExposedThing(object):
         """Adds a Property defined by the argument and updates the Thing Description.
         Takes an instance of ThingPropertyInit as argument."""
 
+        if isinstance(property_init, dict):
+            property_init = PropertyFragmentDict(property_init)
+
         prop = Property(thing=self._thing, name=name, init_dict=property_init)
 
         self._thing.add_interaction(prop)
@@ -353,6 +357,9 @@ class ExposedThing(object):
     def add_action(self, name, action_init, action_handler=None):
         """Adds an Action to the Thing object as defined by the action
         argument of type ThingActionInit and updates th,e Thing Description."""
+
+        if isinstance(action_init, dict):
+            action_init = ActionFragmentDict(action_init)
 
         action = Action(thing=self._thing, name=name, init_dict=action_init)
 
@@ -386,6 +393,9 @@ class ExposedThing(object):
     def add_event(self, name, event_init):
         """Adds an event to the Thing object as defined by the event argument
         of type ThingEventInit and updates the Thing Description."""
+
+        if isinstance(event_init, dict):
+            event_init = EventFragmentDict(event_init)
 
         event = Event(thing=self._thing, name=name, init_dict=event_init)
 
