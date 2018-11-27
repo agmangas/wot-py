@@ -42,18 +42,19 @@ DESCRIPTION = {
     "properties": {
         NAME_PROP_TEMP: {
             "type": "number",
-            "writable": False,
+            "readOnly": True,
             "observable": True
         },
         NAME_PROP_TEMP_THRESHOLD: {
             "type": "number",
-            "writable": True,
             "observable": True
         }
     },
     "events": {
         NAME_EVENT_TEMP_HIGH: {
-            "type": "number"
+            "data": {
+                "type": "number"
+            }
         }
     }
 }
