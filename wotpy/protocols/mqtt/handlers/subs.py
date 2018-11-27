@@ -42,6 +42,18 @@ class InteractionsSubscriber(object):
             InteractionTypes.EVENT: "events"
         }.get(self._interaction_type)
 
+    def _get_exposed_thing_interaction_set(self, exp_thing):
+        """Returns the set of interactions that should be observed."""
+
+        attr = self._interaction_attr_name()
+
+        intrc_expected = set(six.itervalues(exp_thing.thing.__getattribute__(attr)))
+
+        if self._interaction_type == InteractionTypes.PROPERTY:
+            intrc_expected = set(item for item in intrc_expected if item.observable)
+
+        return intrc_expected
+
     def _refresh_exposed_thing_subs(self, exp_thing):
         """Refresh the subscriptions for the given ExposedThing."""
 
@@ -50,9 +62,7 @@ class InteractionsSubscriber(object):
 
         thing_subs = self._subs[exp_thing]
 
-        attr = self._interaction_attr_name()
-
-        intrc_expected = set(six.itervalues(exp_thing.thing.__getattribute__(attr)))
+        intrc_expected = self._get_exposed_thing_interaction_set(exp_thing)
         intrc_current = set(thing_subs.keys())
         intrc_remove = intrc_current.difference(intrc_expected)
 
@@ -61,6 +71,8 @@ class InteractionsSubscriber(object):
             thing_subs.pop(intrc)
 
         intrc_new = [item for item in intrc_expected if item not in thing_subs]
+
+        attr = self._interaction_attr_name()
 
         for intrc in intrc_new:
             on_next = self._on_next_builder(exp_thing, intrc)
