@@ -9,13 +9,15 @@ import json
 
 import six
 import tornado.gen
+from rx import Observable
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 
-from wotpy.wot.td import ThingDescription
-from wotpy.wot.thing import Thing
 from wotpy.wot.consumed.thing import ConsumedThing
 from wotpy.wot.dictionaries.thing import ThingFragment
+from wotpy.wot.enums import DiscoveryMethod
 from wotpy.wot.exposed.thing import ExposedThing
+from wotpy.wot.td import ThingDescription
+from wotpy.wot.thing import Thing
 
 DEFAULT_FETCH_TIMEOUT_SECS = 20.0
 
@@ -29,10 +31,35 @@ class WoT(object):
         self._servient = servient
 
     def discover(self, thing_filter):
-        """Starts the discovery process that will provide ConsumedThing
-        objects that match the optional argument ThingFilter."""
+        """Starts the discovery process that will provide ThingDescriptions
+        that match the optional argument filter of type ThingFilter."""
 
-        raise NotImplementedError()
+        if thing_filter.method not in [DiscoveryMethod.ANY, DiscoveryMethod.LOCAL]:
+            err = NotImplementedError("Unsupported discovery method")
+            # noinspection PyUnresolvedReferences
+            return Observable.throw(err)
+
+        if thing_filter.query:
+            err = NotImplementedError("Queries are not supported yet (please use filter.fragment)")
+            # noinspection PyUnresolvedReferences
+            return Observable.throw(err)
+
+        found_tds = []
+
+        fragment_dict = thing_filter.fragment if thing_filter.fragment else {}
+
+        for exposed_thing in self._servient.exposed_things:
+            td = ThingDescription.from_thing(exposed_thing.thing)
+
+            is_match = all(
+                item in six.iteritems(td.to_dict())
+                for item in six.iteritems(fragment_dict))
+
+            if is_match:
+                found_tds.append(td.to_str())
+
+        # noinspection PyUnresolvedReferences
+        return Observable.of(*found_tds)
 
     @classmethod
     @tornado.gen.coroutine

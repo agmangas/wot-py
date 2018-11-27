@@ -11,12 +11,9 @@ from rx.concurrency import IOLoopScheduler
 from rx.subjects import Subject
 from tornado.concurrent import Future
 
-from wotpy.wot.td import ThingDescription
-from wotpy.wot.interaction import Property, Action, Event
-from wotpy.wot.thing import Thing
 from wotpy.utils.enums import EnumListMixin
-from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.utils.utils import to_camel
+from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.wot.enums import DefaultThingEvent, TDChangeMethod, TDChangeType
 from wotpy.wot.events import \
     EmittedEvent, \
@@ -30,6 +27,9 @@ from wotpy.wot.exposed.interaction_map import \
     ExposedThingEventDict, \
     ExposedThingActionDict, \
     ExposedThingPropertyDict
+from wotpy.wot.interaction import Property, Action, Event
+from wotpy.wot.td import ThingDescription
+from wotpy.wot.thing import Thing
 
 
 class ExposedThing(object):

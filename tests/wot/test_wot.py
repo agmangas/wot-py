@@ -3,20 +3,23 @@
 
 import json
 import random
+import uuid
 
-# noinspection PyPackageRequirements
 import pytest
+import tornado.concurrent
 import tornado.gen
 import tornado.ioloop
 import tornado.testing
 import tornado.web
-# noinspection PyPackageRequirements
 from faker import Faker
+from rx.concurrency import IOLoopScheduler
 
 from tests.td_examples import TD_EXAMPLE
 from tests.wot.utils import assert_exposed_thing_equal
+from wotpy.wot.dictionaries.filter import ThingFilterDict
 from wotpy.wot.dictionaries.thing import ThingFragment
 from wotpy.wot.servient import Servient
+from wotpy.wot.td import ThingDescription
 from wotpy.wot.wot import WoT
 
 
@@ -120,3 +123,107 @@ def test_consume_from_url(td_example_tornado_app):
             yield wot.consume_from_url(url_error)
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+TD_DICT_01 = {
+    "id": uuid.uuid4().urn,
+    "name": Faker().pystr(),
+    "security": [{"scheme": "nosec"}],
+    "version": {"instance": "1.2.1"},
+    "properties": {
+        "status": {
+            "description": Faker().pystr(),
+            "type": "string"
+        }
+    }
+}
+
+TD_DICT_02 = {
+    "id": uuid.uuid4().urn,
+    "version": {"instance": "2.0.0"},
+    "actions": {
+        "toggle": {
+            "output": {"type": "boolean"}
+        }
+    }
+}
+
+
+def assert_equal_tds(one, other):
+    """Asserts that both TDs are equal."""
+
+    one = ThingDescription(one) if not isinstance(one, ThingDescription) else one
+    other = ThingDescription(other) if not isinstance(other, ThingDescription) else other
+    assert one.to_dict() == other.to_dict()
+
+
+def test_discovery_any():
+    """All TDs contained in the Servient are returned when the Thing filter is empty."""
+
+    servient = Servient()
+    wot = WoT(servient=servient)
+    wot.produce(ThingFragment(TD_DICT_01))
+    wot.produce(ThingFragment(TD_DICT_02))
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        future_done, found = tornado.concurrent.Future(), []
+
+        def on_next(td_str):
+            found.append(ThingDescription(td_str))
+
+            if len(found) == 2 and not future_done.done():
+                future_done.set_result(True)
+
+        thing_filter = ThingFilterDict()
+        observable = wot.discover(thing_filter)
+        subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
+
+        yield future_done
+
+        assert len(found) == 2
+        assert_equal_tds(next(item.to_dict() for item in found if item.id == TD_DICT_01["id"]), TD_DICT_01)
+        assert_equal_tds(next(item.to_dict() for item in found if item.id == TD_DICT_02["id"]), TD_DICT_02)
+
+        subscription.dispose()
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_discovery_filter_fragment():
+    """The Thing filter fragment attribute enables discovering Things by matching TD fields."""
+
+    servient = Servient()
+    wot = WoT(servient=servient)
+    wot.produce(ThingFragment(TD_DICT_01))
+    wot.produce(ThingFragment(TD_DICT_02))
+
+    def first(thing_filter):
+        """Returns the first TD discovery for the given Thing filter."""
+
+        @tornado.gen.coroutine
+        def discover_first():
+            ret, future_done = [], tornado.concurrent.Future()
+
+            def on_next(td_str):
+                ret.append(ThingDescription(td_str))
+
+                if not future_done.done():
+                    future_done.set_result(True)
+
+            observable = wot.discover(thing_filter)
+            subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
+
+            yield future_done
+
+            subscription.dispose()
+
+            assert len(ret)
+
+            raise tornado.gen.Return(ret[0])
+
+        return tornado.ioloop.IOLoop.current().run_sync(discover_first)
+
+    assert_equal_tds(first(ThingFilterDict(fragment={"name": TD_DICT_01.get("name")})), TD_DICT_01)
+    assert_equal_tds(first(ThingFilterDict(fragment={"version": {"instance": "2.0.0"}})), TD_DICT_02)
+    assert_equal_tds(first(ThingFilterDict(fragment={"id": TD_DICT_02.get("id")})), TD_DICT_02)
