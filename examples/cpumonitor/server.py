@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
-# noinspection PyCompatibility
 import asyncio
 import json
 import logging
 import os
-import random
 
 import psutil
 
@@ -19,23 +17,26 @@ LOGGER = logging.getLogger("sysmonitor")
 LOGGER.setLevel(logging.INFO)
 
 PORT_CATALOGUE = int(os.environ.get("PORT_CATALOGUE", 9292))
-PORT_WS = int(os.environ.get("PORT_WS", random.randint(20000, 30000)))
-PORT_HTTP = int(os.environ.get("PORT_HTTP", random.randint(30001, 40000)))
+PORT_WS = int(os.environ.get("PORT_WS", 9191))
+PORT_HTTP = int(os.environ.get("PORT_HTTP", 9090))
 MQTT_BROKER = os.environ.get("MQTT_BROKER", "mqtt://localhost")
 DEFAULT_CPU_THRESHOLD = float(os.environ.get("CPU_THRESHOLD", 50.0))
 DEFAULT_CPU_CHECK_SEC = float(os.environ.get("CPU_CHECK_SEC", 2.0))
 
 DESCRIPTION = {
-    "id": "urn:org:fundacionctic:thing:sysmonitor",
-    "name": "System Monitor Thing",
+    "id": "urn:org:fundacionctic:thing:cpumonitor",
+    "name": "CPU Monitor Thing",
     "properties": {
         "cpuPercent": {
+            "description": "Current CPU usage",
             "type": "number",
             "readOnly": True,
             "observable": True
         },
         "cpuThreshold": {
-            "type": "number"
+            "description": "CPU usage alert threshold",
+            "type": "number",
+            "observable": True
         }
     },
     "events": {
