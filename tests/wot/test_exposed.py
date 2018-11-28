@@ -611,13 +611,18 @@ def test_interaction_name_case_insensitive():
     prop_name_camel = "onOff"
     prop_name_lower = prop_name_camel.lower()
 
-    exp_thing.add_property(prop_name_camel, {"type": DataType.BOOLEAN})
+    prop_default_value = Faker().pybool()
+    exp_thing.add_property(prop_name_camel, {"type": DataType.BOOLEAN}, value=prop_default_value)
 
     with pytest.raises(ValueError):
         exp_thing.add_property(prop_name_lower, {"type": DataType.BOOLEAN})
 
-    assert exp_thing.properties[prop_name_camel]
-    assert exp_thing.properties[prop_name_lower]
+    @tornado.gen.coroutine
+    def assert_prop_read():
+        assert (yield exp_thing.properties[prop_name_camel].read()) is prop_default_value
+        assert (yield exp_thing.properties[prop_name_lower].read()) is prop_default_value
+
+    tornado.ioloop.IOLoop.current().run_sync(assert_prop_read)
 
     action_name_camel = "toggleOnOff"
     action_name_lower = action_name_camel.lower()
