@@ -56,7 +56,8 @@ class PropertyObserverHandler(RequestHandler):
         self.future_next = future_next
 
         def on_next(item):
-            future_next.set_result(item.data.value)
+            if not future_next.done():
+                future_next.set_result(item.data.value)
 
         self.subscription = exposed_thing.properties[name].subscribe(on_next)
         updated_value = yield self.future_next
