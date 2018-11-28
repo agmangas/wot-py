@@ -87,23 +87,14 @@ class ThingDescription(object):
     def get_property_forms(self, name):
         """Returns a list of FormDict for the property that matches the given name."""
 
-        if name not in self.properties:
-            raise ValueError("Missing property: {}".format(name))
-
         return self.properties[name].forms
 
     def get_action_forms(self, name):
         """Returns a list of FormDict for the action that matches the given name."""
 
-        if name not in self.actions:
-            raise ValueError("Missing action: {}".format(name))
-
         return self.actions[name].forms
 
     def get_event_forms(self, name):
         """Returns a list of FormDict for the event that matches the given name."""
-
-        if name not in self.events:
-            raise ValueError("Missing event: {}".format(name))
 
         return self.events[name].forms
