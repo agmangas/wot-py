@@ -19,27 +19,33 @@ class ConsumedThingInteractionDict(UserDict):
         self._consumed_thing = kwargs.pop("consumed_thing")
         UserDict.__init__(self, *args, **kwargs)
 
+    def _find_normalized_name(self, name):
+        """Takes a case-insensitive interaction name and returns
+        the actual case-sensitive name in the interaction dict."""
+
+        return next((key for key in six.iterkeys(self.interaction_dict) if key.lower() == name.lower()), None)
+
     def __getitem__(self, name):
         """Lazily build and return an object that implements the Interaction interface."""
 
-        try:
-            key = next(key for key in self.thing_interaction_dict if key.lower() == name.lower())
-        except StopIteration:
+        name_normalized = self._find_normalized_name(name)
+
+        if name_normalized is None:
             raise KeyError("Unknown interaction: {}".format(name))
 
-        return self.thing_interaction_class(self._consumed_thing, key)
+        return self.thing_interaction_class(self._consumed_thing, name_normalized)
 
     def __len__(self):
-        return len(self.thing_interaction_dict)
+        return len(self.interaction_dict)
 
     def __contains__(self, item):
-        return item in self.thing_interaction_dict
+        return self._find_normalized_name(item) is not None
 
     def __iter__(self):
-        return six.iterkeys(self.thing_interaction_dict)
+        return six.iterkeys(self.interaction_dict)
 
     @property
-    def thing_interaction_dict(self):
+    def interaction_dict(self):
         """Returns an interactions dict by name.
         The dict values are the raw dict interactions as contained in a TD document."""
 
@@ -58,7 +64,7 @@ class ConsumedThingPropertyDict(ConsumedThingInteractionDict):
     the ThingProperty interface for each property in a given ConsumedThing."""
 
     @property
-    def thing_interaction_dict(self):
+    def interaction_dict(self):
         return self._consumed_thing.td.properties
 
     @property
@@ -71,7 +77,7 @@ class ConsumedThingActionDict(ConsumedThingInteractionDict):
     the ThingAction interface for each action in a given ConsumedThing."""
 
     @property
-    def thing_interaction_dict(self):
+    def interaction_dict(self):
         return self._consumed_thing.td.actions
 
     @property
@@ -84,7 +90,7 @@ class ConsumedThingEventDict(ConsumedThingInteractionDict):
     the ThingEvent interface for each event in a given ConsumedThing."""
 
     @property
-    def thing_interaction_dict(self):
+    def interaction_dict(self):
         return self._consumed_thing.td.events
 
     @property

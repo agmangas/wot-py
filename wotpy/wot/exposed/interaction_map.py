@@ -19,27 +19,33 @@ class ExposedThingInteractionDict(UserDict):
         self._exposed_thing = kwargs.pop("exposed_thing")
         UserDict.__init__(self, *args, **kwargs)
 
+    def _find_normalized_name(self, name):
+        """Takes a case-insensitive interaction name and returns
+        the actual case-sensitive name in the interaction dict."""
+
+        return next((key for key in six.iterkeys(self.interaction_dict) if key.lower() == name.lower()), None)
+
     def __getitem__(self, name):
         """Lazily build and return an object that implements the Interaction interface."""
 
-        try:
-            key = next(key for key in self.thing_interaction_dict if key.lower() == name.lower())
-        except StopIteration:
+        name_normalized = self._find_normalized_name(name)
+
+        if name_normalized is None:
             raise KeyError("Unknown interaction: {}".format(name))
 
-        return self.thing_interaction_class(self._exposed_thing, key)
+        return self.thing_interaction_class(self._exposed_thing, name_normalized)
 
     def __len__(self):
-        return len(self.thing_interaction_dict)
+        return len(self.interaction_dict)
 
     def __contains__(self, item):
-        return item in self.thing_interaction_dict
+        return self._find_normalized_name(item) is not None
 
     def __iter__(self):
-        return six.iterkeys(self.thing_interaction_dict)
+        return six.iterkeys(self.interaction_dict)
 
     @property
-    def thing_interaction_dict(self):
+    def interaction_dict(self):
         """Returns the InteractionPattern objects dict by name."""
 
         raise NotImplementedError()
@@ -57,7 +63,7 @@ class ExposedThingPropertyDict(ExposedThingInteractionDict):
     the ThingProperty interface for each property in a given ExposedThing."""
 
     @property
-    def thing_interaction_dict(self):
+    def interaction_dict(self):
         return self._exposed_thing.thing.properties
 
     @property
@@ -70,7 +76,7 @@ class ExposedThingActionDict(ExposedThingInteractionDict):
     the ThingAction interface for each action in a given ExposedThing."""
 
     @property
-    def thing_interaction_dict(self):
+    def interaction_dict(self):
         return self._exposed_thing.thing.actions
 
     @property
@@ -83,7 +89,7 @@ class ExposedThingEventDict(ExposedThingInteractionDict):
     the ThingEvent interface for each event in a given ExposedThing."""
 
     @property
-    def thing_interaction_dict(self):
+    def interaction_dict(self):
         return self._exposed_thing.thing.events
 
     @property
