@@ -10,12 +10,12 @@ import tornado.gen
 import tornado.ioloop
 from faker import Faker
 
-from wotpy.protocols.support import is_mqtt_supported
-from wotpy.wot.td import ThingDescription
-from wotpy.wot.thing import Thing
+from wotpy.support import is_mqtt_supported
 from wotpy.wot.dictionaries.interaction import ActionFragmentDict, EventFragmentDict, PropertyFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
+from wotpy.wot.td import ThingDescription
+from wotpy.wot.thing import Thing
 
 collect_ignore = []
 

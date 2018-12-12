@@ -9,7 +9,7 @@ import pytest
 import tornado.gen
 import tornado.ioloop
 
-from wotpy.wot.discovery.support import is_dnssd_supported
+from wotpy.support import is_dnssd_supported
 
 collect_ignore = []
 

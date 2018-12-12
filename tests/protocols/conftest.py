@@ -14,10 +14,10 @@ from OpenSSL import crypto
 from faker import Faker
 
 from wotpy.protocols.http.server import HTTPServer
-from wotpy.protocols.support import is_coap_supported, is_mqtt_supported
 from wotpy.protocols.ws.server import WebsocketServer
-from wotpy.wot.td import ThingDescription
+from wotpy.support import is_coap_supported, is_mqtt_supported
 from wotpy.wot.servient import Servient
+from wotpy.wot.td import ThingDescription
 
 
 @pytest.fixture

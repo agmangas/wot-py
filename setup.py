@@ -4,8 +4,7 @@
 from setuptools import setup, find_packages
 
 from wotpy.__version__ import __version__
-from wotpy.protocols.support import is_coap_supported, is_mqtt_supported
-from wotpy.wot.discovery.support import is_dnssd_supported
+from wotpy.support import is_dnssd_supported, is_coap_supported, is_mqtt_supported
 
 install_requires = [
     'tornado>=5.1,<6.0',
