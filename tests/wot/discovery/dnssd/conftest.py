@@ -22,7 +22,8 @@ if not is_dnssd_supported():
 
 @pytest.fixture
 def asyncio_zeroconf():
-    """"""
+    """Builds an aiozeroconf service instance and starts browsing for WoT Servient services.
+    Provides a deque that contains the service state change history."""
 
     loop = tornado.ioloop.IOLoop.current()
 
