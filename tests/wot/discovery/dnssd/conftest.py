@@ -8,9 +8,7 @@ import socket
 import pytest
 import tornado.gen
 import tornado.ioloop
-from aiozeroconf import Zeroconf, ServiceBrowser
 
-from wotpy.wot.discovery.dnssd.service import DNSSDDiscoveryService
 from wotpy.wot.discovery.support import is_dnssd_supported
 
 collect_ignore = []
@@ -24,6 +22,9 @@ if not is_dnssd_supported():
 def asyncio_zeroconf():
     """Builds an aiozeroconf service instance and starts browsing for WoT Servient services.
     Provides a deque that contains the service state change history."""
+
+    from aiozeroconf import Zeroconf, ServiceBrowser
+    from wotpy.wot.discovery.dnssd.service import DNSSDDiscoveryService
 
     loop = tornado.ioloop.IOLoop.current()
 
