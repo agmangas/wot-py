@@ -25,20 +25,20 @@ TASK_REGISTER = 'register'
 TASK_UNREGISTER = 'unregister'
 
 
-def build_servient_service_info(servient, address=None):
+def build_servient_service_info(servient, address=None, instance_name=None):
     """Takes a Servient and optional IP address and builds the
     zeroconf ServiceInfo that describes the WoT Servient service."""
 
     address = address if address else get_main_ipv4_address()
-
     servient_urlname = slugify(servient.hostname)
+    instance_name = instance_name if instance_name else servient_urlname
     servient_fqdn = "{}.".format(servient.hostname.strip('.'))
     server_default = "{}.local.".format(servient_urlname)
     server = servient_fqdn if servient_fqdn.endswith('.local.') else server_default
 
     return ServiceInfo(
         DNSSDDiscoveryService.WOT_SERVICE_TYPE,
-        "{}.{}".format(servient_urlname, DNSSDDiscoveryService.WOT_SERVICE_TYPE),
+        "{}.{}".format(instance_name, DNSSDDiscoveryService.WOT_SERVICE_TYPE),
         port=servient.catalogue_port,
         address=socket.inet_aton(address),
         properties={},
@@ -91,12 +91,17 @@ def _start_zeroconf(close_event, services, services_lock, register_queue, addres
 
         servient = task['servient']
         done = task['done']
+        instance_name = task['instance_name']
 
         try:
             if not servient.catalogue_port:
                 return
 
-            info = build_servient_service_info(servient, address=address)
+            info = build_servient_service_info(
+                servient,
+                address=address,
+                instance_name=instance_name)
+
             zeroconf.register_service(info)
             registered.append(info)
         finally:
@@ -107,9 +112,13 @@ def _start_zeroconf(close_event, services, services_lock, register_queue, addres
 
         servient = task['servient']
         done = task['done']
+        instance_name = task['instance_name']
 
         try:
-            info = build_servient_service_info(servient, address=address)
+            info = build_servient_service_info(
+                servient,
+                address=address,
+                instance_name=instance_name)
 
             if not any(val == info for val in registered):
                 return
@@ -225,22 +234,30 @@ class DNSSDDiscoveryService(object):
                 yield tornado.gen.sleep(ITER_WAIT)
 
     @tornado.gen.coroutine
-    def register(self, servient):
+    def register(self, servient, instance_name=None):
         """Takes a Servient and registers the TD catalogue
         service for discovery by other hosts in the same link."""
 
+        if instance_name and instance_name.endswith('.'):
+            raise ValueError('Instance name ends with "."')
+
         yield self._run_task({
             'type': TASK_REGISTER,
-            'servient': servient
+            'servient': servient,
+            'instance_name': instance_name
         })
 
     @tornado.gen.coroutine
-    def unregister(self, servient):
+    def unregister(self, servient, instance_name=None):
         """Takes a Servient and unregisters the TD catalogue service."""
+
+        if instance_name and instance_name.endswith('.'):
+            raise ValueError('Instance name ends with "."')
 
         yield self._run_task({
             'type': TASK_UNREGISTER,
-            'servient': servient
+            'servient': servient,
+            'instance_name': instance_name
         })
 
     @tornado.gen.coroutine

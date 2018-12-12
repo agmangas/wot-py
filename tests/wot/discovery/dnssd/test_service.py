@@ -15,6 +15,25 @@ from wotpy.wot.discovery.dnssd.service import DNSSDDiscoveryService, build_servi
 from wotpy.wot.servient import Servient
 
 
+def _assert_service_added_removed(servient, service_history, instance_name=None):
+    """Checks the service change history to assert that
+    the servient service has been added and then removed."""
+
+    info = build_servient_service_info(servient, instance_name=instance_name)
+    servient_items = [item for item in service_history if item[1] == info.name]
+
+    assert servient_items[-1][0] == service_history[-2][0] == DNSSDDiscoveryService.WOT_SERVICE_TYPE
+    assert servient_items[-2][2] == ServiceStateChange.Added
+    assert servient_items[-1][2] == ServiceStateChange.Removed
+
+
+def _num_service_instance_items(servient, service_history, instance_name=None):
+    """Returns the number of items in the given service history that match the servient."""
+
+    info = build_servient_service_info(servient, instance_name=instance_name)
+    return len([item for item in service_history if item[1] == info.name])
+
+
 def test_start_stop():
     """The DNS-SD service can be started and stopped."""
 
@@ -43,18 +62,6 @@ def test_start_stop():
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def _assert_service_added_removed(servient, service_history):
-    """Checks the service change history to assert that
-    the servient service has been added and then removed."""
-
-    info = build_servient_service_info(servient)
-    servient_items = [item for item in service_history if item[1] == info.name]
-
-    assert servient_items[-1][0] == service_history[-2][0] == DNSSDDiscoveryService.WOT_SERVICE_TYPE
-    assert servient_items[-2][2] == ServiceStateChange.Added
-    assert servient_items[-1][2] == ServiceStateChange.Removed
-
-
 @pytest.mark.flaky(reruns=5)
 def test_register(asyncio_zeroconf):
     """WoT Servients may be registered for discovery on the DNS-SD service."""
@@ -77,12 +84,12 @@ def test_register(asyncio_zeroconf):
 
         yield dnssd_discovery.register(servient)
 
-        while not len(service_history):
+        while _num_service_instance_items(servient, service_history) < 1:
             yield tornado.gen.sleep(0.1)
 
         yield dnssd_discovery.stop()
 
-        while len(service_history) < 2:
+        while _num_service_instance_items(servient, service_history) < 2:
             yield tornado.gen.sleep(0.1)
 
         _assert_service_added_removed(servient, service_history)
@@ -108,7 +115,7 @@ def test_unregister(asyncio_zeroconf):
         yield dnssd_discovery.register(servient)
         yield dnssd_discovery.unregister(servient)
 
-        while len(service_history) < 2:
+        while _num_service_instance_items(servient, service_history) < 2:
             yield tornado.gen.sleep(0.1)
 
         _assert_service_added_removed(servient, service_history)
@@ -150,5 +157,44 @@ def test_find(asyncio_zeroconf):
         assert (ipaddr, port) in (yield dnssd_discovery.find(timeout=3))
 
         yield dnssd_discovery.stop()
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+@pytest.mark.flaky(reruns=5)
+def test_register_instance_name(asyncio_zeroconf):
+    """WoT Servients may be registered with custom service instance names."""
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        yield tornado.gen.sleep(2)
+
+        service_history = asyncio_zeroconf.pop("service_history")
+
+        port_catalogue = random.randint(20000, 40000)
+        servient = Servient(catalogue_port=port_catalogue)
+
+        dnssd_discovery = DNSSDDiscoveryService()
+
+        instance_name = Faker().sentence()
+        instance_name = instance_name.strip('.')[:32]
+
+        yield dnssd_discovery.start()
+        yield dnssd_discovery.register(servient, instance_name=instance_name)
+
+        while _num_service_instance_items(servient, service_history, instance_name=instance_name) < 1:
+            yield tornado.gen.sleep(0.1)
+
+        yield dnssd_discovery.stop()
+
+        while _num_service_instance_items(servient, service_history, instance_name=instance_name) < 2:
+            yield tornado.gen.sleep(0.1)
+
+        assert len([item[1].startswith(instance_name) for item in service_history]) == 2
+
+        with pytest.raises(Exception):
+            _assert_service_added_removed(servient, service_history)
+
+        _assert_service_added_removed(servient, service_history, instance_name=instance_name)
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
