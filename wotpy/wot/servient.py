@@ -98,7 +98,7 @@ class Servient(object):
     send requests and interact with IoT devices exposed by other WoT servients
     or servers using the capabilities of a Web client such as Web browser."""
 
-    def __init__(self, hostname=None):
+    def __init__(self, hostname=None, catalogue_port=9090):
         self._hostname = hostname or socket.getfqdn()
 
         if not isinstance(self._hostname, six.string_types):
@@ -106,7 +106,7 @@ class Servient(object):
 
         self._servers = {}
         self._clients = {}
-        self._catalogue_port = None
+        self._catalogue_port = catalogue_port
         self._catalogue_server = None
         self._exposed_thing_set = ExposedThingSet()
         self._servient_lock = tornado.locks.Lock()
@@ -209,6 +209,13 @@ class Servient(object):
         """Returns the current port of the HTTP Thing Description catalogue service."""
 
         return self._catalogue_port
+
+    @catalogue_port.setter
+    @_stopped_servient_only
+    def catalogue_port(self, port):
+        """Enables the servient TD catalogue in the given port."""
+
+        self._catalogue_port = port
 
     def _build_default_clients(self):
         """Builds the default Protocol Binding clients."""
@@ -407,12 +414,6 @@ class Servient(object):
             raise ValueError("Unknown Exposed Thing: {}".format(thing_id))
 
         return exp_thing
-
-    @_stopped_servient_only
-    def enable_td_catalogue(self, port):
-        """Enables the servient TD catalogue in the given port."""
-
-        self._catalogue_port = port
 
     @_stopped_servient_only
     def disable_td_catalogue(self):

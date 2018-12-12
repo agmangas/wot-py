@@ -16,9 +16,9 @@ logging.basicConfig()
 LOGGER = logging.getLogger("sysmonitor")
 LOGGER.setLevel(logging.INFO)
 
-PORT_CATALOGUE = int(os.environ.get("PORT_CATALOGUE", 9292))
+PORT_CATALOGUE = int(os.environ.get("PORT_CATALOGUE", 9090))
 PORT_WS = int(os.environ.get("PORT_WS", 9191))
-PORT_HTTP = int(os.environ.get("PORT_HTTP", 9090))
+PORT_HTTP = int(os.environ.get("PORT_HTTP", 9292))
 MQTT_BROKER = os.environ.get("MQTT_BROKER", "mqtt://localhost")
 DEFAULT_CPU_THRESHOLD = float(os.environ.get("CPU_THRESHOLD", 50.0))
 DEFAULT_CPU_CHECK_SEC = float(os.environ.get("CPU_CHECK_SEC", 2.0))
@@ -95,11 +95,10 @@ async def main():
 
     LOGGER.info("Creating servient with TD catalogue on: {}".format(PORT_CATALOGUE))
 
-    servient = Servient()
+    servient = Servient(catalogue_port=PORT_CATALOGUE)
     servient.add_server(ws_server)
     servient.add_server(http_server)
     servient.add_server(mqtt_server)
-    servient.enable_td_catalogue(PORT_CATALOGUE)
 
     LOGGER.info("Starting servient")
 

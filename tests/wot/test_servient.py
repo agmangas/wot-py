@@ -5,20 +5,18 @@ import json
 import random
 import uuid
 
-# noinspection PyPackageRequirements
 import pytest
 import tornado.gen
 import tornado.httpclient
 import tornado.ioloop
 import tornado.websocket
-# noinspection PyPackageRequirements
 from faker import Faker
 
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.wot.constants import WOT_TD_CONTEXT_URL
-from wotpy.wot.td import ThingDescription
 from wotpy.wot.consumed.thing import ConsumedThing
 from wotpy.wot.servient import Servient
+from wotpy.wot.td import ThingDescription
 
 
 @pytest.mark.flaky(reruns=5)
@@ -28,7 +26,7 @@ def test_servient_td_catalogue():
     catalogue_port = random.randint(20000, 40000)
 
     servient = Servient()
-    servient.enable_td_catalogue(port=catalogue_port)
+    servient.catalogue_port = catalogue_port
 
     @tornado.gen.coroutine
     def start():
@@ -109,6 +107,7 @@ def test_servient_start_stop():
     ws_server = WebsocketServer(port=ws_port)
 
     servient = Servient()
+    servient.disable_td_catalogue()
     servient.add_server(ws_server)
 
     @tornado.gen.coroutine
@@ -211,6 +210,7 @@ def test_duplicated_thing_names():
     description_03_str = json.dumps(description_03)
 
     servient = Servient()
+    servient.disable_td_catalogue()
 
     @tornado.gen.coroutine
     def start():

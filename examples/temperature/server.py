@@ -18,7 +18,7 @@ from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.wot.servient import Servient
 
-CATALOGUE_PORT = 9292
+CATALOGUE_PORT = 9090
 WEBSOCKET_PORT = 9393
 HTTP_PORT = 9494
 COAP_PORT = 9595
@@ -107,11 +107,10 @@ def main():
 
     LOGGER.info("Creating servient with TD catalogue on: {}".format(CATALOGUE_PORT))
 
-    servient = Servient()
+    servient = Servient(catalogue_port=CATALOGUE_PORT)
     servient.add_server(ws_server)
     servient.add_server(http_server)
     servient.add_server(coap_server)
-    servient.enable_td_catalogue(CATALOGUE_PORT)
 
     LOGGER.info("Starting servient")
 

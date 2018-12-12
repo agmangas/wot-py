@@ -64,8 +64,7 @@ def test_register(asyncio_zeroconf):
         service_history = asyncio_zeroconf.pop("service_history")
 
         port_catalogue = random.randint(20000, 40000)
-        servient = Servient()
-        servient.enable_td_catalogue(port_catalogue)
+        servient = Servient(catalogue_port=port_catalogue)
 
         dnssd_discovery = DNSSDDiscoveryService()
 
@@ -101,8 +100,7 @@ def test_unregister(asyncio_zeroconf):
         service_history = asyncio_zeroconf.pop("service_history")
 
         port_catalogue = random.randint(20000, 40000)
-        servient = Servient()
-        servient.enable_td_catalogue(port_catalogue)
+        servient = Servient(catalogue_port=port_catalogue)
 
         dnssd_discovery = DNSSDDiscoveryService()
 
