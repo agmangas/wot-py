@@ -16,8 +16,8 @@ from wotpy.protocols.http.client import HTTPClient
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.protocols.ws.server import WebsocketServer
-from wotpy.wot.td import ThingDescription
 from wotpy.wot.servient import Servient
+from wotpy.wot.td import ThingDescription
 
 
 def _test_property_change_events(exposed_thing, subscribe_func):
@@ -423,3 +423,5 @@ def test_consumed_client_protocols_preference():
 
     assert client_02_class != client_01_class
     assert client_02_class in six.iterkeys(client_server_map)
+
+    tornado.ioloop.IOLoop.current().run_sync(servient_shutdown)
