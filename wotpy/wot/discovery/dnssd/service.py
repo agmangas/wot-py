@@ -120,8 +120,10 @@ def _start_zeroconf(close_event, services, services_lock, register_queue, addres
             done.set()
 
     try:
-        browser = ServiceBrowser(zeroconf, DNSSDDiscoveryService.WOT_SERVICE_TYPE,
-                                 handlers=[_on_service_change])
+        browser = ServiceBrowser(
+            zeroconf,
+            DNSSDDiscoveryService.WOT_SERVICE_TYPE,
+            handlers=[_on_service_change])
 
         while not close_event.is_set():
             try:
