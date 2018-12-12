@@ -6,6 +6,7 @@ Some utility functions for the WoT data type wrappers.
 """
 
 import json
+import socket
 
 import six
 
@@ -61,3 +62,22 @@ def to_json_obj(obj):
             key: to_json_obj(val)
             for key, val in six.iteritems(vars(obj))
         }
+
+
+def get_main_ipv4_address():
+    """Returns the main IPv4 address of the current machine in a portable fashion.
+    Attribution to the answer provided by Jamieson Becker on:
+    https://stackoverflow.com/a/28950776"""
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    # noinspection PyBroadException
+    try:
+        sock.connect(('10.255.255.255', 1))
+        addr = sock.getsockname()[0]
+    except Exception:
+        addr = '127.0.0.1'
+    finally:
+        sock.close()
+
+    return addr
