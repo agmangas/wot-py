@@ -198,3 +198,31 @@ def test_register_instance_name(asyncio_zeroconf):
         _assert_service_added_removed(servient, service_history, instance_name=instance_name)
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+@pytest.mark.flaky(reruns=5)
+def test_enable_on_servient(asyncio_zeroconf):
+    """The DNS-SD service may be enabled directly on the
+    Servient to avoid the need of explicit instantiation."""
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        service_history = asyncio_zeroconf.pop("service_history")
+
+        servient = Servient(
+            catalogue_port=random.randint(20000, 40000),
+            dnssd_enabled=True)
+
+        yield servient.start()
+
+        while _num_service_instance_items(servient, service_history) < 1:
+            yield tornado.gen.sleep(0.1)
+
+        yield servient.shutdown()
+
+        while _num_service_instance_items(servient, service_history) < 2:
+            yield tornado.gen.sleep(0.1)
+
+        _assert_service_added_removed(servient, service_history)
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)

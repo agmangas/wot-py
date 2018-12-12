@@ -18,7 +18,7 @@ import tornado.web
 from wotpy.protocols.enums import Protocols
 from wotpy.protocols.http.client import HTTPClient
 from wotpy.protocols.ws.client import WebsocketClient
-from wotpy.support import is_coap_supported, is_mqtt_supported
+from wotpy.support import is_coap_supported, is_mqtt_supported, is_dnssd_supported
 from wotpy.wot.enums import InteractionTypes
 from wotpy.wot.exposed.thing_set import ExposedThingSet
 from wotpy.wot.td import ThingDescription
@@ -98,7 +98,7 @@ class Servient(object):
     send requests and interact with IoT devices exposed by other WoT servients
     or servers using the capabilities of a Web client such as Web browser."""
 
-    def __init__(self, hostname=None, catalogue_port=9090):
+    def __init__(self, hostname=None, catalogue_port=9090, dnssd_enabled=False):
         self._hostname = hostname or socket.getfqdn()
 
         if not isinstance(self._hostname, six.string_types):
@@ -111,6 +111,8 @@ class Servient(object):
         self._exposed_thing_set = ExposedThingSet()
         self._servient_lock = tornado.locks.Lock()
         self._is_running = False
+        self._dnssd_enabled = dnssd_enabled if dnssd_enabled and is_dnssd_supported() else False
+        self._dnssd = None
 
         self._build_default_clients()
 
@@ -216,6 +218,44 @@ class Servient(object):
         """Enables the servient TD catalogue in the given port."""
 
         self._catalogue_port = port
+
+    @property
+    def dnssd_enabled(self):
+        """Returns True if DNS Service Discovery is enabled for this servient.
+        If enabled, the servient will automatically start a DNS-SD service that is tied to its lifetime."""
+
+        return self._dnssd_enabled
+
+    @property
+    def dnssd(self):
+        """Returns the DNS-SD instance linked to this Servient (if enabled and started)."""
+
+        return self._dnssd if self.dnssd_enabled else None
+
+    @tornado.gen.coroutine
+    def _start_dnssd(self):
+        """Starts the DNS-SD service and registers the servient."""
+
+        if self._dnssd or not self._dnssd_enabled:
+            return
+
+        from wotpy.wot.discovery.dnssd.service import DNSSDDiscoveryService
+
+        self._dnssd = DNSSDDiscoveryService()
+
+        yield self._dnssd.start()
+        yield self._dnssd.register(self)
+
+    @tornado.gen.coroutine
+    def _stop_dnssd(self):
+        """Unregisters the servient and stops the DNS-SD service."""
+
+        if not self._dnssd:
+            return
+
+        yield self._dnssd.stop()
+
+        self._dnssd = None
 
     def _build_default_clients(self):
         """Builds the default Protocol Binding clients."""
@@ -429,6 +469,7 @@ class Servient(object):
             self.refresh_forms()
             yield [server.start() for server in six.itervalues(self._servers)]
             self._start_catalogue()
+            yield self._start_dnssd()
             self._is_running = True
 
             raise tornado.gen.Return(WoT(servient=self))
@@ -440,4 +481,5 @@ class Servient(object):
         with (yield self._servient_lock.acquire()):
             yield [server.stop() for server in six.itervalues(self._servers)]
             self._stop_catalogue()
+            yield self._stop_dnssd()
             self._is_running = False
