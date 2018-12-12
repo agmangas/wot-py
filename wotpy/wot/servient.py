@@ -204,6 +204,12 @@ class Servient(object):
 
         return self._clients
 
+    @property
+    def catalogue_port(self):
+        """Returns the current port of the HTTP Thing Description catalogue service."""
+
+        return self._catalogue_port
+
     def _build_default_clients(self):
         """Builds the default Protocol Binding clients."""
 
