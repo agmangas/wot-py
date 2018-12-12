@@ -7,7 +7,7 @@ import socket
 import pytest
 import tornado.gen
 import tornado.ioloop
-from aiozeroconf import Zeroconf, ServiceBrowser, ServiceStateChange, ServiceInfo
+from aiozeroconf import ServiceStateChange, ServiceInfo
 from faker import Faker
 from six.moves import range
 
@@ -56,18 +56,12 @@ def _assert_service_added_removed(servient, service_history):
 
 
 @pytest.mark.flaky(reruns=5)
-def test_register():
+def test_register(asyncio_zeroconf):
     """WoT Servients may be registered for discovery on the DNS-SD service."""
 
     @tornado.gen.coroutine
     def test_coroutine():
-        service_history = []
-
-        def on_service_change(zc, service_type, name, state_change):
-            service_history.append((service_type, name, state_change))
-
-        aio_zc = Zeroconf(tornado.ioloop.IOLoop.current().asyncio_loop)
-        ServiceBrowser(aio_zc, DNSSDDiscoveryService.WOT_SERVICE_TYPE, handlers=[on_service_change])
+        service_history = asyncio_zeroconf.pop("service_history")
 
         port_catalogue = random.randint(20000, 40000)
         servient = Servient()
@@ -94,25 +88,17 @@ def test_register():
 
         _assert_service_added_removed(servient, service_history)
 
-        yield aio_zc.close()
-
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
 @pytest.mark.flaky(reruns=5)
-def test_unregister():
+def test_unregister(asyncio_zeroconf):
     """WoT Servients that have been previously registered
     on the DNS-SD service can be unregistered."""
 
     @tornado.gen.coroutine
     def test_coroutine():
-        service_history = []
-
-        def on_service_change(zc, service_type, name, state_change):
-            service_history.append((service_type, name, state_change))
-
-        aio_zc = Zeroconf(tornado.ioloop.IOLoop.current().asyncio_loop)
-        ServiceBrowser(aio_zc, DNSSDDiscoveryService.WOT_SERVICE_TYPE, handlers=[on_service_change])
+        service_history = asyncio_zeroconf.pop("service_history")
 
         port_catalogue = random.randint(20000, 40000)
         servient = Servient()
@@ -130,17 +116,16 @@ def test_unregister():
         _assert_service_added_removed(servient, service_history)
 
         yield dnssd_discovery.stop()
-        yield aio_zc.close()
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_find():
+def test_find(asyncio_zeroconf):
     """Remote WoT Servients may be discovered using the DNS-SD service."""
 
     @tornado.gen.coroutine
     def test_coroutine():
-        aio_zc = Zeroconf(tornado.ioloop.IOLoop.current().asyncio_loop)
+        aio_zc = asyncio_zeroconf.pop("zeroconf")
 
         ipaddr = Faker().ipv4_private()
         port = random.randint(20000, 40000)
@@ -167,6 +152,5 @@ def test_find():
         assert (ipaddr, port) in (yield dnssd_discovery.find(timeout=3))
 
         yield dnssd_discovery.stop()
-        yield aio_zc.close()
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
