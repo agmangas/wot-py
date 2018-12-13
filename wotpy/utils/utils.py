@@ -7,8 +7,10 @@ Some utility functions for the WoT data type wrappers.
 
 import json
 import socket
+from functools import wraps
 
 import six
+import tornado.gen
 
 
 def merge_args_kwargs_dict(args, kwargs):
@@ -81,3 +83,22 @@ def get_main_ipv4_address():
         sock.close()
 
     return addr
+
+
+def handle_observer_finalization(observer):
+    """Builds a decorator that yields the wrapped coroutine and calls on_completed
+    or on_error on the observer when the coroutine ends or raises an error."""
+
+    def deco(coro):
+        @wraps(coro)
+        @tornado.gen.coroutine
+        def wrapper(*args, **kwargs):
+            try:
+                yield coro(*args, **kwargs)
+                observer.on_completed()
+            except Exception as ex:
+                observer.on_error(ex)
+
+        return wrapper
+
+    return deco

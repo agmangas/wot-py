@@ -6,12 +6,19 @@ Class that serves as the WoT entrypoint.
 """
 
 import json
+import logging
+import warnings
 
 import six
+import tornado.concurrent
 import tornado.gen
+import tornado.ioloop
 from rx import Observable
+from six.moves import range
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 
+from wotpy.support import is_dnssd_supported
+from wotpy.utils.utils import handle_observer_finalization
 from wotpy.wot.consumed.thing import ConsumedThing
 from wotpy.wot.dictionaries.thing import ThingFragment
 from wotpy.wot.enums import DiscoveryMethod
@@ -30,11 +37,125 @@ class WoT(object):
     def __init__(self, servient):
         self._servient = servient
 
-    def discover(self, thing_filter):
+    @classmethod
+    def _is_fragment_match(cls, item, thing_filter):
+        """Returns True if the given item (an ExposedThing, Thing or TD)
+        matches the fragment in the given Thing filter."""
+
+        td = None
+
+        if isinstance(item, ExposedThing):
+            td = ThingDescription.from_thing(item.thing)
+        elif isinstance(item, Thing):
+            td = ThingDescription.from_thing(item)
+        elif isinstance(item, ThingDescription):
+            td = item
+
+        assert td
+
+        fragment_dict = thing_filter.fragment if thing_filter.fragment else {}
+
+        return all(
+            item in six.iteritems(td.to_dict())
+            for item in six.iteritems(fragment_dict))
+
+    def _build_local_discover_observable(self, thing_filter):
+        """Builds an Observable to discover Things using the local method."""
+
+        found_tds = [
+            ThingDescription.from_thing(exposed_thing.thing).to_str()
+            for exposed_thing in self._servient.exposed_things
+            if self._is_fragment_match(exposed_thing, thing_filter)
+        ]
+
+        # noinspection PyUnresolvedReferences
+        return Observable.of(*found_tds)
+
+    def _build_dnssd_discover_observable(self, thing_filter, dnssd_find_kwargs):
+        """Builds an Observable to discover Things using the multicast method based on DNS-SD."""
+
+        if not is_dnssd_supported():
+            warnings.warn("Unsupported DNS-SD multicast discovery")
+            # noinspection PyUnresolvedReferences
+            return Observable.empty()
+
+        dnssd_find_kwargs = dnssd_find_kwargs if dnssd_find_kwargs else {}
+
+        if not self._servient.dnssd:
+            # noinspection PyUnresolvedReferences
+            return Observable.empty()
+
+        def _subscribe(observer):
+            """Browses the Servient services using DNS-SD and retrieves the TDs that match the filters."""
+
+            state = {"stop": False}
+
+            @handle_observer_finalization(observer)
+            @tornado.gen.coroutine
+            def callback():
+                address_port_pairs = yield self._servient.dnssd.find(**dnssd_find_kwargs)
+
+                def build_pair_url(idx, path=None):
+                    addr, port = address_port_pairs[idx]
+                    base = "http://{}:{}".format(addr, port)
+                    path = path if path else ''
+                    return "{}/{}".format(base, path.strip("/"))
+
+                http_client = AsyncHTTPClient()
+
+                catalogue_resps = [
+                    http_client.fetch(build_pair_url(idx))
+                    for idx in range(len(address_port_pairs))
+                ]
+
+                wait_iter = tornado.gen.WaitIterator(*catalogue_resps)
+
+                while not wait_iter.done() and not state["stop"]:
+                    try:
+                        catalogue_resp = yield wait_iter.next()
+                    except Exception as ex:
+                        logging.warning(ex)
+                    else:
+                        catalogue = json.loads(catalogue_resp.body)
+
+                        if state["stop"]:
+                            return
+
+                        td_resps = yield [
+                            http_client.fetch(build_pair_url(wait_iter.current_index, path=path))
+                            for thing_id, path in six.iteritems(catalogue)
+                        ]
+
+                        tds = [
+                            ThingDescription(td_resp.body)
+                            for td_resp in td_resps
+                        ]
+
+                        tds_filtered = [td for td in tds if self._is_fragment_match(td, thing_filter)]
+
+                        [observer.on_next(td.to_str()) for td in tds_filtered]
+
+            def unsubscribe():
+                state["stop"] = True
+
+            tornado.ioloop.IOLoop.current().add_callback(callback)
+
+            return unsubscribe
+
+        # noinspection PyUnresolvedReferences
+        return Observable.create(_subscribe)
+
+    def discover(self, thing_filter, dnssd_find_kwargs=None):
         """Starts the discovery process that will provide ThingDescriptions
         that match the optional argument filter of type ThingFilter."""
 
-        if thing_filter.method not in [DiscoveryMethod.ANY, DiscoveryMethod.LOCAL]:
+        supported_methods = [
+            DiscoveryMethod.ANY,
+            DiscoveryMethod.LOCAL,
+            DiscoveryMethod.MULTICAST
+        ]
+
+        if thing_filter.method not in supported_methods:
             err = NotImplementedError("Unsupported discovery method")
             # noinspection PyUnresolvedReferences
             return Observable.throw(err)
@@ -44,22 +165,16 @@ class WoT(object):
             # noinspection PyUnresolvedReferences
             return Observable.throw(err)
 
-        found_tds = []
+        observables = []
 
-        fragment_dict = thing_filter.fragment if thing_filter.fragment else {}
+        if thing_filter.method in [DiscoveryMethod.ANY, DiscoveryMethod.LOCAL]:
+            observables.append(self._build_local_discover_observable(thing_filter))
 
-        for exposed_thing in self._servient.exposed_things:
-            td = ThingDescription.from_thing(exposed_thing.thing)
-
-            is_match = all(
-                item in six.iteritems(td.to_dict())
-                for item in six.iteritems(fragment_dict))
-
-            if is_match:
-                found_tds.append(td.to_str())
+        if thing_filter.method in [DiscoveryMethod.ANY, DiscoveryMethod.MULTICAST]:
+            observables.append(self._build_dnssd_discover_observable(thing_filter, dnssd_find_kwargs))
 
         # noinspection PyUnresolvedReferences
-        return Observable.of(*found_tds)
+        return Observable.merge(*observables)
 
     @classmethod
     @tornado.gen.coroutine

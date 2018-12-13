@@ -36,7 +36,10 @@ class TDHandler(tornado.web.RequestHandler):
         exp_thing = self.servient.exposed_thing_set.find_by_thing_id(thing_url_name)
 
         td_doc = ThingDescription.from_thing(exp_thing.thing).to_dict()
-        td_doc.update({"base": self.servient.get_thing_base_url(exp_thing)})
+        base_url = self.servient.get_thing_base_url(exp_thing)
+
+        if base_url:
+            td_doc.update({"base": base_url})
 
         self.write(td_doc)
 
@@ -98,7 +101,7 @@ class Servient(object):
     send requests and interact with IoT devices exposed by other WoT servients
     or servers using the capabilities of a Web client such as Web browser."""
 
-    def __init__(self, hostname=None, catalogue_port=9090, dnssd_enabled=False):
+    def __init__(self, hostname=None, catalogue_port=9090, dnssd_enabled=False, dnssd_instance_name=None):
         self._hostname = hostname or socket.getfqdn()
 
         if not isinstance(self._hostname, six.string_types):
@@ -112,6 +115,7 @@ class Servient(object):
         self._servient_lock = tornado.locks.Lock()
         self._is_running = False
         self._dnssd_enabled = dnssd_enabled if dnssd_enabled and is_dnssd_supported() else False
+        self._dnssd_instance_name = dnssd_instance_name
         self._dnssd = None
 
         self._build_default_clients()
@@ -220,17 +224,10 @@ class Servient(object):
         self._catalogue_port = port
 
     @property
-    def dnssd_enabled(self):
-        """Returns True if DNS Service Discovery is enabled for this servient.
-        If enabled, the servient will automatically start a DNS-SD service that is tied to its lifetime."""
-
-        return self._dnssd_enabled
-
-    @property
     def dnssd(self):
         """Returns the DNS-SD instance linked to this Servient (if enabled and started)."""
 
-        return self._dnssd if self.dnssd_enabled else None
+        return self._dnssd
 
     @tornado.gen.coroutine
     def _start_dnssd(self):
@@ -244,7 +241,7 @@ class Servient(object):
         self._dnssd = DNSSDDiscoveryService()
 
         yield self._dnssd.start()
-        yield self._dnssd.register(self)
+        yield self._dnssd.register(self, instance_name=self._dnssd_instance_name)
 
     @tornado.gen.coroutine
     def _stop_dnssd(self):

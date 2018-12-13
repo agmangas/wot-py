@@ -4,6 +4,7 @@
 import json
 import random
 import uuid
+import warnings
 
 import pytest
 import tornado.concurrent
@@ -12,12 +13,13 @@ import tornado.ioloop
 import tornado.testing
 import tornado.web
 from faker import Faker
-from rx.concurrency import IOLoopScheduler
 
 from tests.td_examples import TD_EXAMPLE
 from tests.wot.utils import assert_exposed_thing_equal
+from wotpy.support import is_dnssd_supported
 from wotpy.wot.dictionaries.filter import ThingFilterDict
 from wotpy.wot.dictionaries.thing import ThingFragment
+from wotpy.wot.enums import DiscoveryMethod
 from wotpy.wot.servient import Servient
 from wotpy.wot.td import ThingDescription
 from wotpy.wot.wot import WoT
@@ -128,7 +130,7 @@ def test_consume_from_url(td_example_tornado_app):
 TD_DICT_01 = {
     "id": uuid.uuid4().urn,
     "name": Faker().pystr(),
-    "security": [{"scheme": "nosec"}],
+    "security": [{"scheme": "psk"}],
     "version": {"instance": "1.2.1"},
     "properties": {
         "status": {
@@ -157,43 +159,128 @@ def assert_equal_tds(one, other):
     assert one.to_dict() == other.to_dict()
 
 
-def test_discovery_any():
-    """All TDs contained in the Servient are returned when the Thing filter is empty."""
+def assert_equal_td_sequences(tds, td_dicts):
+    """Asserts that the given sequences ot TDs and TD dicts are equal."""
 
-    servient = Servient()
+    assert len(tds) == len(td_dicts)
+
+    for td_dict in td_dicts:
+        td_match = next(td.to_dict() for td in tds if td.id == td_dict["id"])
+        assert_equal_tds(td_match, td_dict)
+
+
+def test_discovery_method_local():
+    """All TDs contained in the Servient are returned when using the local
+    discovery method without defining the fragment nor the query fields."""
+
+    servient = Servient(dnssd_enabled=False)
     wot = WoT(servient=servient)
     wot.produce(ThingFragment(TD_DICT_01))
     wot.produce(ThingFragment(TD_DICT_02))
 
+    future_done, found = tornado.concurrent.Future(), []
+
+    def resolve():
+        len(found) == 2 and not future_done.done() and future_done.set_result(True)
+
     @tornado.gen.coroutine
     def test_coroutine():
-        future_done, found = tornado.concurrent.Future(), []
-
-        def on_next(td_str):
-            found.append(ThingDescription(td_str))
-
-            if len(found) == 2 and not future_done.done():
-                future_done.set_result(True)
-
-        thing_filter = ThingFilterDict()
+        thing_filter = ThingFilterDict(method=DiscoveryMethod.LOCAL)
         observable = wot.discover(thing_filter)
-        subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
+
+        subscription = observable.subscribe(
+            on_next=lambda td_str: found.append(ThingDescription(td_str)) or resolve())
 
         yield future_done
 
-        assert len(found) == 2
-        assert_equal_tds(next(item.to_dict() for item in found if item.id == TD_DICT_01["id"]), TD_DICT_01)
-        assert_equal_tds(next(item.to_dict() for item in found if item.id == TD_DICT_02["id"]), TD_DICT_02)
+        assert_equal_td_sequences(found, [TD_DICT_01, TD_DICT_02])
 
         subscription.dispose()
 
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-def test_discovery_filter_fragment():
+@pytest.mark.skipif(not is_dnssd_supported(), reason="Only for platforms that support DNS-SD")
+@pytest.mark.flaky(reruns=5)
+def test_discovery_method_multicast_dnssd():
+    """Things can be discovered usin the multicast method supported by DNS-SD."""
+
+    catalogue_port_01 = random.randint(20000, 30000)
+    catalogue_port_02 = random.randint(30001, 40000)
+
+    instance_name_01 = "servient-01-{}".format(Faker().pystr())
+    instance_name_02 = "servient-02-{}".format(Faker().pystr())
+
+    servient_01 = Servient(
+        catalogue_port=catalogue_port_01,
+        dnssd_enabled=True,
+        dnssd_instance_name=instance_name_01)
+
+    servient_02 = Servient(
+        catalogue_port=catalogue_port_02,
+        dnssd_enabled=True,
+        dnssd_instance_name=instance_name_02)
+
+    future_done, found = tornado.concurrent.Future(), []
+
+    def resolve():
+        len(found) == 2 and not future_done.done() and future_done.set_result(True)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        wot_01 = yield servient_01.start()
+        wot_02 = yield servient_02.start()
+
+        wot_01.produce(ThingFragment(TD_DICT_01))
+        wot_01.produce(ThingFragment(TD_DICT_02))
+
+        thing_filter = ThingFilterDict(method=DiscoveryMethod.MULTICAST)
+
+        observable = wot_02.discover(thing_filter, dnssd_find_kwargs={
+            "min_results": 1,
+            "timeout": 5
+        })
+
+        subscription = observable.subscribe(
+            on_next=lambda td_str: found.append(ThingDescription(td_str)) or resolve())
+
+        yield future_done
+
+        assert_equal_td_sequences(found, [TD_DICT_01, TD_DICT_02])
+
+        subscription.dispose()
+
+        yield servient_01.shutdown()
+        yield servient_02.shutdown()
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+@pytest.mark.skipif(is_dnssd_supported(), reason="Only for platforms that do not support DNS-SD")
+@pytest.mark.flaky(reruns=5)
+def test_discovery_method_multicast_dnssd_unsupported():
+    """Attempting to discover other Things using multicast
+    DNS-SD in an unsupported platform raises a warning."""
+
+    servient = Servient(catalogue_port=None, dnssd_enabled=True)
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        wot = yield servient.start()
+
+        with warnings.catch_warnings(record=True) as warns:
+            wot.discover(ThingFilterDict(method=DiscoveryMethod.MULTICAST))
+            assert len(warns)
+
+        yield servient.shutdown()
+
+    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+
+
+def test_discovery_fragment():
     """The Thing filter fragment attribute enables discovering Things by matching TD fields."""
 
-    servient = Servient()
+    servient = Servient(dnssd_enabled=False)
     wot = WoT(servient=servient)
     wot.produce(ThingFragment(TD_DICT_01))
     wot.produce(ThingFragment(TD_DICT_02))
@@ -201,29 +288,35 @@ def test_discovery_filter_fragment():
     def first(thing_filter):
         """Returns the first TD discovery for the given Thing filter."""
 
+        future_done, found = tornado.concurrent.Future(), []
+
+        def resolve():
+            not future_done.done() and future_done.set_result(True)
+
         @tornado.gen.coroutine
         def discover_first():
-            ret, future_done = [], tornado.concurrent.Future()
-
-            def on_next(td_str):
-                ret.append(ThingDescription(td_str))
-
-                if not future_done.done():
-                    future_done.set_result(True)
-
             observable = wot.discover(thing_filter)
-            subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
+
+            subscription = observable.subscribe(
+                on_next=lambda td_str: found.append(ThingDescription(td_str)) or resolve())
 
             yield future_done
 
             subscription.dispose()
 
-            assert len(ret)
+            assert len(found)
 
-            raise tornado.gen.Return(ret[0])
+            raise tornado.gen.Return(found[0])
 
         return tornado.ioloop.IOLoop.current().run_sync(discover_first)
 
-    assert_equal_tds(first(ThingFilterDict(fragment={"name": TD_DICT_01.get("name")})), TD_DICT_01)
-    assert_equal_tds(first(ThingFilterDict(fragment={"version": {"instance": "2.0.0"}})), TD_DICT_02)
-    assert_equal_tds(first(ThingFilterDict(fragment={"id": TD_DICT_02.get("id")})), TD_DICT_02)
+    fragment_td_pairs = [
+        ({"name": TD_DICT_01.get("name")}, TD_DICT_01),
+        ({"version": {"instance": "2.0.0"}}, TD_DICT_02),
+        ({"id": TD_DICT_02.get("id")}, TD_DICT_02),
+        ({"security": [{"scheme": "psk"}]}, TD_DICT_01)
+    ]
+
+    for fragment, td_expected in fragment_td_pairs:
+        td_found = first(ThingFilterDict(method=DiscoveryMethod.LOCAL, fragment=fragment))
+        assert_equal_tds(td_found, td_expected)
