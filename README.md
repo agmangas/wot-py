@@ -10,23 +10,24 @@ Inspired by the exploratory implementations located in the [thingweb GitHub page
 
 * Supports Python 2.7, 3.6 and 3.7.
 * Fully-implemented `WoT` interface.
+* Multicast discovery based on mDNS.
 * Asynchronous I/O programming model based on coroutines.
 * Multiple client and server [Protocol Binding](https://github.com/w3c/wot-architecture/blob/master/terminology.md#protocol-binding) implementations.
 
 > WoTPy uses the [Tornado Framework](https://www.tornadoweb.org) to enable coroutines in Python 2.7. Python 3 applications may use the built-in package `asyncio`.
 
-## Protocol Bindings
+### Feature matrix
 
-|   Protocol | Implementation based on                                     | Python 2                 | Python 3           | R/W Property       | Observe Property   | Invoke Action      | Subscribe to Event |
-|-----------:|-------------------------------------------------------------|--------------------------|--------------------|--------------------|--------------------|--------------------|--------------------|
-| HTTP       | [tornadoweb/tornado](https://github.com/tornadoweb/tornado) | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| WebSockets | [tornadoweb/tornado](https://github.com/tornadoweb/tornado) | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| CoAP       | [chrysn/aiocoap](https://github.com/chrysn/aiocoap)         | :heavy_multiplication_x: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| MQTT       | [beerfactory/hbmqtt](https://github.com/beerfactory/hbmqtt) | :heavy_multiplication_x: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Feature            | Python 2.7               | Python 3           | Implementation based on                                                 |
+|-------------------:|--------------------------|--------------------|-------------------------------------------------------------------------|
+| HTTP binding       | :heavy_check_mark:       | :heavy_check_mark: | [tornadoweb/tornado](https://github.com/tornadoweb/tornado)             |
+| WebSockets binding | :heavy_check_mark:       | :heavy_check_mark: | [tornadoweb/tornado](https://github.com/tornadoweb/tornado)             |
+| CoAP binding       | :heavy_multiplication_x: | :heavy_check_mark: | [chrysn/aiocoap](https://github.com/chrysn/aiocoap)                     |
+| MQTT binding       | :heavy_multiplication_x: | :heavy_check_mark: | [beerfactory/hbmqtt](https://github.com/beerfactory/hbmqtt)             |
+| mDNS discovery     | :heavy_multiplication_x: | :heavy_check_mark: | [jstasiak/python-zeroconf](https://github.com/jstasiak/python-zeroconf) |
 
 ## ToDo
 
-* Thing discovery.
 * Subscription to Thing Description changes.
 
 ## Development
