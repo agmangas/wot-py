@@ -23,7 +23,7 @@ class ThingDescription(object):
         """Constructor.
         Validates that the document conforms to the TD schema."""
 
-        self._doc = json.loads(doc) if isinstance(doc, six.string_types) else doc
+        self._doc = json.loads(doc) if isinstance(doc, (six.string_types, bytes)) else doc
         self._thing_fragment = ThingFragment(self._doc)
 
         self.validate(doc=self._thing_fragment.to_dict())
