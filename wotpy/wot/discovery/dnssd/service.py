@@ -52,7 +52,7 @@ def _start_zeroconf(close_event, services, services_lock, register_queue, addres
     address = address if address else get_main_ipv4_address()
     zeroconf = Zeroconf()
     registered = []
-    browser = None
+    registered_lock = threading.Lock()
 
     def _on_service_change(*args, **kwargs):
         """Callback for each time a WoT Servient service is added or removed from the link."""
@@ -61,13 +61,14 @@ def _start_zeroconf(close_event, services, services_lock, register_queue, addres
         name = kwargs.pop('name')
         state_change = kwargs.pop('state_change')
 
+        with registered_lock:
+            if any(item.name == name for item in registered):
+                return
+
         def _add_result():
             info = zeroconf.get_service_info(service_type, name)
             info_addr = socket.inet_ntoa(cast(bytes, info.address))
             info_port = cast(int, info.port)
-
-            if info_addr == address:
-                return
 
             with services_lock:
                 services[name] = (info_addr, info_port)
@@ -102,8 +103,10 @@ def _start_zeroconf(close_event, services, services_lock, register_queue, addres
                 address=address,
                 instance_name=instance_name)
 
+            with registered_lock:
+                registered.append(info)
+
             zeroconf.register_service(info)
-            registered.append(info)
         finally:
             done.set()
 
@@ -120,42 +123,54 @@ def _start_zeroconf(close_event, services, services_lock, register_queue, addres
                 address=address,
                 instance_name=instance_name)
 
-            if not any(val == info for val in registered):
-                return
+            with registered_lock:
+                if not any(val == info for val in registered):
+                    return
 
             zeroconf.unregister_service(info)
-            registered.remove(info)
+
+            with registered_lock:
+                registered.remove(info)
         finally:
             done.set()
 
-    try:
-        browser = ServiceBrowser(
-            zeroconf,
-            DNSSDDiscoveryService.WOT_SERVICE_TYPE,
-            handlers=[_on_service_change])
+    def _main_loop():
+        """Main Zeroconf service loop that starts browsing for WoT
+        services and processes the register tasks queue."""
 
-        while not close_event.is_set():
-            try:
-                item = register_queue.get_nowait()
+        browser = None
 
-                task_handler_map = {
-                    TASK_REGISTER: _register,
-                    TASK_UNREGISTER: _unregister
-                }
+        try:
+            browser = ServiceBrowser(
+                zeroconf,
+                DNSSDDiscoveryService.WOT_SERVICE_TYPE,
+                handlers=[_on_service_change])
 
-                task_handler_map[item['type']](item)
-            except queue.Empty:
-                pass
+            while not close_event.is_set():
+                try:
+                    register_task = register_queue.get_nowait()
 
-            close_event.wait(ITER_WAIT)
-    finally:
-        if browser is not None:
-            browser.cancel()
+                    task_handler_map = {
+                        TASK_REGISTER: _register,
+                        TASK_UNREGISTER: _unregister
+                    }
 
-        for item in registered:
-            zeroconf.unregister_service(item)
+                    task_handler_map[register_task['type']](register_task)
+                except queue.Empty:
+                    pass
 
-        zeroconf.close()
+                close_event.wait(ITER_WAIT)
+        finally:
+            if browser is not None:
+                browser.cancel()
+
+            with registered_lock:
+                for serv_info in registered:
+                    zeroconf.unregister_service(serv_info)
+
+            zeroconf.close()
+
+    _main_loop()
 
 
 class DNSSDDiscoveryService(object):
