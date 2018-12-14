@@ -85,7 +85,7 @@ class WoT(object):
             # noinspection PyUnresolvedReferences
             return Observable.empty()
 
-        def _subscribe(observer):
+        def subscribe(observer):
             """Browses the Servient services using DNS-SD and retrieves the TDs that match the filters."""
 
             state = {"stop": False}
@@ -143,7 +143,7 @@ class WoT(object):
             return unsubscribe
 
         # noinspection PyUnresolvedReferences
-        return Observable.create(_subscribe)
+        return Observable.create(subscribe)
 
     def discover(self, thing_filter, dnssd_find_kwargs=None):
         """Starts the discovery process that will provide ThingDescriptions

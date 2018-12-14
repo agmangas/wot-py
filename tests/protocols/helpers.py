@@ -11,8 +11,8 @@ import tornado.ioloop
 from faker import Faker
 from rx.concurrency import IOLoopScheduler
 
-from wotpy.wot.td import ThingDescription
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, EventFragmentDict, ActionFragmentDict
+from wotpy.wot.td import ThingDescription
 
 
 def client_test_on_property_change(servient, protocol_client_cls):

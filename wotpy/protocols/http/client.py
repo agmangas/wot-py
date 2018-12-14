@@ -13,12 +13,14 @@ import tornado.httpclient
 import tornado.ioloop
 from rx import Observable
 from six.moves.urllib import parse
+from tornado.simple_httpclient import HTTPTimeoutError
 
 from wotpy.protocols.client import BaseProtocolClient
 from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.exceptions import FormNotFoundException
 from wotpy.protocols.http.enums import HTTPSchemes
 from wotpy.protocols.utils import is_scheme_form
+from wotpy.utils.utils import handle_observer_finalization
 from wotpy.wot.events import EmittedEvent, PropertyChangeEmittedEvent, PropertyChangeEventInit
 
 
@@ -157,26 +159,24 @@ class HTTPClient(BaseProtocolClient):
 
             state = {"active": True}
 
-            def on_response(ft):
-                try:
-                    response = ft.result()
-                    payload = json.loads(response.body).get("payload")
-                    observer.on_next(EmittedEvent(init=payload, name=name))
-                    if state["active"]:
-                        fetch_response()
-                except Exception as ex:
-                    observer.on_error(ex)
-
-            def fetch_response():
+            @handle_observer_finalization(observer)
+            @tornado.gen.coroutine
+            def callback():
                 http_client = tornado.httpclient.AsyncHTTPClient()
                 http_request = tornado.httpclient.HTTPRequest(href, method="GET")
-                future_response = http_client.fetch(http_request)
-                tornado.concurrent.future_add_done_callback(future_response, on_response)
+
+                while state["active"]:
+                    try:
+                        response = yield http_client.fetch(http_request)
+                        payload = json.loads(response.body).get("payload")
+                        observer.on_next(EmittedEvent(init=payload, name=name))
+                    except HTTPTimeoutError:
+                        pass
 
             def unsubscribe():
                 state["active"] = False
 
-            fetch_response()
+            tornado.ioloop.IOLoop.current().add_callback(callback)
 
             return unsubscribe
 
@@ -197,27 +197,25 @@ class HTTPClient(BaseProtocolClient):
 
             state = {"active": True}
 
-            def on_response(ft):
-                try:
-                    response = ft.result()
-                    value = json.loads(response.body).get("value")
-                    init = PropertyChangeEventInit(name=name, value=value)
-                    observer.on_next(PropertyChangeEmittedEvent(init=init))
-                    if state["active"]:
-                        fetch_response()
-                except Exception as ex:
-                    observer.on_error(ex)
-
-            def fetch_response():
+            @handle_observer_finalization(observer)
+            @tornado.gen.coroutine
+            def callback():
                 http_client = tornado.httpclient.AsyncHTTPClient()
                 http_request = tornado.httpclient.HTTPRequest(href, method="GET")
-                future_response = http_client.fetch(http_request)
-                tornado.concurrent.future_add_done_callback(future_response, on_response)
+
+                while state["active"]:
+                    try:
+                        response = yield http_client.fetch(http_request)
+                        value = json.loads(response.body).get("value")
+                        init = PropertyChangeEventInit(name=name, value=value)
+                        observer.on_next(PropertyChangeEmittedEvent(init=init))
+                    except HTTPTimeoutError:
+                        pass
 
             def unsubscribe():
                 state["active"] = False
 
-            fetch_response()
+            tornado.ioloop.IOLoop.current().add_callback(callback)
 
             return unsubscribe
 

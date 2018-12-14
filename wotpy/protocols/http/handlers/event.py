@@ -28,13 +28,13 @@ class EventObserverHandler(RequestHandler):
         exposed_thing = handler_utils.get_exposed_thing(self._server, thing_name)
 
         future_next = Future()
-        self.future_next = future_next
 
         def on_next(item):
-            future_next.set_result(item.data)
+            if not future_next.done():
+                future_next.set_result(item.data)
 
         self.subscription = exposed_thing.events[name].subscribe(on_next)
-        event_payload = yield self.future_next
+        event_payload = yield future_next
         self.write({"payload": event_payload})
 
     def on_finish(self):
