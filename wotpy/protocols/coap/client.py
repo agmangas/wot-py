@@ -19,6 +19,7 @@ from wotpy.protocols.coap.enums import CoAPSchemes
 from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.exceptions import FormNotFoundException, ProtocolClientException
 from wotpy.protocols.utils import is_scheme_form
+from wotpy.utils.utils import handle_observer_finalization
 from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent, EmittedEvent
 
 
@@ -58,53 +59,38 @@ class CoAPClient(BaseProtocolClient):
             state = {
                 "active": True,
                 "request": None,
-                "pending_future": None
+                "pending": None
             }
 
-            def on_response(ft):
-                try:
-                    state["pending_future"] = None
+            @handle_observer_finalization(observer)
+            @tornado.gen.coroutine
+            def callback():
+                coap_client = yield aiocoap.Context.create_client_context()
+                msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href, observe=0)
+                state["request"] = coap_client.request(msg)
 
-                    response = ft.result()
-                    next_item = next_item_builder(response.payload)
+                future_first_resp = state["request"].response
+                state["pending"] = future_first_resp
+                first_resp = yield future_first_resp
+                state["pending"] = None
+                next_item = next_item_builder(first_resp.payload)
+                next_item is not None and observer.on_next(next_item)
 
-                    if next_item is not None:
-                        observer.on_next(next_item)
-
-                    if state["active"]:
-                        next_observation_gen = state["request"].observation.__aiter__().__anext__()
-                        future_response = tornado.gen.convert_yielded(next_observation_gen)
-                        state["pending_future"] = future_response
-                        tornado.ioloop.IOLoop.current().add_future(future_response, on_response)
-                except Exception as exc:
-                    observer.on_error(exc)
-
-            def on_coap_client(ft):
-                try:
-                    coap_client = ft.result()
-                    msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href, observe=0)
-                    state["request"] = coap_client.request(msg)
-                    future_first_response = state["request"].response
-                    state["pending_future"] = future_first_response
-                    tornado.ioloop.IOLoop.current().add_future(future_first_response, on_response)
-                except Exception as exc:
-                    observer.on_error(exc)
+                while state["active"]:
+                    next_obsv_gen = state["request"].observation.__aiter__().__anext__()
+                    future_resp = tornado.gen.convert_yielded(next_obsv_gen)
+                    state["pending"] = future_resp
+                    resp = yield future_resp
+                    state["pending"] = None
+                    next_item = next_item_builder(resp.payload)
+                    next_item is not None and observer.on_next(next_item)
 
             def unsubscribe():
-                if state["request"]:
-                    state["request"].observation.cancel()
-
-                if state["pending_future"]:
-                    state["pending_future"].cancel()
-
                 state["active"] = False
+                state["request"] and state["request"].observation.cancel()
+                state["pending"] and state["pending"].cancel()
 
-            try:
-                coap_client_gen = aiocoap.Context.create_client_context()
-                future_coap_client = tornado.gen.convert_yielded(coap_client_gen)
-                tornado.concurrent.future_add_done_callback(future_coap_client, on_coap_client)
-            except Exception as ex:
-                observer.on_error(ex)
+            tornado.ioloop.IOLoop.current().add_callback(callback)
 
             return unsubscribe
 
