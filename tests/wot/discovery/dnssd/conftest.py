@@ -48,7 +48,7 @@ def asyncio_zeroconf():
     def close():
         yield aio_zc.close()
 
-    loop.add_callback(close)
+    loop.run_sync(close)
 
 
 @pytest.fixture
