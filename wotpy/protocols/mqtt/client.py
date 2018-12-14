@@ -23,6 +23,7 @@ from wotpy.protocols.mqtt.enums import MQTTSchemes
 from wotpy.protocols.mqtt.handlers.action import ActionMQTTHandler
 from wotpy.protocols.mqtt.handlers.property import PropertyMQTTHandler
 from wotpy.protocols.utils import is_scheme_form
+from wotpy.utils.utils import handle_observer_finalization
 from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent, EmittedEvent
 
 
@@ -227,48 +228,25 @@ class MQTTClient(BaseProtocolClient):
             """Subscriber function that listens for MQTT messages
             on a given topic and passes them to the Observer."""
 
-            state = {
-                "active": True
-            }
-
+            state = {"active": True}
             client = hbmqtt.client.MQTTClient()
 
-            def on_message(fut):
-                is_timeout = fut and isinstance(fut.exception(), tornado.concurrent.futures.TimeoutError)
-
-                if fut is not None and fut.exception() and not is_timeout:
-                    observer.on_error(fut.exception())
-                    return
-                elif fut is not None and fut.exception() is None:
-                    next_item = next_item_builder(fut.result())
-                    if next_item is not None:
-                        observer.on_next(next_item)
-
-                if not state["active"]:
-                    return
-
-                timeout = self._sub_deliver_timeout_secs
-                fut_msg = tornado.gen.convert_yielded(client.deliver_message(timeout=timeout))
-                tornado.concurrent.future_add_done_callback(fut_msg, on_message)
-
-            def on_subscribe(fut):
-                if fut.exception():
-                    observer.on_error(fut.exception())
-                    return
-
-                on_message(None)
-
-            def on_connect(fut):
-                if fut.exception():
-                    observer.on_error(fut.exception())
-                    return
-
+            @handle_observer_finalization(observer)
+            @tornado.gen.coroutine
+            def callback():
                 topics = [(topic, self._qos)]
-                fut_sub = tornado.gen.convert_yielded(client.subscribe(topics))
-                tornado.concurrent.future_add_done_callback(fut_sub, on_subscribe)
+                timeout = self._sub_deliver_timeout_secs
 
-            fut_con = tornado.gen.convert_yielded(client.connect(broker_url))
-            tornado.concurrent.future_add_done_callback(fut_con, on_connect)
+                yield client.connect(broker_url)
+                yield client.subscribe(topics)
+
+                while state["active"]:
+                    try:
+                        msg = yield client.deliver_message(timeout=timeout)
+                        next_item = next_item_builder(msg)
+                        next_item is not None and observer.on_next(next_item)
+                    except tornado.concurrent.futures.TimeoutError:
+                        pass
 
             def unsubscribe():
                 """Disconnects from the MQTT broker and stops the message delivering loop."""
@@ -283,6 +261,8 @@ class MQTTClient(BaseProtocolClient):
                 tornado.ioloop.IOLoop.current().add_callback(disconnect)
 
                 state["active"] = False
+
+            tornado.ioloop.IOLoop.current().add_callback(callback)
 
             return unsubscribe
 
