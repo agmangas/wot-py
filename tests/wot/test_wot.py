@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import json
-import random
 import uuid
 import warnings
 
@@ -15,6 +14,7 @@ import tornado.web
 from faker import Faker
 
 from tests.td_examples import TD_EXAMPLE
+from tests.utils import find_free_port
 from tests.wot.utils import assert_exposed_thing_equal
 from wotpy.support import is_dnssd_supported
 from wotpy.wot.dictionaries.filter import ThingFilterDict
@@ -79,11 +79,10 @@ def test_produce_model_consumed_thing():
     assert len(exposed_thing.events) == len(consumed_thing.td.events)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_produce_from_url(td_example_tornado_app):
     """ExposedThings can be created from URLs that provide Thing Description documents."""
 
-    app_port = random.randint(20000, 40000)
+    app_port = find_free_port()
     td_example_tornado_app.listen(app_port)
 
     url_valid = "http://localhost:{}/".format(app_port)
@@ -103,11 +102,10 @@ def test_produce_from_url(td_example_tornado_app):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_consume_from_url(td_example_tornado_app):
     """ConsumedThings can be created from URLs that provide Thing Description documents."""
 
-    app_port = random.randint(20000, 40000)
+    app_port = find_free_port()
     td_example_tornado_app.listen(app_port)
 
     url_valid = "http://localhost:{}/".format(app_port)
@@ -201,12 +199,11 @@ def test_discovery_method_local():
 
 
 @pytest.mark.skipif(not is_dnssd_supported(), reason="Only for platforms that support DNS-SD")
-@pytest.mark.flaky(reruns=5)
 def test_discovery_method_multicast_dnssd():
     """Things can be discovered usin the multicast method supported by DNS-SD."""
 
-    catalogue_port_01 = random.randint(20000, 30000)
-    catalogue_port_02 = random.randint(30001, 40000)
+    catalogue_port_01 = find_free_port()
+    catalogue_port_02 = find_free_port()
 
     instance_name_01 = "servient-01-{}".format(Faker().pystr())
     instance_name_02 = "servient-02-{}".format(Faker().pystr())
@@ -257,7 +254,6 @@ def test_discovery_method_multicast_dnssd():
 
 
 @pytest.mark.skipif(is_dnssd_supported(), reason="Only for platforms that do not support DNS-SD")
-@pytest.mark.flaky(reruns=5)
 def test_discovery_method_multicast_dnssd_unsupported():
     """Attempting to discover other Things using multicast
     DNS-SD in an unsupported platform raises a warning."""

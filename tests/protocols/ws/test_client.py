@@ -3,7 +3,6 @@
 
 import uuid
 
-# noinspection PyPackageRequirements
 import pytest
 import six
 import tornado.concurrent
@@ -25,14 +24,12 @@ from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.wot.td import ThingDescription
 
 
-@pytest.mark.flaky(reruns=5)
 def test_read_property(websocket_servient):
     """The Websockets client can read properties."""
 
     client_test_read_property(websocket_servient, WebsocketClient)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_read_property_unknown(websocket_servient):
     """The Websockets client raises an error when attempting to read an unknown property."""
 
@@ -49,35 +46,30 @@ def test_read_property_unknown(websocket_servient):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_write_property(websocket_servient):
     """The Websockets client can write properties."""
 
     client_test_write_property(websocket_servient, WebsocketClient)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_invoke_action(websocket_servient):
     """The Websockets client can invoke actions."""
 
     client_test_invoke_action(websocket_servient, WebsocketClient)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_invoke_action_error(websocket_servient):
     """Errors raised by Actions are propagated propertly by the WebSockets binding client."""
 
     client_test_invoke_action_error(websocket_servient, WebsocketClient)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_on_event(websocket_servient):
     """The Websockets client can observe events."""
 
     client_test_on_event(websocket_servient, WebsocketClient)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_on_property_change(websocket_servient):
     """The Websockets client can observe property changes."""
 
@@ -147,7 +139,6 @@ def test_on_property_change(websocket_servient):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_on_property_change_error(websocket_servient):
     """Errors that arise in the middle of an ongoing Property
     observation are propagated to the subscription as expected."""

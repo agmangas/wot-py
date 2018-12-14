@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import random
 import uuid
 
 import pytest
@@ -9,12 +8,13 @@ import tornado.gen
 import tornado.ioloop
 from faker import Faker
 
+from tests.utils import find_free_port
 from wotpy.protocols.http.server import HTTPServer
-from wotpy.wot.td import ThingDescription
-from wotpy.wot.thing import Thing
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
+from wotpy.wot.td import ThingDescription
+from wotpy.wot.thing import Thing
 
 
 @pytest.fixture
@@ -50,7 +50,7 @@ def http_server():
         "output": {"type": "number"}
     }), triple)
 
-    port = random.randint(20000, 40000)
+    port = find_free_port()
 
     server = HTTPServer(port=port)
     server.add_exposed_thing(exposed_thing)
@@ -74,7 +74,7 @@ def http_server():
 def http_servient():
     """Returns a Servient that exposes an HTTP server and one ExposedThing."""
 
-    http_port = random.randint(20000, 40000)
+    http_port = find_free_port()
     http_server = HTTPServer(port=http_port)
 
     servient = Servient()

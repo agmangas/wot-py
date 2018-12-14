@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import random
 import ssl
 import tempfile
 import uuid
@@ -13,6 +12,7 @@ import tornado.ioloop
 from OpenSSL import crypto
 from faker import Faker
 
+from tests.utils import find_free_port
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.support import is_coap_supported, is_mqtt_supported
@@ -26,23 +26,17 @@ def all_protocols_servient():
 
     servient = Servient()
 
-    port_choices = list(range(20000, 40000))
-
-    def pop_random_port():
-        pop_idx = random.randint(0, len(port_choices) - 1)
-        return port_choices.pop(pop_idx)
-
-    http_port = pop_random_port()
+    http_port = find_free_port()
     http_server = HTTPServer(port=http_port)
     servient.add_server(http_server)
 
-    ws_port = pop_random_port()
+    ws_port = find_free_port()
     ws_server = WebsocketServer(port=ws_port)
     servient.add_server(ws_server)
 
     if is_coap_supported():
         from wotpy.protocols.coap.server import CoAPServer
-        coap_port = pop_random_port()
+        coap_port = find_free_port()
         coap_server = CoAPServer(port=coap_port)
         servient.add_server(coap_server)
 

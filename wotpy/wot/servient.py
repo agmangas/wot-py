@@ -229,6 +229,12 @@ class Servient(object):
 
         return self._dnssd
 
+    @property
+    def dnssd_instance_name(self):
+        """Returns the user-given DNS-SD service instance name."""
+
+        return self._dnssd_instance_name
+
     @tornado.gen.coroutine
     def _start_dnssd(self):
         """Starts the DNS-SD service and registers the servient."""

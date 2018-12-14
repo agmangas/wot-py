@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import json
-import random
 import uuid
 
 import pytest
@@ -12,6 +11,7 @@ import tornado.ioloop
 import tornado.websocket
 from faker import Faker
 
+from tests.utils import find_free_port
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.wot.constants import WOT_TD_CONTEXT_URL
 from wotpy.wot.consumed.thing import ConsumedThing
@@ -19,11 +19,10 @@ from wotpy.wot.servient import Servient
 from wotpy.wot.td import ThingDescription
 
 
-@pytest.mark.flaky(reruns=5)
 def test_servient_td_catalogue():
     """The servient provides a Thing Description catalogue HTTP endpoint."""
 
-    catalogue_port = random.randint(20000, 40000)
+    catalogue_port = find_free_port()
 
     servient = Servient()
     servient.catalogue_port = catalogue_port
@@ -97,13 +96,12 @@ def test_servient_td_catalogue():
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_servient_start_stop():
     """The servient and contained ExposedThings can be started and stopped."""
 
     fake = Faker()
 
-    ws_port = random.randint(20000, 40000)
+    ws_port = find_free_port()
     ws_server = WebsocketServer(port=ws_port)
 
     servient = Servient()

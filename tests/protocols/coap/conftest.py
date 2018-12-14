@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import random
 import uuid
 
 import pytest
@@ -10,6 +9,7 @@ import tornado.gen
 import tornado.ioloop
 from faker import Faker
 
+from tests.utils import find_free_port
 from wotpy.support import is_coap_supported
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, EventFragmentDict, ActionFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing
@@ -58,7 +58,7 @@ def coap_server(request):
         "output": {"type": "number"}
     }), triple)
 
-    port = random.randint(20000, 40000)
+    port = find_free_port()
 
     server = CoAPServer(port=port, **request.param)
     server.add_exposed_thing(exposed_thing)
@@ -85,7 +85,7 @@ def coap_servient():
 
     from wotpy.protocols.coap.server import CoAPServer
 
-    coap_port = random.randint(20000, 40000)
+    coap_port = find_free_port()
     the_coap_server = CoAPServer(port=coap_port)
 
     servient = Servient()

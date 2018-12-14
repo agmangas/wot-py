@@ -1,17 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import socket
+
 import six
 from tornado.escape import to_unicode
-
-
-class FutureTimeout(object):
-    """Enumeration of default timeouts used to retrieve Future results."""
-
-    MINIMAL = 2
-    SHORT = 15
-    MEDIUM = 40
-    LONG = 120
 
 
 def assert_equal_dict(dict_a, dict_b, compare_as_unicode=False):
@@ -27,3 +20,16 @@ def assert_equal_dict(dict_a, dict_b, compare_as_unicode=False):
             assert to_unicode(value_a) == to_unicode(value_b)
         else:
             assert value_a == value_b
+
+
+def find_free_port():
+    """Returns a free TCP port by attempting to open a socket on an OS-assigned port."""
+
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.bind(("", 0))
+        return sock.getsockname()[1]
+    finally:
+        # noinspection PyUnboundLocalVariable
+        sock.close()

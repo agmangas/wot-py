@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import random
 import uuid
 
-import pytest
 import six
 import tornado.gen
 import tornado.ioloop
@@ -12,6 +10,7 @@ from faker import Faker
 from rx.concurrency import IOLoopScheduler
 from tornado.concurrent import Future
 
+from tests.utils import find_free_port
 from wotpy.protocols.http.client import HTTPClient
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.ws.client import WebsocketClient
@@ -357,7 +356,6 @@ def test_thing_interaction_dict_behaviour(consumed_exposed_pair):
     assert prop_name in consumed_thing.properties
 
 
-@pytest.mark.flaky(reruns=5)
 def test_consumed_client_protocols_preference():
     """The Servient selects different protocol clients to consume Things
     depending on the protocol choices displayed on the Thing Description."""
@@ -372,12 +370,12 @@ def test_consumed_client_protocols_preference():
     def servient_shutdown():
         yield servient.shutdown()
 
-    http_port = random.randint(20000, 40000)
+    http_port = find_free_port()
     http_server = HTTPServer(port=http_port)
 
     servient.add_server(http_server)
 
-    ws_port = random.randint(20000, 40000)
+    ws_port = find_free_port()
     ws_server = WebsocketServer(port=ws_port)
 
     servient.add_server(ws_server)

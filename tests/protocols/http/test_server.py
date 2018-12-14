@@ -15,13 +15,14 @@ from faker import Faker
 from six.moves.urllib import parse
 from tornado.concurrent import Future
 
+from tests.utils import find_free_port
 from wotpy.protocols.enums import InteractionVerbs
 from wotpy.protocols.http.enums import HTTPSchemes
 from wotpy.protocols.http.server import HTTPServer
-from wotpy.wot.thing import Thing
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
+from wotpy.wot.thing import Thing
 
 JSON_HEADERS = {"Content-Type": "application/json"}
 
@@ -58,7 +59,6 @@ def _get_event_observe_href(exp_thing, event_name, server):
     return next(item.href for item in event_forms if item.op == InteractionVerbs.SUBSCRIBE_EVENT)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_property_get(http_server):
     """Properties exposed in an HTTP server can be read with an HTTP GET request."""
 
@@ -99,7 +99,6 @@ def _test_property_set(server, body, prop_value, headers=None):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_property_set_form_urlencoded(http_server):
     """Properties exposed in an HTTP server can be
     updated with an application/x-www-form-urlencoded HTTP POST request."""
@@ -109,7 +108,6 @@ def test_property_set_form_urlencoded(http_server):
     _test_property_set(http_server, body, str(prop_value))
 
 
-@pytest.mark.flaky(reruns=5)
 def test_property_set_json(http_server):
     """Properties exposed in an HTTP server can be
     updated with an application/json HTTP POST request."""
@@ -119,7 +117,6 @@ def test_property_set_json(http_server):
     _test_property_set(http_server, body, prop_value, headers=JSON_HEADERS)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_property_subscribe(http_server):
     """Properties exposed in an HTTP server can be subscribed to with an HTTP GET request."""
 
@@ -194,7 +191,6 @@ def _test_action_run(server):
     })
 
 
-@pytest.mark.flaky(reruns=5)
 def test_action_run_success(http_server):
     """Actions exposed in an HTTP server can be successfully invoked with an HTTP POST request."""
 
@@ -219,7 +215,6 @@ def test_action_run_success(http_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_action_run_error(http_server):
     """Actions exposed in an HTTP server can raise errors."""
 
@@ -244,7 +239,6 @@ def test_action_run_error(http_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_event_subscribe(http_server):
     """Events exposed in an HTTP server can be subscribed to with an HTTP GET request."""
 
@@ -275,7 +269,6 @@ def test_event_subscribe(http_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_ssl_context(self_signed_ssl_context):
     """An SSL context can be passed to the HTTP server to enable encryption."""
 
@@ -288,7 +281,7 @@ def test_ssl_context(self_signed_ssl_context):
         "observable": True
     }), value=Faker().pystr())
 
-    port = random.randint(20000, 40000)
+    port = find_free_port()
 
     server = HTTPServer(port=port, ssl_context=self_signed_ssl_context)
     server.add_exposed_thing(exposed_thing)

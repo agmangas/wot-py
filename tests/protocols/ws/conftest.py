@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import random
 import re
 import time
 import uuid
@@ -20,12 +19,13 @@ import tornado.websocket
 from faker import Faker
 from six.moves.urllib.parse import urlparse, urlunparse
 
+from tests.utils import find_free_port
 from wotpy.protocols.ws.server import WebsocketServer
-from wotpy.wot.td import ThingDescription
-from wotpy.wot.thing import Thing
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
+from wotpy.wot.td import ThingDescription
+from wotpy.wot.thing import Thing
 
 
 def build_websocket_url(exposed_thing, ws_server, server_port):
@@ -99,7 +99,7 @@ def websocket_server():
 
     exposed_thing_02.add_property(prop_name_03, prop_init_03, value=prop_value_03)
 
-    ws_port = random.randint(20000, 40000)
+    ws_port = find_free_port()
 
     ws_server = WebsocketServer(port=ws_port)
     ws_server.add_exposed_thing(exposed_thing_01)
@@ -147,7 +147,7 @@ def websocket_server():
 def websocket_servient():
     """Returns a Servient that exposes a Websockets server and one ExposedThing."""
 
-    ws_port = random.randint(20000, 40000)
+    ws_port = find_free_port()
     ws_server = WebsocketServer(port=ws_port)
 
     servient = Servient()

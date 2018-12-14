@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import random
 import ssl
 import uuid
 
@@ -15,6 +14,7 @@ import tornado.websocket
 from faker import Faker
 
 from tests.protocols.ws.conftest import build_websocket_url
+from tests.utils import find_free_port
 from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketErrors, WebsocketSchemes
 from wotpy.protocols.ws.messages import \
     WebsocketMessageRequest, \
@@ -22,13 +22,12 @@ from wotpy.protocols.ws.messages import \
     WebsocketMessageError, \
     WebsocketMessageEmittedItem
 from wotpy.protocols.ws.server import WebsocketServer
-from wotpy.wot.thing import Thing
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
+from wotpy.wot.thing import Thing
 
 
-@pytest.mark.flaky(reruns=5)
 def test_thing_not_found(websocket_server):
     """The socket is automatically closed when connecting to an unknown thing."""
 
@@ -45,7 +44,6 @@ def test_thing_not_found(websocket_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_read_property(websocket_server):
     """Properties can be retrieved using Websockets."""
 
@@ -106,7 +104,6 @@ def test_read_property(websocket_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_write_property(websocket_server):
     """Properties can be updated using Websockets."""
 
@@ -156,7 +153,6 @@ def test_write_property(websocket_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_invoke_action(websocket_server):
     """Actions can be invoked using Websockets."""
 
@@ -192,7 +188,6 @@ def test_invoke_action(websocket_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_on_property_change(websocket_server):
     """Property changes can be observed using Websockets."""
 
@@ -250,7 +245,6 @@ def test_on_property_change(websocket_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_on_undefined_property_change(websocket_server):
     """Observing an undefined property results in a subscription error message."""
 
@@ -282,7 +276,6 @@ def test_on_undefined_property_change(websocket_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_on_event(websocket_server):
     """Events can be observed using Websockets."""
 
@@ -338,7 +331,6 @@ def test_on_event(websocket_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_on_undefined_event(websocket_server):
     """Observing an undefined event results in a subscription error message."""
 
@@ -370,7 +362,6 @@ def test_on_undefined_event(websocket_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_dispose(websocket_server):
     """Observable subscriptions can be disposed using Websockets."""
 
@@ -436,7 +427,6 @@ def test_dispose(websocket_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_ssl_context(self_signed_ssl_context):
     """An SSL context can be passed to the WebSockets server to enable encryption."""
 
@@ -449,7 +439,7 @@ def test_ssl_context(self_signed_ssl_context):
         "observable": True
     }), value=Faker().pystr())
 
-    port = random.randint(20000, 40000)
+    port = find_free_port()
 
     server = WebsocketServer(port=port, ssl_context=self_signed_ssl_context)
     server.add_exposed_thing(exposed_thing)

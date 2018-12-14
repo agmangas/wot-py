@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pytest
 import six
 import tornado.gen
 import tornado.ioloop
@@ -13,7 +12,6 @@ from wotpy.support import is_coap_supported, is_mqtt_supported
 from wotpy.wot.td import ThingDescription
 
 
-@pytest.mark.flaky(reruns=5)
 def test_all_protocols_combined(all_protocols_servient):
     """Protocol bindings work as expected when multiple
     servers are combined within the same Servient."""

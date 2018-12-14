@@ -8,8 +8,11 @@ import socket
 import pytest
 import tornado.gen
 import tornado.ioloop
+from faker import Faker
 
+from tests.utils import find_free_port
 from wotpy.support import is_dnssd_supported
+from wotpy.wot.servient import Servient
 
 collect_ignore = []
 
@@ -46,3 +49,38 @@ def asyncio_zeroconf():
         yield aio_zc.close()
 
     loop.add_callback(close)
+
+
+@pytest.fixture
+def dnssd_discovery():
+    """Builds an instance of the DNS-SD service."""
+
+    from wotpy.wot.discovery.dnssd.service import DNSSDDiscoveryService
+
+    dnssd_discovery = DNSSDDiscoveryService()
+
+    yield dnssd_discovery
+
+    @tornado.gen.coroutine
+    def stop():
+        yield dnssd_discovery.stop()
+
+    tornado.ioloop.IOLoop.current().run_sync(stop)
+
+
+@pytest.fixture
+def dnssd_servient():
+    """Builds a Servient with both the TD catalogue and the DNS-SD service enabled."""
+
+    servient = Servient(
+        catalogue_port=find_free_port(),
+        dnssd_enabled=True,
+        dnssd_instance_name=Faker().pystr())
+
+    yield servient
+
+    @tornado.gen.coroutine
+    def shutdown():
+        yield servient.shutdown()
+
+    tornado.ioloop.IOLoop.current().run_sync(shutdown)

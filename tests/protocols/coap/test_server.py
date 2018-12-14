@@ -3,7 +3,6 @@
 
 import datetime
 import json
-import random
 
 import aiocoap
 import pytest
@@ -13,6 +12,7 @@ import tornado.gen
 import tornado.ioloop
 from faker import Faker
 
+from tests.utils import find_free_port
 from wotpy.protocols.coap.server import CoAPServer
 from wotpy.protocols.enums import InteractionVerbs
 from wotpy.wot.dictionaries.interaction import ActionFragmentDict
@@ -59,11 +59,10 @@ def _next_observation(request):
     raise tornado.gen.Return(val)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_start_stop():
     """The CoAP server can be started and stopped."""
 
-    coap_port = random.randint(20000, 40000)
+    coap_port = find_free_port()
     coap_server = CoAPServer(port=coap_port)
     ping_uri = "coap://127.0.0.1:{}/.well-known/core".format(coap_port)
 
@@ -104,7 +103,6 @@ def test_start_stop():
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_property_read(coap_server):
     """Properties exposed in an CoAP server can be read with a CoAP GET request."""
 
@@ -126,7 +124,6 @@ def test_property_read(coap_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_property_write(coap_server):
     """Properties exposed in an CoAP server can be updated with a CoAP POST request."""
 
@@ -150,7 +147,6 @@ def test_property_write(coap_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_property_subscription(coap_server):
     """Properties exposed in an CoAP server can be observed for value updates."""
 
@@ -219,7 +215,6 @@ def _test_action_invoke(the_coap_server, input_value=None):
     raise tornado.gen.Return(obsv_response)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_action_invoke(coap_server):
     """Actions exposed in a CoAP server can be invoked."""
 
@@ -236,7 +231,6 @@ def test_action_invoke(coap_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("coap_server", [{"action_clear_ms": 5}], indirect=True)
 def test_action_clear_invocation(coap_server):
     """Completed Action invocations are removed from the CoAP server after a while."""
@@ -249,7 +243,6 @@ def test_action_clear_invocation(coap_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_action_invoke_parallel(coap_server):
     """Actions exposed in a CoAP server can be invoked in parallel."""
 
@@ -353,7 +346,6 @@ def test_action_invoke_parallel(coap_server):
     tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_event_subscription(coap_server):
     """Event emissions can be observed in a CoAP server."""
 
