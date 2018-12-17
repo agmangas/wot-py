@@ -42,7 +42,7 @@ if is_dnssd_supported():
 
 this_dir = path.abspath(path.dirname(__file__))
 
-with open(path.join(this_dir, 'README.md'), encoding='utf-8') as fh:
+with open(path.join(this_dir, 'README.md')) as fh:
     long_description = fh.read()
 
 setup(
