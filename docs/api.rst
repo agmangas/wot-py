@@ -6,6 +6,5 @@ API Reference
 
     wotpy.wot
     wotpy.utils
-    wotpy.td
     wotpy.protocols
     wotpy.codecs

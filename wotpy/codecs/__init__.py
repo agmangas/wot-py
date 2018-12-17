@@ -9,6 +9,6 @@ Classes to serialize and deserialize messages.
 
     wotpy.codecs.base
     wotpy.codecs.enums
-    wotpy.codecs.jsoncodec
+    wotpy.codecs.json_codec
     wotpy.codecs.text
 """

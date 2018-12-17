@@ -51,3 +51,5 @@ Move to the `docs` folder and run:
 ```
 make html
 ```
+
+> Docs should be built on a platform that supports all features to avoid import issues with `_autosummary`.

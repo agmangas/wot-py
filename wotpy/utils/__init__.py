@@ -8,6 +8,5 @@ Utility functions and classes.
     :toctree: _utils
 
     wotpy.utils.enums
-    wotpy.utils.futures
-    wotpy.utils.serialization
+    wotpy.utils.utils
 """
