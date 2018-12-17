@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import socket
 
 import six
@@ -8,12 +9,15 @@ import tornado.ioloop
 from tornado.escape import to_unicode
 
 DEFAULT_TIMEOUT_SECS = 20
+TIMEOUT_CORO_VAR = "WOTPY_TESTS_CORO_TIMEOUT"
 
 
-def run_test_coroutine(coro, timeout=DEFAULT_TIMEOUT_SECS):
+def run_test_coroutine(coro, timeout=None):
     """Synchronously runs the given test coroutine with an optinally defined timeout."""
 
-    tornado.ioloop.IOLoop.current().run_sync(coro, timeout=timeout)
+    timeout = timeout if timeout else os.getenv(TIMEOUT_CORO_VAR, DEFAULT_TIMEOUT_SECS)
+
+    tornado.ioloop.IOLoop.current().run_sync(coro, timeout=float(timeout))
 
 
 def assert_equal_dict(dict_a, dict_b, compare_as_unicode=False):
