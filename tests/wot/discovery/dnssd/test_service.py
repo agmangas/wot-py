@@ -10,7 +10,7 @@ from aiozeroconf import ServiceStateChange, ServiceInfo
 from faker import Faker
 from six.moves import range
 
-from tests.utils import find_free_port
+from tests.utils import find_free_port, run_test_coroutine
 from wotpy.wot.discovery.dnssd.service import DNSSDDiscoveryService, build_servient_service_info
 from wotpy.wot.servient import Servient
 
@@ -59,7 +59,7 @@ def test_start_stop():
 
         assert not dnssd_discovery.is_running
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_register(asyncio_zeroconf, dnssd_discovery):
@@ -91,7 +91,7 @@ def test_register(asyncio_zeroconf, dnssd_discovery):
 
         _assert_service_added_removed(servient, service_history)
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_unregister(asyncio_zeroconf, dnssd_discovery):
@@ -114,7 +114,7 @@ def test_unregister(asyncio_zeroconf, dnssd_discovery):
 
         _assert_service_added_removed(servient, service_history)
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_find(asyncio_zeroconf, dnssd_discovery):
@@ -146,7 +146,7 @@ def test_find(asyncio_zeroconf, dnssd_discovery):
 
         assert (ipaddr, port) in (yield dnssd_discovery.find(timeout=3))
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_register_instance_name(asyncio_zeroconf, dnssd_discovery):
@@ -180,7 +180,7 @@ def test_register_instance_name(asyncio_zeroconf, dnssd_discovery):
 
         _assert_service_added_removed(servient, service_history, instance_name)
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_enable_on_servient(asyncio_zeroconf, dnssd_servient):
@@ -204,4 +204,4 @@ def test_enable_on_servient(asyncio_zeroconf, dnssd_servient):
 
         _assert_service_added_removed(dnssd_servient, service_history, instance_name)
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)

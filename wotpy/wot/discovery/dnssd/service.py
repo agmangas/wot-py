@@ -8,6 +8,7 @@ Service discovery based on Multicast DNS and DNS-SD (Bonjour, Avahi).
 import socket
 import threading
 import time
+from functools import partial
 from typing import cast
 
 import six
@@ -62,8 +63,10 @@ def _start_zeroconf(close_event, services, services_lock, register_queue, addres
         state_change = kwargs.pop('state_change')
 
         with registered_lock:
-            if any(item.name == name for item in registered):
-                return
+            is_local = any(item.name == name for item in registered)
+
+        if is_local:
+            return
 
         def _add_result():
             info = zeroconf.get_service_info(service_type, name)
@@ -124,8 +127,10 @@ def _start_zeroconf(close_event, services, services_lock, register_queue, addres
                 instance_name=instance_name)
 
             with registered_lock:
-                if not any(val == info for val in registered):
-                    return
+                is_registered = any(val == info for val in registered)
+
+            if not is_registered:
+                return
 
             zeroconf.unregister_service(info)
 
@@ -182,7 +187,7 @@ class DNSSDDiscoveryService(object):
 
     def __init__(self, address=None):
         self._address = address
-        self._zeroconf_loop_future = None
+        self._zeroconf_loop_thread = None
         self._close_event = threading.Event()
         self._register_queue = None
         self._lock = tornado.locks.Lock()
@@ -194,22 +199,21 @@ class DNSSDDiscoveryService(object):
     def is_running(self):
         """Returns True if the mDNS service is currently running."""
 
-        return self._zeroconf_loop_future is not None
+        return self._zeroconf_loop_thread is not None
 
     @tornado.gen.coroutine
     def start(self):
         """Starts the DNS-SD thread on a loop executor."""
 
         with (yield self._lock.acquire()):
-            if self._zeroconf_loop_future is not None:
+            if self._zeroconf_loop_thread is not None:
                 return
 
             self._close_event.clear()
             self._register_queue = queue.Queue()
             self._services = {}
 
-            self._zeroconf_loop_future = self._loop.run_in_executor(
-                None,
+            thread_target = partial(
                 _start_zeroconf,
                 self._close_event,
                 self._services,
@@ -217,17 +221,26 @@ class DNSSDDiscoveryService(object):
                 self._register_queue,
                 self._address)
 
+            self._zeroconf_loop_thread = threading.Thread(
+                target=thread_target,
+                daemon=True)
+
+            self._zeroconf_loop_thread.start()
+
     @tornado.gen.coroutine
     def stop(self):
         """Signals the DNS-SD thread to stop and waits for the executor future to yield."""
 
         with (yield self._lock.acquire()):
-            if self._zeroconf_loop_future is None:
+            if self._zeroconf_loop_thread is None:
                 return
 
             self._close_event.set()
-            yield self._zeroconf_loop_future
-            self._zeroconf_loop_future = None
+
+            while self._zeroconf_loop_thread.is_alive():
+                yield tornado.gen.sleep(ITER_WAIT)
+
+            self._zeroconf_loop_thread = None
             self._close_event.clear()
             self._register_queue = None
             self._services = None
@@ -237,7 +250,7 @@ class DNSSDDiscoveryService(object):
         """"""
 
         with (yield self._lock.acquire()):
-            if self._zeroconf_loop_future is None:
+            if self._zeroconf_loop_thread is None:
                 raise ValueError("Stopped DNS-SD thread")
 
             done = threading.Event()
@@ -282,7 +295,7 @@ class DNSSDDiscoveryService(object):
         If min_results is defined it will stop as soon as that number of results are found."""
 
         with (yield self._lock.acquire()):
-            if self._zeroconf_loop_future is None:
+            if self._zeroconf_loop_thread is None:
                 raise ValueError("Stopped DNS-SD thread")
 
             ini = time.time()
