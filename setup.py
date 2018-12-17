@@ -30,8 +30,8 @@ test_requires = [
 ]
 
 if is_coap_supported():
-    install_requires.append('aiocoap>=0.3.0,<1.0')
-    install_requires.append('LinkHeader>=0.4.3,<1.0')
+    install_requires.append('aiocoap>=0.3.0,<0.4.0')
+    install_requires.append('LinkHeader>=0.4.3,<0.5.0')
 
 if is_mqtt_supported():
     install_requires.append('hbmqtt>=0.9.4,<1.0')
@@ -51,7 +51,7 @@ setup(
     description='Python implementation of a W3C WoT Runtime and the WoT Scripting API',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    keywords='wot iot gateway w3c',
+    keywords='wot iot gateway fog w3c',
     author='Andres Garcia Mangas',
     author_email='andres.garcia@fundacionctic.org',
     url='https://bitbucket.org/fundacionctic/wot-py',
