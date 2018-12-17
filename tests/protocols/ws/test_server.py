@@ -14,7 +14,7 @@ import tornado.websocket
 from faker import Faker
 
 from tests.protocols.ws.conftest import build_websocket_url
-from tests.utils import find_free_port
+from tests.utils import find_free_port, run_test_coroutine
 from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketErrors, WebsocketSchemes
 from wotpy.protocols.ws.messages import \
     WebsocketMessageRequest, \
@@ -41,7 +41,7 @@ def test_thing_not_found(websocket_server):
 
         assert msg is None
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_read_property(websocket_server):
@@ -101,7 +101,7 @@ def test_read_property(websocket_server):
         yield conns[0].close()
         yield conns[1].close()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_write_property(websocket_server):
@@ -150,7 +150,7 @@ def test_write_property(websocket_server):
 
         yield conn.close()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_invoke_action(websocket_server):
@@ -185,7 +185,7 @@ def test_invoke_action(websocket_server):
 
         yield conn.close()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_on_property_change(websocket_server):
@@ -242,7 +242,7 @@ def test_on_property_change(websocket_server):
 
         yield conn.close()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_on_undefined_property_change(websocket_server):
@@ -273,7 +273,7 @@ def test_on_undefined_property_change(websocket_server):
         assert msg_observe_err.code == WebsocketErrors.SUBSCRIPTION_ERROR
         assert msg_observe_err.data["subscription"] == msg_observe_resp.result
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_on_event(websocket_server):
@@ -328,7 +328,7 @@ def test_on_event(websocket_server):
 
         yield conn.close()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_on_undefined_event(websocket_server):
@@ -359,7 +359,7 @@ def test_on_undefined_event(websocket_server):
         assert msg_observe_err.code == WebsocketErrors.SUBSCRIPTION_ERROR
         assert msg_observe_err.data["subscription"] == msg_observe_resp.result
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_dispose(websocket_server):
@@ -424,7 +424,7 @@ def test_dispose(websocket_server):
                 timeout=datetime.timedelta(milliseconds=200),
                 future=conn.read_message())
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_ssl_context(self_signed_ssl_context):
@@ -480,4 +480,4 @@ def test_ssl_context(self_signed_ssl_context):
         yield conn.close()
         yield server.stop()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)

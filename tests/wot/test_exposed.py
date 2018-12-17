@@ -13,6 +13,7 @@ import tornado.ioloop
 from faker import Faker
 from tornado.concurrent import Future
 
+from tests.utils import run_test_coroutine
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict
 from wotpy.wot.dictionaries.thing import ThingFragment
 from wotpy.wot.enums import TDChangeMethod, TDChangeType, DataType
@@ -72,7 +73,7 @@ def _test_td_change_events(exposed_thing, property_fragment, event_fragment, act
 
         subscription.dispose()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_thing_template_getters(exposed_thing):
@@ -96,7 +97,7 @@ def test_read_property(exposed_thing, property_fragment):
         value = yield exposed_thing.read_property(prop_name)
         assert value == prop_init_value
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_write_property(exposed_thing, property_fragment):
@@ -117,7 +118,7 @@ def test_write_property(exposed_thing, property_fragment):
 
         assert value == updated_val
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_write_non_writable_property(exposed_thing):
@@ -136,7 +137,7 @@ def test_write_non_writable_property(exposed_thing):
         with pytest.raises(Exception):
             yield exposed_thing.write_property(prop_name, Faker().pystr())
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_invoke_action(exposed_thing, action_fragment):
@@ -183,7 +184,7 @@ def test_invoke_action(exposed_thing, action_fragment):
             result = yield exposed_thing.invoke_action(action_name, action_arg)
             assert result == assert_func(action_arg)
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_invoke_action_undefined_handler(exposed_thing, action_fragment):
@@ -208,7 +209,7 @@ def test_invoke_action_undefined_handler(exposed_thing, action_fragment):
 
         assert result
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_on_property_change(exposed_thing, property_fragment):
@@ -239,7 +240,7 @@ def test_on_property_change(exposed_thing, property_fragment):
 
         subscription.dispose()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_on_property_change_non_observable(exposed_thing):
@@ -277,7 +278,7 @@ def test_on_property_change_non_observable(exposed_thing):
 
         subscription.dispose()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_on_event(exposed_thing, event_fragment):
@@ -325,7 +326,7 @@ def test_thing_property_get(exposed_thing, property_fragment):
         value = yield exposed_thing.properties[prop_name].read()
         assert value == prop_init_value
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_thing_property_set(exposed_thing, property_fragment):
@@ -342,7 +343,7 @@ def test_thing_property_set(exposed_thing, property_fragment):
         value = yield exposed_thing.properties[prop_name].read()
         assert value == updated_val
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_thing_property_subscribe(exposed_thing, property_fragment):
@@ -374,7 +375,7 @@ def test_thing_property_subscribe(exposed_thing, property_fragment):
 
         subscription.dispose()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_thing_property_getters(exposed_thing, property_fragment):
@@ -394,7 +395,7 @@ def test_thing_property_getters(exposed_thing, property_fragment):
         assert thing_property.observable == property_fragment.observable
         assert thing_property.type == property_fragment.type
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_thing_action_run(exposed_thing, action_fragment):
@@ -416,7 +417,7 @@ def test_thing_action_run(exposed_thing, action_fragment):
 
         assert result == result_expected
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_thing_action_getters(exposed_thing, action_fragment):
@@ -435,7 +436,7 @@ def test_thing_action_getters(exposed_thing, action_fragment):
         assert thing_action.input.type == action_fragment.input.type
         assert thing_action.output.type == action_fragment.output.type
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_thing_event_subscribe(exposed_thing, event_fragment):
@@ -465,7 +466,7 @@ def test_thing_event_subscribe(exposed_thing, event_fragment):
 
         subscription.dispose()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_thing_event_getters(exposed_thing, event_fragment):
@@ -483,7 +484,7 @@ def test_thing_event_getters(exposed_thing, event_fragment):
         assert thing_event.description == event_fragment.description
         assert thing_event.data.type == event_fragment.data.type
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_set_property_read_handler(exposed_thing, property_fragment):
@@ -503,7 +504,7 @@ def test_set_property_read_handler(exposed_thing, property_fragment):
         value = yield exposed_thing.properties[prop_name].read()
         assert value == const_prop_value
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_set_property_write_handler(exposed_thing, property_fragment):
@@ -526,7 +527,7 @@ def test_set_property_write_handler(exposed_thing, property_fragment):
         yield exposed_thing.properties[prop_name].write(prop_value)
         assert prop_value in prop_history
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_subscribe(exposed_thing, property_fragment, event_fragment, action_fragment):

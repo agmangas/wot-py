@@ -19,6 +19,7 @@ from tests.protocols.helpers import \
     client_test_invoke_action, \
     client_test_invoke_action_error, \
     client_test_on_property_change_error
+from tests.utils import run_test_coroutine
 from wotpy.protocols.exceptions import ProtocolClientException
 from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.wot.td import ThingDescription
@@ -43,7 +44,7 @@ def test_read_property_unknown(websocket_servient):
         with pytest.raises(ProtocolClientException):
             yield ws_client.read_property(td, uuid.uuid4().hex)
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_write_property(websocket_servient):
@@ -136,7 +137,7 @@ def test_on_property_change(websocket_servient):
 
         subscription_02.dispose()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_on_property_change_error(websocket_servient):

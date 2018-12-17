@@ -6,6 +6,7 @@ import tornado.gen
 import tornado.ioloop
 from faker import Faker
 
+from tests.utils import run_test_coroutine
 from wotpy.protocols.http.client import HTTPClient
 from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.support import is_coap_supported, is_mqtt_supported
@@ -66,4 +67,4 @@ def test_all_protocols_combined(all_protocols_servient):
             yield read_property(client)
             yield write_property(client)
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)

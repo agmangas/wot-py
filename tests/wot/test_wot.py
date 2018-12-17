@@ -14,7 +14,7 @@ import tornado.web
 from faker import Faker
 
 from tests.td_examples import TD_EXAMPLE
-from tests.utils import find_free_port
+from tests.utils import find_free_port, run_test_coroutine
 from tests.wot.utils import assert_exposed_thing_equal
 from wotpy.support import is_dnssd_supported
 from wotpy.wot.dictionaries.filter import ThingFilterDict
@@ -23,6 +23,8 @@ from wotpy.wot.enums import DiscoveryMethod
 from wotpy.wot.servient import Servient
 from wotpy.wot.td import ThingDescription
 from wotpy.wot.wot import WoT
+
+TIMEOUT_DISCOVER = 5
 
 
 def test_produce_model_str():
@@ -99,7 +101,7 @@ def test_produce_from_url(td_example_tornado_app):
         with pytest.raises(Exception):
             yield wot.produce_from_url(url_error)
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_consume_from_url(td_example_tornado_app):
@@ -122,7 +124,7 @@ def test_consume_from_url(td_example_tornado_app):
         with pytest.raises(Exception):
             yield wot.consume_from_url(url_error)
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 TD_DICT_01 = {
@@ -195,7 +197,7 @@ def test_discovery_method_local():
 
         subscription.dispose()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 @pytest.mark.skipif(not is_dnssd_supported(), reason="Only for platforms that support DNS-SD")
@@ -250,7 +252,7 @@ def test_discovery_method_multicast_dnssd():
         yield servient_01.shutdown()
         yield servient_02.shutdown()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 @pytest.mark.skipif(is_dnssd_supported(), reason="Only for platforms that do not support DNS-SD")
@@ -270,7 +272,7 @@ def test_discovery_method_multicast_dnssd_unsupported():
 
         yield servient.shutdown()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_discovery_fragment():
@@ -304,7 +306,7 @@ def test_discovery_fragment():
 
             raise tornado.gen.Return(found[0])
 
-        return tornado.ioloop.IOLoop.current().run_sync(discover_first)
+        return tornado.ioloop.IOLoop.current().run_sync(discover_first, timeout=TIMEOUT_DISCOVER)
 
     fragment_td_pairs = [
         ({"name": TD_DICT_01.get("name")}, TD_DICT_01),

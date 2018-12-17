@@ -11,6 +11,7 @@ import tornado.ioloop
 from faker import Faker
 from rx.concurrency import IOLoopScheduler
 
+from tests.utils import run_test_coroutine
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, EventFragmentDict, ActionFragmentDict
 from wotpy.wot.td import ThingDescription
 
@@ -63,7 +64,7 @@ def client_test_on_property_change(servient, protocol_client_cls):
         periodic_emit.stop()
         subscription.dispose()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def client_test_on_event(servient, protocol_client_cls):
@@ -109,7 +110,7 @@ def client_test_on_event(servient, protocol_client_cls):
         periodic_emit.stop()
         subscription.dispose()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def client_test_read_property(servient, protocol_client_cls):
@@ -141,7 +142,7 @@ def client_test_read_property(servient, protocol_client_cls):
         curr_prop_value = yield protocol_client.read_property(td, prop_name)
         assert curr_prop_value == prop_value
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def client_test_write_property(servient, protocol_client_cls):
@@ -173,7 +174,7 @@ def client_test_write_property(servient, protocol_client_cls):
         curr_value = yield exposed_thing.properties[prop_name].read()
         assert curr_value == prop_value
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def client_test_invoke_action(servient, protocol_client_cls):
@@ -209,7 +210,7 @@ def client_test_invoke_action(servient, protocol_client_cls):
 
         assert result == result_expected
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def client_test_invoke_action_error(servient, protocol_client_cls):
@@ -244,7 +245,7 @@ def client_test_invoke_action_error(servient, protocol_client_cls):
         except Exception as ex:
             assert err_message in str(ex)
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def client_test_on_property_change_error(servient, protocol_client_cls):
@@ -294,4 +295,4 @@ def client_test_on_property_change_error(servient, protocol_client_cls):
 
         subscription.dispose()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)

@@ -10,7 +10,7 @@ from faker import Faker
 from rx.concurrency import IOLoopScheduler
 from tornado.concurrent import Future
 
-from tests.utils import find_free_port
+from tests.utils import find_free_port, run_test_coroutine
 from wotpy.protocols.http.client import HTTPClient
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.ws.client import WebsocketClient
@@ -54,7 +54,7 @@ def _test_property_change_events(exposed_thing, subscribe_func):
 
         subscription.dispose()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def _test_event_emission_events(exposed_thing, subscribe_func):
@@ -92,7 +92,7 @@ def _test_event_emission_events(exposed_thing, subscribe_func):
 
         subscription.dispose()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_thing_template_getters(consumed_exposed_pair):
@@ -121,7 +121,7 @@ def test_read_property(consumed_exposed_pair):
 
         assert result_consumed == result_exposed
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_write_property(consumed_exposed_pair):
@@ -147,7 +147,7 @@ def test_write_property(consumed_exposed_pair):
 
         assert value == val_02
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_invoke_action(consumed_exposed_pair):
@@ -166,7 +166,7 @@ def test_invoke_action(consumed_exposed_pair):
 
         assert result == result_expected
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_on_event(consumed_exposed_pair):
@@ -210,7 +210,7 @@ def test_thing_property_get(consumed_exposed_pair):
 
         assert result_consumed == result_exposed
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_thing_property_set(consumed_exposed_pair):
@@ -233,7 +233,7 @@ def test_thing_property_set(consumed_exposed_pair):
 
         assert result_exposed == updated_value
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_thing_property_subscribe(consumed_exposed_pair):
@@ -267,7 +267,7 @@ def test_thing_property_getters(consumed_exposed_pair):
         assert thing_prop_con.observable == thing_prop_exp.observable
         assert thing_prop_con.type == thing_prop_exp.type
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_thing_action_run(consumed_exposed_pair):
@@ -286,7 +286,7 @@ def test_thing_action_run(consumed_exposed_pair):
 
         assert result == result_expected
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_thing_action_getters(consumed_exposed_pair):
@@ -308,7 +308,7 @@ def test_thing_action_getters(consumed_exposed_pair):
         assert thing_action_con.input.type == thing_action_exp.input.type
         assert thing_action_con.output.type == thing_action_exp.output.type
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_thing_event_subscribe(consumed_exposed_pair):
@@ -341,7 +341,7 @@ def test_thing_event_getters(consumed_exposed_pair):
         assert thing_event_con.description == thing_event_exp.description
         assert thing_event_con.data.type == thing_event_exp.data.type
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_thing_interaction_dict_behaviour(consumed_exposed_pair):

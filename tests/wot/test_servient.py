@@ -11,7 +11,7 @@ import tornado.ioloop
 import tornado.websocket
 from faker import Faker
 
-from tests.utils import find_free_port
+from tests.utils import find_free_port, run_test_coroutine
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.wot.constants import WOT_TD_CONTEXT_URL
 from wotpy.wot.consumed.thing import ConsumedThing
@@ -93,7 +93,7 @@ def test_servient_td_catalogue():
 
         yield servient.shutdown()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_servient_start_stop():
@@ -179,7 +179,7 @@ def test_servient_start_stop():
 
         yield servient.shutdown()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_duplicated_thing_names():

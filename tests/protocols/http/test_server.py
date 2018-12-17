@@ -15,7 +15,7 @@ from faker import Faker
 from six.moves.urllib import parse
 from tornado.concurrent import Future
 
-from tests.utils import find_free_port
+from tests.utils import find_free_port, run_test_coroutine
 from wotpy.protocols.enums import InteractionVerbs
 from wotpy.protocols.http.enums import HTTPSchemes
 from wotpy.protocols.http.server import HTTPServer
@@ -76,7 +76,7 @@ def test_property_get(http_server):
 
         assert json.loads(response.body).get("value") == prop_value
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def _test_property_set(server, body, prop_value, headers=None):
@@ -96,7 +96,7 @@ def _test_property_set(server, body, prop_value, headers=None):
         assert response.rethrow() is None
         assert value == prop_value
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_property_set_form_urlencoded(http_server):
@@ -148,7 +148,7 @@ def test_property_subscribe(http_server):
 
         assert json.loads(response.body).get("value") == prop_value
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 @tornado.gen.coroutine
@@ -212,7 +212,7 @@ def test_action_run_success(http_server):
         assert invocation.get("result") == expected_result
         assert invocation.get("error", None) is None
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_action_run_error(http_server):
@@ -236,7 +236,7 @@ def test_action_run_error(http_server):
         assert invocation.get("result", None) is None
         assert ex_message in invocation.get("error")
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_event_subscribe(http_server):
@@ -266,7 +266,7 @@ def test_event_subscribe(http_server):
 
         assert json.loads(response.body).get("payload") == payload
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_ssl_context(self_signed_ssl_context):
@@ -308,4 +308,4 @@ def test_ssl_context(self_signed_ssl_context):
 
         yield server.stop()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)

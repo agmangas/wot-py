@@ -17,6 +17,7 @@ from hbmqtt.client import MQTTClient
 from hbmqtt.mqtt.constants import QOS_2, QOS_0
 
 from tests.protocols.mqtt.broker import is_test_broker_online, BROKER_SKIP_REASON, get_test_broker_url
+from tests.utils import run_test_coroutine
 from wotpy.protocols.enums import InteractionVerbs
 from wotpy.protocols.mqtt.handlers.action import ActionMQTTHandler
 from wotpy.protocols.mqtt.handlers.ping import PingMQTTHandler
@@ -91,7 +92,7 @@ def test_start_stop():
 
         assert (yield ping())
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_property_read(mqtt_server):
@@ -132,7 +133,7 @@ def test_property_read(mqtt_server):
 
         assert json.loads(msg.data.decode()).get("value") == prop_value
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_property_write(mqtt_server):
@@ -175,7 +176,7 @@ def test_property_write(mqtt_server):
 
         periodic_write.stop()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 CALLBACK_MS = 50
@@ -270,7 +271,7 @@ def test_property_add_remove(mqtt_server):
         assert (yield is_prop_active(prop_02))
         assert not (yield is_prop_active(prop_03))
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_observe_property_changes(mqtt_server):
@@ -300,7 +301,7 @@ def test_observe_property_changes(mqtt_server):
 
         periodic_write.stop()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_observe_event(mqtt_server):
@@ -336,7 +337,7 @@ def test_observe_event(mqtt_server):
 
         periodic_emit.stop()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_action_invoke(mqtt_server):
@@ -370,7 +371,7 @@ def test_action_invoke(mqtt_server):
         assert msg_data.get("result") == "{:f}".format(data.get("input"))
         assert msg_data.get("timestamp") >= now_ms
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_action_invoke_error(mqtt_server):
@@ -414,7 +415,7 @@ def test_action_invoke_error(mqtt_server):
         assert msg_data.get("error") == err_message
         assert msg_data.get("result", None) is None
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_action_invoke_parallel(mqtt_server):
@@ -458,4 +459,4 @@ def test_action_invoke_parallel(mqtt_server):
             assert msg_data.get("result") == "{:f}".format(expected.get("input"))
             assert msg_data.get("timestamp") >= now_ms
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)

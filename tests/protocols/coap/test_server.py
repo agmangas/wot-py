@@ -12,7 +12,7 @@ import tornado.gen
 import tornado.ioloop
 from faker import Faker
 
-from tests.utils import find_free_port
+from tests.utils import find_free_port, run_test_coroutine
 from wotpy.protocols.coap.server import CoAPServer
 from wotpy.protocols.enums import InteractionVerbs
 from wotpy.wot.dictionaries.interaction import ActionFragmentDict
@@ -100,7 +100,7 @@ def test_start_stop():
 
         assert (yield ping())
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_property_read(coap_server):
@@ -121,7 +121,7 @@ def test_property_read(coap_server):
         assert response.code.is_successful()
         assert json.loads(response.payload).get("value") == prop_value
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_property_write(coap_server):
@@ -144,7 +144,7 @@ def test_property_write(coap_server):
         assert response.code.is_successful()
         assert (yield exposed_thing.properties[prop_name].read()) == value_new
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_property_subscription(coap_server):
@@ -184,7 +184,7 @@ def test_property_subscription(coap_server):
         request.observation.cancel()
         periodic_set.stop()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 @tornado.gen.coroutine
@@ -228,7 +228,7 @@ def test_action_invoke(coap_server):
         assert data.get("error", None) is None
         assert data.get("result") == input_value * 3
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 @pytest.mark.parametrize("coap_server", [{"action_clear_ms": 5}], indirect=True)
@@ -240,7 +240,7 @@ def test_action_clear_invocation(coap_server):
         response = yield _test_action_invoke(coap_server)
         assert not response.code.is_successful()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_action_invoke_parallel(coap_server):
@@ -343,7 +343,7 @@ def test_action_invoke_parallel(coap_server):
         observe_req_01.observation.cancel()
         observe_req_02.observation.cancel()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
 
 
 def test_event_subscription(coap_server):
@@ -393,4 +393,4 @@ def test_event_subscription(coap_server):
         request.observation.cancel()
         periodic_set.stop()
 
-    tornado.ioloop.IOLoop.current().run_sync(test_coroutine)
+    run_test_coroutine(test_coroutine)
