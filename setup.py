@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from os import path
+
 from setuptools import setup, find_packages
 
 from wotpy.__version__ import __version__
@@ -38,19 +40,27 @@ if is_dnssd_supported():
     install_requires.append('zeroconf>=0.21.3,<0.22.0')
     test_requires.append('aiozeroconf==0.1.8')
 
+this_dir = path.abspath(path.dirname(__file__))
+
+with open(path.join(this_dir, 'README.md'), encoding='utf-8') as fh:
+    long_description = fh.read()
+
 setup(
     name='wotpy',
     version=__version__,
     description='Python implementation of the W3C WoT Scripting API',
-    keywords='wot w3c ctic iot',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    keywords='wot iot gateway w3c',
     author='Andres Garcia Mangas',
     author_email='andres.garcia@fundacionctic.org',
     url='https://bitbucket.org/fundacionctic/wot-py',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Natural Language :: English',
-        'Operating System :: Unix',
+        'Operating System :: OS Independent',
+        'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7'
