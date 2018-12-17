@@ -48,7 +48,7 @@ with open(path.join(this_dir, 'README.md')) as fh:
 setup(
     name='wotpy',
     version=__version__,
-    description='Python implementation of the W3C WoT Scripting API',
+    description='Python implementation of a W3C WoT Runtime and the WoT Scripting API',
     long_description=long_description,
     long_description_content_type='text/markdown',
     keywords='wot iot gateway w3c',
