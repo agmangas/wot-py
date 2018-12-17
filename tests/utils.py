@@ -4,7 +4,16 @@
 import socket
 
 import six
+import tornado.ioloop
 from tornado.escape import to_unicode
+
+DEFAULT_TIMEOUT_SECS = 20
+
+
+def run_test_coroutine(coro, timeout=DEFAULT_TIMEOUT_SECS):
+    """Synchronously runs the given test coroutine with an optinally defined timeout."""
+
+    tornado.ioloop.IOLoop.current().run_sync(coro, timeout=timeout)
 
 
 def assert_equal_dict(dict_a, dict_b, compare_as_unicode=False):
