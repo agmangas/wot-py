@@ -70,7 +70,6 @@ class EventObserveResource(aiocoap.resource.ObservableResource):
         except aiocoap.error.Error:
             return
 
-        # noinspection PyUnusedLocal
         def on_next(item):
             event_item = {
                 "name": item.name,
@@ -88,7 +87,6 @@ class EventObserveResource(aiocoap.resource.ObservableResource):
 
         server_observation.accept(cancellation_cb)
 
-    # noinspection PyUnusedLocal
     @tornado.gen.coroutine
     def render_get(self, request):
         """Returns a CoAP response with the last observed event emission."""
