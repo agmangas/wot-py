@@ -5,6 +5,8 @@
 Classes that represent events that are emitted by Things.
 """
 
+import pprint
+
 from wotpy.wot.enums import DefaultThingEvent, TDChangeType, TDChangeMethod
 
 
@@ -15,6 +17,14 @@ class EmittedEvent(object):
     def __init__(self, init, name):
         self.init = init
         self.name = name
+
+    def __str__(self):
+        try:
+            init = pprint.pformat(vars(self.init))
+        except TypeError:
+            init = self.init
+
+        return "<{}> {} {}".format(self.__class__.__name__, self.name, init)
 
     @property
     def data(self):

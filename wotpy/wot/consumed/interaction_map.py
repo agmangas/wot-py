@@ -105,6 +105,9 @@ class ConsumedThingProperty(object):
         self._consumed_thing = consumed_thing
         self._name = name
 
+    def __str__(self):
+        return "<{}> ({}::{})".format(self.__class__.__name__, self._consumed_thing.id, self._name)
+
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
         the private init dict before propagating the exception."""
@@ -142,6 +145,9 @@ class ConsumedThingAction(object):
         self._consumed_thing = consumed_thing
         self._name = name
 
+    def __str__(self):
+        return "<{}> ({}::{})".format(self.__class__.__name__, self._consumed_thing.id, self._name)
+
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
         the private init dict before propagating the exception."""
@@ -163,6 +169,9 @@ class ConsumedThingEvent(object):
     def __init__(self, consumed_thing, name):
         self._consumed_thing = consumed_thing
         self._name = name
+
+    def __str__(self):
+        return "<{}> ({}::{})".format(self.__class__.__name__, self._consumed_thing.id, self._name)
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
