@@ -19,6 +19,7 @@ from wotpy.protocols.enums import Protocols
 from wotpy.protocols.http.client import HTTPClient
 from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.support import is_coap_supported, is_mqtt_supported, is_dnssd_supported
+from wotpy.utils.utils import get_main_ipv4_address
 from wotpy.wot.enums import InteractionTypes
 from wotpy.wot.exposed.thing_set import ExposedThingSet
 from wotpy.wot.td import ThingDescription
@@ -92,6 +93,16 @@ def _stopped_servient_only(func):
     return wrapper
 
 
+def _get_hostname_fallback():
+    """Tries to guess the hostname of the current host that should be used on TD Forms.
+    Two strategies are used for this: first, the socket.getfqdn() method, if the returned
+    value is not a FQDN then we try to get the IPv4 address of the main network interface."""
+
+    fqdn = socket.getfqdn()
+
+    return fqdn if "." in fqdn else get_main_ipv4_address()
+
+
 class Servient(object):
     """An entity that is both a WoT client and server at the same time.
     WoT servers are Web servers that possess capabilities to access underlying
@@ -102,7 +113,7 @@ class Servient(object):
     or servers using the capabilities of a Web client such as Web browser."""
 
     def __init__(self, hostname=None, catalogue_port=9090, dnssd_enabled=False, dnssd_instance_name=None):
-        self._hostname = hostname or socket.getfqdn()
+        self._hostname = hostname if hostname is not None else _get_hostname_fallback()
 
         if not isinstance(self._hostname, six.string_types):
             raise ValueError("Invalid hostname")
