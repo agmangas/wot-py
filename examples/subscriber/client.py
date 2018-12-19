@@ -11,6 +11,7 @@ import asyncio
 import logging
 
 from wotpy.wot.servient import Servient
+from wotpy.wot.wot import WoT
 
 logging.basicConfig()
 LOGGER = logging.getLogger()
@@ -20,7 +21,7 @@ LOGGER.setLevel(logging.INFO)
 async def main(td_url, sleep_time):
     """Subscribes to all events and properties on the remote Thing."""
 
-    wot = await Servient().start()
+    wot = WoT(servient=Servient())
     consumed_thing = await wot.consume_from_url(td_url)
 
     LOGGER.info("ConsumedThing: {}".format(consumed_thing))
