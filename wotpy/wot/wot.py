@@ -36,6 +36,7 @@ class WoT(object):
 
     def __init__(self, servient):
         self._servient = servient
+        self._logr = logging.getLogger(__name__)
 
     @classmethod
     def _is_fragment_match(cls, item, thing_filter):
@@ -114,7 +115,7 @@ class WoT(object):
                     try:
                         catalogue_resp = yield wait_iter.next()
                     except Exception as ex:
-                        logging.warning(ex)
+                        self._logr.warning("Exception on HTTP request to TD catalogue: {}".format(ex))
                     else:
                         catalogue = json.loads(catalogue_resp.body)
 

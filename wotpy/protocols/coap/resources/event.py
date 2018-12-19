@@ -6,6 +6,7 @@ CoAP resources to deal with Event interactions.
 """
 
 import json
+import logging
 import time
 
 import aiocoap
@@ -50,6 +51,7 @@ class EventObserveResource(aiocoap.resource.ObservableResource):
         self._server = server
         self._subscription = None
         self._last_events = {}
+        self._logr = logging.getLogger(__name__)
 
     @classmethod
     def _event_key(cls, thing_event):
@@ -80,7 +82,10 @@ class EventObserveResource(aiocoap.resource.ObservableResource):
             self._last_events[self._event_key(thing_event)] = event_item
             server_observation.trigger()
 
-        subscription = thing_event.subscribe(on_next)
+        def on_error(err):
+            self._logr.warning("Error on subscription to {}: {}".format(thing_event, err))
+
+        subscription = thing_event.subscribe(on_next=on_next, on_error=on_error)
 
         def cancellation_cb():
             subscription.dispose()

@@ -6,6 +6,8 @@ Class that subscribes to all the Interactions of one kind for
 all the ExposedThings contained by a Protocol Binding server.
 """
 
+import logging
+
 import six
 
 from wotpy.wot.enums import InteractionTypes
@@ -21,6 +23,7 @@ class InteractionsSubscriber(object):
         self._server = server
         self._on_next_builder = on_next_builder
         self._subs = {}
+        self._logr = logging.getLogger(__name__)
 
     def _dispose_exposed_thing_subs(self, exp_thing):
         """Disposes of all currently active subscriptions for the given ExposedThing."""
@@ -76,7 +79,14 @@ class InteractionsSubscriber(object):
 
         for intrc in intrc_new:
             on_next = self._on_next_builder(exp_thing, intrc)
-            thing_subs[intrc] = exp_thing.__getattribute__(attr)[intrc.name].subscribe(on_next)
+            exp_thing_intrc = exp_thing.__getattribute__(attr)[intrc.name]
+
+            def on_error(err):
+                self._logr.warning("Error on subscription to {}: {}".format(exp_thing_intrc, err))
+                thing_subs[intrc].dispose()
+                thing_subs.pop(intrc)
+
+            thing_subs[intrc] = exp_thing_intrc.subscribe(on_next=on_next, on_error=on_error)
 
     def dispose(self):
         """Disposes of all the currently active subscriptions."""

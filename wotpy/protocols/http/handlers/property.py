@@ -5,6 +5,8 @@
 Request handler for Property interactions.
 """
 
+import logging
+
 import tornado.gen
 from tornado.concurrent import Future
 from tornado.web import RequestHandler
@@ -44,6 +46,7 @@ class PropertyObserverHandler(RequestHandler):
     # noinspection PyMethodOverriding
     def initialize(self, http_server):
         self._server = http_server
+        self._logr = logging.getLogger(__name__)
 
     @tornado.gen.coroutine
     def get(self, thing_name, name):
@@ -51,14 +54,18 @@ class PropertyObserverHandler(RequestHandler):
         Returns the updated value and destroys the subscription."""
 
         exposed_thing = handler_utils.get_exposed_thing(self._server, thing_name)
+        thing_property = exposed_thing.properties[name]
 
         future_next = Future()
 
         def on_next(item):
-            if not future_next.done():
-                future_next.set_result(item.data.value)
+            not future_next.done() and future_next.set_result(item.data.value)
 
-        self.subscription = exposed_thing.properties[name].subscribe(on_next)
+        def on_error(err):
+            self._logr.warning("Error on subscription to {}: {}".format(thing_property, err))
+            not future_next.done() and future_next.set_exception(err)
+
+        self.subscription = thing_property.subscribe(on_next=on_next, on_error=on_error)
         updated_value = yield future_next
         self.write({"value": updated_value})
 

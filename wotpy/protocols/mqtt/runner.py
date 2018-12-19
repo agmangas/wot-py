@@ -35,6 +35,7 @@ class MQTTHandlerRunner(object):
         self._lock_conn = tornado.locks.Lock()
         self._lock_run = tornado.locks.Lock()
         self._event_stop_request = tornado.locks.Event()
+        self._logr = logging.getLogger(__name__)
 
     @tornado.gen.coroutine
     def connect(self):
@@ -119,7 +120,7 @@ class MQTTHandlerRunner(object):
             yield self.handle_delivered_message()
             yield self.publish_queued_messages()
         except Exception as ex:
-            logging.warning("MQTT handler error ({}): {}\n{}".format(
+            self._logr.warning("MQTT handler error ({}): {}\n{}".format(
                 self._mqtt_handler.__class__, ex, traceback.format_exc()))
 
     def _add_loop_callback(self):
@@ -134,7 +135,7 @@ class MQTTHandlerRunner(object):
                     while not self._event_stop_request.is_set():
                         yield self.handler_loop_iter()
             except tornado.util.TimeoutError:
-                logging.warning("Attempted to start an MQTT handler loop when another was already running")
+                self._logr.warning("Attempted to start an MQTT handler loop when another was already running")
 
         tornado.ioloop.IOLoop.current().spawn_callback(run_loop)
 

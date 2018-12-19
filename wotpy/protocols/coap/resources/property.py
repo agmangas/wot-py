@@ -6,6 +6,7 @@ CoAP resources to deal with Property interactions.
 """
 
 import json
+import logging
 
 import aiocoap
 import aiocoap.error
@@ -60,7 +61,6 @@ class PropertyReadWriteResource(aiocoap.resource.Resource):
         super(PropertyReadWriteResource, self).__init__()
         self._server = server
 
-    # noinspection PyUnusedLocal
     @tornado.gen.coroutine
     def render_get(self, request):
         """Returns a CoAP response with the current property value."""
@@ -92,6 +92,7 @@ class PropertyObservableResource(aiocoap.resource.ObservableResource):
         super(PropertyObservableResource, self).__init__()
         self._server = server
         self._subscription = None
+        self._logr = logging.getLogger(__name__)
 
     @tornado.gen.coroutine
     def add_observation(self, request, server_observation):
@@ -110,7 +111,10 @@ class PropertyObservableResource(aiocoap.resource.ObservableResource):
         def on_next(item):
             server_observation.trigger()
 
-        subscription = thing_property.subscribe(on_next)
+        def on_error(err):
+            self._logr.warning("Error on subscription to {}: {}".format(thing_property, err))
+
+        subscription = thing_property.subscribe(on_next=on_next, on_error=on_error)
 
         def cancellation_cb():
             subscription.dispose()

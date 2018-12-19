@@ -60,7 +60,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
         the url responsible for initiating this request"""
 
         # ToDo: Check this once we add authentication
-        # This is extretemely dangerous in case of a cookie-based authentication system.
+        # This is extremely dangerous in case of a cookie-based authentication system.
         # WS authentication should be handled independently with some kind of token-based system.
 
         return True
