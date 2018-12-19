@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+WoT application to expose a Thing that provides current host CPU usage levels.
+"""
 
 import asyncio
 import json

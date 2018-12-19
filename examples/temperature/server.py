@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-A simple Temperature Thing that serves as an
-example for how to use the WotPy servient.
+WoT application to expose a Thing that provides simulated temperature values.
 """
 
 import json
@@ -13,7 +12,6 @@ import random
 import tornado.gen
 from tornado.ioloop import IOLoop, PeriodicCallback
 
-from wotpy.protocols.coap.server import CoAPServer
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.wot.servient import Servient
@@ -21,14 +19,13 @@ from wotpy.wot.servient import Servient
 CATALOGUE_PORT = 9090
 WEBSOCKET_PORT = 9393
 HTTP_PORT = 9494
-COAP_PORT = 9595
 
 GLOBAL_TEMPERATURE = None
 PERIODIC_MS = 3000
 DEFAULT_TEMP_THRESHOLD = 27.0
 
 logging.basicConfig()
-LOGGER = logging.getLogger("temperature-server")
+LOGGER = logging.getLogger()
 LOGGER.setLevel(logging.INFO)
 
 ID_THING = "urn:temperaturething"
@@ -101,16 +98,11 @@ def main():
 
     http_server = HTTPServer(port=HTTP_PORT)
 
-    LOGGER.info("Creating CoAP server on: {}".format(COAP_PORT))
-
-    coap_server = CoAPServer(port=COAP_PORT)
-
     LOGGER.info("Creating servient with TD catalogue on: {}".format(CATALOGUE_PORT))
 
     servient = Servient(catalogue_port=CATALOGUE_PORT)
     servient.add_server(ws_server)
     servient.add_server(http_server)
-    servient.add_server(coap_server)
 
     LOGGER.info("Starting servient")
 
