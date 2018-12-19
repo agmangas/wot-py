@@ -230,8 +230,8 @@ def test_discovery_method_multicast_dnssd():
         wot_01 = yield servient_01.start()
         wot_02 = yield servient_02.start()
 
-        wot_01.produce(ThingFragment(TD_DICT_01))
-        wot_01.produce(ThingFragment(TD_DICT_02))
+        wot_01.produce(ThingFragment(TD_DICT_01)).expose()
+        wot_01.produce(ThingFragment(TD_DICT_02)).expose()
 
         thing_filter = ThingFilterDict(method=DiscoveryMethod.MULTICAST)
 

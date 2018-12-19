@@ -56,7 +56,7 @@ class TDCatalogueHandler(tornado.web.RequestHandler):
     def get(self):
         response = {}
 
-        for exp_thing in self.servient.exposed_thing_set.exposed_things:
+        for exp_thing in self.servient.enabled_exposed_things:
             thing_id = exp_thing.thing.id
 
             if self.get_argument("expanded", False):
@@ -128,6 +128,7 @@ class Servient(object):
         self._dnssd_enabled = dnssd_enabled if dnssd_enabled and is_dnssd_supported() else False
         self._dnssd_instance_name = dnssd_instance_name
         self._dnssd = None
+        self._enabled_exposed_thing_ids = set()
 
         self._build_default_clients()
 
@@ -205,9 +206,17 @@ class Servient(object):
 
     @property
     def exposed_things(self):
-        """Returns an iterator for the ExposedThings contained in this Sevient."""
+        """Returns an iterator for the ExposedThings contained in this Servient."""
 
         return self.exposed_thing_set.exposed_things
+
+    @property
+    def enabled_exposed_things(self):
+        """Returns an iterator for the enabled ExposedThings contained in this Servient."""
+
+        for exposed_thing in self.exposed_things:
+            if exposed_thing.id in self._enabled_exposed_thing_ids:
+                yield exposed_thing
 
     @property
     def servers(self):
@@ -435,27 +444,35 @@ class Servient(object):
             server.add_exposed_thing(exposed_thing)
             self._regenerate_server_forms(server)
 
+        self._enabled_exposed_thing_ids.add(exposed_thing.id)
+
     def disable_exposed_thing(self, thing_id):
         """Disables the ExposedThing with the given ID.
         This is, the servers will not listen for requests for this thing."""
 
         exposed_thing = self.get_exposed_thing(thing_id)
 
+        if exposed_thing.id not in self._enabled_exposed_thing_ids:
+            raise ValueError("ExposedThing {} is already disabled".format(thing_id))
+
         for server in self._servers.values():
-            server.remove_exposed_thing(exposed_thing.thing.id)
+            server.remove_exposed_thing(exposed_thing.id)
             self._regenerate_server_forms(server)
 
+        self._enabled_exposed_thing_ids.remove(exposed_thing.id)
+
     def add_exposed_thing(self, exposed_thing):
-        """Adds a ExposedThing to this servient.
+        """Adds an ExposedThing to this Servient.
         ExposedThings are disabled by default."""
 
         self._exposed_thing_set.add(exposed_thing)
 
     def remove_exposed_thing(self, thing_id):
-        """Adds a ExposedThing to this servient.
-        ExposedThings are disabled by default."""
+        """Disables and removes an ExposedThing from this Servient."""
 
-        self.disable_exposed_thing(thing_id)
+        if thing_id in self._enabled_exposed_thing_ids:
+            self.disable_exposed_thing(thing_id)
+
         self._exposed_thing_set.remove(thing_id)
 
     def get_exposed_thing(self, thing_id):
@@ -465,7 +482,7 @@ class Servient(object):
         exp_thing = self._exposed_thing_set.find_by_thing_id(thing_id)
 
         if exp_thing is None:
-            raise ValueError("Unknown Exposed Thing: {}".format(thing_id))
+            raise ValueError("Unknown ExposedThing: {}".format(thing_id))
 
         return exp_thing
 
