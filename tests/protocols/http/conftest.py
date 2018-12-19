@@ -77,7 +77,7 @@ def http_servient():
     http_port = find_free_port()
     http_server = HTTPServer(port=http_port)
 
-    servient = Servient()
+    servient = Servient(catalogue_port=None)
     servient.add_server(http_server)
 
     @tornado.gen.coroutine

@@ -360,7 +360,7 @@ def test_consumed_client_protocols_preference():
     """The Servient selects different protocol clients to consume Things
     depending on the protocol choices displayed on the Thing Description."""
 
-    servient = Servient()
+    servient = Servient(catalogue_port=None)
 
     @tornado.gen.coroutine
     def servient_start():

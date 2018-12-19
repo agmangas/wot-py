@@ -82,7 +82,7 @@ def mqtt_servient():
 
     server = MQTTServer(broker_url=get_test_broker_url())
 
-    servient = Servient()
+    servient = Servient(catalogue_port=None)
     servient.add_server(server)
 
     @tornado.gen.coroutine

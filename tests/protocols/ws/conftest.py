@@ -150,7 +150,7 @@ def websocket_servient():
     ws_port = find_free_port()
     ws_server = WebsocketServer(port=ws_port)
 
-    servient = Servient()
+    servient = Servient(catalogue_port=None)
     servient.add_server(ws_server)
 
     @tornado.gen.coroutine

@@ -88,7 +88,7 @@ def coap_servient():
     coap_port = find_free_port()
     the_coap_server = CoAPServer(port=coap_port)
 
-    servient = Servient()
+    servient = Servient(catalogue_port=None)
     servient.add_server(the_coap_server)
 
     @tornado.gen.coroutine

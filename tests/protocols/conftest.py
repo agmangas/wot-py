@@ -24,7 +24,7 @@ from wotpy.wot.td import ThingDescription
 def all_protocols_servient():
     """Returns a Servient configured to use all available protocol bindings."""
 
-    servient = Servient()
+    servient = Servient(catalogue_port=None)
 
     http_port = find_free_port()
     http_server = HTTPServer(port=http_port)
