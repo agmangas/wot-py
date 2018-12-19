@@ -12,11 +12,14 @@ Inspired by the exploratory implementations located in the [thingweb GitHub page
 * Fully-implemented `WoT` interface.
 * Multicast discovery based on mDNS.
 * Asynchronous I/O programming model based on coroutines.
-* Multiple client and server [Protocol Binding](https://github.com/w3c/wot-architecture/blob/master/terminology.md#protocol-binding) implementations.
+* Multiple client and server [Protocol Binding](https://github.com/w3c/wot-architecture/blob/master/terminology.md#protocol-binding) implementations. 
 
-> WoTPy uses the [Tornado Framework](https://www.tornadoweb.org) to enable coroutines in Python 2.7. Python 3 applications may use the built-in package `asyncio`.
+WoTPy is based on the [Tornado Framework](https://www.tornadoweb.org). Users therefore have two different APIs to write code based on coroutines: 
 
-### Feature matrix
+* Users on **Python 3** may use the native [asyncio](https://docs.python.org/3/library/asyncio.html) module. This is, in fact, the recommended approach. It should be noted that Tornado on Python 3 acts basically [as a wrapper](https://www.tornadoweb.org/en/stable/asyncio.html) around `asyncio`.
+* Users on **Python 2.7** are restricted to writing [Tornado coroutines](https://www.tornadoweb.org/en/stable/guide/coroutines.html) (`asyncio` is not available on Python 2.7).
+
+### Feature support matrix
 
 | Feature            | Python 2.7               | Python 3           | Implementation based on                                                 |
 |-------------------:|--------------------------|--------------------|-------------------------------------------------------------------------|
@@ -30,7 +33,7 @@ Inspired by the exploratory implementations located in the [thingweb GitHub page
 
 * Subscription to Thing Description changes.
 
-## Development
+## Installation
 
 Install in development mode:
 
@@ -38,13 +41,13 @@ Install in development mode:
 pip install -U -e .[tests]
 ```
 
-To run the tests in both Python 2 and Python 3 environments:
+Run the tests in all supported environments:
 
 ```
-tox
+WOTPY_TESTS_MQTT_BROKER_URL=mqtt://broker-url tox
 ```
 
-### Building the docs
+## Docs
 
 Move to the `docs` folder and run:
 
@@ -52,4 +55,4 @@ Move to the `docs` folder and run:
 make html
 ```
 
-> Docs should be built on a platform that supports all features to avoid import issues with `_autosummary`.
+If you attempt to build the docs on a non-Linux platform or with Python 2.7 `_autosummary` will complain about being unable to import the unsupported modules (e.g. MQTT on Python 2.7). In this case the docs will be missing the sections regarding unsupported features.
