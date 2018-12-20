@@ -17,81 +17,90 @@ from wotpy.wot.constants import WOT_TD_CONTEXT_URL
 from wotpy.wot.consumed.thing import ConsumedThing
 from wotpy.wot.servient import Servient
 from wotpy.wot.td import ThingDescription
+from wotpy.wot.wot import WoT
 
-
-def test_servient_td_catalogue():
-    """The servient provides a Thing Description catalogue HTTP endpoint."""
-
-    catalogue_port = find_free_port()
-
-    servient = Servient()
-    servient.catalogue_port = catalogue_port
-
-    @tornado.gen.coroutine
-    def start():
-        raise tornado.gen.Return((yield servient.start()))
-
-    wot = tornado.ioloop.IOLoop.current().run_sync(start)
-
-    td_doc_01 = {
-        "id": uuid.uuid4().urn,
-        "name": Faker().sentence(),
-        "properties": {
-            "status": {
-                "description": "Shows the current status of the lamp",
-                "type": "string",
-                "forms": [{
-                    "href": "coaps://mylamp.example.com:5683/status"
-                }]
-            }
+TD_DICT_01 = {
+    "id": uuid.uuid4().urn,
+    "name": Faker().sentence(),
+    "properties": {
+        "status": {
+            "description": "Shows the current status of the lamp",
+            "type": "string",
+            "forms": [{
+                "href": "coaps://mylamp.example.com:5683/status"
+            }]
         }
     }
+}
 
-    td_doc_02 = {
-        "id": uuid.uuid4().urn,
-        "name": Faker().sentence()
-    }
+TD_DICT_02 = {
+    "id": uuid.uuid4().urn,
+    "name": Faker().sentence()
+}
 
-    td_01_str = json.dumps(td_doc_01)
-    td_02_str = json.dumps(td_doc_02)
 
-    exposed_thing_01 = wot.produce(td_01_str)
-    exposed_thing_02 = wot.produce(td_02_str)
+@tornado.gen.coroutine
+def fetch_catalogue(servient, expanded=False):
+    """Returns the TD catalogue exposed by the given Servient."""
 
-    exposed_thing_01.expose()
-    exposed_thing_02.expose()
+    http_client = tornado.httpclient.AsyncHTTPClient()
+    expanded = "?expanded=true" if expanded else ""
+    catalogue_url = "http://localhost:{}/{}".format(servient.catalogue_port, expanded)
+    catalogue_url_res = yield http_client.fetch(catalogue_url)
+    response = json.loads(catalogue_url_res.body)
+
+    raise tornado.gen.Return(response)
+
+
+@tornado.gen.coroutine
+def fetch_catalogue_td(servient, thing_id):
+    """Returns the TD of the given Thing recovered from the Servient TD catalogue."""
+
+    urls_map = yield fetch_catalogue(servient)
+    thing_path = urls_map[thing_id].lstrip("/")
+    thing_url = "http://localhost:{}/{}".format(servient.catalogue_port, thing_path)
+    http_client = tornado.httpclient.AsyncHTTPClient()
+    thing_url_res = yield http_client.fetch(thing_url)
+    response = json.loads(thing_url_res.body)
+
+    raise tornado.gen.Return(response)
+
+
+def test_servient_td_catalogue(servient):
+    """The servient provides a Thing Description catalogue HTTP endpoint."""
 
     @tornado.gen.coroutine
     def test_coroutine():
-        http_client = tornado.httpclient.AsyncHTTPClient()
+        wot = WoT(servient=servient)
 
-        catalogue_url = "http://localhost:{}/".format(catalogue_port)
-        catalogue_url_res = yield http_client.fetch(catalogue_url)
-        urls_map = json.loads(catalogue_url_res.body)
+        td_01_str = json.dumps(TD_DICT_01)
+        td_02_str = json.dumps(TD_DICT_02)
 
-        assert len(urls_map) == 2
-        assert exposed_thing_01.thing.url_name in urls_map.get(td_doc_01["id"])
-        assert exposed_thing_02.thing.url_name in urls_map.get(td_doc_02["id"])
+        exposed_thing_01 = wot.produce(td_01_str)
+        exposed_thing_02 = wot.produce(td_02_str)
 
-        thing_01_url = "http://localhost:{}{}".format(catalogue_port, urls_map[td_doc_01["id"]])
-        thing_01_url_res = yield http_client.fetch(thing_01_url)
-        td_doc_01_recovered = json.loads(thing_01_url_res.body)
+        exposed_thing_01.expose()
+        exposed_thing_02.expose()
 
-        assert td_doc_01_recovered["id"] == td_doc_01["id"]
-        assert td_doc_01_recovered["name"] == td_doc_01["name"]
+        catalogue = yield fetch_catalogue(servient)
 
-        catalogue_expanded_url = "http://localhost:{}/?expanded=true".format(catalogue_port)
-        cataligue_expanded_url_res = yield http_client.fetch(catalogue_expanded_url)
-        expanded_map = json.loads(cataligue_expanded_url_res.body)
+        assert len(catalogue) == 2
+        assert exposed_thing_01.thing.url_name in catalogue.get(TD_DICT_01["id"])
+        assert exposed_thing_02.thing.url_name in catalogue.get(TD_DICT_02["id"])
 
-        num_props = len(td_doc_01.get("properties", {}).keys())
+        td_01_catalogue = yield fetch_catalogue_td(servient, TD_DICT_01["id"])
 
-        assert len(expanded_map) == 2
-        assert td_doc_01["id"] in expanded_map
-        assert td_doc_02["id"] in expanded_map
-        assert len(expanded_map[td_doc_01["id"]]["properties"]) == num_props
+        assert td_01_catalogue["id"] == TD_DICT_01["id"]
+        assert td_01_catalogue["name"] == TD_DICT_01["name"]
 
-        yield servient.shutdown()
+        catalogue_expanded = yield fetch_catalogue(servient, expanded=True)
+
+        num_props = len(TD_DICT_01.get("properties", {}).keys())
+
+        assert len(catalogue_expanded) == 2
+        assert TD_DICT_01["id"] in catalogue_expanded
+        assert TD_DICT_02["id"] in catalogue_expanded
+        assert len(catalogue_expanded[TD_DICT_01["id"]]["properties"]) == num_props
 
     run_test_coroutine(test_coroutine)
 
@@ -182,7 +191,8 @@ def test_servient_start_stop():
     run_test_coroutine(test_coroutine)
 
 
-def test_duplicated_thing_names():
+@pytest.mark.parametrize("servient", [{"catalogue_enabled": False}], indirect=True)
+def test_duplicated_thing_names(servient):
     """A Servient rejects Things with duplicated IDs."""
 
     description_01 = {
@@ -207,14 +217,7 @@ def test_duplicated_thing_names():
     description_02_str = json.dumps(description_02)
     description_03_str = json.dumps(description_03)
 
-    servient = Servient()
-    servient.disable_td_catalogue()
-
-    @tornado.gen.coroutine
-    def start():
-        raise tornado.gen.Return((yield servient.start()))
-
-    wot = tornado.ioloop.IOLoop.current().run_sync(start)
+    wot = WoT(servient=servient)
 
     wot.produce(description_01_str)
     wot.produce(description_02_str)
@@ -222,8 +225,23 @@ def test_duplicated_thing_names():
     with pytest.raises(ValueError):
         wot.produce(description_03_str)
 
-    @tornado.gen.coroutine
-    def shutdown():
-        yield servient.shutdown()
 
-    tornado.ioloop.IOLoop.current().run_sync(shutdown)
+def test_catalogue_disabled_things(servient):
+    """ExposedThings that have been disabled do not appear on the Servient TD catalogue."""
+
+    @tornado.gen.coroutine
+    def test_coroutine():
+        wot = WoT(servient=servient)
+
+        td_01_str = json.dumps(TD_DICT_01)
+        td_02_str = json.dumps(TD_DICT_02)
+
+        wot.produce(td_01_str).expose()
+        wot.produce(td_02_str)
+
+        catalogue = yield fetch_catalogue(servient)
+
+        assert len(catalogue) == 1
+        assert TD_DICT_01["id"] in catalogue
+
+    run_test_coroutine(test_coroutine)

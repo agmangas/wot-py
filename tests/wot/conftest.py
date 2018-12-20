@@ -11,13 +11,14 @@ from faker import Faker
 from mock import MagicMock
 
 from tests.td_examples import TD_EXAMPLE
+from tests.utils import find_free_port
 from wotpy.protocols.client import BaseProtocolClient
-from wotpy.wot.td import ThingDescription
-from wotpy.wot.thing import Thing
 from wotpy.wot.consumed.thing import ConsumedThing
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
+from wotpy.wot.td import ThingDescription
+from wotpy.wot.thing import Thing
 
 
 def _build_property_fragment():
@@ -171,3 +172,26 @@ def consumed_exposed_pair():
         "consumed_thing": ConsumedThing(servient=servient, td=td),
         "exposed_thing": exp_thing
     }
+
+
+@pytest.fixture(params=[{"catalogue_enabled": True}])
+def servient(request):
+    """Returns an empty WoT Servient."""
+
+    catalogue_port = find_free_port() if request.param.get('catalogue_enabled') else None
+
+    servient = Servient(catalogue_port=catalogue_port)
+
+    @tornado.gen.coroutine
+    def start():
+        yield servient.start()
+
+    tornado.ioloop.IOLoop.current().run_sync(start)
+
+    yield servient
+
+    @tornado.gen.coroutine
+    def shutdown():
+        yield servient.shutdown()
+
+    tornado.ioloop.IOLoop.current().run_sync(shutdown)
