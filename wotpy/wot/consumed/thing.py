@@ -22,6 +22,9 @@ class ConsumedThing(object):
         self._servient = servient
         self._td = td
 
+    def __str__(self):
+        return "<{}> {}".format(self.__class__.__name__, self.td.id)
+
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
         the private ThingFragment instance before propagating the exception."""

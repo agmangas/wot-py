@@ -71,6 +71,9 @@ class ExposedThing(object):
 
         self._events_stream = Subject()
 
+    def __str__(self):
+        return "<{}> {}".format(self.__class__.__name__, self.id)
+
     def __eq__(self, other):
         return self.servient == other.servient and self.thing == other.thing
 
