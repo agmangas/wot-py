@@ -14,11 +14,6 @@ Inspired by the exploratory implementations located in the [thingweb GitHub page
 * Asynchronous I/O programming model based on coroutines.
 * Multiple client and server [Protocol Binding](https://github.com/w3c/wot-architecture/blob/master/terminology.md#protocol-binding) implementations. 
 
-WoTPy is based on the [Tornado Framework](https://www.tornadoweb.org). Users therefore have two different APIs to write code based on coroutines: 
-
-* Users on **Python 3** may use the native [asyncio](https://docs.python.org/3/library/asyncio.html) module. This is, in fact, the recommended approach. It should be noted that Tornado on Python 3 acts basically [as a wrapper](https://www.tornadoweb.org/en/stable/asyncio.html) around `asyncio`.
-* Users on **Python 2.7** are restricted to writing [Tornado coroutines](https://www.tornadoweb.org/en/stable/guide/coroutines.html) (`asyncio` is not available on Python 2.7).
-
 ### Feature support matrix
 
 | Feature            | Python 2.7               | Python 3           | Implementation based on                                                 |
@@ -29,9 +24,18 @@ WoTPy is based on the [Tornado Framework](https://www.tornadoweb.org). Users the
 | MQTT binding       | :heavy_multiplication_x: | :heavy_check_mark: | [beerfactory/hbmqtt](https://github.com/beerfactory/hbmqtt)             |
 | mDNS discovery     | :heavy_multiplication_x: | :heavy_check_mark: | [jstasiak/python-zeroconf](https://github.com/jstasiak/python-zeroconf) |
 
+## Couroutine APIs
+
+WoTPy is based on the [Tornado Framework](https://www.tornadoweb.org). Users therefore have two different API options to write code based on coroutines: 
+
+* Users on **Python 3** may use the native [asyncio](https://docs.python.org/3/library/asyncio.html) module. This is, in fact, the recommended approach. It should be noted that Tornado on Python 3 acts basically [as a wrapper](https://www.tornadoweb.org/en/stable/asyncio.html) around `asyncio`.
+* Users on **Python 2.7** are restricted to writing [Tornado coroutines](https://www.tornadoweb.org/en/stable/guide/coroutines.html) (`asyncio` is not available on Python 2.7).
+
 ## ToDo
 
 * Subscription to Thing Description changes.
+* Validation of data schemas.
+* Allow Action handlers to return Observables.
 
 ## Installation
 
