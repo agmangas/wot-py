@@ -130,7 +130,7 @@ class MQTTServer(BaseProtocolServer):
     def build_base_url(self, hostname, thing):
         """Returns the base URL for the given Thing in the context of this server."""
 
-        raise NotImplementedError
+        return self._broker_url
 
     @tornado.gen.coroutine
     def start(self):
