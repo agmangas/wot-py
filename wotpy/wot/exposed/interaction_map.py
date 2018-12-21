@@ -154,10 +154,11 @@ class ExposedThingAction(object):
         return getattr(self._exposed_thing.thing.actions[self._name], name)
 
     @tornado.gen.coroutine
-    def invoke(self, input_value):
+    def invoke(self, *args):
         """The run() method when invoked, starts the Action interaction
         with the input value provided by the inputValue argument."""
 
+        input_value = args[0] if len(args) else None
         result = yield self._exposed_thing.invoke_action(self._name, input_value)
         raise tornado.gen.Return(result)
 
