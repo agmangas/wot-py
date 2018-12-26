@@ -112,14 +112,18 @@ class Servient(object):
     send requests and interact with IoT devices exposed by other WoT servients
     or servers using the capabilities of a Web client such as Web browser."""
 
-    def __init__(self, hostname=None, catalogue_port=9090, dnssd_enabled=False, dnssd_instance_name=None):
+    def __init__(self, hostname=None, catalogue_port=9090, clients=None,
+                 dnssd_enabled=False, dnssd_instance_name=None):
         self._hostname = hostname if hostname is not None else _get_hostname_fallback()
 
         if not isinstance(self._hostname, six.string_types):
             raise ValueError("Invalid hostname")
 
+        if isinstance(clients, list):
+            clients = {item.protocol: item for item in clients}
+
         self._servers = {}
-        self._clients = {}
+        self._clients = clients if clients else {}
         self._catalogue_port = catalogue_port
         self._catalogue_server = None
         self._exposed_thing_set = ExposedThingSet()
@@ -130,7 +134,8 @@ class Servient(object):
         self._dnssd = None
         self._enabled_exposed_thing_ids = set()
 
-        self._build_default_clients()
+        if not len(self._clients):
+            self._build_default_clients()
 
     @staticmethod
     def _default_select_client(clients, td, name):

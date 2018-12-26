@@ -5,6 +5,7 @@ import json
 import uuid
 
 import pytest
+import six
 import tornado.gen
 import tornado.httpclient
 import tornado.ioloop
@@ -12,6 +13,7 @@ import tornado.websocket
 from faker import Faker
 
 from tests.utils import find_free_port, run_test_coroutine
+from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.wot.constants import WOT_TD_CONTEXT_URL
 from wotpy.wot.consumed.thing import ConsumedThing
@@ -245,3 +247,16 @@ def test_catalogue_disabled_things(servient):
         assert TD_DICT_01["id"] in catalogue
 
     run_test_coroutine(test_coroutine)
+
+
+def test_servient_clients_subset():
+    """Although all clients are enabled by default, the user may only enable a subset."""
+
+    ws_client = WebsocketClient()
+    servient_01 = Servient()
+    servient_02 = Servient(clients=[ws_client])
+    td = ThingDescription(TD_DICT_01)
+    prop_name = next(six.iterkeys(TD_DICT_01["properties"]))
+
+    assert servient_01.select_client(td, prop_name) is not ws_client
+    assert servient_02.select_client(td, prop_name) is ws_client
