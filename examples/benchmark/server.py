@@ -65,21 +65,32 @@ logging.basicConfig(format=LOG_FORMAT)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+DEFAULT_RTRIP_MU = 0.0
+DEFAULT_RTRIP_SIGMA = 1.0
+DEFAULT_BURST_LAMBD = 5.0
+DEFAULT_BURST_TOTAL = 10
+
+
+def time_millis():
+    """Returns the current timestamp as an integer with ms precision."""
+
+    return int(time.time() * 1000)
+
 
 async def measure_round_trip(parameters):
-    """Handler for the 'measureRoundTrip' Action."""
+    """Handler for the action used to measure round trip time."""
 
-    time_arrival = int(time.time() * 1000)
+    time_arrival = time_millis()
 
     input_dict = parameters["input"] if parameters["input"] else {}
 
-    mu = input_dict.get("mu", 0)
-    sigma = input_dict.get("sigma", 1)
+    mu = input_dict.get("mu", DEFAULT_RTRIP_MU)
+    sigma = input_dict.get("sigma", DEFAULT_RTRIP_SIGMA)
     sleep_secs = abs(random.gauss(mu, sigma))
 
     await asyncio.sleep(sleep_secs)
 
-    time_return = int(time.time() * 1000)
+    time_return = time_millis()
 
     input_dict.update({
         "timeArrival": time_arrival,
@@ -96,13 +107,12 @@ def build_event_burst_handler(exposed_thing):
         """Emits a series of events where the total count and interval
         between each emission is determined by the given parameters."""
 
-        time_start = int(time.time() * 1000)
+        time_start = time_millis()
 
         input_dict = parameters["input"] if parameters["input"] else {}
 
-        mu = input_dict.get("mu", 0)
-        sigma = input_dict.get("sigma", 1)
-        total = input_dict.get("total", 10)
+        lambd = input_dict.get("lambd", DEFAULT_BURST_LAMBD)
+        total = input_dict.get("total", DEFAULT_BURST_TOTAL)
         burst_id = input_dict.get("id", uuid.uuid4().hex)
 
         for idx in range(total):
@@ -110,11 +120,11 @@ def build_event_burst_handler(exposed_thing):
                 "id": burst_id,
                 "index": idx,
                 "timeStart": time_start,
-                "timeEmission": int(time.time() * 1000),
+                "timeEmission": time_millis(),
                 "burstEnd": idx == total - 1
             })
 
-            await asyncio.sleep(abs(random.gauss(mu, sigma)))
+            await asyncio.sleep(random.expovariate(lambd))
 
     return start_event_burst
 
