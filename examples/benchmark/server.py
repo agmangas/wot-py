@@ -13,6 +13,7 @@ import logging
 import pprint
 import random
 import time
+import uuid
 
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.ws.server import WebsocketServer
@@ -22,11 +23,11 @@ DESCRIPTION = {
     "id": "urn:org:fundacionctic:thing:benchmark",
     "name": "Benchmark Thing",
     "properties": {
-        "rwStr": {
+        "str": {
             "type": "string",
             "observable": True
         },
-        "rwObj": {
+        "obj": {
             "type": "object",
             "observable": True
         }
@@ -39,6 +40,20 @@ DESCRIPTION = {
                 "type": "object"
             },
             "output": {
+                "type": "object"
+            }
+        },
+        "startEventBurst": {
+            "safe": True,
+            "idempotent": False,
+            "input": {
+                "type": "object"
+            }
+        }
+    },
+    "events": {
+        "burstEvent": {
+            "data": {
                 "type": "object"
             }
         }
@@ -58,8 +73,8 @@ async def measure_round_trip(parameters):
 
     input_dict = parameters["input"] if parameters["input"] else {}
 
-    mu = input_dict.pop("sleepMu", 0)
-    sigma = input_dict.pop("sleepSigma", 1)
+    mu = input_dict.get("mu", 0)
+    sigma = input_dict.get("sigma", 1)
     sleep_secs = abs(random.gauss(mu, sigma))
 
     await asyncio.sleep(sleep_secs)
@@ -72,6 +87,36 @@ async def measure_round_trip(parameters):
     })
 
     return input_dict
+
+
+def build_event_burst_handler(exposed_thing):
+    """Factory function to build the handler for the action that initiates event bursts."""
+
+    async def start_event_burst(parameters):
+        """Emits a series of events where the total count and interval
+        between each emission is determined by the given parameters."""
+
+        time_start = int(time.time() * 1000)
+
+        input_dict = parameters["input"] if parameters["input"] else {}
+
+        mu = input_dict.get("mu", 0)
+        sigma = input_dict.get("sigma", 1)
+        total = input_dict.get("total", 10)
+        burst_id = input_dict.get("id", uuid.uuid4().hex)
+
+        for idx in range(total):
+            exposed_thing.emit_event("burstEvent", {
+                "id": burst_id,
+                "index": idx,
+                "timeStart": time_start,
+                "timeEmission": int(time.time() * 1000),
+                "burstEnd": idx == total - 1
+            })
+
+            await asyncio.sleep(abs(random.gauss(mu, sigma)))
+
+    return start_event_burst
 
 
 async def main(parsed_args):
@@ -115,6 +160,7 @@ async def main(parsed_args):
 
     exposed_thing = wot.produce(json.dumps(DESCRIPTION))
     exposed_thing.set_action_handler("measureRoundTrip", measure_round_trip)
+    exposed_thing.set_action_handler("startEventBurst", build_event_burst_handler(exposed_thing))
     exposed_thing.expose()
 
 

@@ -19,6 +19,8 @@ from urllib.parse import urlparse
 import pyshark
 
 from wotpy.protocols.enums import Protocols
+from wotpy.protocols.http.client import HTTPClient
+from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.wot.servient import Servient
 from wotpy.wot.wot import WoT
 
@@ -159,11 +161,10 @@ class ConsumedThingCapture(object):
             if urlparse(form.href).scheme in schemes[protocol]
         ]
 
-        ports = set()
-
-        for form in protocol_forms:
-            port = urlparse(form.href).port
-            ports.add(port if port else default_ports[protocol])
+        ports = {
+            urlparse(form.href).port if urlparse(form.href).port else default_ports[protocol]
+            for form in protocol_forms
+        }
 
         display_filter = " or ".join([
             "{}.port == {}".format(transports[protocol], port)
@@ -187,15 +188,29 @@ class ConsumedThingCapture(object):
     def get_capture_size(self, protocol):
         """Returns the total size (bytes) of the captured packets for the given protocol."""
 
-        packets = self.filter_packets(protocol)
-
-        return sum([int(pkt.length) for pkt in packets])
+        return sum([int(pkt.length) for pkt in self.filter_packets(protocol)])
 
 
-async def consume(td_url):
+def build_protocol_client(protocol):
+    """"""
+
+    if protocol == Protocols.HTTP:
+        return HTTPClient()
+    elif protocol == Protocols.WEBSOCKETS:
+        return WebsocketClient()
+    elif protocol == Protocols.COAP:
+        from wotpy.protocols.coap.client import CoAPClient
+        return CoAPClient()
+    elif protocol == Protocols.MQTT:
+        from wotpy.protocols.mqtt.client import MQTTClient
+        return MQTTClient()
+
+
+async def consume(td_url, protocol):
     """Gets the remote Thing Description and returns a ConsumedThing."""
 
-    wot = WoT(servient=Servient())
+    clients = [build_protocol_client(protocol)]
+    wot = WoT(servient=Servient(clients=clients))
     consumed_thing = await wot.consume_from_url(td_url)
     logger.info("ConsumedThing: {}".format(consumed_thing))
 
@@ -208,8 +223,36 @@ async def run_capture(consumed_thing, iface):
 
     cap = ConsumedThingCapture(consumed_thing)
     await cap.start(iface)
-    action_res = await consumed_thing.actions["measureRoundTrip"].invoke()
-    logger.info("Action result: {}".format(action_res))
+
+    burst_id = uuid.uuid4().hex
+    done = asyncio.Future()
+
+    def on_next(item):
+        if item.data.get("id") != burst_id:
+            return
+
+        logger.info("Next :: {}".format(item))
+        item.data.get("burstEnd", False) and done.set_result(True)
+
+    subscription = consumed_thing.events["burstEvent"].subscribe(
+        on_next=on_next,
+        on_completed=lambda: logger.info("Completed"),
+        on_error=lambda error: logger.warning("Error :: {}".format(error)))
+
+    invocation_done = consumed_thing.actions["startEventBurst"].invoke({
+        "id": burst_id,
+        "total": 100
+    })
+
+    await done
+    subscription.dispose()
+
+    logger.info("Subscription completed")
+
+    await invocation_done
+
+    logger.info("Invocation completed")
+
     await cap.stop()
 
     return cap
@@ -221,16 +264,23 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Benchmark Thing WoT client")
 
     parser.add_argument(
-        '--url',
+        "--url",
         dest="td_url",
         required=True,
         help="Benchmark Thing Description URL")
 
     parser.add_argument(
-        '--iface',
+        "--iface",
         dest="capture_iface",
         required=True,
         help="Network interface to capture packages from")
+
+    parser.add_argument(
+        "--protocol",
+        dest="protocol",
+        required=True,
+        choices=Protocols.list(),
+        help="Protocol binding that should be used by the WoT client")
 
     return parser.parse_args()
 
@@ -241,9 +291,9 @@ def main():
     args = parse_args()
     logger.info("Arguments:\n{}".format(pprint.pformat(vars(args))))
     loop = asyncio.get_event_loop()
-    consumed_thing = loop.run_until_complete(consume(args.td_url))
+    consumed_thing = loop.run_until_complete(consume(args.td_url, args.protocol))
     cap = loop.run_until_complete(run_capture(consumed_thing, args.capture_iface))
-    logger.info("Total size: {} bytes".format(cap.get_capture_size(Protocols.WEBSOCKETS)))
+    logger.info("Total size: {} bytes".format(cap.get_capture_size(args.protocol)))
 
 
 if __name__ == "__main__":

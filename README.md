@@ -35,7 +35,8 @@ WoTPy is based on the [Tornado Framework](https://www.tornadoweb.org). Users the
 
 * Subscription to Thing Description changes.
 * Validation of data schemas.
-* Allow Action handlers to return Observables.
+* Enable Action handlers to return Observables.
+* Update protocol bindings to accept event subscription and cancellation data.
 
 ## Installation
 
