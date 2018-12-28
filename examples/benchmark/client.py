@@ -11,9 +11,9 @@ import asyncio
 import logging
 import os
 import pprint
-import signal
 import tempfile
 import uuid
+from subprocess import Popen, PIPE, TimeoutExpired
 from urllib.parse import urlparse
 
 import pyshark
@@ -35,6 +35,8 @@ class ConsumedThingCapture(object):
     from the network interactions with a remote ConsumedThing."""
 
     START_STOP_WINDOW_SECS = 2.0
+    PROCESS_LOOP_SLEEP = 0.1
+    PROCESS_TIMEOUT = 0.01
 
     def __init__(self, consumed_thing):
         self._process = None
@@ -92,10 +94,7 @@ class ConsumedThingCapture(object):
 
         logger.info("Running capture process: {}".format(command))
 
-        self._process = await asyncio.create_subprocess_shell(
-            command,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE)
+        self._process = Popen(command, stdout=PIPE, stderr=PIPE, shell=True)
 
         await asyncio.sleep(self.START_STOP_WINDOW_SECS)
 
@@ -107,10 +106,20 @@ class ConsumedThingCapture(object):
 
         await asyncio.sleep(self.START_STOP_WINDOW_SECS)
 
-        self._process.send_signal(signal.SIGINT)
-        stdout, stderr = await self._process.communicate()
+        logger.info("Terminating process: {}".format(self._process))
 
-        logger.info("Capture terminated:\n\tstdout:: {}\n\tstderr:: {}".format(stdout, stderr))
+        self._process.terminate()
+
+        while True:
+            try:
+                stdout, stderr = self._process.communicate(timeout=self.PROCESS_TIMEOUT)
+                break
+            except TimeoutExpired:
+                pass
+
+            await asyncio.sleep(self.PROCESS_LOOP_SLEEP)
+
+        logger.info("Terminated:\n\tstdout:: {}\n\tstderr:: {}".format(stdout, stderr))
 
         self._process = None
 
@@ -188,11 +197,15 @@ class ConsumedThingCapture(object):
     def get_capture_size(self, protocol):
         """Returns the total size (bytes) of the captured packets for the given protocol."""
 
-        return sum([int(pkt.length) for pkt in self.filter_packets(protocol)])
+        pyshark_cap = self.filter_packets(protocol)
+        size = sum([int(pkt.length) for pkt in pyshark_cap])
+        pyshark_cap.close()
+
+        return size
 
 
 def build_protocol_client(protocol):
-    """"""
+    """Factory function to build the protocol client for the given protocol."""
 
     if protocol == Protocols.HTTP:
         return HTTPClient()
@@ -217,9 +230,8 @@ async def consume(td_url, protocol):
     return consumed_thing
 
 
-async def run_capture(consumed_thing, iface):
-    """Consumes the interactions of the remote Thing
-    while capturing the exchanged network packets."""
+async def consume_event_burst(consumed_thing, iface, sub_sleep=1.0, **kwargs):
+    """Invokes the action to initiate an event burst and subscribes to those events."""
 
     cap = ConsumedThingCapture(consumed_thing)
     await cap.start(iface)
@@ -232,26 +244,46 @@ async def run_capture(consumed_thing, iface):
             return
 
         logger.info("Next :: {}".format(item))
-        item.data.get("burstEnd", False) and done.set_result(True)
+        item.data.get("burstEnd", False) and not done.done() and done.set_result(True)
 
     subscription = consumed_thing.events["burstEvent"].subscribe(
         on_next=on_next,
         on_completed=lambda: logger.info("Completed"),
         on_error=lambda error: logger.warning("Error :: {}".format(error)))
 
-    invocation_done = consumed_thing.actions["startEventBurst"].invoke({
-        "id": burst_id,
-        "total": 100
-    })
+    await asyncio.sleep(sub_sleep)
 
-    await done
+    invoke_arg = {"id": burst_id}
+    invoke_arg.update(kwargs)
+
+    action_result = consumed_thing.actions["startEventBurst"].invoke(invoke_arg)
+
+    await asyncio.wait([
+        done,
+        action_result
+    ])
+
+    logger.info("Subscription disposal")
+
     subscription.dispose()
 
-    logger.info("Subscription completed")
+    await cap.stop()
 
-    await invocation_done
+    return cap
 
-    logger.info("Invocation completed")
+
+async def consume_round_trip_action(consumed_thing, iface, total=10):
+    """Invokes the action to check the round trip time."""
+
+    cap = ConsumedThingCapture(consumed_thing)
+    await cap.start(iface)
+
+    action_results = await asyncio.wait([
+        consumed_thing.actions["measureRoundTrip"].invoke()
+        for _ in range(total)
+    ])
+
+    logger.info(pprint.pformat(action_results))
 
     await cap.stop()
 
@@ -289,11 +321,18 @@ def main():
     """Main entrypoint."""
 
     args = parse_args()
+
     logger.info("Arguments:\n{}".format(pprint.pformat(vars(args))))
+
     loop = asyncio.get_event_loop()
     consumed_thing = loop.run_until_complete(consume(args.td_url, args.protocol))
-    cap = loop.run_until_complete(run_capture(consumed_thing, args.capture_iface))
-    logger.info("Total size: {} bytes".format(cap.get_capture_size(args.protocol)))
+
+    logger.info("Consuming event burst")
+
+    cap_burst = loop.run_until_complete(
+        consume_event_burst(consumed_thing, args.capture_iface))
+
+    logger.info("Size: {} bytes".format(cap_burst.get_capture_size(args.protocol)))
 
 
 if __name__ == "__main__":
