@@ -165,6 +165,13 @@ class ConsumedThingCapture(object):
             Protocols.COAP: ["coap", "coaps"]
         }
 
+        protocol_keys = {
+            Protocols.HTTP: "http",
+            Protocols.WEBSOCKETS: "websocket",
+            Protocols.MQTT: "mqtt",
+            Protocols.COAP: "coap"
+        }
+
         protocol_forms = [
             form for form in self._forms_generator()
             if urlparse(form.href).scheme in schemes[protocol]
@@ -179,6 +186,8 @@ class ConsumedThingCapture(object):
             "{}.port == {}".format(transports[protocol], port)
             for port in ports
         ])
+
+        display_filter = "({}) and {}".format(display_filter, protocol_keys[protocol])
 
         return display_filter
 
