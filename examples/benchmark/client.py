@@ -180,8 +180,6 @@ class ConsumedThingCapture(object):
             for port in ports
         ])
 
-        logger.info("Display filter ({}): {}".format(protocol, display_filter))
-
         return display_filter
 
     def filter_packets(self, protocol):
@@ -191,6 +189,8 @@ class ConsumedThingCapture(object):
         assert self._output_file
 
         display_filter = self._build_display_filter(protocol)
+
+        logger.info("Building FileCapture for display filter ({}): {}".format(protocol, display_filter))
 
         return pyshark.FileCapture(self._output_file, display_filter=display_filter)
 
@@ -219,18 +219,18 @@ def build_protocol_client(protocol):
         return MQTTClient()
 
 
-async def consume(td_url, protocol):
+async def fetch_consumed_thing(td_url, protocol):
     """Gets the remote Thing Description and returns a ConsumedThing."""
 
     clients = [build_protocol_client(protocol)]
     wot = WoT(servient=Servient(clients=clients))
     consumed_thing = await wot.consume_from_url(td_url)
-    logger.info("ConsumedThing: {}".format(consumed_thing))
 
     return consumed_thing
 
 
-async def consume_event_burst(consumed_thing, iface, sub_sleep=1.0, **kwargs):
+async def consume_event_burst(consumed_thing, iface, sub_sleep=1.0,
+                              lambd=5.0, total=10, timeout=10):
     """Invokes the action to initiate an event burst and subscribes to those events."""
 
     cap = ConsumedThingCapture(consumed_thing)
@@ -243,8 +243,10 @@ async def consume_event_burst(consumed_thing, iface, sub_sleep=1.0, **kwargs):
         if item.data.get("id") != burst_id:
             return
 
-        logger.info("Next :: {}".format(item))
+        logger.info("{}".format(item))
         item.data.get("burstEnd", False) and not done.done() and done.set_result(True)
+
+    logger.info("Subscribing to burst event")
 
     subscription = consumed_thing.events["burstEvent"].subscribe(
         on_next=on_next,
@@ -253,15 +255,19 @@ async def consume_event_burst(consumed_thing, iface, sub_sleep=1.0, **kwargs):
 
     await asyncio.sleep(sub_sleep)
 
-    invoke_arg = {"id": burst_id}
-    invoke_arg.update(kwargs)
+    logger.info("Invoking action to start event burst")
 
-    action_result = consumed_thing.actions["startEventBurst"].invoke(invoke_arg)
+    await consumed_thing.actions["startEventBurst"].invoke({
+        "id": burst_id,
+        "lambd": lambd,
+        "total": total
+    })
 
-    await asyncio.wait([
-        done,
-        action_result
-    ])
+    try:
+        logger.info("Waiting for last events to arrive")
+        await asyncio.wait_for(done, timeout=timeout)
+    except asyncio.TimeoutError:
+        logger.warning("Timeout waiting for events")
 
     logger.info("Subscription disposal")
 
@@ -325,14 +331,21 @@ def main():
     logger.info("Arguments:\n{}".format(pprint.pformat(vars(args))))
 
     loop = asyncio.get_event_loop()
-    consumed_thing = loop.run_until_complete(consume(args.td_url, args.protocol))
 
+    logger.info("Fetching TD from {}".format(args.td_url))
+
+    consumed_thing = loop.run_until_complete(
+        fetch_consumed_thing(args.td_url, args.protocol))
+
+    logger.info("Consumed Thing: {}".format(consumed_thing))
     logger.info("Consuming event burst")
 
-    cap_burst = loop.run_until_complete(
+    cap = loop.run_until_complete(
         consume_event_burst(consumed_thing, args.capture_iface))
 
-    logger.info("Size: {} bytes".format(cap_burst.get_capture_size(args.protocol)))
+    logger.info("Size: {} bytes".format(cap.get_capture_size(args.protocol)))
+
+    cap.clear()
 
 
 if __name__ == "__main__":
