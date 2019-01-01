@@ -8,11 +8,15 @@ and analyzes the captured packet traces.
 
 import argparse
 import asyncio
+import collections
+import copy
 import logging
 import os
 import pprint
 import tempfile
+import time
 import uuid
+from statistics import mean, median, stdev
 from subprocess import Popen, PIPE, TimeoutExpired
 from urllib.parse import urlparse
 
@@ -151,6 +155,8 @@ class ConsumedThingCapture(object):
             Protocols.COAP: 5683
         }
 
+        assert protocol in default_ports.keys()
+
         transports = {
             Protocols.HTTP: "tcp",
             Protocols.WEBSOCKETS: "tcp",
@@ -213,6 +219,12 @@ class ConsumedThingCapture(object):
         return size
 
 
+def time_millis():
+    """Returns the current timestamp as an integer with ms precision."""
+
+    return int(time.time() * 1000)
+
+
 def build_protocol_client(protocol):
     """Factory function to build the protocol client for the given protocol."""
 
@@ -238,22 +250,101 @@ async def fetch_consumed_thing(td_url, protocol):
     return consumed_thing
 
 
-async def consume_event_burst(consumed_thing, iface, sub_sleep=1.0,
-                              lambd=5.0, total=10, timeout=10):
-    """Invokes the action to initiate an event burst and subscribes to those events."""
+def count_disordered(arr, size):
+    """Counts the number of items that are out of the expected
+    order (monotonous increase) in the given list."""
 
-    cap = ConsumedThingCapture(consumed_thing)
-    await cap.start(iface)
+    counter = 0
+
+    state = {
+        "expected": next(item for item in range(size) if item in arr),
+        "checked": []
+    }
+
+    def advance_state():
+        state["expected"] += 1
+
+        while True:
+            in_arr = state["expected"] in arr
+            is_overflow = state["expected"] > size
+            not_checked = state["expected"] not in state["checked"]
+
+            if not_checked and (in_arr or is_overflow):
+                return
+
+            state["expected"] += 1
+
+    for val in arr:
+        if val == state["expected"]:
+            advance_state()
+        else:
+            counter += 1
+
+        state["checked"].append(val)
+
+    return counter
+
+
+def consume_event_burst(consumed_thing, iface, protocol,
+                        sub_sleep=1.0, lambd=5.0, total=10, timeout=10):
+    """Gets the stats from invoking the action to initiate
+    an event burst and subscribing to those events."""
+
+    stats = {}
+
+    loop = asyncio.get_event_loop()
+
+    cap, events = loop.run_until_complete(_consume_event_burst(
+        consumed_thing,
+        iface,
+        sub_sleep,
+        lambd,
+        total,
+        timeout))
+
+    indexes = [item["index"] for item in events]
+    latencies = [item["timeReceived"] - item["timeEmission"] for item in events]
+
+    stats.update({
+        "size": cap.get_capture_size(protocol),
+        "disordered": count_disordered(indexes, total),
+        "loss": 1.0 - (float(len(events)) / total),
+        "latency": {
+            "mean": mean(latencies),
+            "median": median(latencies),
+            "stdev": stdev(latencies),
+            "max": max(latencies),
+            "min": min(latencies)
+        }
+    })
+
+    cap.clear()
+
+    return stats
+
+
+async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, timeout):
+    """Coroutine helper for the consume_event_burst function."""
 
     burst_id = uuid.uuid4().hex
     done = asyncio.Future()
+    events = collections.deque([])
 
     def on_next(item):
         if item.data.get("id") != burst_id:
             return
 
+        data = copy.deepcopy(item.data)
+        data.update({"timeReceived": time_millis()})
+        events.append(data)
+
         logger.info("{}".format(item))
-        item.data.get("burstEnd", False) and not done.done() and done.set_result(True)
+
+        if item.data.get("burstEnd", False) and not done.done():
+            done.set_result(True)
+
+    cap = ConsumedThingCapture(consumed_thing)
+    await cap.start(iface)
 
     logger.info("Subscribing to burst event")
 
@@ -284,10 +375,10 @@ async def consume_event_burst(consumed_thing, iface, sub_sleep=1.0,
 
     await cap.stop()
 
-    return cap
+    return cap, events
 
 
-async def consume_round_trip_action(consumed_thing, iface, total=10):
+async def consume_round_trip_action(consumed_thing, iface, protocol, total=10):
     """Invokes the action to check the round trip time."""
 
     cap = ConsumedThingCapture(consumed_thing)
@@ -301,8 +392,7 @@ async def consume_round_trip_action(consumed_thing, iface, total=10):
     logger.info(pprint.pformat(action_results))
 
     await cap.stop()
-
-    return cap
+    cap.clear()
 
 
 def parse_args():
@@ -343,18 +433,19 @@ def main():
 
     logger.info("Fetching TD from {}".format(args.td_url))
 
-    consumed_thing = loop.run_until_complete(
-        fetch_consumed_thing(args.td_url, args.protocol))
+    consumed_thing = loop.run_until_complete(fetch_consumed_thing(
+        args.td_url,
+        args.protocol))
 
     logger.info("Consumed Thing: {}".format(consumed_thing))
     logger.info("Consuming event burst")
 
-    cap = loop.run_until_complete(
-        consume_event_burst(consumed_thing, args.capture_iface))
+    stats = consume_event_burst(
+        consumed_thing,
+        args.capture_iface,
+        args.protocol)
 
-    logger.info("Size: {} bytes".format(cap.get_capture_size(args.protocol)))
-
-    cap.clear()
+    logger.info("Stats: {}".format(pprint.pformat(stats)))
 
 
 if __name__ == "__main__":
