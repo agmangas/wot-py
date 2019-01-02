@@ -285,6 +285,18 @@ def count_disordered(arr, size):
     return counter
 
 
+def get_arr_stats(arr):
+    """Takes a list of numbers and returns a dict with some statistics."""
+
+    return {
+        "mean": mean(arr),
+        "median": median(arr),
+        "stdev": stdev(arr),
+        "max": max(arr),
+        "min": min(arr)
+    }
+
+
 def consume_event_burst(consumed_thing, iface, protocol,
                         sub_sleep=1.0, lambd=5.0, total=10, timeout=10):
     """Gets the stats from invoking the action to initiate
@@ -309,13 +321,7 @@ def consume_event_burst(consumed_thing, iface, protocol,
         "size": cap.get_capture_size(protocol),
         "disordered": count_disordered(indexes, total),
         "loss": 1.0 - (float(len(events)) / total),
-        "latency": {
-            "mean": mean(latencies),
-            "median": median(latencies),
-            "stdev": stdev(latencies),
-            "max": max(latencies),
-            "min": min(latencies)
-        }
+        "latency": get_arr_stats(latencies)
     })
 
     cap.clear()
@@ -378,21 +384,60 @@ async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, t
     return cap, events
 
 
-async def consume_round_trip_action(consumed_thing, iface, protocol, total=10):
-    """Invokes the action to check the round trip time."""
+def consume_round_trip_action(consumed_thing, iface, protocol, num_total=10, num_parallel=3):
+    """Gets the stats from invoking the action to measure the round trip time."""
+
+    stats = {}
+
+    loop = asyncio.get_event_loop()
+
+    cap, results = loop.run_until_complete(_consume_round_trip_action(
+        consumed_thing,
+        iface,
+        num_total,
+        num_parallel))
+
+    latencies_req = [item["timeArrival"] - item["timeRequest"] for item in results]
+    latencies_res = [item["timeResponse"] - item["timeReturn"] for item in results]
+    latencies = [sum(item) for item in zip(latencies_req, latencies_res)]
+
+    stats.update({
+        "size": cap.get_capture_size(protocol),
+        "latencyReq": get_arr_stats(latencies_req),
+        "latencyRes": get_arr_stats(latencies_res),
+        "latency": get_arr_stats(latencies)
+    })
+
+    cap.clear()
+
+    return stats
+
+
+async def _consume_round_trip_action(consumed_thing, iface, num_total, num_parallel):
+    """Coroutine helper for the consume_round_trip_action function."""
+
+    results = []
 
     cap = ConsumedThingCapture(consumed_thing)
     await cap.start(iface)
 
-    action_results = await asyncio.wait([
-        consumed_thing.actions["measureRoundTrip"].invoke()
-        for _ in range(total)
-    ])
+    for idx in range(num_total):
+        logger.info("Invocation batch {} / {}".format(idx, num_total))
 
-    logger.info(pprint.pformat(action_results))
+        invocations = [
+            consumed_thing.actions["measureRoundTrip"].invoke({
+                "timeRequest": time_millis()
+            }) for _ in range(num_parallel)
+        ]
+
+        for fut in asyncio.as_completed(invocations):
+            result = await fut
+            result.update({"timeResponse": time_millis()})
+            results.append(result)
 
     await cap.stop()
-    cap.clear()
+
+    return cap, results
 
 
 def parse_args():
@@ -440,12 +485,20 @@ def main():
     logger.info("Consumed Thing: {}".format(consumed_thing))
     logger.info("Consuming event burst")
 
-    stats = consume_event_burst(
+    stats_event = consume_event_burst(
         consumed_thing,
         args.capture_iface,
         args.protocol)
 
-    logger.info("Stats: {}".format(pprint.pformat(stats)))
+    logger.info("Stats:\n{}".format(pprint.pformat(stats_event)))
+    logger.info("Consuming round trip action")
+
+    stats_action = consume_round_trip_action(
+        consumed_thing,
+        args.capture_iface,
+        args.protocol)
+
+    logger.info("Stats:\n{}".format(pprint.pformat(stats_action)))
 
 
 if __name__ == "__main__":
