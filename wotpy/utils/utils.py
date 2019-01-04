@@ -60,10 +60,15 @@ def to_json_obj(obj):
         json.dumps(obj)
         return obj
     except TypeError:
+        pass
+
+    try:
         return {
             key: to_json_obj(val)
             for key, val in six.iteritems(vars(obj))
         }
+    except TypeError:
+        raise ValueError("Object {} is not JSON serializable".format(obj))
 
 
 def get_main_ipv4_address():
