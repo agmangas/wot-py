@@ -28,6 +28,13 @@ class HTTPClient(BaseProtocolClient):
     """Implementation of the protocol client interface for the HTTP protocol."""
 
     JSON_HEADERS = {"Content-Type": "application/json"}
+    DEFAULT_CON_TIMEOUT = 60
+    DEFAULT_REQ_TIMEOUT = 60
+
+    def __init__(self, connect_timeout=DEFAULT_CON_TIMEOUT, request_timeout=DEFAULT_REQ_TIMEOUT):
+        self._connect_timeout = connect_timeout
+        self._request_timeout = request_timeout
+        super(HTTPClient, self).__init__()
 
     @classmethod
     def pick_http_href(cls, td, forms, op=None):
@@ -126,7 +133,13 @@ class HTTPClient(BaseProtocolClient):
 
         http_client = tornado.httpclient.AsyncHTTPClient()
         body = json.dumps({"value": value})
-        http_request = tornado.httpclient.HTTPRequest(href, method="POST", body=body, headers=self.JSON_HEADERS)
+
+        http_request = tornado.httpclient.HTTPRequest(
+            href, method="POST", body=body,
+            headers=self.JSON_HEADERS,
+            connect_timeout=self._connect_timeout,
+            request_timeout=self._request_timeout)
+
         yield http_client.fetch(http_request)
 
     @tornado.gen.coroutine
@@ -140,7 +153,12 @@ class HTTPClient(BaseProtocolClient):
             raise FormNotFoundException()
 
         http_client = tornado.httpclient.AsyncHTTPClient()
-        http_request = tornado.httpclient.HTTPRequest(href, method="GET")
+
+        http_request = tornado.httpclient.HTTPRequest(
+            href, method="GET",
+            connect_timeout=self._connect_timeout,
+            request_timeout=self._request_timeout)
+
         response = yield http_client.fetch(http_request)
 
         raise tornado.gen.Return(json.loads(response.body).get("value"))
