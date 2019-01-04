@@ -17,19 +17,16 @@ import uuid
 
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.ws.server import WebsocketServer
+from wotpy.wot.enums import DataType
 from wotpy.wot.servient import Servient
 
 DESCRIPTION = {
     "id": "urn:org:fundacionctic:thing:benchmark",
     "name": "Benchmark Thing",
     "properties": {
-        "str": {
-            "type": "string",
-            "observable": True
-        },
-        "obj": {
-            "type": "object",
-            "observable": True
+        "currentTime": {
+            "type": DataType.INTEGER,
+            "readOnly": True
         }
     },
     "actions": {
@@ -37,24 +34,24 @@ DESCRIPTION = {
             "safe": True,
             "idempotent": False,
             "input": {
-                "type": "object"
+                "type": DataType.OBJECT
             },
             "output": {
-                "type": "object"
+                "type": DataType.OBJECT
             }
         },
         "startEventBurst": {
             "safe": True,
             "idempotent": False,
             "input": {
-                "type": "object"
+                "type": DataType.OBJECT
             }
         }
     },
     "events": {
         "burstEvent": {
             "data": {
-                "type": "object"
+                "type": DataType.OBJECT
             }
         }
     }
@@ -75,6 +72,12 @@ def time_millis():
     """Returns the current timestamp as an integer with ms precision."""
 
     return int(time.time() * 1000)
+
+
+async def current_time_handler():
+    """Custom handler for the currentTime property."""
+
+    return time_millis()
 
 
 async def measure_round_trip(parameters):
@@ -171,6 +174,7 @@ async def main(parsed_args):
     exposed_thing = wot.produce(json.dumps(DESCRIPTION))
     exposed_thing.set_action_handler("measureRoundTrip", measure_round_trip)
     exposed_thing.set_action_handler("startEventBurst", build_event_burst_handler(exposed_thing))
+    exposed_thing.set_property_read_handler("currentTime", current_time_handler)
     exposed_thing.expose()
 
 

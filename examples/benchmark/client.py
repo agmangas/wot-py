@@ -16,11 +16,12 @@ import pprint
 import tempfile
 import time
 import uuid
-from statistics import mean, median, stdev
 from subprocess import Popen, PIPE, TimeoutExpired
 from urllib.parse import urlparse
 
+import numpy
 import pyshark
+from tornado.simple_httpclient import HTTPTimeoutError
 
 from wotpy.protocols.enums import Protocols
 from wotpy.protocols.http.client import HTTPClient
@@ -289,11 +290,14 @@ def get_arr_stats(arr):
     """Takes a list of numbers and returns a dict with some statistics."""
 
     return {
-        "mean": mean(arr),
-        "median": median(arr),
-        "stdev": stdev(arr),
-        "max": max(arr),
-        "min": min(arr)
+        "mean": numpy.mean(arr),
+        "median": numpy.median(arr),
+        "std": numpy.std(arr),
+        "var": numpy.var(arr),
+        "max": numpy.max(arr),
+        "min": numpy.min(arr),
+        "p95": numpy.percentile(arr, 95),
+        "p99": numpy.percentile(arr, 99)
     }
 
 
@@ -318,6 +322,8 @@ def consume_event_burst(consumed_thing, iface, protocol,
     latencies = [item["timeReceived"] - item["timeEmission"] for item in events]
 
     stats.update({
+        "lambd": lambd,
+        "total": total,
         "size": cap.get_capture_size(protocol),
         "disordered": count_disordered(indexes, total),
         "loss": 1.0 - (float(len(events)) / total),
@@ -350,6 +356,7 @@ async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, t
             done.set_result(True)
 
     cap = ConsumedThingCapture(consumed_thing)
+
     await cap.start(iface)
 
     logger.info("Subscribing to burst event")
@@ -384,7 +391,7 @@ async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, t
     return cap, events
 
 
-def consume_round_trip_action(consumed_thing, iface, protocol, num_total=10, num_parallel=3):
+def consume_round_trip_action(consumed_thing, iface, protocol, num_batches=10, num_parallel=3):
     """Gets the stats from invoking the action to measure the round trip time."""
 
     stats = {}
@@ -394,7 +401,7 @@ def consume_round_trip_action(consumed_thing, iface, protocol, num_total=10, num
     cap, results = loop.run_until_complete(_consume_round_trip_action(
         consumed_thing,
         iface,
-        num_total,
+        num_batches,
         num_parallel))
 
     latencies_req = [item["timeArrival"] - item["timeRequest"] for item in results]
@@ -402,6 +409,8 @@ def consume_round_trip_action(consumed_thing, iface, protocol, num_total=10, num
     latencies = [sum(item) for item in zip(latencies_req, latencies_res)]
 
     stats.update({
+        "numBatches": num_batches,
+        "numParallel": num_parallel,
         "size": cap.get_capture_size(protocol),
         "latencyReq": get_arr_stats(latencies_req),
         "latencyRes": get_arr_stats(latencies_res),
@@ -413,16 +422,17 @@ def consume_round_trip_action(consumed_thing, iface, protocol, num_total=10, num
     return stats
 
 
-async def _consume_round_trip_action(consumed_thing, iface, num_total, num_parallel):
+async def _consume_round_trip_action(consumed_thing, iface, num_batches, num_parallel):
     """Coroutine helper for the consume_round_trip_action function."""
 
     results = []
 
     cap = ConsumedThingCapture(consumed_thing)
+
     await cap.start(iface)
 
-    for idx in range(num_total):
-        logger.info("Invocation batch {} / {}".format(idx, num_total))
+    for idx in range(num_batches):
+        logger.info("Invocation batch {} / {}".format(idx, num_batches))
 
         invocations = [
             consumed_thing.actions["measureRoundTrip"].invoke({
@@ -436,6 +446,126 @@ async def _consume_round_trip_action(consumed_thing, iface, num_total, num_paral
             results.append(result)
 
     await cap.stop()
+
+    return cap, results
+
+
+def consume_time_prop(consumed_thing, iface, protocol, rate=20, total=100):
+    """Gets the stats from consuming the read-only time property."""
+
+    stats = {}
+
+    loop = asyncio.get_event_loop()
+
+    cap, results = loop.run_until_complete(_consume_time_prop(
+        consumed_thing,
+        iface,
+        rate,
+        total))
+
+    success_count = len([item for item in results if item["success"]])
+    latencies = [item["timeRes"] - item["timeReq"] for item in results]
+
+    stats.update({
+        "rate": rate,
+        "total": len(results),
+        "size": cap.get_capture_size(protocol),
+        "successRatio": float(success_count) / len(results),
+        "latency": get_arr_stats(latencies)
+    })
+
+    cap.clear()
+
+    return stats
+
+
+async def _consume_time_prop(consumed_thing, iface, rate, total):
+    """Coroutine helper for the consume_time_prop function."""
+
+    requests_queue = asyncio.Queue()
+    times_req = []
+    times_res = []
+    req_valid = []
+    req_error = []
+
+    async def send_requests():
+        """Sends the entire set of requests attempting to honor the given rate."""
+
+        interval_secs = 1.0 / rate
+        duration_expected = float(total) / rate
+
+        logger.info("Sending {} total requests".format(total))
+        logger.info("Rate: {}/s - Interval: {} s".format(rate, interval_secs))
+        logger.info("Total expected duration: {} s".format(duration_expected))
+
+        for idx in range(total):
+            req_ini = time.time()
+            fut_res = asyncio.ensure_future(consumed_thing.properties["currentTime"].read())
+            times_req.append((fut_res, req_ini))
+            requests_queue.put_nowait(fut_res)
+            sleep_secs = interval_secs - (time.time() - req_ini)
+            sleep_secs = sleep_secs if sleep_secs > 0 else 0
+            await asyncio.sleep(sleep_secs)
+
+        logger.info("Finished sending requests")
+
+    async def await_response(fut_res):
+        """Awaits the given Future response."""
+
+        try:
+            await fut_res
+            req_valid.append(fut_res)
+        except HTTPTimeoutError:
+            req_error.append(fut_res)
+        except Exception as ex:
+            logger.exception(ex)
+            req_error.append(fut_res)
+
+        times_res.append((fut_res, time.time()))
+
+    async def consume_requests_queue():
+        """Consumes the requests queue to await on every Future response."""
+
+        total_consumed = 0
+        awaited_responses = []
+
+        logger.info("Consuming requests queue")
+
+        while total_consumed < total:
+            fut_res = await requests_queue.get()
+            awaited_res = asyncio.ensure_future(await_response(fut_res))
+            awaited_responses.append(awaited_res)
+            total_consumed += 1
+
+        logger.info("Finished consuming requests queue")
+
+        await asyncio.wait(awaited_responses)
+
+    cap = ConsumedThingCapture(consumed_thing)
+
+    await cap.start(iface)
+    await asyncio.wait([send_requests(), consume_requests_queue()])
+
+    logger.info("Finished processing requests")
+
+    await cap.stop()
+
+    futs_times_req = [item[0] for item in times_req]
+    futs_times_res = [item[0] for item in times_res]
+
+    assert set(req_valid + req_error) == set(futs_times_req) == set(futs_times_res)
+
+    results = []
+
+    for res in req_valid + req_error:
+        is_success = res in req_valid
+
+        results.append({
+            "timeReq": next(int(item[1] * 1000) for item in times_req if item[0] is res),
+            "timeRes": next(int(item[1] * 1000) for item in times_res if item[0] is res),
+            "result": res.result() if is_success else None,
+            "success": is_success
+        })
 
     return cap, results
 
@@ -499,6 +629,14 @@ def main():
         args.protocol)
 
     logger.info("Stats:\n{}".format(pprint.pformat(stats_action)))
+    logger.info("Consuming time property")
+
+    stats_prop = consume_time_prop(
+        consumed_thing,
+        args.capture_iface,
+        args.protocol)
+
+    logger.info("Stats:\n{}".format(pprint.pformat(stats_prop)))
 
 
 if __name__ == "__main__":
