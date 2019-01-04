@@ -105,7 +105,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
                 name=item.name,
                 data=item.data)
             self.write_message(msg.to_json())
-        except WebsocketMessageError as ex:
+        except WebsocketMessageException as ex:
             self._on_subscription_error(subscription_id, ex)
 
     def _on_subscription_completed(self, subscription_id):
