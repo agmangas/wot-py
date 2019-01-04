@@ -431,13 +431,14 @@ async def _consume_round_trip_action(consumed_thing, iface, num_batches, num_par
 
     await cap.start(iface)
 
+    action = consumed_thing.actions["measureRoundTrip"]
+
     for idx in range(num_batches):
         logger.info("Invocation batch {} / {}".format(idx, num_batches))
 
         invocations = [
-            consumed_thing.actions["measureRoundTrip"].invoke({
-                "timeRequest": time_millis()
-            }) for _ in range(num_parallel)
+            asyncio.ensure_future(action.invoke({"timeRequest": time_millis()}))
+            for _ in range(num_parallel)
         ]
 
         for fut in asyncio.as_completed(invocations):
