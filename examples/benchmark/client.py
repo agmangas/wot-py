@@ -92,14 +92,21 @@ class ConsumedThingCapture(object):
             for item in self._get_capture_hosts()
         ])
 
-        command = "tshark -i {} -F pcapng -w {} -f \"{}\"".format(
+        command = [
+            "tshark",
+            "-i",
             iface,
+            "-F",
+            "pcapng",
+            "-w",
             self._output_file,
-            filter_host)
+            "-f",
+            filter_host
+        ]
 
         logger.info("Running capture process: {}".format(command))
 
-        self._process = Popen(command, stdout=PIPE, stderr=PIPE, shell=True)
+        self._process = Popen(command, stdout=PIPE, stderr=PIPE, shell=False)
 
         await asyncio.sleep(self.START_STOP_WINDOW_SECS)
 
