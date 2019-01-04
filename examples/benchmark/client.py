@@ -182,8 +182,7 @@ class ConsumedThingCapture(object):
         protocol_keys = {
             Protocols.HTTP: "http",
             Protocols.WEBSOCKETS: "websocket",
-            Protocols.MQTT: "mqtt",
-            Protocols.COAP: "coap"
+            Protocols.MQTT: "mqtt"
         }
 
         protocol_forms = [
@@ -201,7 +200,8 @@ class ConsumedThingCapture(object):
             for port in ports
         ])
 
-        display_filter = "({}) and {}".format(display_filter, protocol_keys[protocol])
+        if protocol in protocol_keys:
+            display_filter = "({}) and {}".format(display_filter, protocol_keys[protocol])
 
         return display_filter
 
