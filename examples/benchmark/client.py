@@ -297,14 +297,14 @@ def get_arr_stats(arr):
     """Takes a list of numbers and returns a dict with some statistics."""
 
     return {
-        "mean": numpy.mean(arr),
-        "median": numpy.median(arr),
-        "std": numpy.std(arr),
-        "var": numpy.var(arr),
-        "max": numpy.max(arr),
-        "min": numpy.min(arr),
-        "p95": numpy.percentile(arr, 95),
-        "p99": numpy.percentile(arr, 99)
+        "mean": numpy.mean(arr).item(),
+        "median": numpy.median(arr).item(),
+        "std": numpy.std(arr).item(),
+        "var": numpy.var(arr).item(),
+        "max": numpy.max(arr).item(),
+        "min": numpy.min(arr).item(),
+        "p95": numpy.percentile(arr, 95).item(),
+        "p99": numpy.percentile(arr, 99).item()
     }
 
 
