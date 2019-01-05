@@ -10,6 +10,7 @@ import argparse
 import asyncio
 import collections
 import copy
+import json
 import logging
 import os
 import pprint
@@ -458,7 +459,7 @@ async def _consume_round_trip_action(consumed_thing, iface, num_batches, num_par
     return cap, results
 
 
-def consume_time_prop(consumed_thing, iface, protocol, rate=20, total=100):
+def consume_time_prop(consumed_thing, iface, protocol, rate=20.0, total=100):
     """Gets the stats from consuming the read-only time property."""
 
     stats = {}
@@ -605,6 +606,24 @@ def parse_args():
     return parser.parse_args()
 
 
+NUM_SAMPLES = 2
+
+EVENT_LAMBD_MIN = 1.0
+EVENT_LAMBD_MAX = 200.0
+EVENT_TOTAL_MIN = 10
+EVENT_TOTAL_MAX = 100
+
+ACTION_BATCH_MIN = 1
+ACTION_BATCH_MAX = 100
+ACTION_PARALLEL_MIN = 1
+ACTION_PARALLEL_MAX = 100
+
+PROP_RATE_MIN = 1.0
+PROP_RATE_MAX = 100.0
+PROP_TOTAL_MIN = 1
+PROP_TOTAL_MAX = 100
+
+
 def main():
     """Main entrypoint."""
 
@@ -621,30 +640,66 @@ def main():
         args.protocol))
 
     logger.info("Consumed Thing: {}".format(consumed_thing))
-    logger.info("Consuming event burst")
 
-    stats_event = consume_event_burst(
-        consumed_thing,
-        args.capture_iface,
-        args.protocol)
+    stats = {
+        "args": vars(args),
+        "burstEvent": [],
+        "measureRoundTrip": [],
+        "currentTime": []
+    }
 
-    logger.info("Stats:\n{}".format(pprint.pformat(stats_event)))
-    logger.info("Consuming round trip action")
+    for lambd in numpy.linspace(EVENT_LAMBD_MIN, EVENT_LAMBD_MAX, num=NUM_SAMPLES):
+        for total in numpy.linspace(EVENT_TOTAL_MIN, EVENT_TOTAL_MAX, num=NUM_SAMPLES):
+            logger.info("Consuming event burst (lambd={} total={})".format(lambd, total))
 
-    stats_action = consume_round_trip_action(
-        consumed_thing,
-        args.capture_iface,
-        args.protocol)
+            stats_event = consume_event_burst(
+                consumed_thing,
+                args.capture_iface,
+                args.protocol,
+                lambd=float(lambd),
+                total=int(total))
 
-    logger.info("Stats:\n{}".format(pprint.pformat(stats_action)))
-    logger.info("Consuming time property")
+            logger.info("Stats:\n{}".format(pprint.pformat(stats_event)))
 
-    stats_prop = consume_time_prop(
-        consumed_thing,
-        args.capture_iface,
-        args.protocol)
+            stats["burstEvent"].append(stats_event)
 
-    logger.info("Stats:\n{}".format(pprint.pformat(stats_prop)))
+    for batches in numpy.linspace(ACTION_BATCH_MIN, ACTION_BATCH_MAX, num=NUM_SAMPLES):
+        for parallel in numpy.linspace(ACTION_PARALLEL_MIN, ACTION_PARALLEL_MAX, num=NUM_SAMPLES):
+            logger.info("Consuming round trip action (batch={} parallel={})".format(batches, parallel))
+
+            stats_action = consume_round_trip_action(
+                consumed_thing,
+                args.capture_iface,
+                args.protocol,
+                num_batches=int(batches),
+                num_parallel=int(parallel))
+
+            logger.info("Stats:\n{}".format(pprint.pformat(stats_action)))
+
+            stats["measureRoundTrip"].append(stats_action)
+
+    for rate in numpy.linspace(PROP_RATE_MIN, PROP_RATE_MAX, num=NUM_SAMPLES):
+        for total in numpy.linspace(PROP_TOTAL_MIN, PROP_TOTAL_MAX, num=NUM_SAMPLES):
+            logger.info("Consuming time property (rate={} total={})".format(rate, total))
+
+            stats_prop = consume_time_prop(
+                consumed_thing,
+                args.capture_iface,
+                args.protocol,
+                rate=float(rate),
+                total=int(total))
+
+            logger.info("Stats:\n{}".format(pprint.pformat(stats_prop)))
+
+            stats["currentTime"].append(stats_prop)
+
+    curr_dir = os.path.dirname(os.path.realpath(__file__))
+    file_path = os.path.join(curr_dir, "{}-{}.json".format(args.protocol.lower(), int(time.time())))
+
+    logger.info("Serializing results to: {}".format(file_path))
+
+    with open(file_path, "w") as fh:
+        fh.write(json.dumps(stats))
 
 
 if __name__ == "__main__":
