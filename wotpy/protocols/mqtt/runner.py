@@ -26,11 +26,15 @@ class MQTTHandlerRunner(object):
     MQTT broker, delivers messages, and runs the handler in a loop."""
 
     DEFAULT_TIMEOUT_DELIVER_SECS = 0.1
+    DEFAULT_MESSAGES_BATCH_SIZE = 100
 
-    def __init__(self, broker_url, mqtt_handler, timeout_deliver_secs=DEFAULT_TIMEOUT_DELIVER_SECS):
+    def __init__(self, broker_url, mqtt_handler,
+                 timeout_deliver_secs=DEFAULT_TIMEOUT_DELIVER_SECS,
+                 messages_batch_size=DEFAULT_MESSAGES_BATCH_SIZE):
         self._broker_url = broker_url
         self._mqtt_handler = mqtt_handler
         self._timeout_deliver_secs = timeout_deliver_secs
+        self._messages_batch_size = messages_batch_size
         self._client = None
         self._lock_conn = tornado.locks.Lock()
         self._lock_run = tornado.locks.Lock()
@@ -87,11 +91,19 @@ class MQTTHandlerRunner(object):
         """Listens and processes the next published message.
         It will wait for a finite amount of time before desisting."""
 
+        msgs = []
+
         try:
-            msg = yield self._client.deliver_message(timeout=self._timeout_deliver_secs)
-            yield self._mqtt_handler.handle_message(msg)
+            while len(msgs) < self._messages_batch_size:
+                msg = yield self._client.deliver_message(timeout=self._timeout_deliver_secs)
+                msgs.append(msg)
         except asyncio.TimeoutError:
             pass
+
+        if not len(msgs):
+            return
+
+        yield [self._mqtt_handler.handle_message(msg) for msg in msgs]
 
     @tornado.gen.coroutine
     def publish_queued_messages(self):
