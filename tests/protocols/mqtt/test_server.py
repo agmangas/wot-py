@@ -217,7 +217,8 @@ def test_property_add_remove(mqtt_server):
             payload = json.dumps({"action": "write", "value": value}).encode()
             yield client_write.publish(topic_write, payload, qos=QOS_0)
 
-        periodic_write = tornado.ioloop.PeriodicCallback(publish_write, 50)
+        write_interval = (timeout_secs / 4.0) * 1000.0
+        periodic_write = tornado.ioloop.PeriodicCallback(publish_write, write_interval)
         periodic_write.start()
 
         try:
