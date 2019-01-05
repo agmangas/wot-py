@@ -146,6 +146,8 @@ class CoAPClient(BaseProtocolClient):
             response_obsv = yield request_obsv.observation.__aiter__().__anext__()
             invocation_status = json.loads(response_obsv.payload)
 
+        request_obsv.observation.cancel()
+
         if invocation_status.get("error"):
             raise Exception(invocation_status.get("error"))
         else:
