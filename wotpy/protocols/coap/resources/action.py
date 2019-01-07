@@ -49,7 +49,7 @@ def get_thing_action(server, request):
 class ActionInvokeResource(aiocoap.resource.ObservableResource):
     """CoAP resource to invoke Actions and observe those invocations."""
 
-    DEFAULT_CLEAR_MS = 1000 * 60 * 60
+    DEFAULT_CLEAR_MS = 1000 * 60 * 10
 
     def __init__(self, server, clear_ms=None):
         super(ActionInvokeResource, self).__init__()
