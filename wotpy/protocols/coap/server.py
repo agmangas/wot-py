@@ -56,6 +56,12 @@ class CoAPServer(BaseProtocolServer):
 
         return self._ssl_context is not None
 
+    @property
+    def action_clear_ms(self):
+        """Returns the timeout (ms) before completed actions are removed from the server."""
+
+        return self._action_clear_ms if self._action_clear_ms else ActionInvokeResource.DEFAULT_CLEAR_MS
+
     def _build_forms_property(self, proprty, hostname):
         """Builds and returns the CoAP Form instances for the given Property interaction."""
 
