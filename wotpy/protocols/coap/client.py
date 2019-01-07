@@ -63,7 +63,11 @@ class CoAPClient(BaseProtocolClient):
 
             query = urlparse(href).query
 
-            state = {"active": True}
+            state = {
+                "active": True,
+                "request": None,
+                "pending": None
+            }
 
             @handle_observer_finalization(observer)
             @tornado.gen.coroutine
@@ -72,27 +76,39 @@ class CoAPClient(BaseProtocolClient):
 
                 coap_client = yield aiocoap.Context.create_client_context()
                 msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href, observe=0)
+                state["request"] = coap_client.request(msg)
 
                 self._logr.debug("Sending observation request: {}".format(msg))
 
-                request = coap_client.request(msg)
-                first_resp = yield request.response
+                future_first_resp = state["request"].response
+                state["pending"] = future_first_resp
+                first_resp = yield future_first_resp
+                state["pending"] = None
                 next_item = next_item_builder(first_resp.payload)
                 next_item is not None and observer.on_next(next_item)
 
                 while state["active"]:
                     self._logr.debug("Waiting for next observed item of: {}".format(query))
-                    next_obsv = yield request.observation.__aiter__().__anext__()
-                    next_item = next_item_builder(next_obsv.payload)
+                    next_obsv_gen = state["request"].observation.__aiter__().__anext__()
+                    future_resp = tornado.gen.convert_yielded(next_obsv_gen)
+                    state["pending"] = future_resp
+                    resp = yield future_resp
+                    state["pending"] = None
+                    next_item = next_item_builder(resp.payload)
                     next_item is not None and observer.on_next(next_item)
 
-                if not request.observation.cancelled:
-                    self._logr.debug("Cancelling observation on: {}".format(query))
-                    request.observation.cancel()
+                self._logr.debug("Terminating observation callback on: {}".format(query))
 
             def unsubscribe():
-                self._logr.debug("Disabling active flag for observation on: {}".format(query))
+                self._logr.debug("Cancelling active observation on: {}".format(query))
+
                 state["active"] = False
+
+                if state["request"] and not state["request"].observation.cancelled:
+                    state["request"].observation.cancel()
+
+                if state["pending"]:
+                    state["pending"].cancel()
 
             tornado.ioloop.IOLoop.current().add_callback(callback)
 
