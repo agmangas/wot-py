@@ -26,7 +26,7 @@ class MQTTHandlerRunner(object):
     MQTT broker, delivers messages, and runs the handler in a loop."""
 
     DEFAULT_TIMEOUT_DELIVER_SECS = 0.1
-    DEFAULT_MESSAGES_BATCH_SIZE = 100
+    DEFAULT_MESSAGES_BATCH_SIZE = 50
 
     def __init__(self, broker_url, mqtt_handler,
                  timeout_deliver_secs=DEFAULT_TIMEOUT_DELIVER_SECS,
