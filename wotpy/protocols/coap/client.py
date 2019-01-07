@@ -6,6 +6,7 @@ Classes that contain the client logic for the CoAP protocol.
 """
 
 import json
+import logging
 
 import aiocoap
 import tornado.concurrent
@@ -13,6 +14,7 @@ import tornado.gen
 import tornado.ioloop
 import tornado.platform.asyncio
 from rx import Observable
+from six.moves.urllib_parse import urlparse
 
 from wotpy.protocols.client import BaseProtocolClient
 from wotpy.protocols.coap.enums import CoAPSchemes
@@ -25,6 +27,10 @@ from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent
 
 class CoAPClient(BaseProtocolClient):
     """Implementation of the protocol client interface for the CoAP protocol."""
+
+    def __init__(self):
+        self._logr = logging.getLogger(__name__)
+        super(CoAPClient, self).__init__()
 
     @classmethod
     def _pick_coap_href(cls, td, forms, op=None):
@@ -48,47 +54,45 @@ class CoAPClient(BaseProtocolClient):
 
         return form_coaps if form_coaps is not None else find_href(CoAPSchemes.COAP)
 
-    @classmethod
-    def _build_subscribe(cls, href, next_item_builder):
+    def _build_subscribe(self, href, next_item_builder):
         """Builds the subscribe function that should be passed when
         constructing an Observable linked to an observable CoAP resurce."""
 
         def subscribe(observer):
             """Subscription function to observe resources using the CoAP protocol."""
 
-            state = {
-                "active": True,
-                "request": None,
-                "pending": None
-            }
+            query = urlparse(href).query
+
+            state = {"active": True}
 
             @handle_observer_finalization(observer)
             @tornado.gen.coroutine
             def callback():
+                self._logr.debug("Creating CoAP client for observation: {}".format(query))
+
                 coap_client = yield aiocoap.Context.create_client_context()
                 msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href, observe=0)
-                state["request"] = coap_client.request(msg)
 
-                future_first_resp = state["request"].response
-                state["pending"] = future_first_resp
-                first_resp = yield future_first_resp
-                state["pending"] = None
+                self._logr.debug("Sending observation request: {}".format(msg))
+
+                request = coap_client.request(msg)
+                first_resp = yield request.response
                 next_item = next_item_builder(first_resp.payload)
                 next_item is not None and observer.on_next(next_item)
 
                 while state["active"]:
-                    next_obsv_gen = state["request"].observation.__aiter__().__anext__()
-                    future_resp = tornado.gen.convert_yielded(next_obsv_gen)
-                    state["pending"] = future_resp
-                    resp = yield future_resp
-                    state["pending"] = None
-                    next_item = next_item_builder(resp.payload)
+                    self._logr.debug("Waiting for next observed item of: {}".format(query))
+                    next_obsv = yield request.observation.__aiter__().__anext__()
+                    next_item = next_item_builder(next_obsv.payload)
                     next_item is not None and observer.on_next(next_item)
 
+                if not request.observation.cancelled:
+                    self._logr.debug("Cancelling observation on: {}".format(query))
+                    request.observation.cancel()
+
             def unsubscribe():
+                self._logr.debug("Disabling active flag for observation on: {}".format(query))
                 state["active"] = False
-                state["request"] and state["request"].observation.cancel()
-                state["pending"] and state["pending"].cancel()
 
             tornado.ioloop.IOLoop.current().add_callback(callback)
 
@@ -146,7 +150,8 @@ class CoAPClient(BaseProtocolClient):
             response_obsv = yield request_obsv.observation.__aiter__().__anext__()
             invocation_status = json.loads(response_obsv.payload)
 
-        request_obsv.observation.cancel()
+        if not request_obsv.observation.cancelled:
+            request_obsv.observation.cancel()
 
         if invocation_status.get("error"):
             raise Exception(invocation_status.get("error"))
