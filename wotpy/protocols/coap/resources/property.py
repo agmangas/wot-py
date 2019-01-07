@@ -117,6 +117,7 @@ class PropertyObservableResource(aiocoap.resource.ObservableResource):
         subscription = thing_property.subscribe(on_next=on_next, on_error=on_error)
 
         def cancellation_cb():
+            self._logr.debug("Disposing of subscription to: {}".format(thing_property))
             subscription.dispose()
 
         server_observation.accept(cancellation_cb)

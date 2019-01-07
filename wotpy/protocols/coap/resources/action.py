@@ -7,6 +7,7 @@ CoAP resources to deal with Action interactions.
 
 import datetime
 import json
+import logging
 import uuid
 
 import aiocoap
@@ -19,7 +20,6 @@ import tornado.ioloop
 from wotpy.protocols.coap.resources.utils import parse_request_opt_query
 
 JSON_CONTENT_FORMAT = 50
-DEFAULT_CLEAR_MS = 1000 * 60 * 60
 
 
 def get_thing_action(server, request):
@@ -49,11 +49,14 @@ def get_thing_action(server, request):
 class ActionInvokeResource(aiocoap.resource.ObservableResource):
     """CoAP resource to invoke Actions and observe those invocations."""
 
+    DEFAULT_CLEAR_MS = 1000 * 60 * 60
+
     def __init__(self, server, clear_ms=None):
         super(ActionInvokeResource, self).__init__()
         self._server = server
-        self._clear_ms = DEFAULT_CLEAR_MS if clear_ms is None else clear_ms
+        self._clear_ms = self.DEFAULT_CLEAR_MS if clear_ms is None else clear_ms
         self._pending_actions = {}
+        self._logr = logging.getLogger(__name__)
 
     @tornado.gen.coroutine
     def add_observation(self, request, server_observation):
@@ -72,10 +75,11 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
         invocation_id = request_payload.get("invocation", None)
 
         if invocation_id not in self._pending_actions:
+            self._logr.debug("Observation rejected (unknown invocation): {}".format(invocation_id))
             return
 
         def cancellation_cb():
-            pass
+            self._logr.debug("Observation cancel callback for invocation: {}".format(invocation_id))
 
         server_observation.accept(cancellation_cb)
 
@@ -134,11 +138,13 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
         invocation_id = uuid.uuid4().hex
 
         def clear_cb():
+            self._logr.debug("Removing pending invocation: {}".format(invocation_id))
             self._pending_actions.pop(invocation_id, None)
 
         # noinspection PyUnusedLocal
         def done_cb(fut):
             loop = tornado.ioloop.IOLoop.current()
+            self._logr.debug("Invocation done ({}) - Clean timeout: {} ms".format(invocation_id, self._clear_ms))
             loop.add_timeout(datetime.timedelta(milliseconds=self._clear_ms), clear_cb)
 
         input_value = request_payload.get("input")

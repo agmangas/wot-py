@@ -88,6 +88,7 @@ class EventObserveResource(aiocoap.resource.ObservableResource):
         subscription = thing_event.subscribe(on_next=on_next, on_error=on_error)
 
         def cancellation_cb():
+            self._logr.debug("Disposing of subscription to: {}".format(thing_event))
             subscription.dispose()
 
         server_observation.accept(cancellation_cb)
