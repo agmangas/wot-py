@@ -85,6 +85,7 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
 
         # noinspection PyUnusedLocal
         def trigger_cb(ft):
+            self._logr.debug("Triggering observation for invocation: {}".format(invocation_id))
             server_observation.trigger()
 
         future_result = self._pending_actions[invocation_id]
@@ -96,6 +97,8 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
 
         request_payload = json.loads(request.payload)
         invocation_id = request_payload.get("invocation", None)
+
+        self._logr.debug("Received GET request for invocation: {}".format(invocation_id))
 
         if invocation_id is None:
             raise aiocoap.error.BadRequest(b"Missing invocation ID")
@@ -112,6 +115,7 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
             raise tornado.gen.Return(response)
 
         if not future_result.done():
+            self._logr.debug("Invocation ({}) is still pending".format(invocation_id))
             raise_response({"invocation": invocation_id, "done": False})
 
         resp_dict = {"done": True, "invocation": invocation_id}
@@ -121,6 +125,8 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
             resp_dict.update({"result": result})
         except Exception as ex:
             resp_dict.update({"error": str(ex)})
+
+        self._logr.debug("Returning invocation ({}) status: {}".format(invocation_id, resp_dict))
 
         raise_response(resp_dict)
 
