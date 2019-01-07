@@ -61,6 +61,7 @@ LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(format=LOG_FORMAT)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+logging.getLogger("wotpy").setLevel(logging.DEBUG)
 
 DEFAULT_RTRIP_MU = 0.0
 DEFAULT_RTRIP_SIGMA = 1.0

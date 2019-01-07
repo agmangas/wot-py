@@ -34,6 +34,7 @@ LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(format=LOG_FORMAT)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+logging.getLogger("wotpy").setLevel(logging.DEBUG)
 
 
 class ConsumedThingCapture(object):
@@ -383,6 +384,8 @@ async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, t
         "lambd": lambd,
         "total": total
     })
+
+    logger.info("Event burst action completed")
 
     try:
         logger.info("Waiting for last events to arrive")
