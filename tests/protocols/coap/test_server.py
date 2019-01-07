@@ -188,7 +188,7 @@ def test_property_subscription(coap_server):
 
 
 @tornado.gen.coroutine
-def _test_action_invoke(the_coap_server, input_value=None):
+def _test_action_invoke(the_coap_server, input_value=None, invocation_sleep=0.05):
     """Helper function to invoke an Action in the CoAP server."""
 
     exposed_thing = next(the_coap_server.exposed_things)
@@ -206,11 +206,15 @@ def _test_action_invoke(the_coap_server, input_value=None):
     assert response.code.is_successful()
     assert invocation_id
 
-    yield tornado.gen.sleep(0.01)
+    yield tornado.gen.sleep(invocation_sleep)
 
     obsv_payload = json.dumps({"invocation": invocation_id}).encode("utf-8")
     obsv_msg = aiocoap.Message(code=aiocoap.Code.GET, payload=obsv_payload, uri=href, observe=0)
-    obsv_response = yield coap_client.request(obsv_msg).response
+    obsv_request = coap_client.request(obsv_msg)
+    obsv_response = yield obsv_request.response
+
+    if not obsv_request.observation.cancelled:
+        obsv_request.observation.cancel()
 
     raise tornado.gen.Return(obsv_response)
 
@@ -223,6 +227,7 @@ def test_action_invoke(coap_server):
         input_value = Faker().pyint()
         response = yield _test_action_invoke(coap_server, input_value=input_value)
         data = json.loads(response.payload)
+
         assert response.code.is_successful()
         assert data.get("done") is True
         assert data.get("error", None) is None
@@ -237,7 +242,9 @@ def test_action_clear_invocation(coap_server):
 
     @tornado.gen.coroutine
     def test_coroutine():
-        response = yield _test_action_invoke(coap_server)
+        invocation_sleep_secs = 0.1
+        assert (invocation_sleep_secs * 1000) > coap_server.action_clear_ms
+        response = yield _test_action_invoke(coap_server, invocation_sleep=invocation_sleep_secs)
         assert not response.code.is_successful()
 
     run_test_coroutine(test_coroutine)
@@ -353,7 +360,10 @@ def test_event_subscription(coap_server):
     event_name = next(six.iterkeys(exposed_thing.thing.events))
     href = _get_event_href(exposed_thing, event_name, coap_server)
 
-    emitted_values = [{"num": Faker().pyint(), "str": Faker().sentence()} for _ in range(5)]
+    emitted_values = [{
+        "num": Faker().pyint(),
+        "str": Faker().sentence()
+    } for _ in range(5)]
 
     def emit_event():
         exposed_thing.emit_event(event_name, payload=emitted_values[0])
