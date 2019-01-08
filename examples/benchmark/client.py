@@ -165,7 +165,7 @@ class ConsumedThingCapture(object):
         self._process = None
         self._output_file = None
 
-    def _build_display_filter(self, protocol):
+    def _build_display_filter(self, protocol, protocol_layer_only=False):
         """Returns the Wireshark display filter for packets of the given protocol."""
 
         default_ports = {
@@ -212,7 +212,7 @@ class ConsumedThingCapture(object):
             for port in ports
         ])
 
-        if protocol in protocol_keys:
+        if protocol in protocol_keys and protocol_layer_only:
             display_filter = "({}) and {}".format(display_filter, protocol_keys[protocol])
 
         return display_filter
