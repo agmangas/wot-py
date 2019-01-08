@@ -36,6 +36,16 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logging.getLogger("wotpy").setLevel(logging.DEBUG)
 
+TARGET_BURST_EVENT = "burstEvent"
+TARGET_ROUND_TRIP = "measureRoundTrip"
+TARGET_CURR_TIME = "currentTime"
+
+TARGETS = [
+    TARGET_BURST_EVENT,
+    TARGET_ROUND_TRIP,
+    TARGET_CURR_TIME
+]
+
 
 class ConsumedThingCapture(object):
     """Represents a set of packets that have been captured
@@ -299,14 +309,14 @@ def get_arr_stats(arr):
     """Takes a list of numbers and returns a dict with some statistics."""
 
     return {
-        "mean": numpy.mean(arr).item(),
-        "median": numpy.median(arr).item(),
-        "std": numpy.std(arr).item(),
-        "var": numpy.var(arr).item(),
-        "max": numpy.max(arr).item(),
-        "min": numpy.min(arr).item(),
-        "p95": numpy.percentile(arr, 95).item(),
-        "p99": numpy.percentile(arr, 99).item()
+        "mean": numpy.mean(arr).item() if len(arr) else None,
+        "median": numpy.median(arr).item() if len(arr) else None,
+        "std": numpy.std(arr).item() if len(arr) else None,
+        "var": numpy.var(arr).item() if len(arr) else None,
+        "max": numpy.max(arr).item() if len(arr) else None,
+        "min": numpy.min(arr).item() if len(arr) else None,
+        "p95": numpy.percentile(arr, 95).item() if len(arr) else None,
+        "p99": numpy.percentile(arr, 99).item() if len(arr) else None
     }
 
 
@@ -627,25 +637,31 @@ def parse_args():
         choices=Protocols.list(),
         help="Protocol binding that should be used by the WoT client")
 
+    parser.add_argument(
+        "--output",
+        dest="output",
+        required=True,
+        help="Path to output JSON file")
+
+    subparsers = parser.add_subparsers(dest="target")
+    subparsers.required = True
+
+    parser_burst_event = subparsers.add_parser(TARGET_BURST_EVENT)
+    parser_burst_event.set_defaults(target=TARGET_BURST_EVENT)
+    parser_burst_event.add_argument("--lambd", dest="lambd", required=True, type=float)
+    parser_burst_event.add_argument("--total", dest="total", required=True, type=int)
+
+    parser_round_trip = subparsers.add_parser(TARGET_ROUND_TRIP)
+    parser_round_trip.set_defaults(target=TARGET_ROUND_TRIP)
+    parser_round_trip.add_argument("--batches", dest="batches", required=True, type=int)
+    parser_round_trip.add_argument("--parallel", dest="parallel", required=True, type=int)
+
+    parser_current_time = subparsers.add_parser(TARGET_CURR_TIME)
+    parser_current_time.set_defaults(target=TARGET_CURR_TIME)
+    parser_current_time.add_argument("--rate", dest="rate", required=True, type=float)
+    parser_current_time.add_argument("--total", dest="total", required=True, type=int)
+
     return parser.parse_args()
-
-
-NUM_SAMPLES = 2
-
-EVENT_LAMBD_MIN = 1.0
-EVENT_LAMBD_MAX = 200.0
-EVENT_TOTAL_MIN = 10
-EVENT_TOTAL_MAX = 100
-
-ACTION_BATCH_MIN = 1
-ACTION_BATCH_MAX = 100
-ACTION_PARALLEL_MIN = 1
-ACTION_PARALLEL_MAX = 100
-
-PROP_RATE_MIN = 1.0
-PROP_RATE_MAX = 100.0
-PROP_TOTAL_MIN = 1
-PROP_TOTAL_MAX = 100
 
 
 def main():
@@ -665,65 +681,76 @@ def main():
 
     logger.info("Consumed Thing: {}".format(consumed_thing))
 
-    stats = {
-        "args": vars(args),
-        "burstEvent": [],
-        "measureRoundTrip": [],
-        "currentTime": []
+    def run_target_event_burst():
+        logger.info("Consuming burst event (lambd={} total={})".format(args.lambd, args.total))
+
+        ret = consume_event_burst(
+            consumed_thing,
+            args.capture_iface,
+            args.protocol,
+            lambd=args.lambd,
+            total=args.total)
+
+        logger.info("Stats:\n{}".format(pprint.pformat(ret)))
+
+        return ret
+
+    def run_target_measure_round_trip():
+        logger.info("Consuming round trip action (batches={} parallel={})".format(args.batches, args.parallel))
+
+        ret = consume_round_trip_action(
+            consumed_thing,
+            args.capture_iface,
+            args.protocol,
+            num_batches=args.batches,
+            num_parallel=args.parallel)
+
+        logger.info("Stats:\n{}".format(pprint.pformat(ret)))
+
+        return ret
+
+    def run_current_time():
+        logger.info("Consuming time property (rate={} total={})".format(args.rate, args.total))
+
+        ret = consume_time_prop(
+            consumed_thing,
+            args.capture_iface,
+            args.protocol,
+            rate=args.rate,
+            total=args.total)
+
+        logger.info("Stats:\n{}".format(pprint.pformat(ret)))
+
+        return ret
+
+    func_map = {
+        TARGET_CURR_TIME: run_current_time,
+        TARGET_ROUND_TRIP: run_target_measure_round_trip,
+        TARGET_BURST_EVENT: run_target_event_burst
     }
 
-    for lambd in numpy.linspace(EVENT_LAMBD_MIN, EVENT_LAMBD_MAX, num=NUM_SAMPLES):
-        for total in numpy.linspace(EVENT_TOTAL_MIN, EVENT_TOTAL_MAX, num=NUM_SAMPLES):
-            logger.info("Consuming event burst (lambd={} total={})".format(lambd, total))
+    stats = func_map[args.target]()
+    stats.update({"now": int(time.time() * 1000)})
 
-            stats_event = consume_event_burst(
-                consumed_thing,
-                args.capture_iface,
-                args.protocol,
-                lambd=float(lambd),
-                total=int(total))
+    logger.info("Serializing results to: {}".format(args.output))
 
-            logger.info("Stats:\n{}".format(pprint.pformat(stats_event)))
+    prev_raw = None
 
-            stats["burstEvent"].append(stats_event)
+    try:
+        with open(args.output, "r") as fh:
+            prev_raw = fh.read()
+    except FileNotFoundError:
+        pass
 
-    for batches in numpy.linspace(ACTION_BATCH_MIN, ACTION_BATCH_MAX, num=NUM_SAMPLES):
-        for parallel in numpy.linspace(ACTION_PARALLEL_MIN, ACTION_PARALLEL_MAX, num=NUM_SAMPLES):
-            logger.info("Consuming round trip action (batch={} parallel={})".format(batches, parallel))
+    with open(args.output, "w") as fh:
+        content = json.loads(prev_raw) if prev_raw else {}
+        content[args.target] = content[args.target] if content.get(args.target) else {}
 
-            stats_action = consume_round_trip_action(
-                consumed_thing,
-                args.capture_iface,
-                args.protocol,
-                num_batches=int(batches),
-                num_parallel=int(parallel))
+        content[args.target][args.protocol] = content[args.target][args.protocol] \
+            if content[args.target].get(args.protocol) else []
 
-            logger.info("Stats:\n{}".format(pprint.pformat(stats_action)))
-
-            stats["measureRoundTrip"].append(stats_action)
-
-    for rate in numpy.linspace(PROP_RATE_MIN, PROP_RATE_MAX, num=NUM_SAMPLES):
-        for total in numpy.linspace(PROP_TOTAL_MIN, PROP_TOTAL_MAX, num=NUM_SAMPLES):
-            logger.info("Consuming time property (rate={} total={})".format(rate, total))
-
-            stats_prop = consume_time_prop(
-                consumed_thing,
-                args.capture_iface,
-                args.protocol,
-                rate=float(rate),
-                total=int(total))
-
-            logger.info("Stats:\n{}".format(pprint.pformat(stats_prop)))
-
-            stats["currentTime"].append(stats_prop)
-
-    curr_dir = os.path.dirname(os.path.realpath(__file__))
-    file_path = os.path.join(curr_dir, "{}-{}.json".format(args.protocol.lower(), int(time.time())))
-
-    logger.info("Serializing results to: {}".format(file_path))
-
-    with open(file_path, "w") as fh:
-        fh.write(json.dumps(stats))
+        content[args.target][args.protocol].append(stats)
+        fh.write(json.dumps(content))
 
 
 if __name__ == "__main__":
