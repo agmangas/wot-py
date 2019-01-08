@@ -12,7 +12,7 @@ import aiocoap
 import tornado.concurrent
 import tornado.gen
 import tornado.ioloop
-import tornado.platform.asyncio
+import tornado.locks
 from rx import Observable
 from six.moves.urllib_parse import urlparse
 
@@ -30,6 +30,8 @@ class CoAPClient(BaseProtocolClient):
 
     def __init__(self):
         self._logr = logging.getLogger(__name__)
+        self._coap_client = None
+        self._client_lock = tornado.locks.Lock()
         super(CoAPClient, self).__init__()
 
     @classmethod
@@ -54,6 +56,37 @@ class CoAPClient(BaseProtocolClient):
 
         return form_coaps if form_coaps is not None else find_href(CoAPSchemes.COAP)
 
+    @classmethod
+    def _assert_success(cls, res):
+        """Asserts that the given CoAP response was successful and raises an Exception if not."""
+
+        if not res.code.is_successful():
+            raise ProtocolClientException("Unsuccessful CoAP response: {}".format(res))
+
+    @tornado.gen.coroutine
+    def get_client(self):
+        """Returns the CoAP client, initializing it if necessary."""
+
+        with (yield self._client_lock.acquire()):
+            if self._coap_client is None:
+                self._logr.debug("Creating CoAP client context")
+                coap_client = yield aiocoap.Context.create_client_context()
+                self._coap_client = coap_client
+
+            raise tornado.gen.Return(self._coap_client)
+
+    @tornado.gen.coroutine
+    def shutdown_client(self):
+        """Shuts down the currently active CoAP client."""
+
+        with (yield self._client_lock.acquire()):
+            if self._coap_client is None:
+                return
+
+            self._logr.debug("Shutting down CoAP client context")
+            yield self._coap_client.shutdown()
+            self._coap_client = None
+
     def _build_subscribe(self, href, next_item_builder):
         """Builds the subscribe function that should be passed when
         constructing an Observable linked to an observable CoAP resurce."""
@@ -74,7 +107,8 @@ class CoAPClient(BaseProtocolClient):
             def callback():
                 self._logr.debug("Creating CoAP client for observation: {}".format(query))
 
-                coap_client = yield aiocoap.Context.create_client_context()
+                coap_client = yield self.get_client()
+
                 msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href, observe=0)
                 state["request"] = coap_client.request(msg)
 
@@ -84,6 +118,7 @@ class CoAPClient(BaseProtocolClient):
                 state["pending"] = future_first_resp
                 first_resp = yield future_first_resp
                 state["pending"] = None
+                self._assert_success(first_resp)
                 next_item = next_item_builder(first_resp.payload)
                 next_item is not None and observer.on_next(next_item)
 
@@ -94,20 +129,23 @@ class CoAPClient(BaseProtocolClient):
                     state["pending"] = future_resp
                     resp = yield future_resp
                     state["pending"] = None
+                    self._assert_success(resp)
                     next_item = next_item_builder(resp.payload)
                     next_item is not None and observer.on_next(next_item)
 
-                self._logr.debug("Terminating observation callback on: {}".format(query))
+                self._logr.debug("Terminated subscription callback for: {}".format(query))
 
             def unsubscribe():
-                self._logr.debug("Cancelling active observation on: {}".format(query))
+                self._logr.debug("Unsubscribing from: {}".format(query))
 
                 state["active"] = False
 
                 if state["request"] and not state["request"].observation.cancelled:
+                    self._logr.debug("Cancelling observation on: {}".format(query))
                     state["request"].observation.cancel()
 
                 if state["pending"]:
+                    self._logr.debug("Cancelling pending request: {}".format(state["pending"]))
                     state["pending"].cancel()
 
             tornado.ioloop.IOLoop.current().add_callback(callback)
@@ -148,22 +186,27 @@ class CoAPClient(BaseProtocolClient):
         if href is None:
             raise FormNotFoundException()
 
-        coap_client = yield aiocoap.Context.create_client_context()
+        coap_client = yield self.get_client()
 
         payload = json.dumps({"input": input_value}).encode("utf-8")
         msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
-        response = yield coap_client.request(msg).response
+        request = coap_client.request(msg)
+        response = yield request.response
+        self._assert_success(response)
+
         invocation_id = json.loads(response.payload).get("invocation")
 
         payload_obsv = json.dumps({"invocation": invocation_id}).encode("utf-8")
         msg_obsv = aiocoap.Message(code=aiocoap.Code.GET, payload=payload_obsv, uri=href, observe=0)
         request_obsv = coap_client.request(msg_obsv)
         first_response_obsv = yield request_obsv.response
+        self._assert_success(first_response_obsv)
 
         invocation_status = json.loads(first_response_obsv.payload)
 
         while not invocation_status.get("done"):
             response_obsv = yield request_obsv.observation.__aiter__().__anext__()
+            self._assert_success(response_obsv)
             invocation_status = json.loads(response_obsv.payload)
 
         if not request_obsv.observation.cancelled:
@@ -186,13 +229,12 @@ class CoAPClient(BaseProtocolClient):
         if href is None:
             raise FormNotFoundException()
 
-        coap_client = yield aiocoap.Context.create_client_context()
+        coap_client = yield self.get_client()
+
         payload = json.dumps({"value": value}).encode("utf-8")
         msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
         response = yield coap_client.request(msg).response
-
-        if not response.code.is_successful():
-            raise ProtocolClientException(str(response.code))
+        self._assert_success(response)
 
     @tornado.gen.coroutine
     def read_property(self, td, name):
@@ -206,9 +248,11 @@ class CoAPClient(BaseProtocolClient):
         if href is None:
             raise FormNotFoundException()
 
-        coap_client = yield aiocoap.Context.create_client_context()
+        coap_client = yield self.get_client()
+
         msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href)
         response = yield coap_client.request(msg).response
+        self._assert_success(response)
         prop_value = json.loads(response.payload).get("value")
 
         raise tornado.gen.Return(prop_value)
