@@ -325,8 +325,17 @@ def test_action_invoke_parallel(coap_server):
         assert not handler_futures[invocation_01["future"]].done()
         assert not handler_futures[invocation_02["future"]].done()
 
-        fut_result_01 = _next_observation(observe_req_01)
-        fut_result_02 = _next_observation(observe_req_02)
+        @tornado.gen.coroutine
+        def wait_for_result(observe_req):
+            res = None
+
+            while not res or not res.get("done", False):
+                res = yield _next_observation(observe_req)
+
+            raise tornado.gen.Return(res)
+
+        fut_result_01 = tornado.gen.convert_yielded(wait_for_result(observe_req_01))
+        fut_result_02 = tornado.gen.convert_yielded(wait_for_result(observe_req_02))
 
         unblock_01()
 
