@@ -63,7 +63,7 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
         """Handler to check the status of an ongoing invocation."""
 
         request_payload = json.loads(request.payload)
-        invocation_id = request_payload.get("invocation", None)
+        invocation_id = request_payload.get("id", None)
 
         self._logr.debug("Action GET request for invocation: {}".format(invocation_id))
 
@@ -83,9 +83,9 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
 
         if not future_result.done():
             self._logr.debug("Invocation ({}) is still pending".format(invocation_id))
-            raise_response({"invocation": invocation_id, "done": False})
+            raise_response({"id": invocation_id, "done": False})
 
-        resp_dict = {"done": True, "invocation": invocation_id}
+        resp_dict = {"done": True, "id": invocation_id}
 
         try:
             result = future_result.result()
@@ -134,7 +134,7 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
         fut_action = tornado.gen.convert_yielded(thing_action.invoke(input_value))
         tornado.concurrent.future_add_done_callback(fut_action, done_cb)
         self._pending_actions[invocation_id] = fut_action
-        response_payload = json.dumps({"invocation": invocation_id}).encode("utf-8")
+        response_payload = json.dumps({"id": invocation_id}).encode("utf-8")
         response = aiocoap.Message(code=aiocoap.Code.CREATED, payload=response_payload)
         response.opt.content_format = JSON_CONTENT_FORMAT
 

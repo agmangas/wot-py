@@ -201,14 +201,14 @@ def _test_action_invoke(the_coap_server, input_value=None, invocation_sleep=0.05
     payload = json.dumps({"input": input_value}).encode("utf-8")
     msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
     response = yield coap_client.request(msg).response
-    invocation_id = json.loads(response.payload).get("invocation")
+    invocation_id = json.loads(response.payload).get("id")
 
     assert response.code.is_successful()
     assert invocation_id
 
     yield tornado.gen.sleep(invocation_sleep)
 
-    obsv_payload = json.dumps({"invocation": invocation_id}).encode("utf-8")
+    obsv_payload = json.dumps({"id": invocation_id}).encode("utf-8")
     obsv_msg = aiocoap.Message(code=aiocoap.Code.GET, payload=obsv_payload, uri=href, observe=0)
     obsv_request = coap_client.request(obsv_msg)
     obsv_response = yield obsv_request.response
@@ -285,7 +285,7 @@ def test_action_invoke_parallel(coap_server):
         msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
         response = yield coap_client.request(msg).response
         assert response.code.is_successful()
-        invocation_id = json.loads(response.payload).get("invocation")
+        invocation_id = json.loads(response.payload).get("id")
 
         raise tornado.gen.Return({
             "number": input_num,
@@ -294,7 +294,7 @@ def test_action_invoke_parallel(coap_server):
         })
 
     def build_observe_request(coap_client, invocation):
-        payload = json.dumps({"invocation": invocation["id"]}).encode("utf-8")
+        payload = json.dumps({"id": invocation["id"]}).encode("utf-8")
         msg = aiocoap.Message(code=aiocoap.Code.GET, payload=payload, uri=href, observe=0)
         return coap_client.request(msg)
 
@@ -342,10 +342,9 @@ def test_action_invoke_parallel(coap_server):
         result_01 = yield fut_result_01
 
         assert result_01.get("done") is True
-        assert result_01.get("invocation") == invocation_01.get("id")
+        assert result_01.get("id") == invocation_01.get("id")
         assert result_01.get("result") == invocation_01.get("number") * 3
 
-        # noinspection PyUnresolvedReferences
         assert not fut_result_02.done()
 
         unblock_02()
@@ -353,7 +352,7 @@ def test_action_invoke_parallel(coap_server):
         result_02 = yield fut_result_02
 
         assert result_02.get("done") is True
-        assert result_02.get("invocation") == invocation_02.get("id")
+        assert result_02.get("id") == invocation_02.get("id")
         assert result_02.get("result") == invocation_02.get("number") * 3
 
         observe_req_01.observation.cancel()

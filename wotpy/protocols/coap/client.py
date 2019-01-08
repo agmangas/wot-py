@@ -194,9 +194,9 @@ class CoAPClient(BaseProtocolClient):
         response = yield request.response
         self._assert_success(response)
 
-        invocation_id = json.loads(response.payload).get("invocation")
+        invocation_id = json.loads(response.payload).get("id")
 
-        payload_obsv = json.dumps({"invocation": invocation_id}).encode("utf-8")
+        payload_obsv = json.dumps({"id": invocation_id}).encode("utf-8")
         msg_obsv = aiocoap.Message(code=aiocoap.Code.GET, payload=payload_obsv, uri=href, observe=0)
         request_obsv = coap_client.request(msg_obsv)
         first_response_obsv = yield request_obsv.response
