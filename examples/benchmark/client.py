@@ -415,8 +415,18 @@ def consume_round_trip_action(consumed_thing, iface, protocol, num_batches=10, n
         num_batches,
         num_parallel))
 
-    latencies_req = [item["timeArrival"] - item["timeRequest"] for item in results]
-    latencies_res = [item["timeResponse"] - item["timeReturn"] for item in results]
+    results_ok = [item for item in results if item["success"]]
+
+    latencies_req = [
+        item["result"]["timeArrival"] - item["result"]["timeRequest"]
+        for item in results_ok
+    ]
+
+    latencies_res = [
+        item["result"]["timeResponse"] - item["result"]["timeReturn"]
+        for item in results_ok
+    ]
+
     latencies = [sum(item) for item in zip(latencies_req, latencies_res)]
 
     stats.update({
@@ -425,7 +435,8 @@ def consume_round_trip_action(consumed_thing, iface, protocol, num_batches=10, n
         "size": cap.get_capture_size(protocol),
         "latencyReq": get_arr_stats(latencies_req),
         "latencyRes": get_arr_stats(latencies_res),
-        "latency": get_arr_stats(latencies)
+        "latency": get_arr_stats(latencies),
+        "successRatio": float(len(results_ok)) / len(results)
     })
 
     cap.clear()
@@ -453,9 +464,19 @@ async def _consume_round_trip_action(consumed_thing, iface, num_batches, num_par
         ]
 
         for fut in asyncio.as_completed(invocations):
-            result = await fut
-            result.update({"timeResponse": time_millis()})
-            results.append(result)
+            item = {}
+
+            try:
+                result = await fut
+                result.update({"timeResponse": time_millis()})
+                item.update({"success": True, "result": result})
+            except Exception as ex:
+                logger.warning("Error on invocation: {}".format(ex))
+                item = {"success": False, "error": ex}
+
+            logger.info("Invocation completed: {}".format("OK" if item["success"] else "ERROR"))
+
+            results.append(item)
 
     await cap.stop()
 
