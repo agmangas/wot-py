@@ -49,7 +49,7 @@ def get_thing_action(server, request):
 class ActionInvokeResource(aiocoap.resource.ObservableResource):
     """CoAP resource to invoke Actions and observe those invocations."""
 
-    DEFAULT_CLEAR_MS = 1000 * 60 * 10
+    DEFAULT_CLEAR_MS = 1000 * 60 * 5
 
     def __init__(self, server, clear_ms=None):
         super(ActionInvokeResource, self).__init__()
@@ -81,6 +81,8 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
         def cancellation_cb():
             self._logr.debug("Observation cancel callback for invocation: {}".format(invocation_id))
 
+        self._logr.debug("Added observation for invocation: {}".format(invocation_id))
+
         server_observation.accept(cancellation_cb)
 
         # noinspection PyUnusedLocal
@@ -98,7 +100,7 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
         request_payload = json.loads(request.payload)
         invocation_id = request_payload.get("invocation", None)
 
-        self._logr.debug("Received GET request for invocation: {}".format(invocation_id))
+        self._logr.debug("Action GET request for invocation: {}".format(invocation_id))
 
         if invocation_id is None:
             raise aiocoap.error.BadRequest(b"Missing invocation ID")
@@ -126,7 +128,7 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
         except Exception as ex:
             resp_dict.update({"error": str(ex)})
 
-        self._logr.debug("Returning invocation ({}) status: {}".format(invocation_id, resp_dict))
+        self._logr.debug("Returning invocation: {}".format(invocation_id))
 
         raise_response(resp_dict)
 
@@ -135,6 +137,8 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
         """Handler for action invocations."""
 
         thing_action = get_thing_action(self._server, request)
+
+        self._logr.debug("Action POST request: {}".format(thing_action))
 
         request_payload = json.loads(request.payload)
 
@@ -150,13 +154,13 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
         # noinspection PyUnusedLocal
         def done_cb(fut):
             loop = tornado.ioloop.IOLoop.current()
-            self._logr.debug("Invocation done ({}) - Clean timeout: {} ms".format(invocation_id, self._clear_ms))
+            self._logr.debug("Invocation done ({}): cleaning on {} ms".format(invocation_id, self._clear_ms))
             loop.add_timeout(datetime.timedelta(milliseconds=self._clear_ms), clear_cb)
 
         input_value = request_payload.get("input")
-        future_action = thing_action.invoke(input_value)
-        tornado.concurrent.future_add_done_callback(future_action, done_cb)
-        self._pending_actions[invocation_id] = future_action
+        fut_action = tornado.gen.convert_yielded(thing_action.invoke(input_value))
+        tornado.concurrent.future_add_done_callback(fut_action, done_cb)
+        self._pending_actions[invocation_id] = fut_action
         response_payload = json.dumps({"invocation": invocation_id}).encode("utf-8")
         response = aiocoap.Message(code=aiocoap.Code.CREATED, payload=response_payload)
         response.opt.content_format = JSON_CONTENT_FORMAT
