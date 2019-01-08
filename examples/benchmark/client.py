@@ -542,13 +542,10 @@ async def _consume_time_prop(consumed_thing, iface, rate, total):
         logger.info("Total expected duration: {} s".format(duration_expected))
 
         for idx in range(total):
-            req_ini = time.time()
             fut_res = asyncio.ensure_future(consumed_thing.properties["currentTime"].read())
-            times_req.append((fut_res, req_ini))
+            times_req.append((fut_res, time_millis()))
             requests_queue.put_nowait(fut_res)
-            sleep_secs = interval_secs - (time.time() - req_ini)
-            sleep_secs = sleep_secs if sleep_secs > 0 else 0
-            await asyncio.sleep(sleep_secs)
+            await asyncio.sleep(interval_secs)
 
         logger.info("Finished sending requests")
 
@@ -563,8 +560,8 @@ async def _consume_time_prop(consumed_thing, iface, rate, total):
         except Exception as ex:
             logger.exception(ex)
             req_error.append(fut_res)
-
-        times_res.append((fut_res, time.time()))
+        finally:
+            times_res.append((fut_res, time_millis()))
 
     async def consume_requests_queue():
         """Consumes the requests queue to await on every Future response."""
@@ -604,8 +601,8 @@ async def _consume_time_prop(consumed_thing, iface, rate, total):
         is_success = res in req_valid
 
         results.append({
-            "timeReq": next(int(item[1] * 1000) for item in times_req if item[0] is res),
-            "timeRes": next(int(item[1] * 1000) for item in times_res if item[0] is res),
+            "timeReq": next(item[1] for item in times_req if item[0] is res),
+            "timeRes": next(item[1] for item in times_res if item[0] is res),
             "result": res.result() if is_success else None,
             "success": is_success
         })
