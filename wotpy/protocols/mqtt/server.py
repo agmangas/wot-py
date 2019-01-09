@@ -138,7 +138,6 @@ class MQTTServer(BaseProtocolServer):
         that handle the WoT clients requests."""
 
         with (yield self._server_lock.acquire()):
-            yield [runner.connect() for runner in self._handler_runners]
             yield [runner.start() for runner in self._handler_runners]
 
     @tornado.gen.coroutine
@@ -147,4 +146,3 @@ class MQTTServer(BaseProtocolServer):
 
         with (yield self._server_lock.acquire()):
             yield [runner.stop() for runner in self._handler_runners]
-            yield [runner.disconnect() for runner in self._handler_runners]

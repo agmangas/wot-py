@@ -8,7 +8,6 @@ Base class for MQTT handlers.
 # noinspection PyCompatibility
 import asyncio
 import logging
-import traceback
 
 import tornado.concurrent
 import tornado.gen
@@ -28,13 +27,24 @@ class MQTTHandlerRunner(object):
     DEFAULT_TIMEOUT_DELIVER_SECS = 0.1
     DEFAULT_MESSAGES_BATCH_SIZE = 50
 
+    DEFAULT_CLIENT_CONFIG = {
+        "keep_alive": 10,
+        "auto_reconnect": True,
+        "default_qos": 0,
+        "default_retain": False
+    }
+
     def __init__(self, broker_url, mqtt_handler,
                  timeout_deliver_secs=DEFAULT_TIMEOUT_DELIVER_SECS,
-                 messages_batch_size=DEFAULT_MESSAGES_BATCH_SIZE):
+                 messages_batch_size=DEFAULT_MESSAGES_BATCH_SIZE,
+                 reconnect_on_handler_error=True,
+                 client_config=None):
         self._broker_url = broker_url
         self._mqtt_handler = mqtt_handler
         self._timeout_deliver_secs = timeout_deliver_secs
         self._messages_batch_size = messages_batch_size
+        self._reconnect_on_handler_error = reconnect_on_handler_error
+        self._client_config = client_config if client_config else self.DEFAULT_CLIENT_CONFIG
         self._client = None
         self._lock_conn = tornado.locks.Lock()
         self._lock_run = tornado.locks.Lock()
@@ -42,48 +52,66 @@ class MQTTHandlerRunner(object):
         self._logr = logging.getLogger(__name__)
 
     @tornado.gen.coroutine
-    def connect(self):
-        """Connects to the MQTT broker.
-        Disconnects first if necessary."""
+    def _connect(self):
+        """MQTT connection helper function."""
 
-        with (yield self._lock_conn.acquire()):
-            yield self._disconnect()
+        self._logr.debug("Using MQTT client config: {}".format(self._client_config))
 
-            hbmqtt_client = MQTTClient()
+        hbmqtt_client = MQTTClient(config=self._client_config)
 
-            ack_con = yield hbmqtt_client.connect(self._broker_url)
+        self._logr.debug("Connecting MQTT client to broker: {}".format(self._broker_url))
 
-            if ack_con != MQTTCodesACK.CON_OK:
-                raise ConnectException("Error code in connection ACK: {}".format(ack_con))
+        ack_con = yield hbmqtt_client.connect(self._broker_url)
 
-            if self._mqtt_handler.topics:
-                ack_sub = yield hbmqtt_client.subscribe(self._mqtt_handler.topics)
+        if ack_con != MQTTCodesACK.CON_OK:
+            raise ConnectException("Error code in connection ACK: {}".format(ack_con))
 
-                if MQTTCodesACK.SUB_ERROR in ack_sub:
-                    raise ConnectException("Error code in subscription ACK: {}".format(ack_sub))
+        if self._mqtt_handler.topics:
+            self._logr.debug("Subscribing to: {}".format(self._mqtt_handler.topics))
+            ack_sub = yield hbmqtt_client.subscribe(self._mqtt_handler.topics)
 
-            self._client = hbmqtt_client
+            if MQTTCodesACK.SUB_ERROR in ack_sub:
+                raise ConnectException("Error code in subscription ACK: {}".format(ack_sub))
+
+        self._client = hbmqtt_client
 
     @tornado.gen.coroutine
     def _disconnect(self):
-        """Helper function to disconnect from the MQTT broker."""
+        """MQTT disconnection helper function."""
 
-        if self._client is None:
-            return
+        try:
+            self._logr.debug("Disconnecting MQTT client")
 
-        client = self._client
-        self._client = None
+            if self._mqtt_handler.topics:
+                self._logr.debug("Unsubscribing from: {}".format(self._mqtt_handler.topics))
+                yield self._client.unsubscribe([name for name, qos in self._mqtt_handler.topics])
 
-        if self._mqtt_handler.topics:
-            yield client.unsubscribe([name for name, qos in self._mqtt_handler.topics])
+            yield self._client.disconnect()
+        except Exception as ex:
+            self._logr.warning("Error disconnecting MQTT client: {}".format(ex), exc_info=True)
+        finally:
+            self._client = None
 
-        yield client.disconnect()
+    @tornado.gen.coroutine
+    def connect(self, force_reconnect=False):
+        """Connects to the MQTT broker."""
+
+        with (yield self._lock_conn.acquire()):
+            if self._client is not None and force_reconnect:
+                yield self._disconnect()
+            elif self._client is not None:
+                return
+
+            yield self._connect()
 
     @tornado.gen.coroutine
     def disconnect(self):
         """Disconnects from the MQTT broker."""
 
         with (yield self._lock_conn.acquire()):
+            if self._client is None:
+                return
+
             yield self._disconnect()
 
     @tornado.gen.coroutine
@@ -132,8 +160,13 @@ class MQTTHandlerRunner(object):
             yield self.handle_delivered_message()
             yield self.publish_queued_messages()
         except Exception as ex:
-            self._logr.warning("MQTT handler error ({}): {}\n{}".format(
-                self._mqtt_handler.__class__, ex, traceback.format_exc()))
+            self._logr.warning(
+                "MQTT handler error ({}): {}".format(self._mqtt_handler.__class__, ex),
+                exc_info=True)
+
+            if self._reconnect_on_handler_error:
+                self._logr.warning("Attempting to reconnect MQTT client")
+                yield self.connect(force_reconnect=True)
 
     def _add_loop_callback(self):
         """Adds the callback that will start the infinite loop
@@ -160,6 +193,8 @@ class MQTTHandlerRunner(object):
         with (yield self._lock_run.acquire()):
             self._event_stop_request.clear()
 
+        yield self.connect(force_reconnect=True)
+
         yield self._mqtt_handler.init()
 
         self._add_loop_callback()
@@ -174,3 +209,5 @@ class MQTTHandlerRunner(object):
             pass
 
         yield self._mqtt_handler.teardown()
+
+        yield self.disconnect()

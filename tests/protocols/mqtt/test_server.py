@@ -89,6 +89,7 @@ def test_start_stop():
 
         yield mqtt_server.stop()
         yield mqtt_server.start()
+        yield mqtt_server.start()
 
         assert (yield ping())
 
