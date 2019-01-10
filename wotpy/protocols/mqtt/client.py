@@ -5,13 +5,19 @@
 Classes that contain the client logic for the MQTT protocol.
 """
 
+import asyncio
+import datetime
 import json
+import logging
+import time
 import uuid
+from json import JSONDecodeError
 
 import hbmqtt.client
 import tornado.concurrent
 import tornado.gen
 import tornado.ioloop
+import tornado.locks
 from hbmqtt.mqtt.constants import QOS_0
 from rx import Observable
 from six.moves.urllib import parse
@@ -30,10 +36,204 @@ from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent
 class MQTTClient(BaseProtocolClient):
     """Implementation of the protocol client interface for the MQTT protocol."""
 
-    def __init__(self, sub_deliver_timeout_secs=0.1, wait_on_write=True, qos=QOS_0):
+    DELIVER_TERMINATE_LOOP_SLEEP_SECS = 0.1
+
+    def __init__(self, sub_deliver_timeout_secs=0.1, wait_on_write=True, qos=QOS_0,
+                 deliver_timeout_secs=1, msg_wait_timeout_secs=5, msg_ttl_secs=15):
         self._sub_deliver_timeout_secs = sub_deliver_timeout_secs
         self._wait_on_write = wait_on_write
         self._qos = qos
+        self._deliver_timeout_secs = deliver_timeout_secs
+        self._msg_wait_timeout_secs = msg_wait_timeout_secs
+        self._msg_ttl_secs = msg_ttl_secs
+        self._lock_client = tornado.locks.Lock()
+        self._deliver_stop_events = {}
+        self._client_ref_counter = {}
+        self._msg_conditions = {}
+        self._clients = {}
+        self._messages = {}
+        self._logr = logging.getLogger(__name__)
+
+    def _build_deliver(self, broker_url):
+        """Factory for functions to get messages delivered by the broker into the messages queue."""
+
+        @tornado.gen.coroutine
+        def deliver():
+            """Gets all messages that are pending to be delivered into the messages queue."""
+
+            assert broker_url in self._clients
+            assert broker_url in self._deliver_stop_events
+
+            if broker_url not in self._messages:
+                self._messages[broker_url] = {}
+
+            while not self._deliver_stop_events[broker_url].is_set():
+                try:
+                    msg = yield self._clients[broker_url].deliver_message(
+                        timeout=self._deliver_timeout_secs)
+
+                    if msg.topic not in self._messages[broker_url]:
+                        self._messages[broker_url][msg.topic] = []
+
+                    try:
+                        self._messages[broker_url][msg.topic].append({
+                            "id": uuid.uuid4().hex,
+                            "data": json.loads(msg.data.decode()),
+                            "time": time.time()
+                        })
+
+                        self._msg_conditions[broker_url][msg.topic].notify_all()
+                    except (JSONDecodeError, TypeError, ValueError):
+                        self._logr.warning("Error decoding: {}".format(msg.data), exc_info=True)
+                except asyncio.TimeoutError:
+                    pass
+
+                self._clean_messages(broker_url)
+
+            self._deliver_stop_events[broker_url].clear()
+
+        return deliver
+
+    def _increase_ref(self, broker_url):
+        """Increases the reference counter for the MQTT client on the given broker URL."""
+
+        if broker_url not in self._client_ref_counter:
+            self._client_ref_counter[broker_url] = 0
+
+        self._client_ref_counter[broker_url] += 1
+
+    def _decrease_ref(self, broker_url):
+        """Decreases the reference counter for the MQTT client on the given broker URL."""
+
+        assert broker_url in self._client_ref_counter
+
+        self._client_ref_counter[broker_url] -= 1
+
+    @tornado.gen.coroutine
+    def _init_client(self, broker_url):
+        """Initializes and connects a client to the given broker URL."""
+
+        with (yield self._lock_client.acquire()):
+            self._increase_ref(broker_url)
+
+            if broker_url in self._clients:
+                return
+
+            client = hbmqtt.client.MQTTClient()
+
+            yield client.connect(broker_url)
+
+            self._clients[broker_url] = client
+
+            self._deliver_stop_events[broker_url] = tornado.locks.Event()
+            tornado.ioloop.IOLoop.current().add_callback(self._build_deliver(broker_url))
+
+    @tornado.gen.coroutine
+    def _disconnect_client(self, broker_url):
+        """Disconnects and removes references to a client for the given broker URL."""
+
+        with (yield self._lock_client.acquire()):
+            if broker_url not in self._clients:
+                return
+
+            self._decrease_ref(broker_url)
+
+            if self._client_ref_counter[broker_url] > 0:
+                return
+
+            yield self._clients[broker_url].disconnect()
+
+            self._clients.pop(broker_url)
+            self._messages.pop(broker_url, None)
+            self._msg_conditions.pop(broker_url, None)
+
+            self._deliver_stop_events[broker_url].set()
+
+            while self._deliver_stop_events[broker_url].is_set():
+                yield tornado.gen.sleep(self.DELIVER_TERMINATE_LOOP_SLEEP_SECS)
+
+            self._deliver_stop_events.pop(broker_url)
+
+    @tornado.gen.coroutine
+    def _subscribe(self, broker_url, topic, qos):
+        """Subscribes to a topic."""
+
+        with (yield self._lock_client.acquire()):
+            if broker_url not in self._clients:
+                return
+
+            if broker_url not in self._msg_conditions:
+                self._msg_conditions[broker_url] = {}
+
+            if topic not in self._msg_conditions[broker_url]:
+                self._msg_conditions[broker_url][topic] = tornado.locks.Condition()
+
+            yield self._clients[broker_url].subscribe([(topic, qos)])
+
+    @tornado.gen.coroutine
+    def _publish(self, broker_url, topic, payload, qos):
+        """Publishes a message with the given payload in a topic."""
+
+        with (yield self._lock_client.acquire()):
+            if broker_url not in self._clients:
+                return
+
+            yield self._clients[broker_url].publish(topic, payload, qos=qos)
+
+    @tornado.gen.coroutine
+    def _unsubscribe(self, broker_url, topic):
+        """Unsubscribes from a topic."""
+
+        with (yield self._lock_client.acquire()):
+            if broker_url not in self._clients:
+                return
+
+            yield self._clients[broker_url].unsubscribe([topic])
+
+            self._msg_conditions[broker_url].pop(topic)
+
+    def _topic_messages(self, broker_url, topic, from_time=None, ignore_ids=None):
+        """Returns a generator that yields the messages in the
+        delivered messages queue for the given topic."""
+
+        if broker_url not in self._messages:
+            return
+
+        if topic not in self._messages[broker_url]:
+            return
+
+        for msg in self._messages[broker_url][topic]:
+            is_on_time = from_time is None or msg["time"] >= from_time
+            is_ignored = ignore_ids is not None and msg["id"] in ignore_ids
+
+            if is_on_time and not is_ignored:
+                yield msg["id"], msg["data"]
+
+    def _clean_messages(self, broker_url):
+        """Removes the messages that have expired according to the TTL."""
+
+        if broker_url not in self._messages:
+            return
+
+        now = time.time()
+
+        self._messages[broker_url] = {
+            topic: [
+                msg for msg in self._messages[broker_url][topic]
+                if (now - msg["time"]) < self._msg_ttl_secs
+            ] for topic in self._messages[broker_url]
+        }
+
+    @tornado.gen.coroutine
+    def _wait_on_message(self, broker_url, topic):
+        """Waits for the arrival of a message in the given topic."""
+
+        assert broker_url in self._msg_conditions, "Unknown broker URL"
+        assert topic in self._msg_conditions[broker_url], "Unknown topic"
+
+        wait_timeout = datetime.timedelta(seconds=self._msg_wait_timeout_secs)
+
+        yield self._msg_conditions[broker_url][topic].wait(timeout=wait_timeout)
 
     @classmethod
     def _pick_mqtt_href(cls, td, forms, op=None):
@@ -94,41 +294,43 @@ class MQTTClient(BaseProtocolClient):
             raise FormNotFoundException()
 
         parsed_href = self._parse_href(href)
+        broker_url = parsed_href["broker_url"]
 
         topic_invoke = parsed_href["topic"]
         topic_result = ActionMQTTHandler.to_result_topic(topic_invoke)
 
-        client = hbmqtt.client.MQTTClient()
+        yield self._init_client(broker_url)
 
         try:
-            yield client.connect(parsed_href["broker_url"])
-            yield client.subscribe([(topic_result, self._qos)])
+            yield self._subscribe(broker_url, topic_result, self._qos)
 
-            data = {
+            input_data = {
                 "id": uuid.uuid4().hex,
                 "input": input_value
             }
 
-            input_payload = json.dumps(data).encode()
+            input_payload = json.dumps(input_data).encode()
 
-            yield client.publish(topic_invoke, input_payload, qos=self._qos)
+            yield self._publish(broker_url, topic_invoke, input_payload, self._qos)
 
             while True:
-                msg = yield client.deliver_message()
-                msg_data = json.loads(msg.data.decode())
+                msg_match = next((
+                    item for item in self._topic_messages(broker_url, topic_result)
+                    if item[1].get("id") == input_data.get("id")
+                ), None)
 
-                if msg_data.get("id") != data.get("id"):
+                if msg_match is None:
+                    yield self._wait_on_message(broker_url, topic_result)
                     continue
+
+                msg_id, msg_data = msg_match
 
                 if msg_data.get("error", None) is not None:
                     raise Exception(msg_data.get("error"))
                 else:
                     raise tornado.gen.Return(msg_data.get("result"))
         finally:
-            try:
-                yield client.disconnect()
-            except AttributeError:
-                pass
+            yield self._disconnect_client(broker_url)
 
     @tornado.gen.coroutine
     def write_property(self, td, name, value):
@@ -145,17 +347,15 @@ class MQTTClient(BaseProtocolClient):
             raise FormNotFoundException()
 
         parsed_href_write = self._parse_href(href_write)
-
         broker_url = parsed_href_write["broker_url"]
 
         topic_write = parsed_href_write["topic"]
         topic_ack = PropertyMQTTHandler.to_write_ack_topic(topic_write)
 
-        client = hbmqtt.client.MQTTClient()
+        yield self._init_client(broker_url)
 
         try:
-            yield client.connect(broker_url)
-            yield client.subscribe([(topic_ack, self._qos)])
+            yield self._subscribe(broker_url, topic_ack, self._qos)
 
             write_data = {
                 "action": "write",
@@ -163,19 +363,25 @@ class MQTTClient(BaseProtocolClient):
                 "ack": uuid.uuid4().hex
             }
 
-            yield client.publish(topic_write, json.dumps(write_data).encode(), qos=self._qos)
+            write_payload = json.dumps(write_data).encode()
 
-            while self._wait_on_write:
-                msg_ack = yield client.deliver_message()
-                msg_ack_data = json.loads(msg_ack.data.decode())
+            yield self._publish(broker_url, topic_write, write_payload, self._qos)
 
-                if msg_ack_data.get("ack") == write_data.get("ack"):
+            if not self._wait_on_write:
+                return
+
+            while True:
+                msg_match = next((
+                    item for item in self._topic_messages(broker_url, topic_ack)
+                    if item[1].get("ack") == write_data.get("ack")
+                ), None)
+
+                if msg_match is not None:
                     break
+
+                yield self._wait_on_message(broker_url, topic_ack)
         finally:
-            try:
-                yield client.disconnect()
-            except AttributeError:
-                pass
+            yield self._disconnect_client(broker_url)
 
     @tornado.gen.coroutine
     def read_property(self, td, name):
@@ -193,32 +399,39 @@ class MQTTClient(BaseProtocolClient):
         parsed_href_read = self._parse_href(href_read)
         parsed_href_obsv = self._parse_href(href_obsv)
 
-        client_read = hbmqtt.client.MQTTClient()
-        client_obsv = hbmqtt.client.MQTTClient()
+        topic_read = parsed_href_read["topic"]
+        topic_obsv = parsed_href_obsv["topic"]
+
+        broker_read = parsed_href_read["broker_url"]
+        broker_obsv = parsed_href_obsv["broker_url"]
+
+        yield self._init_client(broker_read)
+        yield self._init_client(broker_obsv)
 
         try:
-            yield client_read.connect(parsed_href_read["broker_url"])
-            yield client_obsv.connect(parsed_href_obsv["broker_url"])
+            yield self._subscribe(broker_obsv, topic_obsv, self._qos)
 
-            yield client_obsv.subscribe([(parsed_href_obsv["topic"], self._qos)])
-
+            read_time = int(time.time() * 1000)
             read_payload = json.dumps({"action": "read"}).encode()
-            yield client_read.publish(parsed_href_read["topic"], read_payload, qos=self._qos)
 
-            msg = yield client_obsv.deliver_message()
-            msg_data = json.loads(msg.data.decode())
+            yield self._publish(broker_read, topic_read, read_payload, self._qos)
 
-            raise tornado.gen.Return(msg_data.get("value"))
+            while True:
+                msg_match = next((
+                    item for item in self._topic_messages(broker_obsv, topic_obsv)
+                    if item[1].get("timestamp") >= read_time
+                ), None)
+
+                if msg_match is None:
+                    yield self._wait_on_message(broker_obsv, topic_obsv)
+                    continue
+
+                msg_id, msg_data = msg_match
+
+                raise tornado.gen.Return(msg_data.get("value"))
         finally:
-            try:
-                yield client_read.disconnect()
-            except AttributeError:
-                pass
-
-            try:
-                yield client_obsv.disconnect()
-            except AttributeError:
-                pass
+            yield self._disconnect_client(broker_read)
+            yield self._disconnect_client(broker_obsv)
 
     def _build_subscribe(self, broker_url, topic, next_item_builder):
         """Builds the subscribe function that should be passed when
@@ -229,38 +442,39 @@ class MQTTClient(BaseProtocolClient):
             on a given topic and passes them to the Observer."""
 
             state = {"active": True}
-            client = hbmqtt.client.MQTTClient()
 
             @handle_observer_finalization(observer)
             @tornado.gen.coroutine
             def callback():
-                topics = [(topic, self._qos)]
-                timeout = self._sub_deliver_timeout_secs
+                from_time = time.time()
+                emitted_ids = set()
 
-                yield client.connect(broker_url)
-                yield client.subscribe(topics)
+                yield self._init_client(broker_url)
+                yield self._subscribe(broker_url, topic, self._qos)
 
                 while state["active"]:
-                    try:
-                        msg = yield client.deliver_message(timeout=timeout)
-                        next_item = next_item_builder(msg)
-                        next_item is not None and observer.on_next(next_item)
-                    except tornado.concurrent.futures.TimeoutError:
-                        pass
+                    msgs_to_emit_gen = self._topic_messages(
+                        broker_url, topic,
+                        from_time=from_time,
+                        ignore_ids=emitted_ids)
+
+                    for msg_id, msg_data in msgs_to_emit_gen:
+                        next_item = next_item_builder(msg_data)
+                        observer.on_next(next_item)
+                        emitted_ids.add(msg_id)
+
+                    yield self._wait_on_message(broker_url, topic)
 
             def unsubscribe():
                 """Disconnects from the MQTT broker and stops the message delivering loop."""
 
+                state["active"] = False
+
                 @tornado.gen.coroutine
                 def disconnect():
-                    try:
-                        yield client.disconnect()
-                    except AttributeError:
-                        pass
+                    yield self._disconnect_client(broker_url)
 
                 tornado.ioloop.IOLoop.current().add_callback(disconnect)
-
-                state["active"] = False
 
             tornado.ioloop.IOLoop.current().add_callback(callback)
 
@@ -283,14 +497,10 @@ class MQTTClient(BaseProtocolClient):
         broker_url = parsed_href["broker_url"]
         topic = parsed_href["topic"]
 
-        def next_item_builder(msg):
-            try:
-                msg_data = json.loads(msg.data.decode())
-                msg_value = msg_data.get("value")
-                init = PropertyChangeEventInit(name=name, value=msg_value)
-                return PropertyChangeEmittedEvent(init=init)
-            except (TypeError, ValueError, json.decoder.JSONDecodeError):
-                return None
+        def next_item_builder(msg_data):
+            msg_value = msg_data.get("value")
+            init = PropertyChangeEventInit(name=name, value=msg_value)
+            return PropertyChangeEmittedEvent(init=init)
 
         subscribe = self._build_subscribe(
             broker_url=broker_url,
@@ -315,12 +525,8 @@ class MQTTClient(BaseProtocolClient):
         broker_url = parsed_href["broker_url"]
         topic = parsed_href["topic"]
 
-        def next_item_builder(msg):
-            try:
-                msg_data = json.loads(msg.data.decode())
-                return EmittedEvent(init=msg_data.get("data"), name=name)
-            except (TypeError, ValueError, json.decoder.JSONDecodeError):
-                return None
+        def next_item_builder(msg_data):
+            return EmittedEvent(init=msg_data.get("data"), name=name)
 
         subscribe = self._build_subscribe(
             broker_url=broker_url,

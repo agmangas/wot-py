@@ -6,6 +6,7 @@ MQTT handler for Property reads, writes and subscriptions to value updates.
 """
 
 import json
+import time
 from json import JSONDecodeError
 
 import tornado.gen
@@ -15,8 +16,8 @@ from tornado.queues import QueueFull
 
 from wotpy.protocols.mqtt.handlers.base import BaseMQTTHandler
 from wotpy.protocols.mqtt.handlers.subs import InteractionsSubscriber
-from wotpy.wot.enums import InteractionTypes
 from wotpy.utils.utils import to_json_obj
+from wotpy.wot.enums import InteractionTypes
 
 
 class PropertyMQTTHandler(BaseMQTTHandler):
@@ -171,9 +172,14 @@ class PropertyMQTTHandler(BaseMQTTHandler):
     def _build_update_message(self, topic, value):
         """Builds an MQTT message to publish an update for a Property value."""
 
+        now_ms = int(time.time() * 1000)
+
         return {
             "topic": topic,
-            "data": json.dumps({"value": to_json_obj(value)}).encode(),
+            "data": json.dumps({
+                "value": to_json_obj(value),
+                "timestamp": now_ms
+            }).encode(),
             "qos": self._qos_observe
         }
 
