@@ -94,27 +94,27 @@ class MQTTClient(BaseProtocolClient):
 
         return deliver
 
-    def _increase_ref(self, broker_url):
+    def _increase_ref(self, broker_url, ref_id):
         """Increases the reference counter for the MQTT client on the given broker URL."""
 
         if broker_url not in self._client_ref_counter:
-            self._client_ref_counter[broker_url] = 0
+            self._client_ref_counter[broker_url] = set()
 
-        self._client_ref_counter[broker_url] += 1
+        self._client_ref_counter[broker_url].add(ref_id)
 
-    def _decrease_ref(self, broker_url):
+    def _decrease_ref(self, broker_url, ref_id):
         """Decreases the reference counter for the MQTT client on the given broker URL."""
 
         assert broker_url in self._client_ref_counter
 
-        self._client_ref_counter[broker_url] -= 1
+        self._client_ref_counter[broker_url].remove(ref_id)
 
     @tornado.gen.coroutine
-    def _init_client(self, broker_url):
+    def _init_client(self, broker_url, ref_id):
         """Initializes and connects a client to the given broker URL."""
 
         with (yield self._lock_client.acquire()):
-            self._increase_ref(broker_url)
+            self._increase_ref(broker_url, ref_id)
 
             if broker_url in self._clients:
                 return
@@ -129,16 +129,16 @@ class MQTTClient(BaseProtocolClient):
             tornado.ioloop.IOLoop.current().add_callback(self._build_deliver(broker_url))
 
     @tornado.gen.coroutine
-    def _disconnect_client(self, broker_url):
+    def _disconnect_client(self, broker_url, ref_id):
         """Disconnects and removes references to a client for the given broker URL."""
 
         with (yield self._lock_client.acquire()):
             if broker_url not in self._clients:
                 return
 
-            self._decrease_ref(broker_url)
+            self._decrease_ref(broker_url, ref_id)
 
-            if self._client_ref_counter[broker_url] > 0:
+            if len(self._client_ref_counter[broker_url]):
                 return
 
             yield self._clients[broker_url].disconnect()
@@ -288,6 +288,8 @@ class MQTTClient(BaseProtocolClient):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
 
+        ref_id = uuid.uuid4().hex
+
         href = self._pick_mqtt_href(td, td.get_action_forms(name))
 
         if href is None:
@@ -299,9 +301,8 @@ class MQTTClient(BaseProtocolClient):
         topic_invoke = parsed_href["topic"]
         topic_result = ActionMQTTHandler.to_result_topic(topic_invoke)
 
-        yield self._init_client(broker_url)
-
         try:
+            yield self._init_client(broker_url, ref_id)
             yield self._subscribe(broker_url, topic_result, self._qos)
 
             input_data = {
@@ -330,7 +331,7 @@ class MQTTClient(BaseProtocolClient):
                 else:
                     raise tornado.gen.Return(msg_data.get("result"))
         finally:
-            yield self._disconnect_client(broker_url)
+            yield self._disconnect_client(broker_url, ref_id)
 
     @tornado.gen.coroutine
     def write_property(self, td, name, value):
@@ -339,9 +340,11 @@ class MQTTClient(BaseProtocolClient):
         been published and will not wait for a custom write handler that yields to another coroutine
         Returns a Future."""
 
-        forms = td.get_property_forms(name)
+        ref_id = uuid.uuid4().hex
 
-        href_write = self._pick_mqtt_href(td, forms, op=InteractionVerbs.WRITE_PROPERTY)
+        href_write = self._pick_mqtt_href(
+            td, td.get_property_forms(name),
+            op=InteractionVerbs.WRITE_PROPERTY)
 
         if href_write is None:
             raise FormNotFoundException()
@@ -352,9 +355,8 @@ class MQTTClient(BaseProtocolClient):
         topic_write = parsed_href_write["topic"]
         topic_ack = PropertyMQTTHandler.to_write_ack_topic(topic_write)
 
-        yield self._init_client(broker_url)
-
         try:
+            yield self._init_client(broker_url, ref_id)
             yield self._subscribe(broker_url, topic_ack, self._qos)
 
             write_data = {
@@ -381,12 +383,14 @@ class MQTTClient(BaseProtocolClient):
 
                 yield self._wait_on_message(broker_url, topic_ack)
         finally:
-            yield self._disconnect_client(broker_url)
+            yield self._disconnect_client(broker_url, ref_id)
 
     @tornado.gen.coroutine
     def read_property(self, td, name):
         """Reads the value of a Property on a remote Thing.
         Returns a Future."""
+
+        ref_id = uuid.uuid4().hex
 
         forms = td.get_property_forms(name)
 
@@ -405,10 +409,10 @@ class MQTTClient(BaseProtocolClient):
         broker_read = parsed_href_read["broker_url"]
         broker_obsv = parsed_href_obsv["broker_url"]
 
-        yield self._init_client(broker_read)
-        yield self._init_client(broker_obsv)
-
         try:
+            yield self._init_client(broker_read, ref_id)
+            yield self._init_client(broker_obsv, ref_id)
+
             yield self._subscribe(broker_obsv, topic_obsv, self._qos)
 
             read_time = int(time.time() * 1000)
@@ -430,12 +434,14 @@ class MQTTClient(BaseProtocolClient):
 
                 raise tornado.gen.Return(msg_data.get("value"))
         finally:
-            yield self._disconnect_client(broker_read)
-            yield self._disconnect_client(broker_obsv)
+            yield self._disconnect_client(broker_read, ref_id)
+            yield self._disconnect_client(broker_obsv, ref_id)
 
     def _build_subscribe(self, broker_url, topic, next_item_builder):
         """Builds the subscribe function that should be passed when
         constructing an Observable to listen for messages on an MQTT topic."""
+
+        ref_id = uuid.uuid4().hex
 
         def subscribe(observer):
             """Subscriber function that listens for MQTT messages
@@ -449,7 +455,7 @@ class MQTTClient(BaseProtocolClient):
                 from_time = time.time()
                 emitted_ids = set()
 
-                yield self._init_client(broker_url)
+                yield self._init_client(broker_url, ref_id)
                 yield self._subscribe(broker_url, topic, self._qos)
 
                 while state["active"]:
@@ -472,7 +478,7 @@ class MQTTClient(BaseProtocolClient):
 
                 @tornado.gen.coroutine
                 def disconnect():
-                    yield self._disconnect_client(broker_url)
+                    yield self._disconnect_client(broker_url, ref_id)
 
                 tornado.ioloop.IOLoop.current().add_callback(disconnect)
 
