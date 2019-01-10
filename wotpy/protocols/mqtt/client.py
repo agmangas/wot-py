@@ -107,7 +107,10 @@ class MQTTClient(BaseProtocolClient):
 
         assert broker_url in self._client_ref_counter
 
-        self._client_ref_counter[broker_url].remove(ref_id)
+        try:
+            self._client_ref_counter[broker_url].remove(ref_id)
+        except KeyError as ex:
+            self._logr.debug("Removed unknown reference: {}".format(ref_id))
 
     @tornado.gen.coroutine
     def _init_client(self, broker_url, ref_id):
