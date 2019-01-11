@@ -466,14 +466,18 @@ async def _consume_round_trip_action(consumed_thing, iface, num_batches, num_par
     action = consumed_thing.actions["measureRoundTrip"]
 
     for idx in range(num_batches):
-        logger.info("Invocation batch {} / {}".format(idx, num_batches))
+        logger.info("Starting invocations batch {}/{}".format(idx + 1, num_batches))
 
         invocations = [
             asyncio.ensure_future(action.invoke({"timeRequest": time_millis()}))
             for _ in range(num_parallel)
         ]
 
+        counter = 0
+
         for fut in asyncio.as_completed(invocations):
+            counter += 1
+
             item = {}
 
             try:
@@ -484,9 +488,10 @@ async def _consume_round_trip_action(consumed_thing, iface, num_batches, num_par
                 logger.warning("Error on invocation: {}".format(ex))
                 item = {"success": False, "error": ex}
 
-            logger.info("Invocation completed: {}".format("OK" if item["success"] else "ERROR"))
-
             results.append(item)
+
+            logger.info("Invocations progress {}/{} :: {}/{} ({})".format(
+                idx + 1, num_batches, counter, num_parallel, "OK" if item["success"] else "ERROR"))
 
     await cap.stop()
 
