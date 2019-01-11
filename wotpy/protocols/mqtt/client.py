@@ -37,10 +37,10 @@ class MQTTClient(BaseProtocolClient):
     """Implementation of the protocol client interface for the MQTT protocol."""
 
     DELIVER_TERMINATE_LOOP_SLEEP_SECS = 0.1
+    SLEEP_SECS_DELIVER_ERR = 1.0
 
-    def __init__(self, sub_deliver_timeout_secs=0.1, wait_on_write=True, qos=QOS_0,
+    def __init__(self, wait_on_write=True, qos=QOS_0,
                  deliver_timeout_secs=1, msg_wait_timeout_secs=5, msg_ttl_secs=15):
-        self._sub_deliver_timeout_secs = sub_deliver_timeout_secs
         self._wait_on_write = wait_on_write
         self._qos = qos
         self._deliver_timeout_secs = deliver_timeout_secs
@@ -87,6 +87,10 @@ class MQTTClient(BaseProtocolClient):
                         self._logr.warning("Error decoding: {}".format(msg.data), exc_info=True)
                 except asyncio.TimeoutError:
                     pass
+                except Exception as ex:
+                    self._logr.warning("Exception delivering message: {}".format(ex), exc_info=True)
+                    self._logr.debug("Sleeping for {} seconds".format(self.SLEEP_SECS_DELIVER_ERR))
+                    yield tornado.gen.sleep(self.SLEEP_SECS_DELIVER_ERR)
 
                 self._clean_messages(broker_url)
 
@@ -100,6 +104,8 @@ class MQTTClient(BaseProtocolClient):
         if broker_url not in self._client_ref_counter:
             self._client_ref_counter[broker_url] = set()
 
+        self._logr.debug("Adding ref {} to MQTT client {}".format(ref_id, broker_url))
+
         self._client_ref_counter[broker_url].add(ref_id)
 
     def _decrease_ref(self, broker_url, ref_id):
@@ -109,8 +115,9 @@ class MQTTClient(BaseProtocolClient):
 
         try:
             self._client_ref_counter[broker_url].remove(ref_id)
+            self._logr.debug("Removed ref {} from MQTT client {}".format(ref_id, broker_url))
         except KeyError as ex:
-            self._logr.debug("Removed unknown reference: {}".format(ref_id))
+            self._logr.warning("Removed unknown reference: {}".format(ref_id))
 
     @tornado.gen.coroutine
     def _init_client(self, broker_url, ref_id):
@@ -121,6 +128,8 @@ class MQTTClient(BaseProtocolClient):
 
             if broker_url in self._clients:
                 return
+
+            self._logr.debug("Connecting MQTT client: {}".format(broker_url))
 
             client = hbmqtt.client.MQTTClient()
 
@@ -143,6 +152,8 @@ class MQTTClient(BaseProtocolClient):
 
             if len(self._client_ref_counter[broker_url]):
                 return
+
+            self._logr.debug("Disconnecting MQTT client: {}".format(broker_url))
 
             yield self._clients[broker_url].disconnect()
 
@@ -414,7 +425,7 @@ class MQTTClient(BaseProtocolClient):
 
         try:
             yield self._init_client(broker_read, ref_id)
-            yield self._init_client(broker_obsv, ref_id)
+            broker_obsv != broker_read and (yield self._init_client(broker_obsv, ref_id))
 
             yield self._subscribe(broker_obsv, topic_obsv, self._qos)
 
@@ -438,17 +449,17 @@ class MQTTClient(BaseProtocolClient):
                 raise tornado.gen.Return(msg_data.get("value"))
         finally:
             yield self._disconnect_client(broker_read, ref_id)
-            yield self._disconnect_client(broker_obsv, ref_id)
+            broker_obsv != broker_read and (yield self._disconnect_client(broker_obsv, ref_id))
 
     def _build_subscribe(self, broker_url, topic, next_item_builder):
         """Builds the subscribe function that should be passed when
         constructing an Observable to listen for messages on an MQTT topic."""
 
-        ref_id = uuid.uuid4().hex
-
         def subscribe(observer):
             """Subscriber function that listens for MQTT messages
             on a given topic and passes them to the Observer."""
+
+            ref_id = uuid.uuid4().hex
 
             state = {"active": True}
 
