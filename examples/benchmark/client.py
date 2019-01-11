@@ -412,7 +412,8 @@ async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, t
     return cap, events
 
 
-def consume_round_trip_action(consumed_thing, iface, protocol, num_batches=10, num_parallel=3):
+def consume_round_trip_action(consumed_thing, iface, protocol,
+                              num_batches=10, num_parallel=3, timeout_secs=600):
     """Gets the stats from invoking the action to measure the round trip time."""
 
     stats = {}
@@ -423,7 +424,8 @@ def consume_round_trip_action(consumed_thing, iface, protocol, num_batches=10, n
         consumed_thing,
         iface,
         num_batches,
-        num_parallel))
+        num_parallel,
+        timeout_secs))
 
     results_ok = [item for item in results if item["success"]]
 
@@ -454,7 +456,7 @@ def consume_round_trip_action(consumed_thing, iface, protocol, num_batches=10, n
     return stats
 
 
-async def _consume_round_trip_action(consumed_thing, iface, num_batches, num_parallel):
+async def _consume_round_trip_action(consumed_thing, iface, num_batches, num_parallel, timeout_secs):
     """Coroutine helper for the consume_round_trip_action function."""
 
     results = []
@@ -469,7 +471,7 @@ async def _consume_round_trip_action(consumed_thing, iface, num_batches, num_par
         logger.info("Starting invocations batch {}/{}".format(idx + 1, num_batches))
 
         invocations = [
-            asyncio.ensure_future(action.invoke({"timeRequest": time_millis()}))
+            asyncio.wait_for(action.invoke({"timeRequest": time_millis()}), timeout=timeout_secs)
             for _ in range(num_parallel)
         ]
 
@@ -485,7 +487,7 @@ async def _consume_round_trip_action(consumed_thing, iface, num_batches, num_par
                 result.update({"timeResponse": time_millis()})
                 item.update({"success": True, "result": result})
             except Exception as ex:
-                logger.warning("Error on invocation: {}".format(ex))
+                logger.warning("Error on invocation: {}".format(ex), exc_info=True)
                 item = {"success": False, "error": ex}
 
             results.append(item)
