@@ -341,12 +341,14 @@ def consume_event_burst(consumed_thing, iface, protocol,
     latencies = [item["timeReceived"] - item["timeEmission"] for item in events]
 
     stats.update({
+        "protocol": protocol,
         "lambd": lambd,
         "total": total,
         "size": cap.get_capture_size(protocol),
         "disordered": count_disordered(indexes, total),
         "loss": 1.0 - (float(len(events)) / total),
-        "latency": get_arr_stats(latencies)
+        "latency": get_arr_stats(latencies),
+        "seriesLatency": latencies
     })
 
     cap.clear()
@@ -442,13 +444,17 @@ def consume_round_trip_action(consumed_thing, iface, protocol,
     latencies = [sum(item) for item in zip(latencies_req, latencies_res)]
 
     stats.update({
+        "protocol": protocol,
         "numBatches": num_batches,
         "numParallel": num_parallel,
         "size": cap.get_capture_size(protocol),
         "latencyReq": get_arr_stats(latencies_req),
         "latencyRes": get_arr_stats(latencies_res),
         "latency": get_arr_stats(latencies),
-        "successRatio": float(len(results_ok)) / len(results)
+        "successRatio": float(len(results_ok)) / len(results),
+        "seriesLatencyReq": latencies_req,
+        "seriesLatencyRes": latencies_res,
+        "seriesLatency": latencies
     })
 
     cap.clear()
@@ -517,11 +523,13 @@ def consume_time_prop(consumed_thing, iface, protocol, rate=20.0, total=100):
     latencies = [item["timeRes"] - item["timeReq"] for item in results]
 
     stats.update({
+        "protocol": protocol,
         "rate": rate,
         "total": len(results),
         "size": cap.get_capture_size(protocol),
         "successRatio": float(success_count) / len(results),
-        "latency": get_arr_stats(latencies)
+        "latency": get_arr_stats(latencies),
+        "seriesLatency": latencies
     })
 
     cap.clear()
@@ -686,46 +694,37 @@ def main():
     logger.info("Consumed Thing: {}".format(consumed_thing))
 
     def run_target_event_burst():
-        logger.info("Consuming burst event (lambd={} total={})".format(args.lambd, args.total))
+        logger.info("Consuming burst event (lambd={} total={})".format(
+            args.lambd, args.total))
 
-        ret = consume_event_burst(
+        return consume_event_burst(
             consumed_thing,
             args.capture_iface,
             args.protocol,
             lambd=args.lambd,
             total=args.total)
 
-        logger.info("Stats:\n{}".format(pprint.pformat(ret)))
-
-        return ret
-
     def run_target_measure_round_trip():
-        logger.info("Consuming round trip action (batches={} parallel={})".format(args.batches, args.parallel))
+        logger.info("Consuming round trip action (batches={} parallel={})".format(
+            args.batches, args.parallel))
 
-        ret = consume_round_trip_action(
+        return consume_round_trip_action(
             consumed_thing,
             args.capture_iface,
             args.protocol,
             num_batches=args.batches,
             num_parallel=args.parallel)
 
-        logger.info("Stats:\n{}".format(pprint.pformat(ret)))
-
-        return ret
-
     def run_current_time():
-        logger.info("Consuming time property (rate={} total={})".format(args.rate, args.total))
+        logger.info("Consuming time property (rate={} total={})".format(
+            args.rate, args.total))
 
-        ret = consume_time_prop(
+        return consume_time_prop(
             consumed_thing,
             args.capture_iface,
             args.protocol,
             rate=args.rate,
             total=args.total)
-
-        logger.info("Stats:\n{}".format(pprint.pformat(ret)))
-
-        return ret
 
     func_map = {
         TARGET_CURR_TIME: run_current_time,
@@ -735,6 +734,11 @@ def main():
 
     stats = func_map[args.target]()
     stats.update({"now": int(time.time() * 1000)})
+
+    logger.info("Stats (series have been mapped to length):\n{}".format(pprint.pformat({
+        key: len(val) if key.startswith("series") else val
+        for key, val in stats.items()
+    })))
 
     logger.info("Serializing results to: {}".format(args.output))
 
