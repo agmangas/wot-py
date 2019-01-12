@@ -35,13 +35,11 @@ class MQTTHandlerRunner(object):
     def __init__(self, broker_url, mqtt_handler,
                  timeout_deliver_secs=DEFAULT_TIMEOUT_SECS,
                  timeout_get_queue_secs=DEFAULT_TIMEOUT_SECS,
-                 reconnect_on_handler_error=True,
                  client_config=None):
         self._broker_url = broker_url
         self._mqtt_handler = mqtt_handler
         self._timeout_deliver_secs = timeout_deliver_secs
         self._timeout_get_queue_secs = timeout_get_queue_secs
-        self._reconnect_on_handler_error = reconnect_on_handler_error
         self._client_config = client_config if client_config else self.DEFAULT_CLIENT_CONFIG
         self._client = None
         self._lock_conn = tornado.locks.Lock()
@@ -131,10 +129,6 @@ class MQTTHandlerRunner(object):
                 pass
             except Exception as ex:
                 self._log(logging.WARNING, "MQTT handler error: {}".format(ex), exc_info=True)
-
-                if self._reconnect_on_handler_error:
-                    self._log(logging.WARNING, "Attempting to reconnect MQTT client")
-                    yield self.connect(force_reconnect=True)
 
     @tornado.gen.coroutine
     def _publish_queued_messages(self):
