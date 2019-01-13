@@ -304,4 +304,6 @@ typings/
 # dotenv environment variables file
 .env
 
+### VSCode template
 
+.vscode
