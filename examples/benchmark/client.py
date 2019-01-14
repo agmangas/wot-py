@@ -537,7 +537,7 @@ def consume_time_prop(consumed_thing, iface, protocol, rate=20.0, total=100):
     return stats
 
 
-async def _consume_time_prop(consumed_thing, iface, rate, total):
+async def _consume_time_prop(consumed_thing, iface, rate, total, start_delay=3.0, num_tasks=5):
     """Coroutine helper for the consume_time_prop function."""
 
     requests_queue = asyncio.Queue()
@@ -555,14 +555,38 @@ async def _consume_time_prop(consumed_thing, iface, rate, total):
         logger.info("Sending {} total requests".format(total))
         logger.info("Rate: {}/s - Interval: {} s".format(rate, interval_secs))
         logger.info("Total expected duration: {} s".format(duration_expected))
+        logger.info("Start delay: {} s".format(start_delay))
+
+        times_queue = asyncio.Queue()
+        time_start = time.time() + start_delay
 
         for idx in range(total):
-            fut_res = asyncio.ensure_future(consumed_thing.properties["currentTime"].read())
-            times_req.append((fut_res, time_millis()))
-            requests_queue.put_nowait(fut_res)
-            await asyncio.sleep(interval_secs)
+            times_queue.put_nowait(time_start + interval_secs * idx)
 
-        logger.info("Finished sending requests")
+        async def do_send():
+            """Gets a time from the queue, sleeps until that time arrives and sends a request."""
+
+            while True:
+                try:
+                    time_next = times_queue.get_nowait()
+                    time_curr = time.time()
+
+                    if time_curr < time_next:
+                        await asyncio.sleep(time_next - time_curr)
+
+                    fut_res = asyncio.ensure_future(consumed_thing.properties["currentTime"].read())
+                    times_req.append((fut_res, time_millis()))
+                    requests_queue.put_nowait(fut_res)
+                except asyncio.QueueEmpty:
+                    logger.info("Requests producer Task finished")
+                    break
+
+        await asyncio.wait([
+            asyncio.ensure_future(do_send())
+            for _ in range(num_tasks)
+        ])
+
+        logger.info("All requests sent")
 
     async def await_response(fut_res):
         """Awaits the given Future response."""
@@ -573,7 +597,7 @@ async def _consume_time_prop(consumed_thing, iface, rate, total):
         except HTTPTimeoutError:
             req_error.append(fut_res)
         except Exception as ex:
-            logger.exception(ex)
+            logger.warning("Request error: {}".format(ex), exc_info=True)
             req_error.append(fut_res)
         finally:
             times_res.append((fut_res, time_millis()))
