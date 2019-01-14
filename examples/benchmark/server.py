@@ -65,6 +65,7 @@ logging.getLogger("wotpy").setLevel(logging.DEBUG)
 
 DEFAULT_RTRIP_MU = 0.0
 DEFAULT_RTRIP_SIGMA = 1.0
+DEFAULT_RTRIP_LOOP_SLEEP = 0.1
 DEFAULT_BURST_LAMBD = 5.0
 DEFAULT_BURST_TOTAL = 10
 
@@ -91,8 +92,10 @@ async def measure_round_trip(parameters):
     mu = input_dict.get("mu", DEFAULT_RTRIP_MU)
     sigma = input_dict.get("sigma", DEFAULT_RTRIP_SIGMA)
     sleep_secs = abs(random.gauss(mu, sigma))
+    sleep_end = time.time() + sleep_secs
 
-    await asyncio.sleep(sleep_secs)
+    while time.time() < sleep_end:
+        await asyncio.sleep(DEFAULT_RTRIP_LOOP_SLEEP)
 
     time_return = time_millis()
 
