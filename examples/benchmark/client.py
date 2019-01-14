@@ -415,7 +415,7 @@ async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, t
 
 
 def consume_round_trip_action(consumed_thing, iface, protocol,
-                              num_batches=10, num_parallel=3, timeout_secs=600):
+                              num_batches=10, num_parallel=3, timeout_secs=90):
     """Gets the stats from invoking the action to measure the round trip time."""
 
     stats = {}
