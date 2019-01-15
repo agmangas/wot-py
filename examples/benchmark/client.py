@@ -12,6 +12,7 @@ import collections
 import copy
 import json
 import logging
+import netifaces
 import os
 import pprint
 import tempfile
@@ -88,7 +89,7 @@ class ConsumedThingCapture(object):
 
         return list(hosts)
 
-    async def start(self, iface):
+    async def start(self, iface=None):
         """Starts capturing packets for the ConsumedThing
         hosts in the given network interface."""
 
@@ -105,16 +106,24 @@ class ConsumedThingCapture(object):
         ])
 
         command = [
-            "tshark",
-            "-i",
-            iface,
+            "tshark"
+        ]
+
+        if iface is None:
+            inet_ifaces = [n for n in netifaces.interfaces() if netifaces.AF_INET in netifaces.ifaddresses(n)]
+            logger.info("Found AF_INET interfaces: {}".format(inet_ifaces))
+            [command.extend(["-i", name]) for name in inet_ifaces]
+        else:
+            command.extend(["-i", iface])
+
+        command.extend([
             "-F",
             "pcapng",
             "-w",
             self._output_file,
             "-f",
             filter_host
-        ]
+        ])
 
         logger.info("Running capture process: {}".format(command))
 
@@ -320,7 +329,7 @@ def get_arr_stats(arr):
     }
 
 
-def consume_event_burst(consumed_thing, iface, protocol,
+def consume_event_burst(consumed_thing, protocol, iface=None,
                         sub_sleep=1.0, lambd=5.0, total=10, timeout=10):
     """Gets the stats from invoking the action to initiate
     an event burst and subscribing to those events."""
@@ -378,7 +387,7 @@ async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, t
 
     cap = ConsumedThingCapture(consumed_thing)
 
-    await cap.start(iface)
+    await cap.start(iface=iface)
 
     logger.info("Subscribing to burst event")
 
@@ -414,7 +423,7 @@ async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, t
     return cap, events
 
 
-def consume_round_trip_action(consumed_thing, iface, protocol,
+def consume_round_trip_action(consumed_thing, protocol, iface=None,
                               num_batches=10, num_parallel=3, timeout_secs=90):
     """Gets the stats from invoking the action to measure the round trip time."""
 
@@ -469,7 +478,7 @@ async def _consume_round_trip_action(consumed_thing, iface, num_batches, num_par
 
     cap = ConsumedThingCapture(consumed_thing)
 
-    await cap.start(iface)
+    await cap.start(iface=iface)
 
     action = consumed_thing.actions["measureRoundTrip"]
 
@@ -506,7 +515,7 @@ async def _consume_round_trip_action(consumed_thing, iface, num_batches, num_par
     return cap, results
 
 
-def consume_time_prop(consumed_thing, iface, protocol, rate=20.0, total=100):
+def consume_time_prop(consumed_thing, protocol, iface=None, rate=20.0, total=100):
     """Gets the stats from consuming the read-only time property."""
 
     stats = {}
@@ -627,7 +636,7 @@ async def _consume_time_prop(consumed_thing, iface, rate, total, start_delay=3.0
 
     cap = ConsumedThingCapture(consumed_thing)
 
-    await cap.start(iface)
+    await cap.start(iface=iface)
     await asyncio.wait([send_requests(), consume_requests_queue()])
 
     logger.info("Finished processing requests")
@@ -668,7 +677,7 @@ def parse_args():
     parser.add_argument(
         "--iface",
         dest="capture_iface",
-        required=True,
+        default=None,
         help="Network interface to capture packages from")
 
     parser.add_argument(
@@ -728,8 +737,8 @@ def main():
 
         return consume_event_burst(
             consumed_thing,
-            args.capture_iface,
             args.protocol,
+            iface=args.capture_iface,
             lambd=args.lambd,
             total=args.total)
 
@@ -739,8 +748,8 @@ def main():
 
         return consume_round_trip_action(
             consumed_thing,
-            args.capture_iface,
             args.protocol,
+            iface=args.capture_iface,
             num_batches=args.batches,
             num_parallel=args.parallel)
 
@@ -750,8 +759,8 @@ def main():
 
         return consume_time_prop(
             consumed_thing,
-            args.capture_iface,
             args.protocol,
+            iface=args.capture_iface,
             rate=args.rate,
             total=args.total)
 
