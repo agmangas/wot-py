@@ -520,7 +520,11 @@ def consume_time_prop(consumed_thing, iface, protocol, rate=20.0, total=100):
         total))
 
     success_count = len([item for item in results if item["success"]])
-    latencies = [item["timeRes"] - item["timeReq"] for item in results]
+
+    latencies = [
+        item["timeRes"] - item["timeReq"]
+        for item in results if item["success"]
+    ]
 
     stats.update({
         "protocol": protocol,
@@ -546,6 +550,25 @@ async def _consume_time_prop(consumed_thing, iface, rate, total, start_delay=3.0
     req_valid = []
     req_error = []
 
+    async def start_request_loop(times_queue):
+        """Gets a time from the given queue, sleeps until
+        that time arrives and sends a request in a loop."""
+
+        while True:
+            try:
+                time_next = times_queue.get_nowait()
+                time_curr = time.time()
+
+                if time_curr < time_next:
+                    await asyncio.sleep(time_next - time_curr)
+
+                fut_res = asyncio.ensure_future(consumed_thing.properties["currentTime"].read())
+                times_req.append((fut_res, time_millis()))
+                requests_queue.put_nowait(fut_res)
+            except asyncio.QueueEmpty:
+                logger.info("Requests producer Task finished")
+                break
+
     async def send_requests():
         """Sends the entire set of requests attempting to honor the given rate."""
 
@@ -563,26 +586,8 @@ async def _consume_time_prop(consumed_thing, iface, rate, total, start_delay=3.0
         for idx in range(total):
             times_queue.put_nowait(time_start + interval_secs * idx)
 
-        async def do_send():
-            """Gets a time from the queue, sleeps until that time arrives and sends a request."""
-
-            while True:
-                try:
-                    time_next = times_queue.get_nowait()
-                    time_curr = time.time()
-
-                    if time_curr < time_next:
-                        await asyncio.sleep(time_next - time_curr)
-
-                    fut_res = asyncio.ensure_future(consumed_thing.properties["currentTime"].read())
-                    times_req.append((fut_res, time_millis()))
-                    requests_queue.put_nowait(fut_res)
-                except asyncio.QueueEmpty:
-                    logger.info("Requests producer Task finished")
-                    break
-
         await asyncio.wait([
-            asyncio.ensure_future(do_send())
+            asyncio.ensure_future(start_request_loop(times_queue))
             for _ in range(num_tasks)
         ])
 
