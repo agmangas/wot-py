@@ -28,7 +28,6 @@ class PropertyMQTTHandler(BaseMQTTHandler):
     KEY_ACK = "ack"
     ACTION_READ = "read"
     ACTION_WRITE = "write"
-    TOPIC_PROPERTY_WILDCARD = "property/requests/#"
     DEFAULT_CALLBACK_MS = 2000
     DEFAULT_JITTER = 0.2
 
@@ -54,34 +53,37 @@ class PropertyMQTTHandler(BaseMQTTHandler):
         self._periodic_refresh_subs = tornado.ioloop.PeriodicCallback(
             refresh_subs, self._callback_ms, jitter=self.DEFAULT_JITTER)
 
-    @classmethod
-    def build_property_requests_topic(cls, thing, prop):
-        """Returns the MQTT topic for Property requests."""
+    @property
+    def topic_wildcard_requests(self):
+        """Wildcard topic to subscribe to all Property requests."""
 
-        topic = "property/requests/{}/{}".format(thing.url_name, prop.url_name)
-        assert cls.TOPIC_PROPERTY_WILDCARD.replace("#", "") in topic
-        return topic
+        return "{}/property/requests/#".format(self.servient_id)
 
-    @classmethod
-    def build_property_updates_topic(cls, thing, prop):
+    def build_property_updates_topic(self, thing, prop):
         """Returns the MQTT topic for Property updates."""
 
-        return "property/updates/{}/{}".format(thing.url_name, prop.url_name)
+        return "{}/property/updates/{}/{}".format(
+            self.servient_id,
+            thing.url_name,
+            prop.url_name)
 
     @classmethod
     def to_write_ack_topic(cls, requests_topic):
         """Takes a Property requests topic and returns the related write ACK topic."""
 
         topic_split = requests_topic.split("/")
-        thing_url_name, prop_url_name = topic_split[-2], topic_split[-1]
+        servient_id, thing_name, prop_name = topic_split[-5], topic_split[-2], topic_split[-1]
 
-        return "property/ack/{}/{}".format(thing_url_name, prop_url_name)
+        return "{}/property/ack/{}/{}".format(
+            servient_id,
+            thing_name,
+            prop_name)
 
     @property
     def topics(self):
         """List of topics that this MQTT handler wants to subscribe to."""
 
-        return [(self.TOPIC_PROPERTY_WILDCARD, self._qos_rw)]
+        return [(self.topic_wildcard_requests, self._qos_rw)]
 
     @tornado.gen.coroutine
     def handle_message(self, msg):
@@ -99,7 +101,7 @@ class PropertyMQTTHandler(BaseMQTTHandler):
 
         topic_split = msg.topic.split("/")
 
-        splits_expected_len = len(self.TOPIC_PROPERTY_WILDCARD.split("/")) + 1
+        splits_expected_len = len(self.topic_wildcard_requests.split("/")) + 1
 
         if len(topic_split) != splits_expected_len:
             return

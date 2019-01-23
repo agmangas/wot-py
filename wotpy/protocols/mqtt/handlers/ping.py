@@ -14,18 +14,27 @@ from wotpy.protocols.mqtt.handlers.base import BaseMQTTHandler
 class PingMQTTHandler(BaseMQTTHandler):
     """MQTT handler for PING requests published on the MQTT broker."""
 
-    TOPIC_PING = "/wotpy/ping"
-    TOPIC_PONG = "/wotpy/pong"
-
     def __init__(self, mqtt_server, qos=QOS_1):
         super(PingMQTTHandler, self).__init__(mqtt_server)
         self._qos = qos
 
     @property
+    def topic_ping(self):
+        """Ping topic."""
+
+        return "{}/ping".format(self.servient_id)
+
+    @property
+    def topic_pong(self):
+        """Pong topic."""
+
+        return "{}/pong".format(self.servient_id)
+
+    @property
     def topics(self):
         """List of topics that this MQTT handler wants to subscribe to."""
 
-        return [(self.TOPIC_PING, self._qos)]
+        return [(self.topic_ping, self._qos)]
 
     @tornado.gen.coroutine
     def handle_message(self, msg):
@@ -33,7 +42,7 @@ class PingMQTTHandler(BaseMQTTHandler):
         same payload as the one received in the PING topic."""
 
         yield self.queue.put({
-            "topic": self.TOPIC_PONG,
+            "topic": self.topic_pong,
             "data": msg.data,
             "qos": self._qos
         })

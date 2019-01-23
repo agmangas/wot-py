@@ -15,8 +15,8 @@ from tornado.queues import QueueFull
 
 from wotpy.protocols.mqtt.handlers.base import BaseMQTTHandler
 from wotpy.protocols.mqtt.handlers.subs import InteractionsSubscriber
-from wotpy.wot.enums import InteractionTypes
 from wotpy.utils.utils import to_json_obj
+from wotpy.wot.enums import InteractionTypes
 
 
 class EventMQTTHandler(BaseMQTTHandler):
@@ -46,11 +46,13 @@ class EventMQTTHandler(BaseMQTTHandler):
         self._periodic_refresh_subs = tornado.ioloop.PeriodicCallback(
             refresh_subs, self._callback_ms, jitter=self.DEFAULT_JITTER)
 
-    @classmethod
-    def build_event_topic(cls, thing, event):
+    def build_event_topic(self, thing, event):
         """Returns the MQTT topic for Event emissions."""
 
-        return "event/{}/{}".format(thing.url_name, event.url_name)
+        return "{}/event/{}/{}".format(
+            self.servient_id,
+            thing.url_name,
+            event.url_name)
 
     @tornado.gen.coroutine
     def init(self):

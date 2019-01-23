@@ -22,41 +22,43 @@ class ActionMQTTHandler(BaseMQTTHandler):
 
     KEY_INPUT = "input"
     KEY_INVOCATION_ID = "id"
-    TOPIC_ACTION_INVOCATION_WILDCARD = "action/invocation/#"
 
     def __init__(self, mqtt_server, qos=QOS_2):
         super(ActionMQTTHandler, self).__init__(mqtt_server)
 
         self._qos = qos
 
+    @property
+    def topic_wildcard_invocation(self):
+        """Wildcard topic to subscribe to all Action invocations."""
+
+        return "{}/action/invocation/#".format(self.servient_id)
+
     @classmethod
     def to_result_topic(cls, invocation_topic):
         """Takes an Action invocation MQTT topic and returns the related result topic."""
 
         topic_split = invocation_topic.split("/")
-        thing_url_name, action_url_name = topic_split[-2], topic_split[-1]
+        servient_id, thing_name, action_name = topic_split[-5], topic_split[-2], topic_split[-1]
 
-        return "action/result/{}/{}".format(thing_url_name, action_url_name)
+        return "{}/action/result/{}/{}".format(
+            servient_id,
+            thing_name,
+            action_name)
 
-    @classmethod
-    def build_action_invocation_topic(cls, thing, action):
-        """Returns the MQTT topic for Action invocations."""
-
-        topic = "action/invocation/{}/{}".format(thing.url_name, action.url_name)
-        assert cls.TOPIC_ACTION_INVOCATION_WILDCARD.replace("#", "") in topic
-        return topic
-
-    @classmethod
-    def build_action_result_topic(cls, thing, action):
+    def build_action_result_topic(self, thing, action):
         """Returns the MQTT topic for Action invocation results."""
 
-        return "action/result/{}/{}".format(thing.url_name, action.url_name)
+        return "{}/action/result/{}/{}".format(
+            self.servient_id,
+            thing.url_name,
+            action.url_name)
 
     @property
     def topics(self):
         """List of topics that this MQTT handler wants to subscribe to."""
 
-        return [(self.TOPIC_ACTION_INVOCATION_WILDCARD, self._qos)]
+        return [(self.topic_wildcard_invocation, self._qos)]
 
     @tornado.gen.coroutine
     def handle_message(self, msg):
@@ -71,7 +73,7 @@ class ActionMQTTHandler(BaseMQTTHandler):
 
         topic_split = msg.topic.split("/")
 
-        splits_expected_len = len(self.TOPIC_ACTION_INVOCATION_WILDCARD.split("/")) + 1
+        splits_expected_len = len(self.topic_wildcard_invocation.split("/")) + 1
 
         if len(topic_split) != splits_expected_len:
             return

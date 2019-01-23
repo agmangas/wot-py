@@ -18,6 +18,13 @@ class BaseMQTTHandler(object):
         self._queue = Queue()
 
     @property
+    def servient_id(self):
+        """Servient ID that is used to avoid topic collisions
+        øwhen multiple Servients are connected to the same broker."""
+
+        return self._mqtt_server.servient_id
+
+    @property
     def mqtt_server(self):
         """MQTT server that contains this handler."""
 
