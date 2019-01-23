@@ -157,7 +157,9 @@ async def main(parsed_args):
         try:
             from wotpy.protocols.mqtt.server import MQTTServer
             logger.info("Creating MQTT server on broker: {}".format(parsed_args.mqtt_broker))
-            servient.add_server(MQTTServer(parsed_args.mqtt_broker))
+            mqtt_server = MQTTServer(parsed_args.mqtt_broker, servient_id=servient.hostname)
+            servient.add_server(mqtt_server)
+            logger.info("MQTT server created with ID: {}".format(mqtt_server.servient_id))
         except NotImplementedError as ex:
             logger.warning(ex)
 
