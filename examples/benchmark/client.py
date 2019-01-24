@@ -453,7 +453,10 @@ def consume_round_trip_action(consumed_thing, protocol, iface=None,
         for item in results_ok
     ]
 
-    latencies = [sum(item) for item in zip(latencies_req, latencies_res)]
+    latencies = [
+        item["result"]["timeResponse"] - item["result"]["timeRequest"]
+        for item in results_ok
+    ]
 
     stats.update({
         "protocol": protocol,
