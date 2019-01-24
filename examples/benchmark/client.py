@@ -31,11 +31,14 @@ from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.wot.servient import Servient
 from wotpy.wot.wot import WoT
 
-LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-logging.basicConfig(format=LOG_FORMAT)
+try:
+    from . import utils
+except ImportError:
+    # noinspection PyPackageRequirements,PyUnresolvedReferences
+    import utils
+
+utils.init_logging()
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-logging.getLogger("wotpy").setLevel(logging.DEBUG)
 
 TARGET_BURST_EVENT = "burstEvent"
 TARGET_ROUND_TRIP = "measureRoundTrip"

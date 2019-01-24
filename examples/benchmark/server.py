@@ -15,10 +15,13 @@ import random
 import time
 import uuid
 
-from wotpy.protocols.http.server import HTTPServer
-from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.wot.enums import DataType
-from wotpy.wot.servient import Servient
+
+try:
+    from . import utils
+except ImportError:
+    # noinspection PyPackageRequirements,PyUnresolvedReferences
+    import utils
 
 DESCRIPTION = {
     "id": "urn:org:fundacionctic:thing:benchmark",
@@ -57,11 +60,8 @@ DESCRIPTION = {
     }
 }
 
-LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-logging.basicConfig(format=LOG_FORMAT)
+utils.init_logging()
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-logging.getLogger("wotpy").setLevel(logging.DEBUG)
 
 DEFAULT_RTRIP_MU = 0.0
 DEFAULT_RTRIP_SIGMA = 1.0
@@ -139,39 +139,7 @@ def build_event_burst_handler(exposed_thing):
 async def main(parsed_args):
     """Main entrypoint."""
 
-    logger.info("Creating servient with TD catalogue on: {}".format(parsed_args.port_catalogue))
-
-    servient = Servient(
-        catalogue_port=parsed_args.port_catalogue,
-        hostname=parsed_args.hostname)
-
-    if parsed_args.port_ws > 0:
-        logger.info("Creating WebSocket server on: {}".format(parsed_args.port_ws))
-        servient.add_server(WebsocketServer(port=parsed_args.port_ws))
-
-    if parsed_args.port_http > 0:
-        logger.info("Creating HTTP server on: {}".format(parsed_args.port_http))
-        servient.add_server(HTTPServer(port=parsed_args.port_http))
-
-    if parsed_args.mqtt_broker:
-        try:
-            from wotpy.protocols.mqtt.server import MQTTServer
-            logger.info("Creating MQTT server on broker: {}".format(parsed_args.mqtt_broker))
-            mqtt_server = MQTTServer(parsed_args.mqtt_broker, servient_id=servient.hostname)
-            servient.add_server(mqtt_server)
-            logger.info("MQTT server created with ID: {}".format(mqtt_server.servient_id))
-        except NotImplementedError as ex:
-            logger.warning(ex)
-
-    if parsed_args.port_coap > 0:
-        try:
-            from wotpy.protocols.coap.server import CoAPServer
-            logger.info("Creating CoAP server on: {}".format(parsed_args.port_coap))
-            servient.add_server(CoAPServer(port=parsed_args.port_coap))
-        except NotImplementedError as ex:
-            logger.warning(ex)
-
-    logger.info("Starting servient")
+    servient = utils.build_servient(parsed_args)
 
     wot = await servient.start()
 
@@ -188,46 +156,7 @@ def parse_args():
     """Parses and returns the command line arguments."""
 
     parser = argparse.ArgumentParser(description="Benchmark Thing WoT server")
-
-    parser.add_argument(
-        '--port-catalogue',
-        dest="port_catalogue",
-        default=9090,
-        type=int,
-        help="Thing Description catalogue port")
-
-    parser.add_argument(
-        '--port-http',
-        dest="port_http",
-        default=9191,
-        type=int,
-        help="HTTP server port")
-
-    parser.add_argument(
-        '--port-ws',
-        dest="port_ws",
-        default=9292,
-        type=int,
-        help="WebSockets server port")
-
-    parser.add_argument(
-        '--port-coap',
-        dest="port_coap",
-        default=9393,
-        type=int,
-        help="CoAP server port")
-
-    parser.add_argument(
-        '--mqtt-broker',
-        dest="mqtt_broker",
-        default="mqtt://localhost",
-        help="MQTT broker URL")
-
-    parser.add_argument(
-        '--hostname',
-        dest="hostname",
-        default=None,
-        help="Servient hostname")
+    parser = utils.extend_server_arg_parser(parser)
 
     return parser.parse_args()
 
