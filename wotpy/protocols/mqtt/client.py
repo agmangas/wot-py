@@ -116,7 +116,7 @@ class MQTTClient(BaseProtocolClient):
         try:
             self._client_ref_counter[broker_url].remove(ref_id)
             self._logr.debug("Removed ref {} from MQTT client {}".format(ref_id, broker_url))
-        except KeyError as ex:
+        except KeyError:
             self._logr.warning("Removed unknown reference: {}".format(ref_id))
 
     @tornado.gen.coroutine
@@ -133,10 +133,14 @@ class MQTTClient(BaseProtocolClient):
 
             client = hbmqtt.client.MQTTClient()
 
-            yield client.connect(broker_url)
+            try:
+                yield client.connect(broker_url)
+            except Exception as ex:
+                self._logr.warning("Error connecting: {}".format(ex), exc_info=True)
+                self._decrease_ref(broker_url, ref_id)
+                return
 
             self._clients[broker_url] = client
-
             self._deliver_stop_events[broker_url] = tornado.locks.Event()
             tornado.ioloop.IOLoop.current().add_callback(self._build_deliver(broker_url))
 
@@ -155,7 +159,10 @@ class MQTTClient(BaseProtocolClient):
 
             self._logr.debug("Disconnecting MQTT client: {}".format(broker_url))
 
-            yield self._clients[broker_url].disconnect()
+            try:
+                yield self._clients[broker_url].disconnect()
+            except Exception as ex:
+                self._logr.warning("Error disconnecting: {}".format(ex), exc_info=True)
 
             self._clients.pop(broker_url)
             self._messages.pop(broker_url, None)
