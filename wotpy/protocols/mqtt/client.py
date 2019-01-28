@@ -40,12 +40,14 @@ class MQTTClient(BaseProtocolClient):
     SLEEP_SECS_DELIVER_ERR = 1.0
 
     def __init__(self, wait_on_write=True, qos=QOS_0,
-                 deliver_timeout_secs=1, msg_wait_timeout_secs=5, msg_ttl_secs=15):
+                 deliver_timeout_secs=1, msg_wait_timeout_secs=5,
+                 msg_ttl_secs=15, timeout_default=None):
         self._wait_on_write = wait_on_write
         self._qos = qos
         self._deliver_timeout_secs = deliver_timeout_secs
         self._msg_wait_timeout_secs = msg_wait_timeout_secs
         self._msg_ttl_secs = msg_ttl_secs
+        self._timeout_default = timeout_default
         self._lock_client = tornado.locks.Lock()
         self._deliver_stop_events = {}
         self._client_ref_counter = {}
@@ -233,6 +235,11 @@ class MQTTClient(BaseProtocolClient):
             ] for topic in self._messages[broker_url]
         }
 
+    def _next_match(self, broker_url, topic, func):
+        """Returns the first message match in the internal messages queue or None."""
+
+        return next((item for item in self._topic_messages(broker_url, topic) if func(item)), None)
+
     @tornado.gen.coroutine
     def _wait_on_message(self, broker_url, topic):
         """Waits for the arrival of a message in the given topic."""
@@ -293,10 +300,11 @@ class MQTTClient(BaseProtocolClient):
         return len(forms_mqtt) > 0
 
     @tornado.gen.coroutine
-    def invoke_action(self, td, name, input_value):
+    def invoke_action(self, td, name, input_value, timeout=None):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
 
+        timeout = timeout if timeout else self._timeout_default
         ref_id = uuid.uuid4().hex
 
         href = self._pick_mqtt_href(td, td.get_action_forms(name))
@@ -323,13 +331,17 @@ class MQTTClient(BaseProtocolClient):
 
             yield self._publish(broker_url, topic_invoke, input_payload, self._qos)
 
-            while True:
-                msg_match = next((
-                    item for item in self._topic_messages(broker_url, topic_result)
-                    if item[1].get("id") == input_data.get("id")
-                ), None)
+            ini = time.time()
 
-                if msg_match is None:
+            while True:
+                if timeout and (time.time() - ini) > timeout:
+                    raise asyncio.TimeoutError("Exceeded timeout ({} secs)".format(timeout))
+
+                msg_match = self._next_match(
+                    broker_url, topic_result,
+                    lambda item: item[1].get("id") == input_data.get("id"))
+
+                if not msg_match:
                     yield self._wait_on_message(broker_url, topic_result)
                     continue
 
@@ -343,12 +355,13 @@ class MQTTClient(BaseProtocolClient):
             yield self._disconnect_client(broker_url, ref_id)
 
     @tornado.gen.coroutine
-    def write_property(self, td, name, value):
+    def write_property(self, td, name, value, timeout=None):
         """Updates the value of a Property on a remote Thing.
         Due to the MQTT binding design this coroutine yields as soon as the write message has
         been published and will not wait for a custom write handler that yields to another coroutine
         Returns a Future."""
 
+        timeout = timeout if timeout else self._timeout_default
         ref_id = uuid.uuid4().hex
 
         href_write = self._pick_mqtt_href(
@@ -381,13 +394,17 @@ class MQTTClient(BaseProtocolClient):
             if not self._wait_on_write:
                 return
 
-            while True:
-                msg_match = next((
-                    item for item in self._topic_messages(broker_url, topic_ack)
-                    if item[1].get("ack") == write_data.get("ack")
-                ), None)
+            ini = time.time()
 
-                if msg_match is not None:
+            while True:
+                if timeout and (time.time() - ini) > timeout:
+                    raise asyncio.TimeoutError("Exceeded timeout ({} secs)".format(timeout))
+
+                msg_match = self._next_match(
+                    broker_url, topic_ack,
+                    lambda item: item[1].get("ack") == write_data.get("ack"))
+
+                if msg_match:
                     break
 
                 yield self._wait_on_message(broker_url, topic_ack)
@@ -395,10 +412,11 @@ class MQTTClient(BaseProtocolClient):
             yield self._disconnect_client(broker_url, ref_id)
 
     @tornado.gen.coroutine
-    def read_property(self, td, name):
+    def read_property(self, td, name, timeout=None):
         """Reads the value of a Property on a remote Thing.
         Returns a Future."""
 
+        timeout = timeout if timeout else self._timeout_default
         ref_id = uuid.uuid4().hex
 
         forms = td.get_property_forms(name)
@@ -429,13 +447,17 @@ class MQTTClient(BaseProtocolClient):
 
             yield self._publish(broker_read, topic_read, read_payload, self._qos)
 
-            while True:
-                msg_match = next((
-                    item for item in self._topic_messages(broker_obsv, topic_obsv)
-                    if item[1].get("timestamp") >= read_time
-                ), None)
+            ini = time.time()
 
-                if msg_match is None:
+            while True:
+                if timeout and (time.time() - ini) > timeout:
+                    raise asyncio.TimeoutError("Exceeded timeout ({} secs)".format(timeout))
+
+                msg_match = self._next_match(
+                    broker_obsv, topic_obsv,
+                    lambda item: item[1].get("timestamp") >= read_time)
+
+                if not msg_match:
                     yield self._wait_on_message(broker_obsv, topic_obsv)
                     continue
 
