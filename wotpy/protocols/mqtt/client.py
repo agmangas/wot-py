@@ -194,18 +194,6 @@ class MQTTClient(BaseProtocolClient):
 
             yield self._clients[broker_url].publish(topic, payload, qos=qos)
 
-    @tornado.gen.coroutine
-    def _unsubscribe(self, broker_url, topic):
-        """Unsubscribes from a topic."""
-
-        with (yield self._lock_client.acquire()):
-            if broker_url not in self._clients:
-                return
-
-            yield self._clients[broker_url].unsubscribe([topic])
-
-            self._msg_conditions[broker_url].pop(topic)
-
     def _topic_messages(self, broker_url, topic, from_time=None, ignore_ids=None):
         """Returns a generator that yields the messages in the
         delivered messages queue for the given topic."""
