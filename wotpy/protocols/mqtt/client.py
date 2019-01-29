@@ -9,6 +9,7 @@ import asyncio
 import datetime
 import json
 import logging
+import pprint
 import time
 import uuid
 from json import JSONDecodeError
@@ -41,19 +42,21 @@ class MQTTClient(BaseProtocolClient):
 
     def __init__(self, wait_on_write=True, qos=QOS_0,
                  deliver_timeout_secs=1, msg_wait_timeout_secs=5,
-                 msg_ttl_secs=15, timeout_default=None):
+                 msg_ttl_secs=15, timeout_default=None, config=None):
         self._wait_on_write = wait_on_write
         self._qos = qos
         self._deliver_timeout_secs = deliver_timeout_secs
         self._msg_wait_timeout_secs = msg_wait_timeout_secs
         self._msg_ttl_secs = msg_ttl_secs
         self._timeout_default = timeout_default
+        self._config = config
         self._lock_client = tornado.locks.Lock()
         self._deliver_stop_events = {}
         self._client_ref_counter = {}
         self._msg_conditions = {}
         self._clients = {}
         self._messages = {}
+        self._topics = {}
         self._logr = logging.getLogger(__name__)
 
     def _build_deliver(self, broker_url):
@@ -69,34 +72,44 @@ class MQTTClient(BaseProtocolClient):
             if broker_url not in self._messages:
                 self._messages[broker_url] = {}
 
-            while not self._deliver_stop_events[broker_url].is_set():
+            while broker_url in self._deliver_stop_events and not self._deliver_stop_events[broker_url].is_set():
+                msg = None
+
                 try:
-                    msg = yield self._clients[broker_url].deliver_message(
-                        timeout=self._deliver_timeout_secs)
-
-                    if msg.topic not in self._messages[broker_url]:
-                        self._messages[broker_url][msg.topic] = []
-
-                    try:
-                        self._messages[broker_url][msg.topic].append({
-                            "id": uuid.uuid4().hex,
-                            "data": json.loads(msg.data.decode()),
-                            "time": time.time()
-                        })
-
-                        self._msg_conditions[broker_url][msg.topic].notify_all()
-                    except (JSONDecodeError, TypeError, ValueError):
-                        self._logr.warning("Error decoding: {}".format(msg.data), exc_info=True)
+                    msg = yield self._clients[broker_url].deliver_message(timeout=self._deliver_timeout_secs)
                 except asyncio.TimeoutError:
                     pass
                 except Exception as ex:
-                    self._logr.warning("Exception delivering message: {}".format(ex), exc_info=True)
+                    self._logr.warning("Error delivering message: {}".format(ex), exc_info=True)
+
                     self._logr.debug("Sleeping for {} seconds".format(self.SLEEP_SECS_DELIVER_ERR))
                     yield tornado.gen.sleep(self.SLEEP_SECS_DELIVER_ERR)
 
+                    try:
+                        yield self._reconnect_client(broker_url)
+                    except Exception as ex_reconn:
+                        self._logr.warning("Error reconnecting: {}".format(ex_reconn), exc_info=True)
+
+                if msg is None or broker_url not in self._messages:
+                    continue
+
+                if msg.topic not in self._messages[broker_url]:
+                    self._messages[broker_url][msg.topic] = []
+
+                try:
+                    self._messages[broker_url][msg.topic].append({
+                        "id": uuid.uuid4().hex,
+                        "data": json.loads(msg.data.decode()),
+                        "time": time.time()
+                    })
+
+                    self._msg_conditions[broker_url][msg.topic].notify_all()
+                except (JSONDecodeError, TypeError, ValueError):
+                    self._logr.warning("Error decoding: {}".format(msg.data), exc_info=True)
+
                 self._clean_messages(broker_url)
 
-            self._deliver_stop_events[broker_url].clear()
+            broker_url in self._deliver_stop_events and self._deliver_stop_events[broker_url].clear()
 
         return deliver
 
@@ -141,11 +154,15 @@ class MQTTClient(BaseProtocolClient):
             if broker_url in self._clients:
                 return
 
-            self._logr.debug("Connecting MQTT client: {}".format(broker_url))
+            config = self._config if self._config else {}
+            config.update({"auto_reconnect": False})
 
-            self._clients[broker_url] = hbmqtt.client.MQTTClient()
+            self._logr.debug("Connecting MQTT client to {} with config: {}".format(
+                broker_url, pprint.pformat(config)))
 
-            yield self._clients[broker_url].connect(broker_url)
+            self._clients[broker_url] = hbmqtt.client.MQTTClient(config=config)
+
+            yield self._clients[broker_url].connect(broker_url, cleansession=False)
 
             self._deliver_stop_events[broker_url] = tornado.locks.Event()
             tornado.ioloop.IOLoop.current().add_callback(self._build_deliver(broker_url))
@@ -171,6 +188,7 @@ class MQTTClient(BaseProtocolClient):
             self._clients.pop(broker_url, None)
             self._messages.pop(broker_url, None)
             self._msg_conditions.pop(broker_url, None)
+            self._topics.pop(broker_url, None)
 
             if broker_url not in self._deliver_stop_events:
                 return
@@ -185,6 +203,29 @@ class MQTTClient(BaseProtocolClient):
             self._deliver_stop_events.pop(broker_url)
 
     @tornado.gen.coroutine
+    def _reconnect_client(self, broker_url):
+        """Reconnects an existing client that has been disconnected."""
+
+        with (yield self._lock_client.acquire()):
+            if broker_url not in self._clients:
+                self._logr.warning("Attempted to reconnect unknown client: {}".format(broker_url))
+                return
+
+            self._logr.info("Reconnecting MQTT client: {}".format(broker_url))
+
+            yield self._clients[broker_url].reconnect(cleansession=False)
+
+            topics = self._topics.get(broker_url, set())
+
+            if not len(topics):
+                return
+
+            self._logr.info("Resubscribing MQTT client on {} to topics:\n{}".format(
+                broker_url, pprint.pformat(topics)))
+
+            yield self._clients[broker_url].subscribe([(topic, qos) for topic, qos in topics])
+
+    @tornado.gen.coroutine
     def _subscribe(self, broker_url, topic, qos):
         """Subscribes to a topic."""
 
@@ -197,6 +238,11 @@ class MQTTClient(BaseProtocolClient):
 
             if topic not in self._msg_conditions[broker_url]:
                 self._msg_conditions[broker_url][topic] = tornado.locks.Condition()
+
+            if broker_url not in self._topics:
+                self._topics[broker_url] = set()
+
+            self._topics[broker_url].add((topic, qos))
 
             yield self._clients[broker_url].subscribe([(topic, qos)])
 
