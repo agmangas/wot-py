@@ -106,20 +106,30 @@ class MQTTClient(BaseProtocolClient):
         if broker_url not in self._client_ref_counter:
             self._client_ref_counter[broker_url] = set()
 
-        self._logr.debug("Adding ref {} to MQTT client {}".format(ref_id, broker_url))
-
         self._client_ref_counter[broker_url].add(ref_id)
+
+        self._logr.debug("Added ref {} to MQTT client {} (current: {})".format(
+            ref_id, broker_url, len(self._client_ref_counter[broker_url])))
 
     def _decrease_ref(self, broker_url, ref_id):
         """Decreases the reference counter for the MQTT client on the given broker URL."""
 
-        assert broker_url in self._client_ref_counter
+        if broker_url not in self._client_ref_counter:
+            self._logr.warning("Attempted to decrease ref of unknown broker: {}".format(broker_url))
+            return
 
         try:
             self._client_ref_counter[broker_url].remove(ref_id)
-            self._logr.debug("Removed ref {} from MQTT client {}".format(ref_id, broker_url))
+
+            self._logr.debug("Removed ref {} from MQTT client {} (current: {})".format(
+                ref_id, broker_url, len(self._client_ref_counter[broker_url])))
         except KeyError:
-            self._logr.warning("Removed unknown reference: {}".format(ref_id))
+            self._logr.warning("Attempted to remove unknown reference: {}".format(ref_id))
+
+    def _has_refs(self, broker_url):
+        """Returns True if the MQTT client for the given broker has any references pointing to it."""
+
+        return broker_url in self._client_ref_counter and len(self._client_ref_counter[broker_url])
 
     @tornado.gen.coroutine
     def _init_client(self, broker_url, ref_id):
@@ -133,42 +143,39 @@ class MQTTClient(BaseProtocolClient):
 
             self._logr.debug("Connecting MQTT client: {}".format(broker_url))
 
-            client = hbmqtt.client.MQTTClient()
+            self._clients[broker_url] = hbmqtt.client.MQTTClient()
 
-            try:
-                yield client.connect(broker_url)
-            except Exception as ex:
-                self._logr.warning("Error connecting: {}".format(ex), exc_info=True)
-                self._decrease_ref(broker_url, ref_id)
-                return
+            yield self._clients[broker_url].connect(broker_url)
 
-            self._clients[broker_url] = client
             self._deliver_stop_events[broker_url] = tornado.locks.Event()
             tornado.ioloop.IOLoop.current().add_callback(self._build_deliver(broker_url))
 
     @tornado.gen.coroutine
     def _disconnect_client(self, broker_url, ref_id):
-        """Disconnects and removes references to a client for the given broker URL."""
+        """Decreases the reference counter for the client on the given broker and cleans
+        all resources when the client does not have any more references pointing to it."""
 
         with (yield self._lock_client.acquire()):
-            if broker_url not in self._clients:
-                return
-
             self._decrease_ref(broker_url, ref_id)
 
-            if len(self._client_ref_counter[broker_url]):
+            if self._has_refs(broker_url):
                 return
 
-            self._logr.debug("Disconnecting MQTT client: {}".format(broker_url))
-
             try:
-                yield self._clients[broker_url].disconnect()
+                if broker_url in self._clients:
+                    self._logr.debug("Disconnecting MQTT client: {}".format(broker_url))
+                    yield self._clients[broker_url].disconnect()
             except Exception as ex:
                 self._logr.warning("Error disconnecting: {}".format(ex), exc_info=True)
 
-            self._clients.pop(broker_url)
+            self._clients.pop(broker_url, None)
             self._messages.pop(broker_url, None)
             self._msg_conditions.pop(broker_url, None)
+
+            if broker_url not in self._deliver_stop_events:
+                return
+
+            self._logr.debug("Stopping message delivery loop: {}".format(broker_url))
 
             self._deliver_stop_events[broker_url].set()
 
@@ -334,7 +341,10 @@ class MQTTClient(BaseProtocolClient):
             ini = time.time()
 
             while True:
+                self._logr.debug("Checking invocation topic: {}".format(topic_result))
+
                 if timeout and (time.time() - ini) > timeout:
+                    self._logr.warning("Timeout invoking Action: {}".format(topic_result))
                     raise asyncio.TimeoutError("Exceeded timeout ({} secs)".format(timeout))
 
                 msg_match = self._next_match(
@@ -397,7 +407,10 @@ class MQTTClient(BaseProtocolClient):
             ini = time.time()
 
             while True:
+                self._logr.debug("Checking write ACK topic: {}".format(topic_ack))
+
                 if timeout and (time.time() - ini) > timeout:
+                    self._logr.warning("Timeout writing Property: {}".format(topic_ack))
                     raise asyncio.TimeoutError("Exceeded timeout ({} secs)".format(timeout))
 
                 msg_match = self._next_match(
@@ -450,7 +463,10 @@ class MQTTClient(BaseProtocolClient):
             ini = time.time()
 
             while True:
+                self._logr.debug("Checking property update topic: {}".format(topic_obsv))
+
                 if timeout and (time.time() - ini) > timeout:
+                    self._logr.warning("Timeout reading Property: {}".format(topic_obsv))
                     raise asyncio.TimeoutError("Exceeded timeout ({} secs)".format(timeout))
 
                 msg_match = self._next_match(
