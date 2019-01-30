@@ -23,7 +23,7 @@ def init_logging():
     logging.getLogger('wotpy').setLevel(logging.DEBUG)
 
 
-def build_servient(parsed_args):
+def build_servient(parsed_args, clients_config=None):
     """Factory function to build a Servient with a set
     of servers depending on the input arguments."""
 
@@ -33,7 +33,8 @@ def build_servient(parsed_args):
 
     servient = Servient(
         catalogue_port=parsed_args.port_catalogue,
-        hostname=parsed_args.hostname)
+        hostname=parsed_args.hostname,
+        clients_config=clients_config)
 
     if parsed_args.port_ws > 0:
         logger.info("Creating WebSocket server on: {}".format(parsed_args.port_ws))

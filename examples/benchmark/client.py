@@ -44,8 +44,6 @@ TARGET_BURST_EVENT = "burstEvent"
 TARGET_ROUND_TRIP = "measureRoundTrip"
 TARGET_CURR_TIME = "currentTime"
 
-MQTT_DEFAULT_TIMEOUT = 90.0
-
 TARGETS = [
     TARGET_BURST_EVENT,
     TARGET_ROUND_TRIP,
@@ -271,7 +269,7 @@ def build_protocol_client(protocol):
         return CoAPClient()
     elif protocol == Protocols.MQTT:
         from wotpy.protocols.mqtt.client import MQTTClient
-        return MQTTClient(timeout_default=MQTT_DEFAULT_TIMEOUT)
+        return MQTTClient()
 
 
 async def fetch_consumed_thing(td_url, protocol):
