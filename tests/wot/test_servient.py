@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import random
 import uuid
 
 import pytest
@@ -13,6 +14,7 @@ import tornado.websocket
 from faker import Faker
 
 from tests.utils import find_free_port, run_test_coroutine
+from wotpy.protocols.enums import Protocols
 from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.wot.constants import WOT_TD_CONTEXT_URL
@@ -249,7 +251,7 @@ def test_catalogue_disabled_things(servient):
     run_test_coroutine(test_coroutine)
 
 
-def test_servient_clients_subset():
+def test_clients_subset():
     """Although all clients are enabled by default, the user may only enable a subset."""
 
     ws_client = WebsocketClient()
@@ -260,3 +262,12 @@ def test_servient_clients_subset():
 
     assert servient_01.select_client(td, prop_name) is not ws_client
     assert servient_02.select_client(td, prop_name) is ws_client
+
+
+def test_clients_config():
+    """Custom configuration arguments can be passed to the Servient default protocol clients."""
+
+    connect_timeout = random.random()
+    servient = Servient(clients_config={Protocols.HTTP: {"connect_timeout": connect_timeout}})
+
+    assert servient.clients[Protocols.HTTP].connect_timeout == connect_timeout

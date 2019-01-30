@@ -95,7 +95,7 @@ def _stopped_servient_only(func):
 
 def _get_hostname_fallback():
     """Tries to guess the hostname of the current host that should be used on TD Forms.
-    Two strategies are used for this: first, the socket.getfqdn() method, if the returned
+    Two strategies are used for this: First, the socket.getfqdn() method. If the returned
     value is not a FQDN then we try to get the IPv4 address of the main network interface."""
 
     fqdn = socket.getfqdn()
@@ -112,18 +112,20 @@ class Servient(object):
     send requests and interact with IoT devices exposed by other WoT servients
     or servers using the capabilities of a Web client such as Web browser."""
 
-    def __init__(self, hostname=None, catalogue_port=9090, clients=None,
+    def __init__(self, hostname=None, catalogue_port=9090,
+                 clients=None, clients_config=None,
                  dnssd_enabled=False, dnssd_instance_name=None):
         self._hostname = hostname if hostname is not None else _get_hostname_fallback()
 
         if not isinstance(self._hostname, six.string_types):
-            raise ValueError("Invalid hostname")
+            raise ValueError("Invalid hostname: {}".format(self._hostname))
 
         if isinstance(clients, list):
             clients = {item.protocol: item for item in clients}
 
         self._servers = {}
         self._clients = clients if clients else {}
+        self._clients_config = clients_config
         self._catalogue_port = catalogue_port
         self._catalogue_server = None
         self._exposed_thing_set = ExposedThingSet()
@@ -285,21 +287,26 @@ class Servient(object):
 
         self._dnssd = None
 
+    # noinspection PyArgumentList
     def _build_default_clients(self):
         """Builds the default Protocol Binding clients."""
 
+        self._clients = self._clients if self._clients else {}
+
+        conf = self._clients_config if self._clients_config else {}
+
         self._clients.update({
-            Protocols.WEBSOCKETS: WebsocketClient(),
-            Protocols.HTTP: HTTPClient()
+            Protocols.WEBSOCKETS: WebsocketClient(**conf.get(Protocols.WEBSOCKETS, {})),
+            Protocols.HTTP: HTTPClient(**conf.get(Protocols.HTTP, {}))
         })
 
         if is_coap_supported():
             from wotpy.protocols.coap.client import CoAPClient
-            self._clients.update({Protocols.COAP: CoAPClient()})
+            self._clients.update({Protocols.COAP: CoAPClient(**conf.get(Protocols.COAP, {}))})
 
         if is_mqtt_supported():
             from wotpy.protocols.mqtt.client import MQTTClient
-            self._clients.update({Protocols.MQTT: MQTTClient()})
+            self._clients.update({Protocols.MQTT: MQTTClient(**conf.get(Protocols.MQTT, {}))})
 
     def _build_td_catalogue_app(self):
         """Returns a Tornado app that provides one endpoint to retrieve the
