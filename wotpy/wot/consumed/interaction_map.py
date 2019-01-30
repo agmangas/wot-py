@@ -115,26 +115,36 @@ class ConsumedThingProperty(object):
         return getattr(self._consumed_thing.td.properties[self._name], name)
 
     @tornado.gen.coroutine
-    def read(self):
+    def read(self, client_kwargs=None):
         """The read() method will fetch the value of the Property.
         A coroutine that yields the value or raises an error."""
 
-        value = yield self._consumed_thing.read_property(self._name)
+        value = yield self._consumed_thing.read_property(
+            self._name,
+            client_kwargs=client_kwargs)
+
         raise tornado.gen.Return(value)
 
     @tornado.gen.coroutine
-    def write(self, value):
+    def write(self, value, client_kwargs=None):
         """The write() method will attempt to set the value of the
         Property specified in the value argument whose type SHOULD
         match the one specified by the type property.
         A coroutine that yields on success or raises an error."""
 
-        yield self._consumed_thing.write_property(self._name, value)
+        yield self._consumed_thing.write_property(
+            self._name, value,
+            client_kwargs=client_kwargs)
 
     def subscribe(self, *args, **kwargs):
         """Subscribe to an stream of events emitted when the property value changes."""
 
-        observable = self._consumed_thing.on_property_change(self._name)
+        client_kwargs = kwargs.pop("client_kwargs", None)
+
+        observable = self._consumed_thing.on_property_change(
+            self._name,
+            client_kwargs=client_kwargs)
+
         return observable.subscribe_on(IOLoopScheduler()).subscribe(*args, **kwargs)
 
 
@@ -155,12 +165,16 @@ class ConsumedThingAction(object):
         return getattr(self._consumed_thing.td.actions[self._name], name)
 
     @tornado.gen.coroutine
-    def invoke(self, *args):
+    def invoke(self, *args, client_kwargs=None):
         """The invoke() method when invoked, starts the Action interaction
         with the input value provided by the inputValue argument."""
 
         input_value = args[0] if len(args) else None
-        result = yield self._consumed_thing.invoke_action(self._name, input_value)
+
+        result = yield self._consumed_thing.invoke_action(
+            self._name, input_value,
+            client_kwargs=client_kwargs)
+
         raise tornado.gen.Return(result)
 
 
@@ -183,5 +197,10 @@ class ConsumedThingEvent(object):
     def subscribe(self, *args, **kwargs):
         """Subscribe to an stream of emissions of this event."""
 
-        observable = self._consumed_thing.on_event(self._name)
+        client_kwargs = kwargs.pop("client_kwargs", None)
+
+        observable = self._consumed_thing.on_event(
+            self._name,
+            client_kwargs=client_kwargs)
+
         return observable.subscribe_on(IOLoopScheduler()).subscribe(*args, **kwargs)
