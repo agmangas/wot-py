@@ -40,6 +40,10 @@ except ImportError:
 utils.init_logging()
 logger = logging.getLogger()
 
+EVENT_BURST_TIMEOUT_MAX_LAMBD = 100.0
+EVENT_BURST_TIMEOUT_FACTOR = 4.0
+EVENT_BURST_TIMEOUT_MIN = 60.0
+
 TARGET_BURST_EVENT = "burstEvent"
 TARGET_ROUND_TRIP = "measureRoundTrip"
 TARGET_CURR_TIME = "currentTime"
@@ -333,7 +337,7 @@ def get_arr_stats(arr):
 
 
 def consume_event_burst(consumed_thing, protocol, iface=None,
-                        sub_sleep=1.0, lambd=5.0, total=10, timeout=10):
+                        sub_sleep=1.0, lambd=5.0, total=10, timeout_last_events=10):
     """Gets the stats from invoking the action to initiate
     an event burst and subscribing to those events."""
 
@@ -347,7 +351,7 @@ def consume_event_burst(consumed_thing, protocol, iface=None,
         sub_sleep,
         lambd,
         total,
-        timeout))
+        timeout_last_events))
 
     indexes = [item["index"] for item in events]
     latencies = [item["timeReceived"] - item["timeEmission"] for item in events]
@@ -368,7 +372,7 @@ def consume_event_burst(consumed_thing, protocol, iface=None,
     return stats
 
 
-async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, timeout):
+async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, timeout_last_events):
     """Coroutine helper for the consume_event_burst function."""
 
     burst_id = uuid.uuid4().hex
@@ -403,17 +407,26 @@ async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, t
 
     logger.info("Invoking action to start event burst")
 
-    await consumed_thing.actions["startEventBurst"].invoke({
-        "id": burst_id,
-        "lambd": lambd,
-        "total": total
-    })
+    try:
+        lambd_timeout = lambd if lambd < EVENT_BURST_TIMEOUT_MAX_LAMBD else EVENT_BURST_TIMEOUT_MAX_LAMBD
+        timeout = (total / float(lambd_timeout)) * EVENT_BURST_TIMEOUT_FACTOR
+        timeout = timeout if timeout > EVENT_BURST_TIMEOUT_MIN else EVENT_BURST_TIMEOUT_MIN
+
+        logger.info("Expected burst action timeout: {} s".format(timeout))
+
+        await asyncio.wait_for(consumed_thing.actions["startEventBurst"].invoke({
+            "id": burst_id,
+            "lambd": lambd,
+            "total": total
+        }), timeout=timeout)
+    except asyncio.TimeoutError:
+        logger.warning("Timeout waiting for burst action")
 
     logger.info("Event burst action completed")
 
     try:
         logger.info("Waiting for last events to arrive")
-        await asyncio.wait_for(done, timeout=timeout)
+        await asyncio.wait_for(done, timeout=timeout_last_events)
     except asyncio.TimeoutError:
         logger.warning("Timeout waiting for events")
 
