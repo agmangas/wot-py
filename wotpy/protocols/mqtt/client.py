@@ -12,7 +12,6 @@ import logging
 import pprint
 import time
 import uuid
-from json import JSONDecodeError
 
 import hbmqtt.client
 import tornado.concurrent
@@ -75,30 +74,26 @@ class MQTTClient(BaseProtocolClient):
                 self._messages[broker_url] = {}
 
             while broker_url in self._deliver_stop_events and not self._deliver_stop_events[broker_url].is_set():
-                msg = None
-
                 try:
                     msg = yield self._clients[broker_url].deliver_message(timeout=self._deliver_timeout_secs)
                 except asyncio.TimeoutError:
-                    pass
+                    continue
                 except Exception as ex:
                     self._logr.warning("Error delivering message: {}".format(ex), exc_info=True)
 
-                    self._logr.debug("Sleeping for {} seconds".format(self.SLEEP_SECS_DELIVER_ERR))
-                    yield tornado.gen.sleep(self.SLEEP_SECS_DELIVER_ERR)
-
                     try:
+                        self._logr.debug("Sleeping for {} seconds".format(self.SLEEP_SECS_DELIVER_ERR))
+                        yield tornado.gen.sleep(self.SLEEP_SECS_DELIVER_ERR)
                         yield self._reconnect_client(broker_url)
                     except Exception as ex_reconn:
                         self._logr.warning("Error reconnecting: {}".format(ex_reconn), exc_info=True)
 
-                if msg is None or broker_url not in self._messages:
                     continue
 
-                if msg.topic not in self._messages[broker_url]:
-                    self._messages[broker_url][msg.topic] = []
-
                 try:
+                    if msg.topic not in self._messages[broker_url]:
+                        self._messages[broker_url][msg.topic] = []
+
                     self._messages[broker_url][msg.topic].append({
                         "id": uuid.uuid4().hex,
                         "data": json.loads(msg.data.decode()),
@@ -106,10 +101,9 @@ class MQTTClient(BaseProtocolClient):
                     })
 
                     self._msg_conditions[broker_url][msg.topic].notify_all()
-                except (JSONDecodeError, TypeError, ValueError):
-                    self._logr.warning("Error decoding: {}".format(msg.data), exc_info=True)
-
-                self._clean_messages(broker_url)
+                    self._clean_messages(broker_url)
+                except Exception as ex:
+                    self._logr.warning("Error processing message: {}".format(ex), exc_info=True)
 
             broker_url in self._deliver_stop_events and self._deliver_stop_events[broker_url].clear()
 
@@ -187,8 +181,10 @@ class MQTTClient(BaseProtocolClient):
 
                 now = time.time()
 
-                while self._deliver_stop_events[broker_url].is_set() \
-                        and (time.time() - now) < self._deliver_loop_timeout_secs:
+                def has_time_left():
+                    return (time.time() - now) < self._deliver_loop_timeout_secs
+
+                while self._deliver_stop_events[broker_url].is_set() and has_time_left():
                     yield tornado.gen.sleep(self.DELIVER_TERMINATE_LOOP_SLEEP_SECS)
 
                 self._deliver_stop_events.pop(broker_url)
