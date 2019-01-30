@@ -18,7 +18,7 @@ import tornado.concurrent
 import tornado.gen
 import tornado.ioloop
 import tornado.locks
-from hbmqtt.mqtt.constants import QOS_0
+from hbmqtt.mqtt.constants import QOS_2, QOS_1, QOS_0
 from rx import Observable
 from six.moves.urllib import parse
 
@@ -39,12 +39,8 @@ class MQTTClient(BaseProtocolClient):
     DELIVER_TERMINATE_LOOP_SLEEP_SECS = 0.1
     SLEEP_SECS_DELIVER_ERR = 1.0
 
-    def __init__(self, wait_on_write=True, qos=QOS_0,
-                 deliver_timeout_secs=1, msg_wait_timeout_secs=5,
-                 msg_ttl_secs=15, timeout_default=None, config=None,
-                 deliver_loop_timeout_secs=20):
-        self._wait_on_write = wait_on_write
-        self._qos = qos
+    def __init__(self, deliver_timeout_secs=1, msg_wait_timeout_secs=5, msg_ttl_secs=15,
+                 timeout_default=None, config=None, deliver_loop_timeout_secs=20):
         self._deliver_timeout_secs = deliver_timeout_secs
         self._msg_wait_timeout_secs = msg_wait_timeout_secs
         self._msg_ttl_secs = msg_ttl_secs
@@ -352,7 +348,8 @@ class MQTTClient(BaseProtocolClient):
         return len(forms_mqtt) > 0
 
     @tornado.gen.coroutine
-    def invoke_action(self, td, name, input_value, timeout=None):
+    def invoke_action(self, td, name, input_value,
+                      timeout=None, qos_publish=QOS_2, qos_subscribe=QOS_1):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
 
@@ -372,7 +369,7 @@ class MQTTClient(BaseProtocolClient):
 
         try:
             yield self._init_client(broker_url, ref_id)
-            yield self._subscribe(broker_url, topic_result, self._qos)
+            yield self._subscribe(broker_url, topic_result, qos_subscribe)
 
             input_data = {
                 "id": uuid.uuid4().hex,
@@ -381,7 +378,7 @@ class MQTTClient(BaseProtocolClient):
 
             input_payload = json.dumps(input_data).encode()
 
-            yield self._publish(broker_url, topic_invoke, input_payload, self._qos)
+            yield self._publish(broker_url, topic_invoke, input_payload, qos_publish)
 
             ini = time.time()
 
@@ -410,7 +407,8 @@ class MQTTClient(BaseProtocolClient):
             yield self._disconnect_client(broker_url, ref_id)
 
     @tornado.gen.coroutine
-    def write_property(self, td, name, value, timeout=None):
+    def write_property(self, td, name, value,
+                       timeout=None, qos_publish=QOS_1, qos_subscribe=QOS_1, wait_ack=True):
         """Updates the value of a Property on a remote Thing.
         Due to the MQTT binding design this coroutine yields as soon as the write message has
         been published and will not wait for a custom write handler that yields to another coroutine
@@ -434,7 +432,7 @@ class MQTTClient(BaseProtocolClient):
 
         try:
             yield self._init_client(broker_url, ref_id)
-            yield self._subscribe(broker_url, topic_ack, self._qos)
+            yield self._subscribe(broker_url, topic_ack, qos_subscribe)
 
             write_data = {
                 "action": "write",
@@ -444,9 +442,9 @@ class MQTTClient(BaseProtocolClient):
 
             write_payload = json.dumps(write_data).encode()
 
-            yield self._publish(broker_url, topic_write, write_payload, self._qos)
+            yield self._publish(broker_url, topic_write, write_payload, qos_publish)
 
-            if not self._wait_on_write:
+            if not wait_ack:
                 return
 
             ini = time.time()
@@ -470,7 +468,8 @@ class MQTTClient(BaseProtocolClient):
             yield self._disconnect_client(broker_url, ref_id)
 
     @tornado.gen.coroutine
-    def read_property(self, td, name, timeout=None):
+    def read_property(self, td, name,
+                      timeout=None, qos_publish=QOS_1, qos_subscribe=QOS_1):
         """Reads the value of a Property on a remote Thing.
         Returns a Future."""
 
@@ -498,12 +497,12 @@ class MQTTClient(BaseProtocolClient):
             yield self._init_client(broker_read, ref_id)
             broker_obsv != broker_read and (yield self._init_client(broker_obsv, ref_id))
 
-            yield self._subscribe(broker_obsv, topic_obsv, self._qos)
+            yield self._subscribe(broker_obsv, topic_obsv, qos_subscribe)
 
             read_time = int(time.time() * 1000)
             read_payload = json.dumps({"action": "read"}).encode()
 
-            yield self._publish(broker_read, topic_read, read_payload, self._qos)
+            yield self._publish(broker_read, topic_read, read_payload, qos_publish)
 
             ini = time.time()
 
@@ -529,7 +528,7 @@ class MQTTClient(BaseProtocolClient):
             yield self._disconnect_client(broker_read, ref_id)
             broker_obsv != broker_read and (yield self._disconnect_client(broker_obsv, ref_id))
 
-    def _build_subscribe(self, broker_url, topic, next_item_builder):
+    def _build_subscribe(self, broker_url, topic, next_item_builder, qos):
         """Builds the subscribe function that should be passed when
         constructing an Observable to listen for messages on an MQTT topic."""
 
@@ -548,7 +547,7 @@ class MQTTClient(BaseProtocolClient):
                 emitted_ids = set()
 
                 yield self._init_client(broker_url, ref_id)
-                yield self._subscribe(broker_url, topic, self._qos)
+                yield self._subscribe(broker_url, topic, qos)
 
                 while state["active"]:
                     msgs_to_emit_gen = self._topic_messages(
@@ -580,7 +579,7 @@ class MQTTClient(BaseProtocolClient):
 
         return subscribe
 
-    def on_property_change(self, td, name):
+    def on_property_change(self, td, name, qos=QOS_0):
         """Subscribes to property changes on a remote Thing.
         Returns an Observable"""
 
@@ -603,12 +602,13 @@ class MQTTClient(BaseProtocolClient):
         subscribe = self._build_subscribe(
             broker_url=broker_url,
             topic=topic,
-            next_item_builder=next_item_builder)
+            next_item_builder=next_item_builder,
+            qos=qos)
 
         # noinspection PyUnresolvedReferences
         return Observable.create(subscribe)
 
-    def on_event(self, td, name):
+    def on_event(self, td, name, qos=QOS_0):
         """Subscribes to an event on a remote Thing.
         Returns an Observable."""
 
@@ -629,7 +629,8 @@ class MQTTClient(BaseProtocolClient):
         subscribe = self._build_subscribe(
             broker_url=broker_url,
             topic=topic,
-            next_item_builder=next_item_builder)
+            next_item_builder=next_item_builder,
+            qos=qos)
 
         # noinspection PyUnresolvedReferences
         return Observable.create(subscribe)
