@@ -42,7 +42,8 @@ class MQTTClient(BaseProtocolClient):
 
     def __init__(self, wait_on_write=True, qos=QOS_0,
                  deliver_timeout_secs=1, msg_wait_timeout_secs=5,
-                 msg_ttl_secs=15, timeout_default=None, config=None):
+                 msg_ttl_secs=15, timeout_default=None, config=None,
+                 deliver_loop_timeout_secs=20):
         self._wait_on_write = wait_on_write
         self._qos = qos
         self._deliver_timeout_secs = deliver_timeout_secs
@@ -50,6 +51,7 @@ class MQTTClient(BaseProtocolClient):
         self._msg_ttl_secs = msg_ttl_secs
         self._timeout_default = timeout_default
         self._config = config
+        self._deliver_loop_timeout_secs = deliver_loop_timeout_secs
         self._lock_client = tornado.locks.Lock()
         self._deliver_stop_events = {}
         self._client_ref_counter = {}
@@ -178,6 +180,19 @@ class MQTTClient(BaseProtocolClient):
             if self._has_refs(broker_url):
                 return
 
+            if broker_url in self._deliver_stop_events:
+                self._logr.debug("Stopping message delivery loop: {}".format(broker_url))
+
+                self._deliver_stop_events[broker_url].set()
+
+                now = time.time()
+
+                while self._deliver_stop_events[broker_url].is_set() \
+                        and (time.time() - now) < self._deliver_loop_timeout_secs:
+                    yield tornado.gen.sleep(self.DELIVER_TERMINATE_LOOP_SLEEP_SECS)
+
+                self._deliver_stop_events.pop(broker_url)
+
             try:
                 if broker_url in self._clients:
                     self._logr.debug("Disconnecting MQTT client: {}".format(broker_url))
@@ -189,18 +204,6 @@ class MQTTClient(BaseProtocolClient):
             self._messages.pop(broker_url, None)
             self._msg_conditions.pop(broker_url, None)
             self._topics.pop(broker_url, None)
-
-            if broker_url not in self._deliver_stop_events:
-                return
-
-            self._logr.debug("Stopping message delivery loop: {}".format(broker_url))
-
-            self._deliver_stop_events[broker_url].set()
-
-            while self._deliver_stop_events[broker_url].is_set():
-                yield tornado.gen.sleep(self.DELIVER_TERMINATE_LOOP_SLEEP_SECS)
-
-            self._deliver_stop_events.pop(broker_url)
 
     @tornado.gen.coroutine
     def _reconnect_client(self, broker_url):
