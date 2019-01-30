@@ -65,6 +65,18 @@ class HTTPClient(BaseProtocolClient):
 
         return Protocols.HTTP
 
+    @property
+    def connect_timeout(self):
+        """Returns the default connection timeout for all HTTP requests."""
+
+        return self._connect_timeout
+
+    @property
+    def request_timeout(self):
+        """Returns the default request timeout for all HTTP requests."""
+
+        return self._request_timeout
+
     def is_supported_interaction(self, td, name):
         """Returns True if the any of the Forms for the Interaction
         with the given name is supported in this Protocol Binding client."""
