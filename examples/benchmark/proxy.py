@@ -14,6 +14,7 @@ import pprint
 
 import six
 
+from wotpy.protocols.enums import Protocols
 from wotpy.wot.td import ThingDescription
 
 try:
@@ -28,12 +29,27 @@ logger = logging.getLogger()
 THING_ID = 'urn:org:fundacionctic:thing:proxy'
 SUB_DELAY = 2.0
 
+TIMEOUT_PROP_READ = 90.0
+TIMEOUT_PROP_WRITE = 90.0
+TIMEOUT_ACTION_INVOCATION = 1800.0
+TIMEOUT_HARD_FACTOR = 1.2
+
 
 def build_prop_read_proxy(consumed_thing, name):
     """Factory for proxy Property read handlers."""
 
     async def _proxy():
-        return await consumed_thing.properties[name].read()
+        timeout_soft = TIMEOUT_PROP_READ
+        timeout_hard = TIMEOUT_PROP_READ * TIMEOUT_HARD_FACTOR
+
+        awaitable = consumed_thing.properties[name].read(
+            client_kwargs={
+                Protocols.MQTT: {
+                    "timeout": timeout_soft
+                }
+            })
+
+        return await asyncio.wait_for(awaitable, timeout=timeout_hard)
 
     return _proxy
 
@@ -42,7 +58,18 @@ def build_prop_write_proxy(consumed_thing, name):
     """Factory for proxy Property write handlers."""
 
     async def _proxy(val):
-        return await consumed_thing.properties[name].write(val)
+        timeout_soft = TIMEOUT_PROP_WRITE
+        timeout_hard = TIMEOUT_PROP_WRITE * TIMEOUT_HARD_FACTOR
+
+        awaitable = consumed_thing.properties[name].write(
+            val,
+            client_kwargs={
+                Protocols.MQTT: {
+                    "timeout": timeout_soft
+                }
+            })
+
+        await asyncio.wait_for(awaitable, timeout=timeout_hard)
 
     return _proxy
 
@@ -51,7 +78,18 @@ def build_action_invoke_proxy(consumed_thing, name):
     """Factory for proxy Action invocation handlers."""
 
     async def _proxy(params):
-        return await consumed_thing.actions[name].invoke(params.get('input'))
+        timeout_soft = TIMEOUT_ACTION_INVOCATION
+        timeout_hard = TIMEOUT_ACTION_INVOCATION * TIMEOUT_HARD_FACTOR
+
+        awaitable = consumed_thing.actions[name].invoke(
+            params.get('input'),
+            client_kwargs={
+                Protocols.MQTT: {
+                    "timeout": timeout_soft
+                }
+            })
+
+        return await asyncio.wait_for(awaitable, timeout=timeout_hard)
 
     return _proxy
 
