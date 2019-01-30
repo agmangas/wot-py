@@ -165,11 +165,12 @@ class ConsumedThingAction(object):
         return getattr(self._consumed_thing.td.actions[self._name], name)
 
     @tornado.gen.coroutine
-    def invoke(self, *args, client_kwargs=None):
+    def invoke(self, *args, **kwargs):
         """The invoke() method when invoked, starts the Action interaction
         with the input value provided by the inputValue argument."""
 
         input_value = args[0] if len(args) else None
+        client_kwargs = kwargs.pop("client_kwargs", None)
 
         result = yield self._consumed_thing.invoke_action(
             self._name, input_value,
