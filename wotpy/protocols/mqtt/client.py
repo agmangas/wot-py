@@ -28,6 +28,7 @@ from wotpy.protocols.exceptions import FormNotFoundException
 from wotpy.protocols.mqtt.enums import MQTTSchemes
 from wotpy.protocols.mqtt.handlers.action import ActionMQTTHandler
 from wotpy.protocols.mqtt.handlers.property import PropertyMQTTHandler
+from wotpy.protocols.refs import ConnRefCounter
 from wotpy.protocols.utils import is_scheme_form
 from wotpy.utils.utils import handle_observer_finalization
 from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent, EmittedEvent
@@ -49,11 +50,11 @@ class MQTTClient(BaseProtocolClient):
         self._deliver_loop_timeout_secs = deliver_loop_timeout_secs
         self._lock_client = tornado.locks.Lock()
         self._deliver_stop_events = {}
-        self._client_ref_counter = {}
         self._msg_conditions = {}
         self._clients = {}
         self._messages = {}
         self._topics = {}
+        self._ref_counter = ConnRefCounter()
         self._logr = logging.getLogger(__name__)
 
     def _build_deliver(self, broker_url):
@@ -105,43 +106,12 @@ class MQTTClient(BaseProtocolClient):
 
         return deliver
 
-    def _increase_ref(self, broker_url, ref_id):
-        """Increases the reference counter for the MQTT client on the given broker URL."""
-
-        if broker_url not in self._client_ref_counter:
-            self._client_ref_counter[broker_url] = set()
-
-        self._client_ref_counter[broker_url].add(ref_id)
-
-        self._logr.debug("Added ref {} to MQTT client {} (current: {})".format(
-            ref_id, broker_url, len(self._client_ref_counter[broker_url])))
-
-    def _decrease_ref(self, broker_url, ref_id):
-        """Decreases the reference counter for the MQTT client on the given broker URL."""
-
-        if broker_url not in self._client_ref_counter:
-            self._logr.warning("Attempted to decrease ref of unknown broker: {}".format(broker_url))
-            return
-
-        try:
-            self._client_ref_counter[broker_url].remove(ref_id)
-
-            self._logr.debug("Removed ref {} from MQTT client {} (current: {})".format(
-                ref_id, broker_url, len(self._client_ref_counter[broker_url])))
-        except KeyError:
-            self._logr.warning("Attempted to remove unknown reference: {}".format(ref_id))
-
-    def _has_refs(self, broker_url):
-        """Returns True if the MQTT client for the given broker has any references pointing to it."""
-
-        return broker_url in self._client_ref_counter and len(self._client_ref_counter[broker_url])
-
     @tornado.gen.coroutine
     def _init_client(self, broker_url, ref_id):
         """Initializes and connects a client to the given broker URL."""
 
         with (yield self._lock_client.acquire()):
-            self._increase_ref(broker_url, ref_id)
+            self._ref_counter.increase(broker_url, ref_id)
 
             if broker_url in self._clients:
                 return
@@ -165,9 +135,9 @@ class MQTTClient(BaseProtocolClient):
         all resources when the client does not have any more references pointing to it."""
 
         with (yield self._lock_client.acquire()):
-            self._decrease_ref(broker_url, ref_id)
+            self._ref_counter.decrease(broker_url, ref_id)
 
-            if self._has_refs(broker_url):
+            if self._ref_counter.has_any(broker_url):
                 return
 
             if broker_url in self._deliver_stop_events:
