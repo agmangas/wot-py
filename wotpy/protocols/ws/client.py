@@ -5,17 +5,20 @@
 Classes that contain the client logic for the Websocket protocol.
 """
 
+import logging
 import uuid
 
 import tornado.gen
+import tornado.ioloop
+import tornado.locks
 import tornado.websocket
 from rx import Observable
-from six.moves import urllib
 from tornado.concurrent import Future
 
 from wotpy.protocols.client import BaseProtocolClient
-from wotpy.protocols.enums import Protocols, InteractionVerbs
+from wotpy.protocols.enums import Protocols
 from wotpy.protocols.exceptions import FormNotFoundException
+from wotpy.protocols.refs import ConnRefCounter
 from wotpy.protocols.utils import pick_form, is_scheme_form
 from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketSchemes
 from wotpy.protocols.ws.messages import \
@@ -27,33 +30,152 @@ from wotpy.protocols.ws.messages import \
 from wotpy.wot.events import \
     PropertyChangeEmittedEvent, \
     EmittedEvent, \
-    ThingDescriptionChangeEmittedEvent, \
-    PropertyChangeEventInit, \
-    ThingDescriptionChangeEventInit
+    PropertyChangeEventInit
 
 
 class WebsocketClient(BaseProtocolClient):
     """Implementation of the protocol client interface for the Websocket protocol."""
 
+    SLEEP_AFTER_ERR_SECS = 1.0
+    RECEIVE_LOOP_TERMINATE_SLEEP_SECS = 0.1
+
+    def __init__(self, receive_timeout_secs=1.0, ping_interval=2000):
+        self._receive_timeout_secs = receive_timeout_secs
+        self._ping_interval = ping_interval
+        self._conns = {}
+        self._ref_counter = ConnRefCounter()
+        self._lock_conn = tornado.locks.Lock()
+        self._msg_conditions = {}
+        self._messages = {}
+        self._receive_stop_events = {}
+        self._logr = logging.getLogger(__name__)
+
+    @tornado.gen.coroutine
+    def _init_conn(self, ws_url, ref_id):
+        """Initializes and connects the WebSockets connection."""
+
+        with (yield self._lock_conn.acquire()):
+            self._ref_counter.increase(ws_url, ref_id)
+
+            if ws_url in self._conns:
+                return
+
+            self._logr.debug("Connecting to <{}>".format(ws_url))
+
+            self._conns[ws_url] = yield tornado.websocket.websocket_connect(
+                ws_url,
+                ping_interval=self._ping_interval)
+
+            @tornado.gen.coroutine
+            def _start_receive_loop():
+                yield self._receive_loop(ws_url)
+
+            self._receive_stop_events[ws_url] = tornado.locks.Event()
+            tornado.ioloop.IOLoop.current().add_callback(_start_receive_loop)
+
+    @tornado.gen.coroutine
+    def _stop_conn(self, ws_url, ref_id):
+        """Disconnects the WebSockets connection."""
+
+        with (yield self._lock_conn.acquire()):
+            self._ref_counter.decrease(ws_url, ref_id)
+
+            if self._ref_counter.has_any(ws_url):
+                return
+
+            try:
+                if ws_url in self._conns:
+                    self._logr.debug("Disconnecting WS client: {}".format(ws_url))
+                    yield self._conns[ws_url].close()
+            except Exception as ex:
+                self._logr.warning("Error disconnecting: {}".format(ex), exc_info=True)
+
+            if ws_url in self._receive_stop_events:
+                self._logr.debug("Stopping message read loop: {}".format(ws_url))
+
+                self._receive_stop_events[ws_url].set()
+
+                while self._receive_stop_events[ws_url].is_set():
+                    yield tornado.gen.sleep(self.RECEIVE_LOOP_TERMINATE_SLEEP_SECS)
+
+                self._receive_stop_events.pop(ws_url)
+
+            self._conns.pop(ws_url, None)
+            self._messages.pop(ws_url, None)
+            self._msg_conditions.pop(ws_url, None)
+
+    @tornado.gen.coroutine
+    def _send_message(self, ws_url, msg_req):
+        """Sends a WebSockets message and returns the condition
+        that will be notified when the response arrives."""
+
+        if ws_url not in self._conns:
+            self._logr.warning("<{}> is not an active connection".format(ws_url))
+            return
+
+        if ws_url not in self._msg_conditions:
+            self._msg_conditions[ws_url] = {}
+
+        if msg_req.id in self._msg_conditions[ws_url]:
+            self._logr.warning("Message condition already exists")
+
+        yield self._conns[ws_url].write_message(msg_req.to_json())
+
+        msg_condition = tornado.locks.Condition()
+        self._msg_conditions[ws_url][msg_req.id] = msg_condition
+
+        raise tornado.gen.Return(msg_condition)
+
+    @tornado.gen.coroutine
+    def _receive_loop(self, ws_url):
+        """Starts the WebSockets message receiving loop."""
+
+        if ws_url not in self._conns:
+            self._logr.warning("<{}> is not an active connection".format(ws_url))
+            return
+
+        if ws_url not in self._messages:
+            self._messages[ws_url] = {}
+
+        while not self._receive_stop_events[ws_url].is_set():
+            try:
+                raw_res = yield self._conns[ws_url].read_message()
+
+                self._logr.debug("Read message: {}".format(raw_res))
+
+                if raw_res is None:
+                    self._logr.debug("Cannot read message: Closed WS connection")
+                    yield tornado.gen.sleep(self.SLEEP_AFTER_ERR_SECS)
+                    continue
+
+                msg_res = self._parse_msg_response(raw_res)
+
+                if msg_res:
+                    self._messages[ws_url][msg_res.id] = msg_res
+                    conditions = self._msg_conditions.get(ws_url, None)
+
+                    if conditions and msg_res.id in conditions:
+                        self._logr.debug("Notifying: {}".format(msg_res.id))
+                        conditions[msg_res.id].notify_all()
+            except Exception as ex:
+                self._logr.warning("Error in read loop: {}".format(ex), exc_info=True)
+                yield tornado.gen.sleep(self.SLEEP_AFTER_ERR_SECS)
+
+        self._receive_stop_events[ws_url].clear()
+
     @classmethod
-    def _parse_response(cls, raw_msg, msg_id):
+    def _parse_msg_response(cls, raw_msg):
         """Returns a parsed WS Response message instance if
         the raw message format is valid and has the given ID.
         Raises Exception if the WS message is an error."""
 
         try:
-            msg = WebsocketMessageResponse.from_raw(raw_msg)
-
-            if msg.id == msg_id:
-                return msg
+            return WebsocketMessageResponse.from_raw(raw_msg)
         except WebsocketMessageException:
             pass
 
         try:
-            err = WebsocketMessageError.from_raw(raw_msg)
-
-            if err.id == msg_id:
-                raise Exception(err.message)
+            return WebsocketMessageError.from_raw(raw_msg)
         except WebsocketMessageException:
             pass
 
@@ -121,10 +243,10 @@ class WebsocketClient(BaseProtocolClient):
                     return on_error(ex)
 
             def parse_subscription_id(raw_msg):
-                try:
-                    msg_res = self._parse_response(raw_msg, msg_req.id)
-                except Exception as ex:
-                    return on_error(ex)
+                msg_res = self._parse_msg_response(raw_msg)
+
+                if isinstance(msg_res, WebsocketMessageError):
+                    return on_error(Exception(msg_res.message))
 
                 if msg_res is None:
                     return
@@ -161,34 +283,6 @@ class WebsocketClient(BaseProtocolClient):
 
         return subscribe
 
-    @tornado.gen.coroutine
-    def _wait_for_response(self, ws_conn, msg_id):
-        """Waits for the WebSocket response message that matches the given ID."""
-
-        while True:
-            raw_res = yield ws_conn.read_message()
-
-            if raw_res is None:
-                raise Exception("WS connection closed")
-
-            msg_res = self._parse_response(raw_res, msg_id)
-
-            if msg_res is not None:
-                raise tornado.gen.Return(msg_res.result)
-
-    @tornado.gen.coroutine
-    def _send_websocket_message(self, ws_url, msg_req):
-        """Sends a WebSocket request message, waits for the response and returns the result."""
-
-        ws_conn = yield tornado.websocket.websocket_connect(ws_url)
-        ws_conn.write_message(msg_req.to_json())
-
-        result = yield self._wait_for_response(ws_conn, msg_req.id)
-
-        yield ws_conn.close()
-
-        raise tornado.gen.Return(result)
-
     def is_supported_interaction(self, td, name):
         """Returns True if the any of the Forms for the Interaction
         with the given name is supported in this Protocol Binding client."""
@@ -207,6 +301,20 @@ class WebsocketClient(BaseProtocolClient):
 
         return len(forms_wss) or len(forms_ws)
 
+    def _raise_message(self, ws_url, msg_id):
+        """Raises the error or return Exception from the message
+        in the internal collection matching the given ID."""
+
+        assert ws_url in self._messages, "Unknown WS connection"
+        assert msg_id in self._messages[ws_url], "Unknown message ID"
+
+        msg = self._messages[ws_url][msg_id]
+
+        if isinstance(msg, WebsocketMessageError):
+            raise Exception(msg.message)
+        else:
+            raise tornado.gen.Return(msg.result)
+
     @tornado.gen.coroutine
     def invoke_action(self, td, name, input_value):
         """Invokes an Action on a remote Thing.
@@ -223,15 +331,23 @@ class WebsocketClient(BaseProtocolClient):
             raise FormNotFoundException()
 
         ws_url = form.resolve_uri(td.base)
+        ref_id = uuid.uuid4().hex
 
-        msg_req = WebsocketMessageRequest(
-            method=WebsocketMethods.INVOKE_ACTION,
-            params={"name": name, "parameters": input_value},
-            msg_id=uuid.uuid4().hex)
+        try:
+            yield self._init_conn(ws_url, ref_id)
 
-        result = yield self._send_websocket_message(ws_url, msg_req)
+            msg_req = WebsocketMessageRequest(
+                method=WebsocketMethods.INVOKE_ACTION,
+                params={"name": name, "parameters": input_value},
+                msg_id=uuid.uuid4().hex)
 
-        raise tornado.gen.Return(result)
+            condition = yield self._send_message(ws_url, msg_req)
+
+            yield condition.wait()
+
+            self._raise_message(ws_url, msg_req.id)
+        finally:
+            yield self._stop_conn(ws_url, ref_id)
 
     @tornado.gen.coroutine
     def write_property(self, td, name, value):
@@ -249,15 +365,23 @@ class WebsocketClient(BaseProtocolClient):
             raise FormNotFoundException()
 
         ws_url = form.resolve_uri(td.base)
+        ref_id = uuid.uuid4().hex
 
-        msg_req = WebsocketMessageRequest(
-            method=WebsocketMethods.WRITE_PROPERTY,
-            params={"name": name, "value": value},
-            msg_id=uuid.uuid4().hex)
+        try:
+            yield self._init_conn(ws_url, ref_id)
 
-        result = yield self._send_websocket_message(ws_url, msg_req)
+            msg_req = WebsocketMessageRequest(
+                method=WebsocketMethods.WRITE_PROPERTY,
+                params={"name": name, "value": value},
+                msg_id=uuid.uuid4().hex)
 
-        raise tornado.gen.Return(result)
+            condition = yield self._send_message(ws_url, msg_req)
+
+            yield condition.wait()
+
+            self._raise_message(ws_url, msg_req.id)
+        finally:
+            yield self._stop_conn(ws_url, ref_id)
 
     @tornado.gen.coroutine
     def read_property(self, td, name):
@@ -275,15 +399,23 @@ class WebsocketClient(BaseProtocolClient):
             raise FormNotFoundException()
 
         ws_url = form.resolve_uri(td.base)
+        ref_id = uuid.uuid4().hex
 
-        msg_req = WebsocketMessageRequest(
-            method=WebsocketMethods.READ_PROPERTY,
-            params={"name": name},
-            msg_id=uuid.uuid4().hex)
+        try:
+            yield self._init_conn(ws_url, ref_id)
 
-        result = yield self._send_websocket_message(ws_url, msg_req)
+            msg_req = WebsocketMessageRequest(
+                method=WebsocketMethods.READ_PROPERTY,
+                params={"name": name},
+                msg_id=uuid.uuid4().hex)
 
-        raise tornado.gen.Return(result)
+            condition = yield self._send_message(ws_url, msg_req)
+
+            yield condition.wait()
+
+            self._raise_message(ws_url, msg_req.id)
+        finally:
+            yield self._stop_conn(ws_url, ref_id)
 
     def on_event(self, td, name):
         """Subscribes to an event on a remote Thing.
