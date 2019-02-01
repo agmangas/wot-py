@@ -153,7 +153,7 @@ def test_property_subscribe(http_server):
 
 @tornado.gen.coroutine
 def _test_action_run(server):
-    """"""
+    """Helper to run Action invocation tests."""
 
     exposed_thing = next(server.exposed_things)
     action_name = next(six.iterkeys(exposed_thing.thing.actions))
