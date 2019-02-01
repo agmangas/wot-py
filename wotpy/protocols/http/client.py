@@ -135,17 +135,17 @@ class HTTPClient(BaseProtocolClient):
                 invoc_res = yield http_client.fetch(invoc_http_req)
             except HTTPTimeoutError:
                 self._logr.debug("Timeout checking invocation: {}".format(invocation_url))
-                return False, None
+                raise tornado.gen.Return((False, None))
 
             status = json.loads(invoc_res.body)
 
             if status.get("done") is False:
-                return False, None
+                raise tornado.gen.Return((False, None))
 
             if status.get("error") is not None:
-                return True, Exception(status.get("error"))
+                raise tornado.gen.Return((True, Exception(status.get("error"))))
             else:
-                return True, tornado.gen.Return(status.get("result"))
+                raise tornado.gen.Return((True, tornado.gen.Return(status.get("result"))))
 
         while True:
             done, result = yield check_invocation()
