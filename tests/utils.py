@@ -8,7 +8,7 @@ import six
 import tornado.ioloop
 from tornado.escape import to_unicode
 
-DEFAULT_TIMEOUT_SECS = 20
+DEFAULT_TIMEOUT_SECS = 30
 TIMEOUT_CORO_VAR = "WOTPY_TESTS_CORO_TIMEOUT"
 
 
