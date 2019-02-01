@@ -25,12 +25,14 @@ class HTTPServer(BaseProtocolServer):
 
     DEFAULT_PORT = 80
 
-    def __init__(self, port=DEFAULT_PORT, ssl_context=None):
+    def __init__(self, port=DEFAULT_PORT, ssl_context=None, action_ttl_secs=300):
         super(HTTPServer, self).__init__(port=port)
         self._server = None
         self._app = self._build_app()
         self._ssl_context = ssl_context
+        self._action_ttl_secs = action_ttl_secs
         self._pending_actions = {}
+        self._invocation_check_times = {}
 
     @property
     def protocol(self):
@@ -58,10 +60,22 @@ class HTTPServer(BaseProtocolServer):
         return self._app
 
     @property
+    def action_ttl(self):
+        """Returns the Action invocations Time-To-Live (seconds)."""
+
+        return self._action_ttl_secs
+
+    @property
     def pending_actions(self):
         """Dict of pending action invocations represented as Futures."""
 
         return self._pending_actions
+
+    @property
+    def invocation_check_times(self):
+        """Dict that contains the timestamp of the last time an invocation was checked by a client.."""
+
+        return self._invocation_check_times
 
     def _build_app(self):
         """Builds and returns the Tornado application for the WebSockets server."""

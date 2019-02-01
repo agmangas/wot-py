@@ -6,6 +6,7 @@ Classes that contain the client logic for the HTTP protocol.
 """
 
 import json
+import logging
 
 import tornado.concurrent
 import tornado.gen
@@ -34,6 +35,7 @@ class HTTPClient(BaseProtocolClient):
     def __init__(self, connect_timeout=DEFAULT_CON_TIMEOUT, request_timeout=DEFAULT_REQ_TIMEOUT):
         self._connect_timeout = connect_timeout
         self._request_timeout = request_timeout
+        self._logr = logging.getLogger(__name__)
         super(HTTPClient, self).__init__()
 
     @classmethod
@@ -91,7 +93,7 @@ class HTTPClient(BaseProtocolClient):
         return len(forms_http) > 0
 
     @tornado.gen.coroutine
-    def invoke_action(self, td, name, input_value, check_interval_ms=800):
+    def invoke_action(self, td, name, input_value):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
 
@@ -102,41 +104,54 @@ class HTTPClient(BaseProtocolClient):
 
         body = json.dumps({"input": input_value})
         http_client = tornado.httpclient.AsyncHTTPClient()
-        http_request = tornado.httpclient.HTTPRequest(href, method="POST", body=body, headers=self.JSON_HEADERS)
+
+        http_request = tornado.httpclient.HTTPRequest(
+            href, method="POST",
+            body=body,
+            headers=self.JSON_HEADERS,
+            connect_timeout=self._connect_timeout,
+            request_timeout=self._request_timeout)
+
         response = yield http_client.fetch(http_request)
         invocation_url = json.loads(response.body).get("invocation")
-
-        future_result = tornado.concurrent.Future()
 
         @tornado.gen.coroutine
         def check_invocation():
             parsed = parse.urlparse(href)
 
+            invoc_href = "{}://{}/{}".format(
+                parsed.scheme,
+                parsed.netloc,
+                invocation_url.lstrip("/"))
+
+            invoc_http_req = tornado.httpclient.HTTPRequest(
+                invoc_href, method="GET",
+                connect_timeout=self._connect_timeout,
+                request_timeout=self._request_timeout)
+
+            self._logr.debug("Checking invocation: {}".format(invocation_url))
+
             try:
-                invoc_href = "{}://{}/{}".format(parsed.scheme, parsed.netloc, invocation_url.lstrip("/"))
-                invoc_http_req = tornado.httpclient.HTTPRequest(invoc_href, method="GET")
                 invoc_res = yield http_client.fetch(invoc_http_req)
             except HTTPTimeoutError:
-                return
+                self._logr.debug("Timeout checking invocation: {}".format(invocation_url))
+                return False, None
 
             status = json.loads(invoc_res.body)
 
             if status.get("done") is False:
-                return
+                return False, None
 
             if status.get("error") is not None:
-                future_result.set_exception(Exception(status.get("error")))
+                return True, Exception(status.get("error"))
             else:
-                future_result.set_result(status.get("result"))
+                return True, tornado.gen.Return(status.get("result"))
 
-        periodic_check = tornado.ioloop.PeriodicCallback(check_invocation, check_interval_ms)
+        while True:
+            done, result = yield check_invocation()
 
-        try:
-            periodic_check.start()
-            result = yield future_result
-            raise tornado.gen.Return(result)
-        finally:
-            periodic_check.stop()
+            if done:
+                raise result
 
     @tornado.gen.coroutine
     def write_property(self, td, name, value):
