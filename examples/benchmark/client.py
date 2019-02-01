@@ -456,32 +456,25 @@ def consume_round_trip_action(consumed_thing, protocol, iface=None,
 
     results_ok = [item for item in results if item["success"]]
 
-    latencies_req = [
-        item["result"]["timeArrival"] - item["result"]["timeRequest"]
-        for item in results_ok
-    ]
-
-    latencies_res = [
-        item["result"]["timeResponse"] - item["result"]["timeReturn"]
-        for item in results_ok
-    ]
-
     latencies = [
-        item["result"]["timeResponse"] - item["result"]["timeRequest"]
+        (item["result"]["timeResponse"] - item["result"]["timeRequest"]) -
+        (item["result"]["timeReturn"] - item["result"]["timeArrival"])
         for item in results_ok
     ]
+
+    unsync_count = len([val for val in latencies if val < 0])
+
+    if unsync_count:
+        logger.warning("Unsynchronized latencies: {}".format(unsync_count))
 
     stats.update({
         "protocol": protocol,
         "numBatches": num_batches,
         "numParallel": num_parallel,
         "size": cap.get_capture_size(protocol),
-        "latencyReq": get_arr_stats(latencies_req),
-        "latencyRes": get_arr_stats(latencies_res),
         "latency": get_arr_stats(latencies),
+        "unsyncLatency": unsync_count,
         "successRatio": float(len(results_ok)) / len(results),
-        "seriesLatencyReq": latencies_req,
-        "seriesLatencyRes": latencies_res,
         "seriesLatency": latencies
     })
 
