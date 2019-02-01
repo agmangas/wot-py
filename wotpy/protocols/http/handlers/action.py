@@ -51,14 +51,10 @@ class PendingInvocationHandler(RequestHandler):
 
         future_result = self._server.pending_actions[invocation_id]
 
-        if not future_result.done():
-            self.write({"done": False})
-            return
-
         try:
-            result = future_result.result()
+            result = yield future_result
             self.write({"done": True, "result": result})
         except Exception as ex:
             self.write({"done": True, "error": str(ex)})
         finally:
-            self._server.pending_actions.pop(invocation_id)
+            self._server.pending_actions.pop(invocation_id, None)

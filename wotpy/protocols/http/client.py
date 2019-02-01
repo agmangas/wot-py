@@ -111,10 +111,15 @@ class HTTPClient(BaseProtocolClient):
         @tornado.gen.coroutine
         def check_invocation():
             parsed = parse.urlparse(href)
-            href_invoc = "{}://{}/{}".format(parsed.scheme, parsed.netloc, invocation_url.lstrip("/"))
-            http_request_invoc = tornado.httpclient.HTTPRequest(href_invoc, method="GET")
-            response_invoc = yield http_client.fetch(http_request_invoc)
-            status = json.loads(response_invoc.body)
+
+            try:
+                invoc_href = "{}://{}/{}".format(parsed.scheme, parsed.netloc, invocation_url.lstrip("/"))
+                invoc_http_req = tornado.httpclient.HTTPRequest(invoc_href, method="GET")
+                invoc_res = yield http_client.fetch(invoc_http_req)
+            except HTTPTimeoutError:
+                return
+
+            status = json.loads(invoc_res.body)
 
             if status.get("done") is False:
                 return

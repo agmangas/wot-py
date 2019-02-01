@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import datetime
 import json
 import random
 import ssl
@@ -201,11 +201,10 @@ def test_action_run_success(http_server):
         fetch_invocation = action_fixtures.pop("fetch_invocation")
         action_future = action_fixtures.pop("action_future")
 
-        invocation = yield fetch_invocation()
+        tornado.ioloop.IOLoop.current().add_timeout(
+            datetime.timedelta(seconds=random.random()),
+            lambda: action_future.set_result(True))
 
-        assert invocation.get("done") is False
-
-        action_future.set_result(True)
         invocation = yield fetch_invocation()
 
         assert invocation.get("done") is True
@@ -224,12 +223,12 @@ def test_action_run_error(http_server):
         fetch_invocation = action_fixtures.pop("fetch_invocation")
         action_future = action_fixtures.pop("action_future")
 
-        invocation = yield fetch_invocation()
-
-        assert invocation.get("done") is False
-
         ex_message = Faker().sentence()
-        action_future.set_exception(Exception(ex_message))
+
+        tornado.ioloop.IOLoop.current().add_timeout(
+            datetime.timedelta(seconds=random.random()),
+            lambda: action_future.set_exception(Exception(ex_message)))
+
         invocation = yield fetch_invocation()
 
         assert invocation.get("done") is True
