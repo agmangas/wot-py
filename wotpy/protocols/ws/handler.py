@@ -301,7 +301,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
 
         try:
             req = WebsocketMessageRequest.from_raw(message)
-            yield self._handle(req)
+            gen.convert_yielded(self._handle(req))
         except WebsocketMessageException as ex:
             self._write_error(str(ex), WebsocketErrors.INTERNAL_ERROR)
 
