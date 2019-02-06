@@ -378,7 +378,7 @@ class MQTTClient(BaseProtocolClient):
 
     @tornado.gen.coroutine
     def write_property(self, td, name, value,
-                       timeout=None, qos_publish=QOS_1, qos_subscribe=QOS_1, wait_ack=True):
+                       timeout=None, qos_publish=QOS_2, qos_subscribe=QOS_1, wait_ack=True):
         """Updates the value of a Property on a remote Thing.
         Due to the MQTT binding design this coroutine yields as soon as the write message has
         been published and will not wait for a custom write handler that yields to another coroutine
