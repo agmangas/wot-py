@@ -18,7 +18,7 @@ import tornado.concurrent
 import tornado.gen
 import tornado.ioloop
 import tornado.locks
-from hbmqtt.mqtt.constants import QOS_2, QOS_1, QOS_0
+from hbmqtt.mqtt.constants import QOS_1, QOS_0, QOS_2
 from rx import Observable
 from six.moves.urllib import parse
 
@@ -39,6 +39,7 @@ class MQTTClient(BaseProtocolClient):
 
     DELIVER_TERMINATE_LOOP_SLEEP_SECS = 0.1
     SLEEP_SECS_DELIVER_ERR = 1.0
+    TIMEOUT_RECONNECT_ACQUIRE = 0.1
 
     def __init__(self, deliver_timeout_secs=1, msg_wait_timeout_secs=5, msg_ttl_secs=15,
                  timeout_default=None, config=None, deliver_loop_timeout_secs=20):
@@ -60,6 +61,21 @@ class MQTTClient(BaseProtocolClient):
     def _build_deliver(self, broker_url):
         """Factory for functions to get messages delivered by the broker into the messages queue."""
 
+        def process_message(msg):
+            """Adds the message to the internal queue and notifies all topic listeners."""
+
+            if msg.topic not in self._messages[broker_url]:
+                self._messages[broker_url][msg.topic] = []
+
+            self._messages[broker_url][msg.topic].append({
+                "id": uuid.uuid4().hex,
+                "data": json.loads(msg.data.decode()),
+                "time": time.time()
+            })
+
+            self._msg_conditions[broker_url][msg.topic].notify_all()
+            self._clean_messages(broker_url)
+
         @tornado.gen.coroutine
         def deliver():
             """Gets all messages that are pending to be delivered into the messages queue."""
@@ -70,41 +86,65 @@ class MQTTClient(BaseProtocolClient):
             if broker_url not in self._messages:
                 self._messages[broker_url] = {}
 
-            while broker_url in self._deliver_stop_events and not self._deliver_stop_events[broker_url].is_set():
+            self._logr.debug("Entering message delivery loop: {}".format(broker_url))
+
+            while not self._deliver_stop_events[broker_url].is_set():
                 try:
                     msg = yield self._clients[broker_url].deliver_message(timeout=self._deliver_timeout_secs)
                 except asyncio.TimeoutError:
                     continue
                 except Exception as ex:
-                    self._logr.warning("Error delivering message: {}".format(ex), exc_info=True)
+                    self._logr.warning("Error delivering message: {}".format(ex))
 
                     try:
                         self._logr.debug("Sleeping for {} seconds".format(self.SLEEP_SECS_DELIVER_ERR))
                         yield tornado.gen.sleep(self.SLEEP_SECS_DELIVER_ERR)
-                        yield self._reconnect_client(broker_url)
+                        yield self._reconnect_client(broker_url, timeout_acquire=self.TIMEOUT_RECONNECT_ACQUIRE)
                     except Exception as ex_reconn:
                         self._logr.warning("Error reconnecting: {}".format(ex_reconn), exc_info=True)
 
                     continue
 
                 try:
-                    if msg.topic not in self._messages[broker_url]:
-                        self._messages[broker_url][msg.topic] = []
-
-                    self._messages[broker_url][msg.topic].append({
-                        "id": uuid.uuid4().hex,
-                        "data": json.loads(msg.data.decode()),
-                        "time": time.time()
-                    })
-
-                    self._msg_conditions[broker_url][msg.topic].notify_all()
-                    self._clean_messages(broker_url)
+                    process_message(msg)
                 except Exception as ex:
                     self._logr.warning("Error processing message: {}".format(ex), exc_info=True)
 
-            broker_url in self._deliver_stop_events and self._deliver_stop_events[broker_url].clear()
+            self._logr.debug("Exiting message delivery loop: {}".format(broker_url))
+
+            self._deliver_stop_events[broker_url].clear()
 
         return deliver
+
+    @tornado.gen.coroutine
+    def _start_deliver_loop(self, broker_url):
+        """Starts the message delivery loop in the background."""
+
+        assert broker_url not in self._deliver_stop_events, "Unknown broker"
+
+        self._deliver_stop_events[broker_url] = tornado.locks.Event()
+
+        tornado.ioloop.IOLoop.current().add_callback(self._build_deliver(broker_url))
+
+    @tornado.gen.coroutine
+    def _stop_deliver_loop(self, broker_url):
+        """Asks the message delivery loop to stop gracefully."""
+
+        assert broker_url in self._deliver_stop_events, "Unknown broker"
+
+        self._deliver_stop_events[broker_url].set()
+
+        now = time.time()
+
+        def raise_if_timeout():
+            if (time.time() - now) > self._deliver_loop_timeout_secs:
+                raise asyncio.TimeoutError("Timeout waiting for message delivery loop")
+
+        while self._deliver_stop_events[broker_url].is_set():
+            raise_if_timeout()
+            yield tornado.gen.sleep(self.DELIVER_TERMINATE_LOOP_SLEEP_SECS)
+
+        self._deliver_stop_events.pop(broker_url)
 
     @tornado.gen.coroutine
     def _init_client(self, broker_url, ref_id):
@@ -126,8 +166,7 @@ class MQTTClient(BaseProtocolClient):
 
             yield self._clients[broker_url].connect(broker_url, cleansession=False)
 
-            self._deliver_stop_events[broker_url] = tornado.locks.Event()
-            tornado.ioloop.IOLoop.current().add_callback(self._build_deliver(broker_url))
+            yield self._start_deliver_loop(broker_url)
 
     @tornado.gen.coroutine
     def _disconnect_client(self, broker_url, ref_id):
@@ -140,25 +179,15 @@ class MQTTClient(BaseProtocolClient):
             if self._ref_counter.has_any(broker_url):
                 return
 
-            if broker_url in self._deliver_stop_events:
+            try:
                 self._logr.debug("Stopping message delivery loop: {}".format(broker_url))
-
-                self._deliver_stop_events[broker_url].set()
-
-                now = time.time()
-
-                def has_time_left():
-                    return (time.time() - now) < self._deliver_loop_timeout_secs
-
-                while self._deliver_stop_events[broker_url].is_set() and has_time_left():
-                    yield tornado.gen.sleep(self.DELIVER_TERMINATE_LOOP_SLEEP_SECS)
-
-                self._deliver_stop_events.pop(broker_url)
+                yield self._stop_deliver_loop(broker_url)
+            except Exception as ex:
+                self._logr.warning("Error stopping deliver loop: {}".format(ex), exc_info=True)
 
             try:
-                if broker_url in self._clients:
-                    self._logr.debug("Disconnecting MQTT client: {}".format(broker_url))
-                    yield self._clients[broker_url].disconnect()
+                self._logr.debug("Disconnecting MQTT client: {}".format(broker_url))
+                yield self._clients[broker_url].disconnect()
             except Exception as ex:
                 self._logr.warning("Error disconnecting: {}".format(ex), exc_info=True)
 
@@ -168,10 +197,12 @@ class MQTTClient(BaseProtocolClient):
             self._topics.pop(broker_url, None)
 
     @tornado.gen.coroutine
-    def _reconnect_client(self, broker_url):
+    def _reconnect_client(self, broker_url, timeout_acquire=None):
         """Reconnects an existing client that has been disconnected."""
 
-        with (yield self._lock_client.acquire()):
+        self._logr.debug("Acquiring reconnect lock with timeout: {}".format(timeout_acquire))
+
+        with (yield self._lock_client.acquire(timeout=timeout_acquire)):
             if broker_url not in self._clients:
                 self._logr.warning("Attempted to reconnect unknown client: {}".format(broker_url))
                 return
