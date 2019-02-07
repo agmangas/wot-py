@@ -379,7 +379,12 @@ async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, t
     done = asyncio.Future()
     events = collections.deque([])
 
+    subscription = {"current": None}
+
     def on_next(item):
+        """Updates the list of items for the event burst and
+        resolves the completion Future when finished."""
+
         if item.data.get("id") != burst_id:
             return
 
@@ -392,16 +397,32 @@ async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, t
         if item.data.get("burstEnd", False) and not done.done():
             done.set_result(True)
 
+    def on_error(err):
+        """Tries to recreate the subscription."""
+
+        logger.warning("Subscription error :: {}".format(err))
+        subscription["current"] = None
+        create_sub()
+
+    def create_sub():
+        """Initializes the subscription to the burst event."""
+
+        assert subscription["current"] is None
+
+        logger.info("Initializing subscription")
+
+        subscription["current"] = consumed_thing.events["burstEvent"].subscribe(
+            on_next=on_next,
+            on_completed=lambda: logger.info("Completed"),
+            on_error=on_error)
+
     cap = ConsumedThingCapture(consumed_thing)
 
     await cap.start(iface=iface)
 
     logger.info("Subscribing to burst event")
 
-    subscription = consumed_thing.events["burstEvent"].subscribe(
-        on_next=on_next,
-        on_completed=lambda: logger.info("Completed"),
-        on_error=lambda error: logger.warning("Error :: {}".format(error)))
+    create_sub()
 
     await asyncio.sleep(sub_sleep)
 
@@ -432,7 +453,7 @@ async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, t
 
     logger.info("Subscription disposal")
 
-    subscription.dispose()
+    subscription["current"].dispose()
 
     await cap.stop()
 
