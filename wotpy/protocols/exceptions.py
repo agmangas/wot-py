@@ -15,7 +15,7 @@ class ProtocolClientException(Exception):
         if not (args or kwargs):
             args = (self.DEFAULT_MSG,)
 
-        super().__init__(*args, **kwargs)
+        super(ProtocolClientException, self).__init__(*args, **kwargs)
 
 
 class FormNotFoundException(ProtocolClientException):
