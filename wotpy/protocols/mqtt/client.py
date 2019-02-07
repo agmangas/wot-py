@@ -554,42 +554,43 @@ class MQTTClient(BaseProtocolClient):
             """Subscriber function that listens for MQTT messages
             on a given topic and passes them to the Observer."""
 
-            ref_id = uuid.uuid4().hex
-
             state = {"active": True}
+            client = hbmqtt.client.MQTTClient()
 
             @handle_observer_finalization(observer)
             @tornado.gen.coroutine
             def callback():
-                from_time = time.time()
-                emitted_ids = set()
+                self._logr.debug("Subscribing on <{}> to: {}".format(broker_url, topic))
 
-                yield self._init_client(broker_url, ref_id)
-                yield self._subscribe(broker_url, topic, qos)
+                yield client.connect(broker_url)
+                yield client.subscribe([(topic, qos)])
 
                 while state["active"]:
-                    msgs_to_emit_gen = self._topic_messages(
-                        broker_url, topic,
-                        from_time=from_time,
-                        ignore_ids=emitted_ids)
+                    try:
+                        msg = yield client.deliver_message(timeout=self._deliver_timeout_secs)
+                    except asyncio.TimeoutError:
+                        continue
 
-                    for msg_id, msg_data in msgs_to_emit_gen:
+                    try:
+                        msg_data = json.loads(msg.data.decode())
                         next_item = next_item_builder(msg_data)
                         observer.on_next(next_item)
-                        emitted_ids.add(msg_id)
-
-                    yield self._wait_on_message(broker_url, topic)
+                    except Exception as ex:
+                        self._logr.warning("Subscription message error: {}".format(ex), exc_info=True)
 
             def unsubscribe():
                 """Disconnects from the MQTT broker and stops the message delivering loop."""
 
-                state["active"] = False
-
                 @tornado.gen.coroutine
                 def disconnect():
-                    yield self._disconnect_client(broker_url, ref_id)
+                    try:
+                        yield client.disconnect()
+                    except Exception as ex:
+                        self._logr.warning("Subscription disconnection error: {}".format(ex))
 
                 tornado.ioloop.IOLoop.current().add_callback(disconnect)
+
+                state["active"] = False
 
             tornado.ioloop.IOLoop.current().add_callback(callback)
 
