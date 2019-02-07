@@ -405,7 +405,7 @@ class MQTTClient(BaseProtocolClient):
 
                 if timeout and (time.time() - ini) > timeout:
                     self._logr.warning("Timeout invoking Action: {}".format(topic_result))
-                    raise ClientRequestTimeout("Exceeded timeout ({} secs)".format(timeout))
+                    raise ClientRequestTimeout
 
                 msg_match = self._next_match(
                     broker_url, topic_result,
@@ -472,7 +472,7 @@ class MQTTClient(BaseProtocolClient):
 
                 if timeout and (time.time() - ini) > timeout:
                     self._logr.warning("Timeout writing Property: {}".format(topic_ack))
-                    raise ClientRequestTimeout("Exceeded timeout ({} secs)".format(timeout))
+                    raise ClientRequestTimeout
 
                 msg_match = self._next_match(
                     broker_url, topic_ack,
@@ -529,7 +529,7 @@ class MQTTClient(BaseProtocolClient):
 
                 if timeout and (time.time() - ini) > timeout:
                     self._logr.warning("Timeout reading Property: {}".format(topic_obsv))
-                    raise ClientRequestTimeout("Exceeded timeout ({} secs)".format(timeout))
+                    raise ClientRequestTimeout
 
                 msg_match = self._next_match(
                     broker_obsv, topic_obsv,
