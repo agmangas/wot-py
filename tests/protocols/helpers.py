@@ -113,7 +113,7 @@ def client_test_on_event(servient, protocol_client_cls):
     run_test_coroutine(test_coroutine)
 
 
-def client_test_read_property(servient, protocol_client_cls):
+def client_test_read_property(servient, protocol_client_cls, timeout=None):
     """Helper function to test Property reads on bindings clients."""
 
     exposed_thing = next(servient.exposed_things)
@@ -134,18 +134,20 @@ def client_test_read_property(servient, protocol_client_cls):
         protocol_client = protocol_client_cls()
         prop_value = Faker().sentence()
 
-        curr_prop_value = yield protocol_client.read_property(td, prop_name)
+        curr_prop_value = yield protocol_client.read_property(td, prop_name, timeout=timeout)
+
         assert curr_prop_value != prop_value
 
         yield exposed_thing.properties[prop_name].write(prop_value)
 
-        curr_prop_value = yield protocol_client.read_property(td, prop_name)
+        curr_prop_value = yield protocol_client.read_property(td, prop_name, timeout=timeout)
+
         assert curr_prop_value == prop_value
 
     run_test_coroutine(test_coroutine)
 
 
-def client_test_write_property(servient, protocol_client_cls):
+def client_test_write_property(servient, protocol_client_cls, timeout=None):
     """Helper function to test Property writes on bindings clients."""
 
     exposed_thing = next(servient.exposed_things)
@@ -169,7 +171,7 @@ def client_test_write_property(servient, protocol_client_cls):
         prev_value = yield exposed_thing.properties[prop_name].read()
         assert prev_value != prop_value
 
-        yield protocol_client.write_property(td, prop_name, prop_value)
+        yield protocol_client.write_property(td, prop_name, prop_value, timeout=timeout)
 
         curr_value = yield exposed_thing.properties[prop_name].read()
         assert curr_value == prop_value
@@ -177,7 +179,7 @@ def client_test_write_property(servient, protocol_client_cls):
     run_test_coroutine(test_coroutine)
 
 
-def client_test_invoke_action(servient, protocol_client_cls):
+def client_test_invoke_action(servient, protocol_client_cls, timeout=None):
     """Helper function to test Action invocations on bindings clients."""
 
     exposed_thing = next(servient.exposed_things)
@@ -205,7 +207,7 @@ def client_test_invoke_action(servient, protocol_client_cls):
 
         input_value = Faker().pyint()
 
-        result = yield protocol_client.invoke_action(td, action_name, input_value)
+        result = yield protocol_client.invoke_action(td, action_name, input_value, timeout=timeout)
         result_expected = yield action_handler({"input": input_value})
 
         assert result == result_expected

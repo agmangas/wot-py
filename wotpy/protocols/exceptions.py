@@ -17,3 +17,9 @@ class FormNotFoundException(ProtocolClientException):
     binding could not be found in a Thing Description."""
 
     pass
+
+
+class ClientRequestTimeout(ProtocolClientException):
+    """Exception raised when a protocol client request reaches the timeout."""
+
+    pass

@@ -5,8 +5,10 @@
 Classes that contain the client logic for the CoAP protocol.
 """
 
+import asyncio
 import json
 import logging
+import time
 
 import aiocoap
 import tornado.concurrent
@@ -19,7 +21,7 @@ from six.moves.urllib_parse import urlparse
 from wotpy.protocols.client import BaseProtocolClient
 from wotpy.protocols.coap.enums import CoAPSchemes
 from wotpy.protocols.enums import Protocols, InteractionVerbs
-from wotpy.protocols.exceptions import FormNotFoundException, ProtocolClientException
+from wotpy.protocols.exceptions import FormNotFoundException, ProtocolClientException, ClientRequestTimeout
 from wotpy.protocols.utils import is_scheme_form
 from wotpy.utils.utils import handle_observer_finalization
 from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent, EmittedEvent
@@ -174,8 +176,7 @@ class CoAPClient(BaseProtocolClient):
 
         return len(forms_coap) > 0
 
-    @tornado.gen.coroutine
-    def invoke_action(self, td, name, input_value):
+    async def invoke_action(self, td, name, input_value, timeout=None):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
 
@@ -186,12 +187,17 @@ class CoAPClient(BaseProtocolClient):
         if href is None:
             raise FormNotFoundException()
 
-        coap_client = yield self.get_client()
+        coap_client = await self.get_client()
 
         payload = json.dumps({"input": input_value}).encode("utf-8")
         msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
         request = coap_client.request(msg)
-        response = yield request.response
+
+        try:
+            response = await asyncio.wait_for(request.response, timeout=timeout)
+        except asyncio.TimeoutError:
+            raise ClientRequestTimeout
+
         self._assert_success(response)
 
         invocation_id = json.loads(response.payload).get("id")
@@ -199,13 +205,29 @@ class CoAPClient(BaseProtocolClient):
         payload_obsv = json.dumps({"id": invocation_id}).encode("utf-8")
         msg_obsv = aiocoap.Message(code=aiocoap.Code.GET, payload=payload_obsv, uri=href, observe=0)
         request_obsv = coap_client.request(msg_obsv)
-        first_response_obsv = yield request_obsv.response
+
+        try:
+            first_response_obsv = await asyncio.wait_for(request_obsv.response, timeout=timeout)
+        except asyncio.TimeoutError:
+            raise ClientRequestTimeout
+
         self._assert_success(first_response_obsv)
 
         invocation_status = json.loads(first_response_obsv.payload)
 
+        now = time.time()
+
         while not invocation_status.get("done"):
-            response_obsv = yield request_obsv.observation.__aiter__().__anext__()
+            if timeout and (time.time() - now) > timeout:
+                raise ClientRequestTimeout
+
+            try:
+                response_obsv = await asyncio.wait_for(
+                    request_obsv.observation.__aiter__().__anext__(),
+                    timeout=timeout)
+            except asyncio.TimeoutError:
+                raise ClientRequestTimeout
+
             self._assert_success(response_obsv)
             invocation_status = json.loads(response_obsv.payload)
 
@@ -215,10 +237,9 @@ class CoAPClient(BaseProtocolClient):
         if invocation_status.get("error"):
             raise Exception(invocation_status.get("error"))
         else:
-            raise tornado.gen.Return(invocation_status.get("result"))
+            return invocation_status.get("result")
 
-    @tornado.gen.coroutine
-    def write_property(self, td, name, value):
+    async def write_property(self, td, name, value, timeout=None):
         """Updates the value of a Property on a remote Thing.
         Returns a Future."""
 
@@ -229,15 +250,19 @@ class CoAPClient(BaseProtocolClient):
         if href is None:
             raise FormNotFoundException()
 
-        coap_client = yield self.get_client()
+        coap_client = await self.get_client()
 
         payload = json.dumps({"value": value}).encode("utf-8")
         msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
-        response = yield coap_client.request(msg).response
+
+        try:
+            response = await asyncio.wait_for(coap_client.request(msg).response, timeout=timeout)
+        except asyncio.TimeoutError:
+            raise ClientRequestTimeout
+
         self._assert_success(response)
 
-    @tornado.gen.coroutine
-    def read_property(self, td, name):
+    async def read_property(self, td, name, timeout=None):
         """Reads the value of a Property on a remote Thing.
         Returns a Future."""
 
@@ -248,14 +273,19 @@ class CoAPClient(BaseProtocolClient):
         if href is None:
             raise FormNotFoundException()
 
-        coap_client = yield self.get_client()
+        coap_client = await self.get_client()
 
         msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href)
-        response = yield coap_client.request(msg).response
+
+        try:
+            response = await asyncio.wait_for(coap_client.request(msg).response, timeout=timeout)
+        except asyncio.TimeoutError:
+            raise ClientRequestTimeout
+
         self._assert_success(response)
         prop_value = json.loads(response.payload).get("value")
 
-        raise tornado.gen.Return(prop_value)
+        return prop_value
 
     def on_property_change(self, td, name):
         """Subscribes to property changes on a remote Thing.

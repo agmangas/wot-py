@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import random
 import uuid
 
 import pytest
@@ -8,7 +8,9 @@ import six
 import tornado.concurrent
 import tornado.gen
 import tornado.ioloop
+import tornado.locks
 import tornado.websocket
+from mock import patch
 from rx.concurrency import IOLoopScheduler
 from tornado.concurrent import Future
 
@@ -20,7 +22,7 @@ from tests.protocols.helpers import \
     client_test_invoke_action_error, \
     client_test_on_property_change_error
 from tests.utils import run_test_coroutine
-from wotpy.protocols.exceptions import ProtocolClientException
+from wotpy.protocols.exceptions import ProtocolClientException, ClientRequestTimeout
 from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.wot.td import ThingDescription
 
@@ -145,3 +147,41 @@ def test_on_property_change_error(websocket_servient):
     observation are propagated to the subscription as expected."""
 
     client_test_on_property_change_error(websocket_servient, WebsocketClient)
+
+
+# noinspection PyUnusedLocal
+def _condition_coro(*args, **kwargs):
+    """Coroutine mock side effect that returns a Condition that is never notified."""
+
+    @tornado.gen.coroutine
+    def _coro():
+        raise tornado.gen.Return(tornado.locks.Condition())
+
+    return _coro()
+
+
+def test_timeout_read_property(websocket_servient):
+    """Timeouts can be defined on Property reads."""
+
+    # noinspection PyUnresolvedReferences
+    with patch.object(WebsocketClient, '_send_message', _condition_coro):
+        with pytest.raises(ClientRequestTimeout):
+            client_test_read_property(websocket_servient, WebsocketClient, timeout=random.random())
+
+
+def test_timeout_write_property(websocket_servient):
+    """Timeouts can be defined on Property writes."""
+
+    # noinspection PyUnresolvedReferences
+    with patch.object(WebsocketClient, '_send_message', _condition_coro):
+        with pytest.raises(ClientRequestTimeout):
+            client_test_write_property(websocket_servient, WebsocketClient, timeout=random.random())
+
+
+def test_timeout_invoke_action(websocket_servient):
+    """Timeouts can be defined on Action invocations."""
+
+    # noinspection PyUnresolvedReferences
+    with patch.object(WebsocketClient, '_send_message', _condition_coro):
+        with pytest.raises(ClientRequestTimeout):
+            client_test_invoke_action(websocket_servient, WebsocketClient, timeout=random.random())

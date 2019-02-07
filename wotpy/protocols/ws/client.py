@@ -17,7 +17,7 @@ from tornado.concurrent import Future
 
 from wotpy.protocols.client import BaseProtocolClient
 from wotpy.protocols.enums import Protocols
-from wotpy.protocols.exceptions import FormNotFoundException
+from wotpy.protocols.exceptions import FormNotFoundException, ClientRequestTimeout
 from wotpy.protocols.refs import ConnRefCounter
 from wotpy.protocols.utils import pick_form, is_scheme_form
 from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketSchemes
@@ -316,7 +316,7 @@ class WebsocketClient(BaseProtocolClient):
             raise tornado.gen.Return(msg.result)
 
     @tornado.gen.coroutine
-    def invoke_action(self, td, name, input_value):
+    def invoke_action(self, td, name, input_value, timeout=None):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
 
@@ -343,14 +343,17 @@ class WebsocketClient(BaseProtocolClient):
 
             condition = yield self._send_message(ws_url, msg_req)
 
-            yield condition.wait()
+            cond_res = yield condition.wait(timeout=timeout)
+
+            if not cond_res:
+                raise ClientRequestTimeout
 
             self._raise_message(ws_url, msg_req.id)
         finally:
             yield self._stop_conn(ws_url, ref_id)
 
     @tornado.gen.coroutine
-    def write_property(self, td, name, value):
+    def write_property(self, td, name, value, timeout=None):
         """Updates the value of a Property on a remote Thing.
         Returns a Future."""
 
@@ -377,14 +380,17 @@ class WebsocketClient(BaseProtocolClient):
 
             condition = yield self._send_message(ws_url, msg_req)
 
-            yield condition.wait()
+            cond_res = yield condition.wait(timeout=timeout)
+
+            if not cond_res:
+                raise ClientRequestTimeout
 
             self._raise_message(ws_url, msg_req.id)
         finally:
             yield self._stop_conn(ws_url, ref_id)
 
     @tornado.gen.coroutine
-    def read_property(self, td, name):
+    def read_property(self, td, name, timeout=None):
         """Reads the value of a Property on a remote Thing.
         Returns a Future."""
 
@@ -411,7 +417,10 @@ class WebsocketClient(BaseProtocolClient):
 
             condition = yield self._send_message(ws_url, msg_req)
 
-            yield condition.wait()
+            cond_res = yield condition.wait(timeout=timeout)
+
+            if not cond_res:
+                raise ClientRequestTimeout
 
             self._raise_message(ws_url, msg_req.id)
         finally:

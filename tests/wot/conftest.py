@@ -118,16 +118,16 @@ class ExposedThingProxyClient(BaseProtocolClient):
         return True
 
     @tornado.gen.coroutine
-    def invoke_action(self, td, name, input_value):
+    def invoke_action(self, td, name, input_value, timeout=None):
         result = yield self._exp_thing.invoke_action(name, input_value)
         raise tornado.gen.Return(result)
 
     @tornado.gen.coroutine
-    def write_property(self, td, name, value):
+    def write_property(self, td, name, value, timeout=None):
         yield self._exp_thing.write_property(name, value)
 
     @tornado.gen.coroutine
-    def read_property(self, td, name):
+    def read_property(self, td, name, timeout=None):
         value = yield self._exp_thing.read_property(name)
         raise tornado.gen.Return(value)
 

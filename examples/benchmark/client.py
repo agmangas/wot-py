@@ -414,11 +414,11 @@ async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, t
 
         logger.info("Expected burst action timeout: {} s".format(timeout))
 
-        await asyncio.wait_for(consumed_thing.actions["startEventBurst"].invoke({
+        await consumed_thing.actions["startEventBurst"].invoke({
             "id": burst_id,
             "lambd": lambd,
             "total": total
-        }), timeout=timeout)
+        }, timeout=timeout)
     except asyncio.TimeoutError:
         logger.warning("Timeout waiting for burst action")
 
@@ -498,7 +498,7 @@ async def _consume_round_trip_action(consumed_thing, iface, num_batches, num_par
         logger.info("Starting invocations batch {}/{}".format(idx + 1, num_batches))
 
         invocations = [
-            asyncio.wait_for(action.invoke({"timeRequest": time_millis()}), timeout=timeout_secs)
+            asyncio.ensure_future(action.invoke({"timeRequest": time_millis()}, timeout=timeout_secs))
             for _ in range(num_parallel)
         ]
 

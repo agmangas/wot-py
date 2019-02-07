@@ -45,7 +45,7 @@ class ConsumedThing(object):
         return self._td
 
     @tornado.gen.coroutine
-    def invoke_action(self, name, input_value=None, client_kwargs=None):
+    def invoke_action(self, name, input_value=None, timeout=None, client_kwargs=None):
         """Takes the Action name from the name argument and the list of parameters,
         then requests from the underlying platform and the Protocol Bindings to invoke
         the Action on the remote Thing and return the result.
@@ -56,12 +56,13 @@ class ConsumedThing(object):
 
         result = yield client.invoke_action(
             self.td, name, input_value,
+            timeout=timeout,
             **client_kwargs.get(client.protocol, {}))
 
         raise tornado.gen.Return(result)
 
     @tornado.gen.coroutine
-    def write_property(self, name, value, client_kwargs=None):
+    def write_property(self, name, value, timeout=None, client_kwargs=None):
         """Takes the Property name as the name argument and the new value as the value
         argument, then requests from the underlying platform and the Protocol Bindings
         to update the Property on the remote Thing and return the result.
@@ -72,10 +73,11 @@ class ConsumedThing(object):
 
         yield client.write_property(
             self.td, name, value,
+            timeout=timeout,
             **client_kwargs.get(client.protocol, {}))
 
     @tornado.gen.coroutine
-    def read_property(self, name, client_kwargs=None):
+    def read_property(self, name, timeout=None, client_kwargs=None):
         """Takes the Property name as the name argument, then requests from the
         underlying platform and the Protocol Bindings to retrieve the Property
         on the remote Thing and return the result.
@@ -86,6 +88,7 @@ class ConsumedThing(object):
 
         value = yield client.read_property(
             self.td, name,
+            timeout=timeout,
             **client_kwargs.get(client.protocol, {}))
 
         raise tornado.gen.Return(value)

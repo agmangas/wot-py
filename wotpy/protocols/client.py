@@ -30,21 +30,21 @@ class BaseProtocolClient(object):
         raise NotImplementedError()
 
     @abstractmethod
-    def invoke_action(self, td, name, input_value):
+    def invoke_action(self, td, name, input_value, timeout=None):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
 
         raise NotImplementedError()
 
     @abstractmethod
-    def write_property(self, td, name, value):
+    def write_property(self, td, name, value, timeout=None):
         """Updates the value of a Property on a remote Thing.
         Returns a Future."""
 
         raise NotImplementedError()
 
     @abstractmethod
-    def read_property(self, td, name):
+    def read_property(self, td, name, timeout=None):
         """Reads the value of a Property on a remote Thing.
         Returns a Future."""
 

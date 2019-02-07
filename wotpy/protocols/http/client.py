@@ -7,6 +7,7 @@ Classes that contain the client logic for the HTTP protocol.
 
 import json
 import logging
+import time
 
 import tornado.concurrent
 import tornado.gen
@@ -18,7 +19,7 @@ from tornado.simple_httpclient import HTTPTimeoutError
 
 from wotpy.protocols.client import BaseProtocolClient
 from wotpy.protocols.enums import Protocols, InteractionVerbs
-from wotpy.protocols.exceptions import FormNotFoundException
+from wotpy.protocols.exceptions import FormNotFoundException, ClientRequestTimeout
 from wotpy.protocols.http.enums import HTTPSchemes
 from wotpy.protocols.utils import is_scheme_form
 from wotpy.utils.utils import handle_observer_finalization
@@ -93,9 +94,14 @@ class HTTPClient(BaseProtocolClient):
         return len(forms_http) > 0
 
     @tornado.gen.coroutine
-    def invoke_action(self, td, name, input_value):
+    def invoke_action(self, td, name, input_value, timeout=None):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
+
+        con_timeout = timeout if timeout else self._connect_timeout
+        req_timeout = timeout if timeout else self._request_timeout
+
+        now = time.time()
 
         href = self.pick_http_href(td, td.get_action_forms(name))
 
@@ -105,12 +111,15 @@ class HTTPClient(BaseProtocolClient):
         body = json.dumps({"input": input_value})
         http_client = tornado.httpclient.AsyncHTTPClient()
 
-        http_request = tornado.httpclient.HTTPRequest(
-            href, method="POST",
-            body=body,
-            headers=self.JSON_HEADERS,
-            connect_timeout=self._connect_timeout,
-            request_timeout=self._request_timeout)
+        try:
+            http_request = tornado.httpclient.HTTPRequest(
+                href, method="POST",
+                body=body,
+                headers=self.JSON_HEADERS,
+                connect_timeout=con_timeout,
+                request_timeout=req_timeout)
+        except HTTPTimeoutError:
+            raise ClientRequestTimeout
 
         response = yield http_client.fetch(http_request)
         invocation_url = json.loads(response.body).get("invocation")
@@ -126,8 +135,8 @@ class HTTPClient(BaseProtocolClient):
 
             invoc_http_req = tornado.httpclient.HTTPRequest(
                 invoc_href, method="GET",
-                connect_timeout=self._connect_timeout,
-                request_timeout=self._request_timeout)
+                connect_timeout=con_timeout,
+                request_timeout=req_timeout)
 
             self._logr.debug("Checking invocation: {}".format(invocation_url))
 
@@ -152,11 +161,16 @@ class HTTPClient(BaseProtocolClient):
 
             if done:
                 raise result
+            elif timeout and (time.time() - now) > timeout:
+                raise ClientRequestTimeout
 
     @tornado.gen.coroutine
-    def write_property(self, td, name, value):
+    def write_property(self, td, name, value, timeout=None):
         """Updates the value of a Property on a remote Thing.
         Returns a Future."""
+
+        con_timeout = timeout if timeout else self._connect_timeout
+        req_timeout = timeout if timeout else self._request_timeout
 
         href = self.pick_http_href(td, td.get_property_forms(name))
 
@@ -166,18 +180,24 @@ class HTTPClient(BaseProtocolClient):
         http_client = tornado.httpclient.AsyncHTTPClient()
         body = json.dumps({"value": value})
 
-        http_request = tornado.httpclient.HTTPRequest(
-            href, method="POST", body=body,
-            headers=self.JSON_HEADERS,
-            connect_timeout=self._connect_timeout,
-            request_timeout=self._request_timeout)
+        try:
+            http_request = tornado.httpclient.HTTPRequest(
+                href, method="POST", body=body,
+                headers=self.JSON_HEADERS,
+                connect_timeout=con_timeout,
+                request_timeout=req_timeout)
+        except HTTPTimeoutError:
+            raise ClientRequestTimeout
 
         yield http_client.fetch(http_request)
 
     @tornado.gen.coroutine
-    def read_property(self, td, name):
+    def read_property(self, td, name, timeout=None):
         """Reads the value of a Property on a remote Thing.
         Returns a Future."""
+
+        con_timeout = timeout if timeout else self._connect_timeout
+        req_timeout = timeout if timeout else self._request_timeout
 
         href = self.pick_http_href(td, td.get_property_forms(name))
 
@@ -186,10 +206,13 @@ class HTTPClient(BaseProtocolClient):
 
         http_client = tornado.httpclient.AsyncHTTPClient()
 
-        http_request = tornado.httpclient.HTTPRequest(
-            href, method="GET",
-            connect_timeout=self._connect_timeout,
-            request_timeout=self._request_timeout)
+        try:
+            http_request = tornado.httpclient.HTTPRequest(
+                href, method="GET",
+                connect_timeout=con_timeout,
+                request_timeout=req_timeout)
+        except HTTPTimeoutError:
+            raise ClientRequestTimeout
 
         response = yield http_client.fetch(http_request)
 
