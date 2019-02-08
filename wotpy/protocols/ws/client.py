@@ -344,7 +344,8 @@ class WebsocketClient(BaseProtocolClient):
 
             condition = yield self._send_message(ws_url, msg_req)
 
-            cond_res = yield condition.wait(timeout=datetime.timedelta(seconds=timeout))
+            timeout = datetime.timedelta(seconds=timeout) if timeout else None
+            cond_res = yield condition.wait(timeout=timeout)
 
             if not cond_res:
                 raise ClientRequestTimeout
@@ -381,7 +382,8 @@ class WebsocketClient(BaseProtocolClient):
 
             condition = yield self._send_message(ws_url, msg_req)
 
-            cond_res = yield condition.wait(timeout=datetime.timedelta(seconds=timeout))
+            timeout = datetime.timedelta(seconds=timeout) if timeout else None
+            cond_res = yield condition.wait(timeout=timeout)
 
             if not cond_res:
                 raise ClientRequestTimeout
@@ -418,7 +420,8 @@ class WebsocketClient(BaseProtocolClient):
 
             condition = yield self._send_message(ws_url, msg_req)
 
-            cond_res = yield condition.wait(timeout=datetime.timedelta(seconds=timeout))
+            timeout = datetime.timedelta(seconds=timeout) if timeout else None
+            cond_res = yield condition.wait(timeout=timeout)
 
             if not cond_res:
                 raise ClientRequestTimeout
