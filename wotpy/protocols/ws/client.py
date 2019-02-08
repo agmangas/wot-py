@@ -5,6 +5,7 @@
 Classes that contain the client logic for the Websocket protocol.
 """
 
+import datetime
 import logging
 import uuid
 
@@ -343,7 +344,7 @@ class WebsocketClient(BaseProtocolClient):
 
             condition = yield self._send_message(ws_url, msg_req)
 
-            cond_res = yield condition.wait(timeout=timeout)
+            cond_res = yield condition.wait(timeout=datetime.timedelta(seconds=timeout))
 
             if not cond_res:
                 raise ClientRequestTimeout
@@ -380,7 +381,7 @@ class WebsocketClient(BaseProtocolClient):
 
             condition = yield self._send_message(ws_url, msg_req)
 
-            cond_res = yield condition.wait(timeout=timeout)
+            cond_res = yield condition.wait(timeout=datetime.timedelta(seconds=timeout))
 
             if not cond_res:
                 raise ClientRequestTimeout
@@ -417,7 +418,7 @@ class WebsocketClient(BaseProtocolClient):
 
             condition = yield self._send_message(ws_url, msg_req)
 
-            cond_res = yield condition.wait(timeout=timeout)
+            cond_res = yield condition.wait(timeout=datetime.timedelta(seconds=timeout))
 
             if not cond_res:
                 raise ClientRequestTimeout
