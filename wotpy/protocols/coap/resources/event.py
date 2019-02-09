@@ -28,19 +28,19 @@ def get_thing_event(server, request):
     url_name_event = query.get("name")
 
     if not url_name_thing or not url_name_event:
-        raise aiocoap.error.BadRequest("Missing query arguments")
+        raise aiocoap.error.BadRequest(b"Missing query arguments")
 
     exposed_thing = server.exposed_thing_set.find_by_thing_id(url_name_thing)
 
     if not exposed_thing:
-        raise aiocoap.error.NotFound("Thing not found")
+        raise aiocoap.error.NotFound(b"Thing not found")
 
     try:
         return next(
             exposed_thing.events[key] for key in exposed_thing.events
             if exposed_thing.events[key].url_name == url_name_event)
     except StopIteration:
-        raise aiocoap.error.NotFound("Event not found")
+        raise aiocoap.error.NotFound(b"Event not found")
 
 
 class EventObserveResource(aiocoap.resource.ObservableResource):
