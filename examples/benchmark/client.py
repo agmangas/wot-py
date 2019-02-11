@@ -26,6 +26,7 @@ import pyshark
 from tornado.simple_httpclient import HTTPTimeoutError
 
 from wotpy.protocols.enums import Protocols
+from wotpy.protocols.exceptions import ClientRequestTimeout
 from wotpy.protocols.http.client import HTTPClient
 from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.wot.servient import Servient
@@ -41,8 +42,8 @@ utils.init_logging()
 logger = logging.getLogger()
 
 EVENT_BURST_TIMEOUT_MAX_LAMBD = 100.0
-EVENT_BURST_TIMEOUT_FACTOR = 4.0
-EVENT_BURST_TIMEOUT_MIN = 60.0
+EVENT_BURST_TIMEOUT_FACTOR = 10.0
+EVENT_BURST_TIMEOUT_MIN = 90.0
 
 TARGET_BURST_EVENT = "burstEvent"
 TARGET_ROUND_TRIP = "measureRoundTrip"
@@ -428,19 +429,19 @@ async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, t
 
     logger.info("Invoking action to start event burst")
 
+    lambd_timeout = lambd if lambd < EVENT_BURST_TIMEOUT_MAX_LAMBD else EVENT_BURST_TIMEOUT_MAX_LAMBD
+    timeout = (total / float(lambd_timeout)) * EVENT_BURST_TIMEOUT_FACTOR
+    timeout = timeout if timeout > EVENT_BURST_TIMEOUT_MIN else EVENT_BURST_TIMEOUT_MIN
+
+    logger.info("Expected burst action timeout: {} s".format(timeout))
+
     try:
-        lambd_timeout = lambd if lambd < EVENT_BURST_TIMEOUT_MAX_LAMBD else EVENT_BURST_TIMEOUT_MAX_LAMBD
-        timeout = (total / float(lambd_timeout)) * EVENT_BURST_TIMEOUT_FACTOR
-        timeout = timeout if timeout > EVENT_BURST_TIMEOUT_MIN else EVENT_BURST_TIMEOUT_MIN
-
-        logger.info("Expected burst action timeout: {} s".format(timeout))
-
         await consumed_thing.actions["startEventBurst"].invoke({
             "id": burst_id,
             "lambd": lambd,
             "total": total
         }, timeout=timeout)
-    except asyncio.TimeoutError:
+    except ClientRequestTimeout:
         logger.warning("Timeout waiting for burst action")
 
     logger.info("Event burst action completed")
