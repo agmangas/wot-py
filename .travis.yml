@@ -1,10 +1,17 @@
 language: python
 sudo: required
 dist: xenial
+services:
+  - docker
 python:
   - "2.7"
   - "3.6"
   - "3.7"
+env:
+  - WOTPY_TESTS_MQTT_BROKER_URL=mqtt://localhost
+before_install:
+  - docker run -d -p 1883:1883 --name broker eclipse-mosquitto
+  - docker ps -a
 install:
   - pip install -U .[tests]
 script:
