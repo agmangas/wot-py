@@ -1,5 +1,7 @@
 # WoTPy
 
+[![Build Status](https://travis-ci.org/agmangas/wot-py.svg?branch=develop)](https://travis-ci.org/agmangas/wot-py)
+
 ## Introduction
 
 WoTPy is an experimental implementation of a [W3C WoT Runtime](https://github.com/w3c/wot-architecture/blob/master/terminology.md#wot-runtime) and the [W3C WoT Scripting API](https://w3c.github.io/wot-scripting-api/) in Python.
