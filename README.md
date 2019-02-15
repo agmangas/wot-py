@@ -4,7 +4,7 @@
 
 ## Introduction
 
-WoTPy is an experimental implementation of a [W3C WoT Runtime](https://github.com/w3c/wot-architecture/blob/master/terminology.md#wot-runtime) and the [W3C WoT Scripting API](https://w3c.github.io/wot-scripting-api/) in Python.
+WoTPy is an experimental implementation of a [W3C WoT Runtime](https://github.com/w3c/wot-architecture/blob/master/proposals/terminology.md#wot-runtime) and the [W3C WoT Scripting API](https://github.com/w3c/wot-architecture/blob/master/proposals/terminology.md#scripting-api) in Python.
 
 Inspired by the exploratory implementations located in the [thingweb GitHub page](https://github.com/thingweb).
 
@@ -14,7 +14,7 @@ Inspired by the exploratory implementations located in the [thingweb GitHub page
 * Fully-implemented `WoT` interface.
 * Multicast discovery based on mDNS.
 * Asynchronous I/O programming model based on coroutines.
-* Multiple client and server [Protocol Binding](https://github.com/w3c/wot-architecture/blob/master/terminology.md#protocol-binding) implementations. 
+* Multiple client and server [Protocol Binding](https://github.com/w3c/wot-architecture/blob/master/proposals/terminology.md#protocol-binding) implementations. 
 
 ### Feature support matrix
 
@@ -35,6 +35,7 @@ WoTPy is based on the [Tornado Framework](https://www.tornadoweb.org). Users the
 
 ## ToDo
 
+* Add missing sections to docs and deploy on a public site.
 * Subscription to Thing Description changes.
 * Validation of data schemas.
 * Enable Action handlers to return Observables.
