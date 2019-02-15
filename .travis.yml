@@ -26,3 +26,5 @@ deploy:
     branch: master
   distributions: "sdist bdist_wheel"
   skip_existing: true
+after_success:
+- coveralls

@@ -18,7 +18,7 @@ install_requires = [
 
 test_requires = [
     'pytest>=3.6.1,<4.0.0',
-    'pytest-cov>=2.5.1,<3.0.0',
+    'pytest-cov>=2.5.1,<2.6.0',
     'pytest-rerunfailures>=4.1,<5.0',
     'mock>=2.0,<3.0',
     'tox>=2.0,<3.0',
@@ -26,7 +26,9 @@ test_requires = [
     'Sphinx>=1.7.5,<2.0.0',
     'sphinx-rtd-theme>=0.4.0,<0.5.0',
     'futures>=3.1.1,<4.0.0',
-    'pyOpenSSL>=18.0.0,<19.0.0'
+    'pyOpenSSL>=18.0.0,<19.0.0',
+    'python-coveralls==2.9.1',
+    'coverage==4.0.3'
 ]
 
 if is_coap_supported():
