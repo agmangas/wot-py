@@ -1,6 +1,6 @@
 # WoTPy
 
-[![Build Status](https://travis-ci.org/agmangas/wot-py.svg?branch=develop)](https://travis-ci.org/agmangas/wot-py)
+[![Build Status](https://travis-ci.org/agmangas/wot-py.svg?branch=develop)](https://travis-ci.org/agmangas/wot-py) [![Coverage Status](https://coveralls.io/repos/github/agmangas/wot-py/badge.svg?branch=develop)](https://coveralls.io/github/agmangas/wot-py?branch=develop)
 
 ## Introduction
 
