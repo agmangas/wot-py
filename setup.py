@@ -56,7 +56,7 @@ setup(
     keywords='wot iot gateway fog w3c',
     author='Andres Garcia Mangas',
     author_email='andres.garcia@fundacionctic.org',
-    url='https://bitbucket.org/fundacionctic/wot-py',
+    url='https://github.com/agmangas/wot-py',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
