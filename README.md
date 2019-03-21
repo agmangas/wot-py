@@ -43,13 +43,19 @@ WoTPy is based on the [Tornado Framework](https://www.tornadoweb.org). Users the
 
 ## Installation
 
-Install in development mode:
+```
+pip install wotpy
+```
+
+### Development
+
+To install in development mode with all the test dependencies:
 
 ```
 pip install -U -e .[tests]
 ```
 
-Run the tests in all supported environments:
+To run the tests in all supported environments:
 
 ```
 WOTPY_TESTS_MQTT_BROKER_URL=mqtt://broker-url tox
