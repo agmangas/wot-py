@@ -182,7 +182,7 @@ class HTTPClient(BaseProtocolClient):
 
         try:
             http_request = tornado.httpclient.HTTPRequest(
-                href, method="POST", body=body,
+                href, method="PUT", body=body,
                 headers=self.JSON_HEADERS,
                 connect_timeout=con_timeout,
                 request_timeout=req_timeout)

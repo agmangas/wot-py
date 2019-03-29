@@ -25,6 +25,7 @@ from wotpy.wot.servient import Servient
 from wotpy.wot.thing import Thing
 
 JSON_HEADERS = {"Content-Type": "application/json"}
+FORM_URLENCODED_HEADERS = {"Content-Type": "application/x-www-form-urlencoded"}
 
 
 def _get_property_href(exp_thing, prop_name, server):
@@ -89,7 +90,7 @@ def _test_property_set(server, body, prop_value, headers=None):
     @tornado.gen.coroutine
     def test_coroutine():
         http_client = tornado.httpclient.AsyncHTTPClient()
-        http_request = tornado.httpclient.HTTPRequest(href, method="POST", body=body, headers=headers)
+        http_request = tornado.httpclient.HTTPRequest(href, method="PUT", body=body, headers=headers)
         response = yield http_client.fetch(http_request)
         value = yield exposed_thing.properties[prop_name].read()
 
@@ -101,16 +102,16 @@ def _test_property_set(server, body, prop_value, headers=None):
 
 def test_property_set_form_urlencoded(http_server):
     """Properties exposed in an HTTP server can be
-    updated with an application/x-www-form-urlencoded HTTP POST request."""
+    updated with an application/x-www-form-urlencoded HTTP PUT request."""
 
     prop_value = Faker().pyint()
     body = parse.urlencode({"value": prop_value})
-    _test_property_set(http_server, body, str(prop_value))
+    _test_property_set(http_server, body, str(prop_value), headers=FORM_URLENCODED_HEADERS)
 
 
 def test_property_set_json(http_server):
     """Properties exposed in an HTTP server can be
-    updated with an application/json HTTP POST request."""
+    updated with an application/json HTTP PUT request."""
 
     prop_value = Faker().pyint()
     body = json.dumps({"value": prop_value})

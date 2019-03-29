@@ -31,7 +31,7 @@ class PropertyReadWriteHandler(RequestHandler):
         self.write({"value": value})
 
     @tornado.gen.coroutine
-    def post(self, thing_name, name):
+    def put(self, thing_name, name):
         """Updates the Property value."""
 
         exposed_thing = handler_utils.get_exposed_thing(self._server, thing_name)
