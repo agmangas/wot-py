@@ -9,6 +9,7 @@ import six
 import tornado.gen
 from rx.concurrency import IOLoopScheduler
 from six.moves import UserDict
+from slugify import slugify
 
 
 class ExposedThingInteractionDict(UserDict):
@@ -20,10 +21,10 @@ class ExposedThingInteractionDict(UserDict):
         UserDict.__init__(self, *args, **kwargs)
 
     def _find_normalized_name(self, name):
-        """Takes a case-insensitive interaction name and returns
-        the actual case-sensitive name in the interaction dict."""
+        """Takes a case-insensitive URL-safe interaction name and returns
+        the actual name in the interaction dict."""
 
-        return next((key for key in six.iterkeys(self.interaction_dict) if key.lower() == name.lower()), None)
+        return next((key for key in six.iterkeys(self.interaction_dict) if slugify(key) == slugify(name)), None)
 
     def __getitem__(self, name):
         """Lazily build and return an object that implements the Interaction interface."""

@@ -11,6 +11,7 @@ import six
 import tornado.gen
 import tornado.ioloop
 from faker import Faker
+from slugify import slugify
 from tornado.concurrent import Future
 
 from tests.utils import run_test_coroutine
@@ -603,46 +604,61 @@ def test_thing_fragment_getters_setters():
         exp_thing.events = Faker().pylist()
 
 
-def test_interaction_name_case_insensitive():
-    """An ExposedThing treats interaction names in a case-insensitive fashion."""
+def _test_equivalent_interaction_names(base_name, transform_name):
+    """Helper function to test that interaction names
+    are equivalent given a certain transformation function."""
 
     thing = Thing(id=uuid.uuid4().urn)
     exp_thing = ExposedThing(servient=Servient(), thing=thing)
 
-    prop_name_camel = "onOff"
-    prop_name_lower = prop_name_camel.lower()
+    prop_name = "property" + base_name
+    prop_name_transform = transform_name(prop_name)
 
     prop_default_value = Faker().pybool()
-    exp_thing.add_property(prop_name_camel, {"type": DataType.BOOLEAN}, value=prop_default_value)
+    exp_thing.add_property(prop_name, {"type": DataType.BOOLEAN}, value=prop_default_value)
 
     with pytest.raises(ValueError):
-        exp_thing.add_property(prop_name_lower, {"type": DataType.BOOLEAN})
+        exp_thing.add_property(prop_name_transform, {"type": DataType.BOOLEAN})
 
     @tornado.gen.coroutine
     def assert_prop_read():
-        assert (yield exp_thing.properties[prop_name_camel].read()) is prop_default_value
-        assert (yield exp_thing.properties[prop_name_lower].read()) is prop_default_value
+        assert (yield exp_thing.properties[prop_name].read()) is prop_default_value
+        assert (yield exp_thing.properties[prop_name_transform].read()) is prop_default_value
 
     tornado.ioloop.IOLoop.current().run_sync(assert_prop_read)
 
-    action_name_camel = "toggleOnOff"
-    action_name_lower = action_name_camel.lower()
+    action_name = "action" + base_name
+    action_name_transform = transform_name(action_name)
 
-    exp_thing.add_action(action_name_camel, {})
-
-    with pytest.raises(ValueError):
-        exp_thing.add_action(action_name_lower, {})
-
-    assert exp_thing.actions[action_name_camel]
-    assert exp_thing.actions[action_name_lower]
-
-    event_name_camel = "onOffToggled"
-    event_name_lower = event_name_camel.lower()
-
-    exp_thing.add_event(event_name_camel, {})
+    exp_thing.add_action(action_name, {})
 
     with pytest.raises(ValueError):
-        exp_thing.add_event(event_name_lower, {})
+        exp_thing.add_action(action_name_transform, {})
 
-    assert exp_thing.events[event_name_camel]
-    assert exp_thing.events[event_name_lower]
+    assert exp_thing.actions[action_name]
+    assert exp_thing.actions[action_name_transform]
+
+    event_name = "event" + base_name
+    event_name_transform = transform_name(event_name)
+
+    exp_thing.add_event(event_name, {})
+
+    with pytest.raises(ValueError):
+        exp_thing.add_event(event_name_transform, {})
+
+    assert exp_thing.events[event_name]
+    assert exp_thing.events[event_name_transform]
+
+
+def test_interaction_name_case_insensitive():
+    """ExposedThing interaction names are equivalent in a case-insensitive fashion."""
+
+    _test_equivalent_interaction_names("camelCaseStr", lambda name: name.lower())
+    _test_equivalent_interaction_names("camelCaseStr", lambda name: name.upper())
+    _test_equivalent_interaction_names("camelCaseStr", lambda name: name.title())
+
+
+def test_interaction_name_url_safe():
+    """ExposedThing interaction names are equivalent in a URL-safe fashion."""
+
+    _test_equivalent_interaction_names("url_UnSafE-Str", lambda name: slugify(name))

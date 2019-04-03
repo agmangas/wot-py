@@ -187,9 +187,9 @@ class Thing(object):
             raise ValueError("Not an Interaction")
 
         if interaction.thing is not self:
-            raise ValueError("Interaction related to another Thing")
+            raise ValueError("Interaction linked to another Thing")
 
-        if self.find_interaction(interaction.name) is not None:
+        if self.find_interaction(interaction.name) or self.find_interaction(interaction.url_name):
             raise ValueError("Duplicate Interaction: {}".format(interaction.name))
 
         interaction_dict_map = {
