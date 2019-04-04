@@ -98,6 +98,41 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
         raise_response(resp_dict)
 
     @tornado.gen.coroutine
+    def add_observation(self, request, server_observation):
+        """Method that decides whether to add a new observer.
+        Observers are added for GET requests (checks for invocation status)
+        but not for POST requests (action invocations)."""
+
+        if request.code.name != aiocoap.Code.GET.name:
+            return
+
+        try:
+            request_payload = json.loads(request.payload)
+        except (TypeError, json.decoder.JSONDecodeError):
+            return
+
+        invocation_id = request_payload.get("id", None)
+
+        if invocation_id not in self._pending_actions:
+            self._logr.debug("Observation rejected (unknown invocation): {}".format(invocation_id))
+            return
+
+        def cancellation_cb():
+            self._logr.debug("Observation cancel callback for invocation: {}".format(invocation_id))
+
+        self._logr.debug("Added observation for invocation: {}".format(invocation_id))
+
+        server_observation.accept(cancellation_cb)
+
+        # noinspection PyUnusedLocal
+        def trigger_cb(ft):
+            self._logr.debug("Triggering observation for invocation: {}".format(invocation_id))
+            server_observation.trigger()
+
+        future_result = self._pending_actions[invocation_id]
+        tornado.concurrent.future_add_done_callback(future_result, trigger_cb)
+
+    @tornado.gen.coroutine
     def render_post(self, request):
         """Handler for action invocations."""
 
@@ -118,17 +153,9 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
 
         # noinspection PyUnusedLocal
         def done_cb(fut):
-            """All observers for all pending actions are notified once any given action completes.
-            This leads to unnecessary requests to check the invocation status.
-            We're paying in stability on high concurrency scenarios with increased bandwith usage.
-            We tried to override the ObservableResource.add_observation method to customize the observer logic
-            but ran into erroneous behavior when processing a high number of action requests concurrently.
-            ToDo: Optimize observe logic."""
-
             loop = tornado.ioloop.IOLoop.current()
             self._logr.debug("Invocation done ({}): cleaning on {} ms".format(invocation_id, self._clear_ms))
             loop.add_timeout(datetime.timedelta(milliseconds=self._clear_ms), clear_cb)
-            self.updated_state()
 
         input_value = request_payload.get("input")
         fut_action = tornado.gen.convert_yielded(thing_action.invoke(input_value))
