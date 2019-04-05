@@ -5,6 +5,8 @@
 Class that implements the CoAP server.
 """
 
+import logging
+
 import aiocoap
 import aiocoap.resource
 import tornado.concurrent
@@ -21,6 +23,7 @@ from wotpy.protocols.coap.resources.event import EventObserveResource
 from wotpy.protocols.coap.resources.property import PropertyReadWriteResource, PropertyObservableResource
 from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.server import BaseProtocolServer
+from wotpy.utils.utils import get_main_ipv4_address
 from wotpy.wot.enums import InteractionTypes
 from wotpy.wot.form import Form
 
@@ -36,6 +39,7 @@ class CoAPServer(BaseProtocolServer):
         self._server_lock = tornado.locks.Lock()
         self._ssl_context = ssl_context
         self._action_clear_ms = action_clear_ms
+        self._logr = logging.getLogger(__name__)
 
     @property
     def protocol(self):
@@ -181,6 +185,21 @@ class CoAPServer(BaseProtocolServer):
 
         return root
 
+    def _get_bind_address(self):
+        """Returns the bind address for the CoAP server.
+        By default it will try to bind to all addresses,
+        although this does not work outside Linux.
+        When the full-featured UDP6 transport is not available it
+        will try to guess the main IPv4 address and bind to that."""
+
+        transports = list(aiocoap.defaults.get_default_servertransports())
+
+        if not (len(transports) == 1 and transports[0] == "udp6"):
+            self._logr.warning("Platform does not support aiocoap udp6 transport: {}".format(transports))
+            return get_main_ipv4_address(), self.port
+        else:
+            return "::", self.port
+
     @tornado.gen.coroutine
     def start(self):
         """Starts the CoAP server."""
@@ -190,7 +209,8 @@ class CoAPServer(BaseProtocolServer):
                 return
 
             root = self._build_root_site()
-            bind_address = ("::", self.port)
+            bind_address = self._get_bind_address()
+            self._logr.info("Binding CoAP server to: {}".format(bind_address))
             coap_server = yield aiocoap.Context.create_server_context(root, bind=bind_address)
             self._server = coap_server
 

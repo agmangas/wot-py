@@ -31,19 +31,19 @@ def get_thing_action(server, request):
     url_name_action = query.get("name")
 
     if not url_name_thing or not url_name_action:
-        raise aiocoap.error.BadRequest(b"Missing query arguments")
+        raise aiocoap.error.BadRequest("Missing query arguments")
 
     exposed_thing = server.exposed_thing_set.find_by_thing_id(url_name_thing)
 
     if not exposed_thing:
-        raise aiocoap.error.NotFound(b"Thing not found")
+        raise aiocoap.error.NotFound("Thing not found")
 
     try:
         return next(
             exposed_thing.actions[key] for key in exposed_thing.actions
             if exposed_thing.actions[key].url_name == url_name_action)
     except StopIteration:
-        raise aiocoap.error.NotFound(b"Action not found")
+        raise aiocoap.error.NotFound("Action not found")
 
 
 class ActionInvokeResource(aiocoap.resource.ObservableResource):
@@ -68,10 +68,10 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
         self._logr.debug("Action GET request for invocation: {}".format(invocation_id))
 
         if invocation_id is None:
-            raise aiocoap.error.BadRequest(b"Missing invocation ID")
+            raise aiocoap.error.BadRequest("Missing invocation ID")
 
         if invocation_id not in self._pending_actions:
-            raise aiocoap.error.NotFound(b"Unknown invocation")
+            raise aiocoap.error.NotFound("Unknown invocation")
 
         future_result = self._pending_actions[invocation_id]
 
@@ -143,7 +143,7 @@ class ActionInvokeResource(aiocoap.resource.ObservableResource):
         request_payload = json.loads(request.payload)
 
         if "input" not in request_payload:
-            raise aiocoap.error.BadRequest(b"Missing input value")
+            raise aiocoap.error.BadRequest("Missing input value")
 
         invocation_id = uuid.uuid4().hex
 

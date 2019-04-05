@@ -39,19 +39,19 @@ def get_thing_property(server, request):
     url_name_prop = query.get("name")
 
     if not url_name_thing or not url_name_prop:
-        raise aiocoap.error.BadRequest(b"Missing query arguments")
+        raise aiocoap.error.BadRequest("Missing query arguments")
 
     exposed_thing = server.exposed_thing_set.find_by_thing_id(url_name_thing)
 
     if not exposed_thing:
-        raise aiocoap.error.NotFound(b"Thing not found")
+        raise aiocoap.error.NotFound("Thing not found")
 
     try:
         return next(
             exposed_thing.properties[key] for key in exposed_thing.properties
             if exposed_thing.properties[key].url_name == url_name_prop)
     except StopIteration:
-        raise aiocoap.error.NotFound(b"Property not found")
+        raise aiocoap.error.NotFound("Property not found")
 
 
 class PropertyReadWriteResource(aiocoap.resource.Resource):
