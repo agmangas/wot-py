@@ -70,6 +70,7 @@ setup(
     include_package_data=True,
     install_requires=install_requires,
     extras_require={
-        'tests': test_requires
+        'tests': test_requires,
+        'uvloop': ['uvloop>=0.12.2,<0.13.0']
     }
 )
