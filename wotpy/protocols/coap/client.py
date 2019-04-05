@@ -27,6 +27,7 @@ from wotpy.utils.utils import handle_observer_finalization
 from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent, EmittedEvent
 
 
+# noinspection PyCompatibility
 class CoAPClient(BaseProtocolClient):
     """Implementation of the protocol client interface for the CoAP protocol."""
 
@@ -65,30 +66,6 @@ class CoAPClient(BaseProtocolClient):
         if not res.code.is_successful():
             raise ProtocolClientException("Unsuccessful CoAP response: {}".format(res))
 
-    @tornado.gen.coroutine
-    def get_client(self):
-        """Returns the CoAP client, initializing it if necessary."""
-
-        with (yield self._client_lock.acquire()):
-            if self._coap_client is None:
-                self._logr.debug("Creating CoAP client context")
-                coap_client = yield aiocoap.Context.create_client_context()
-                self._coap_client = coap_client
-
-            raise tornado.gen.Return(self._coap_client)
-
-    @tornado.gen.coroutine
-    def shutdown_client(self):
-        """Shuts down the currently active CoAP client."""
-
-        with (yield self._client_lock.acquire()):
-            if self._coap_client is None:
-                return
-
-            self._logr.debug("Shutting down CoAP client context")
-            yield self._coap_client.shutdown()
-            self._coap_client = None
-
     def _build_subscribe(self, href, next_item_builder):
         """Builds the subscribe function that should be passed when
         constructing an Observable linked to an observable CoAP resurce."""
@@ -109,33 +86,36 @@ class CoAPClient(BaseProtocolClient):
             def callback():
                 self._logr.debug("Creating CoAP client for observation: {}".format(query))
 
-                coap_client = yield self.get_client()
+                coap_client = yield aiocoap.Context.create_client_context()
 
-                msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href, observe=0)
-                state["request"] = coap_client.request(msg)
+                try:
+                    msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href, observe=0)
+                    state["request"] = coap_client.request(msg)
 
-                self._logr.debug("Sending observation request: {}".format(msg))
+                    self._logr.debug("Sending observation request: {}".format(msg))
 
-                future_first_resp = state["request"].response
-                state["pending"] = future_first_resp
-                first_resp = yield future_first_resp
-                state["pending"] = None
-                self._assert_success(first_resp)
-                next_item = next_item_builder(first_resp.payload)
-                next_item is not None and observer.on_next(next_item)
-
-                while state["active"]:
-                    self._logr.debug("Waiting for next observed item of: {}".format(query))
-                    next_obsv_gen = state["request"].observation.__aiter__().__anext__()
-                    future_resp = tornado.gen.convert_yielded(next_obsv_gen)
-                    state["pending"] = future_resp
-                    resp = yield future_resp
+                    future_first_resp = state["request"].response
+                    state["pending"] = future_first_resp
+                    first_resp = yield future_first_resp
                     state["pending"] = None
-                    self._assert_success(resp)
-                    next_item = next_item_builder(resp.payload)
+                    self._assert_success(first_resp)
+                    next_item = next_item_builder(first_resp.payload)
                     next_item is not None and observer.on_next(next_item)
 
-                self._logr.debug("Terminated subscription callback for: {}".format(query))
+                    while state["active"]:
+                        self._logr.debug("Waiting for next observed item of: {}".format(query))
+                        next_obsv_gen = state["request"].observation.__aiter__().__anext__()
+                        future_resp = tornado.gen.convert_yielded(next_obsv_gen)
+                        state["pending"] = future_resp
+                        resp = yield future_resp
+                        state["pending"] = None
+                        self._assert_success(resp)
+                        next_item = next_item_builder(resp.payload)
+                        next_item is not None and observer.on_next(next_item)
+
+                    self._logr.debug("Terminated subscription callback for: {}".format(query))
+                finally:
+                    yield coap_client.shutdown()
 
             def unsubscribe():
                 self._logr.debug("Unsubscribing from: {}".format(query))
@@ -176,18 +156,8 @@ class CoAPClient(BaseProtocolClient):
 
         return len(forms_coap) > 0
 
-    async def invoke_action(self, td, name, input_value, timeout=None):
-        """Invokes an Action on a remote Thing.
-        Returns a Future."""
-
-        href = self._pick_coap_href(
-            td, td.get_action_forms(name),
-            op=InteractionVerbs.INVOKE_ACTION)
-
-        if href is None:
-            raise FormNotFoundException()
-
-        coap_client = await self.get_client()
+    async def _invocation_create(self, coap_client, href, input_value, timeout=None):
+        """Creates a new action invocation by sending a POST request."""
 
         payload = json.dumps({"input": input_value}).encode("utf-8")
         msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
@@ -202,46 +172,80 @@ class CoAPClient(BaseProtocolClient):
 
         invocation_id = json.loads(response.payload).get("id")
 
-        payload_obsv = json.dumps({"id": invocation_id}).encode("utf-8")
-        msg_obsv = aiocoap.Message(code=aiocoap.Code.GET, payload=payload_obsv, uri=href, observe=0)
-        request_obsv = coap_client.request(msg_obsv)
+        return invocation_id
+
+    async def _invocation_observe(self, coap_client, href, invocation_id, timeout=None):
+        """Starts observing an existing action invocation by sending a GET request."""
+
+        payload = json.dumps({"id": invocation_id}).encode("utf-8")
+        msg = aiocoap.Message(code=aiocoap.Code.GET, payload=payload, uri=href, observe=0)
+        request = coap_client.request(msg)
 
         try:
-            first_response_obsv = await asyncio.wait_for(request_obsv.response, timeout=timeout)
+            response = await asyncio.wait_for(request.response, timeout=timeout)
         except asyncio.TimeoutError:
             raise ClientRequestTimeout
 
-        self._assert_success(first_response_obsv)
+        self._assert_success(response)
 
-        invocation_status = json.loads(first_response_obsv.payload)
+        return request, response
 
-        now = time.time()
+    async def _invocation_next(self, request, timeout=None):
+        """Waits for the next item in an active action invocation observation."""
 
-        while not invocation_status.get("done"):
-            if timeout and (time.time() - now) > timeout:
-                raise ClientRequestTimeout
+        try:
+            response = await asyncio.wait_for(
+                request.observation.__aiter__().__anext__(),
+                timeout=timeout)
+        except asyncio.TimeoutError:
+            raise ClientRequestTimeout
 
-            try:
-                response_obsv = await asyncio.wait_for(
-                    request_obsv.observation.__aiter__().__anext__(),
-                    timeout=timeout)
-            except asyncio.TimeoutError:
-                raise ClientRequestTimeout
+        self._assert_success(response)
 
-            self._assert_success(response_obsv)
+        return response
+
+    async def invoke_action(self, td, name, input_value, timeout=None):
+        """Invokes an Action on a remote Thing."""
+
+        href = self._pick_coap_href(
+            td, td.get_action_forms(name),
+            op=InteractionVerbs.INVOKE_ACTION)
+
+        if href is None:
+            raise FormNotFoundException()
+
+        coap_client = await aiocoap.Context.create_client_context()
+
+        try:
+            invocation_id = await self._invocation_create(
+                coap_client, href, input_value, timeout=timeout)
+
+            request_obsv, response_obsv = await self._invocation_observe(
+                coap_client, href, invocation_id, timeout=timeout)
+
             invocation_status = json.loads(response_obsv.payload)
 
-        if not request_obsv.observation.cancelled:
-            request_obsv.observation.cancel()
+            now = time.time()
 
-        if invocation_status.get("error"):
-            raise Exception(invocation_status.get("error"))
-        else:
-            return invocation_status.get("result")
+            while not invocation_status.get("done"):
+                if timeout and (time.time() - now) > timeout:
+                    raise ClientRequestTimeout
+
+                response_obsv = await self._invocation_next(request_obsv, timeout=timeout)
+                invocation_status = json.loads(response_obsv.payload)
+
+            if not request_obsv.observation.cancelled:
+                request_obsv.observation.cancel()
+
+            if invocation_status.get("error"):
+                raise Exception(invocation_status.get("error"))
+            else:
+                return invocation_status.get("result")
+        finally:
+            await coap_client.shutdown()
 
     async def write_property(self, td, name, value, timeout=None):
-        """Updates the value of a Property on a remote Thing.
-        Returns a Future."""
+        """Updates the value of a Property on a remote Thing."""
 
         href = self._pick_coap_href(
             td, td.get_property_forms(name),
@@ -250,21 +254,24 @@ class CoAPClient(BaseProtocolClient):
         if href is None:
             raise FormNotFoundException()
 
-        coap_client = await self.get_client()
-
-        payload = json.dumps({"value": value}).encode("utf-8")
-        msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
+        coap_client = await aiocoap.Context.create_client_context()
 
         try:
-            response = await asyncio.wait_for(coap_client.request(msg).response, timeout=timeout)
-        except asyncio.TimeoutError:
-            raise ClientRequestTimeout
+            payload = json.dumps({"value": value}).encode("utf-8")
+            msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
+            request = coap_client.request(msg)
 
-        self._assert_success(response)
+            try:
+                response = await asyncio.wait_for(request.response, timeout=timeout)
+            except asyncio.TimeoutError:
+                raise ClientRequestTimeout
+
+            self._assert_success(response)
+        finally:
+            await coap_client.shutdown()
 
     async def read_property(self, td, name, timeout=None):
-        """Reads the value of a Property on a remote Thing.
-        Returns a Future."""
+        """Reads the value of a Property on a remote Thing."""
 
         href = self._pick_coap_href(
             td, td.get_property_forms(name),
@@ -273,19 +280,24 @@ class CoAPClient(BaseProtocolClient):
         if href is None:
             raise FormNotFoundException()
 
-        coap_client = await self.get_client()
-
-        msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href)
+        coap_client = await aiocoap.Context.create_client_context()
 
         try:
-            response = await asyncio.wait_for(coap_client.request(msg).response, timeout=timeout)
-        except asyncio.TimeoutError:
-            raise ClientRequestTimeout
+            msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href)
+            request = coap_client.request(msg)
 
-        self._assert_success(response)
-        prop_value = json.loads(response.payload).get("value")
+            try:
+                response = await asyncio.wait_for(request.response, timeout=timeout)
+            except asyncio.TimeoutError:
+                raise ClientRequestTimeout
 
-        return prop_value
+            self._assert_success(response)
+
+            prop_value = json.loads(response.payload).get("value")
+
+            return prop_value
+        finally:
+            await coap_client.shutdown()
 
     def on_property_change(self, td, name):
         """Subscribes to property changes on a remote Thing.
