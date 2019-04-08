@@ -103,7 +103,6 @@ class CoAPClient(BaseProtocolClient):
                     next_item is not None and observer.on_next(next_item)
 
                     while state["active"]:
-                        self._logr.debug("Waiting for next observed item of: {}".format(query))
                         next_obsv_gen = state["request"].observation.__aiter__().__anext__()
                         future_resp = tornado.gen.convert_yielded(next_obsv_gen)
                         state["pending"] = future_resp
