@@ -44,6 +44,8 @@ logger = logging.getLogger()
 EVENT_BURST_TIMEOUT_MAX_LAMBD = 1.0
 EVENT_BURST_TIMEOUT_FACTOR = 1.5
 EVENT_BURST_TIMEOUT_MIN = 90.0
+EVENT_BURST_MAX_FINAL_WAIT = 30.0
+EVENT_BURST_SLEEP_FINAL_WAIT = 5.0
 
 TARGET_BURST_EVENT = "burstEvent"
 TARGET_ROUND_TRIP = "measureRoundTrip"
@@ -452,8 +454,22 @@ async def _consume_event_burst(consumed_thing, iface, sub_sleep, lambd, total, t
 
     logger.info("Event burst action completed")
 
+    def last_event_time_diff():
+        """Returns the time difference (seconds) to the last received event."""
+
+        if not len(events):
+            return float("inf")
+
+        return (time_millis() - events[-1]["timeReceived"]) * 0.001
+
+    logger.info("Waiting until events stop arriving")
+
+    while last_event_time_diff() < EVENT_BURST_MAX_FINAL_WAIT:
+        logger.info("Waiting for events...")
+        await asyncio.sleep(EVENT_BURST_SLEEP_FINAL_WAIT)
+
     try:
-        logger.info("Waiting for last events to arrive")
+        logger.info("Entering last events grace period")
         await asyncio.wait_for(done, timeout=timeout_last_events)
     except asyncio.TimeoutError:
         logger.warning("Timeout waiting for events")
@@ -651,7 +667,7 @@ async def _consume_time_prop(consumed_thing, iface, rate, total, start_delay=3.0
         except HTTPTimeoutError:
             req_error.append(fut_res)
         except Exception as ex:
-            logger.warning("Request error: {}".format(ex), exc_info=True)
+            logger.warning("Request error: {}".format(ex))
             req_error.append(fut_res)
         finally:
             times_res.append((fut_res, time_millis()))
