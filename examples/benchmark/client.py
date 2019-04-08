@@ -357,6 +357,9 @@ def consume_event_burst(consumed_thing, protocol, iface=None,
     indexes = [item["index"] for item in events]
     latencies = [item["timeReceived"] - item["timeEmission"] for item in events]
 
+    time_received_sorted = sorted([float(item["timeReceived"]) for item in events])
+    real_rate = len(events) / (0.001 * float(time_received_sorted[-1] - time_received_sorted[0]))
+
     num_unique_indexes = len(set(indexes))
 
     stats.update({
@@ -367,7 +370,8 @@ def consume_event_burst(consumed_thing, protocol, iface=None,
         "disordered": count_disordered(indexes, total),
         "loss": 1.0 - (float(num_unique_indexes) / total),
         "latency": get_arr_stats(latencies),
-        "seriesLatency": latencies
+        "seriesLatency": latencies,
+        "realRate": round(real_rate, 3)
     })
 
     cap.clear()
