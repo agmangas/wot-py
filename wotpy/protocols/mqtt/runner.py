@@ -16,6 +16,7 @@ import tornado.ioloop
 import tornado.locks
 import tornado.util
 from hbmqtt.client import MQTTClient, ConnectException
+from tornado.queues import Queue
 
 from wotpy.protocols.mqtt.enums import MQTTCodesACK
 
@@ -24,8 +25,9 @@ class MQTTHandlerRunner(object):
     """Class that wraps an MQTT handler. It handles connections to the
     MQTT broker, delivers messages, and runs the handler in a loop."""
 
-    DEFAULT_TIMEOUT_SECS = 0.1
+    DEFAULT_TIMEOUT_LOOPS_SECS = 0.1
     DEFAULT_SLEEP_ERR_RECONN = 2.0
+    DEFAULT_MSGS_BUF_SIZE = 500
 
     DEFAULT_CLIENT_CONFIG = {
         "keep_alive": 10,
@@ -35,14 +37,14 @@ class MQTTHandlerRunner(object):
     }
 
     def __init__(self, broker_url, mqtt_handler,
-                 timeout_deliver_secs=DEFAULT_TIMEOUT_SECS,
-                 timeout_get_queue_secs=DEFAULT_TIMEOUT_SECS,
+                 messages_buffer_size=DEFAULT_MSGS_BUF_SIZE,
+                 timeout_loops=DEFAULT_TIMEOUT_LOOPS_SECS,
                  sleep_error_reconnect=DEFAULT_SLEEP_ERR_RECONN,
                  client_config=None):
         self._broker_url = broker_url
         self._mqtt_handler = mqtt_handler
-        self._timeout_deliver_secs = timeout_deliver_secs
-        self._timeout_get_queue_secs = timeout_get_queue_secs
+        self._messages_buffer = Queue(maxsize=messages_buffer_size)
+        self._timeout_loops_secs = timeout_loops
         self._sleep_error_reconnect = sleep_error_reconnect
         self._client_config = client_config if client_config else self.DEFAULT_CLIENT_CONFIG
         self._client = None
@@ -123,51 +125,71 @@ class MQTTHandlerRunner(object):
             yield self._disconnect()
 
     @tornado.gen.coroutine
-    def _handle_delivered_message(self):
-        """Listens and processes the next published message.
-        It will wait for a finite amount of time before desisting."""
+    def _deliver_messages(self):
+        """Receives messages from the MQTT broker and puts them in the internal buffer."""
+
+        message = None
+
+        while not self._event_stop_request.is_set():
+            if message is None:
+                try:
+                    message = yield self._client.deliver_message(timeout=self._timeout_loops_secs)
+                except asyncio.TimeoutError:
+                    pass
+                except Exception as ex:
+                    self._log(logging.WARNING, "Error on MQTT deliver: {}".format(ex))
+
+                    try:
+                        yield tornado.gen.sleep(self._sleep_error_reconnect)
+                        yield self.connect(force_reconnect=True)
+                    except Exception as ex:
+                        self._log(logging.ERROR, "Error reconnecting: {}".format(ex), exc_info=True)
+
+            if message is not None:
+                try:
+                    timeout_put = datetime.timedelta(seconds=self._timeout_loops_secs)
+                    yield self._messages_buffer.put(message, timeout=timeout_put)
+                    message = None
+                except tornado.util.TimeoutError:
+                    self._log(logging.DEBUG, "Full messages buffer")
+
+    @tornado.gen.coroutine
+    def _handle_messages(self):
+        """Gets messages from the internal buffer and
+        passes them to the MQTT handler to be processed."""
 
         while not self._event_stop_request.is_set():
             try:
-                msg = yield self._client.deliver_message(timeout=self._timeout_deliver_secs)
-
-                try:
-                    self._log(logging.DEBUG, "Handling message: {}".format(msg.data))
-                    tornado.gen.convert_yielded(self._mqtt_handler.handle_message(msg))
-                except Exception as ex:
-                    self._log(logging.WARNING, "MQTT handler error: {}".format(ex), exc_info=True)
-            except asyncio.TimeoutError:
+                timeout_get = datetime.timedelta(seconds=self._timeout_loops_secs)
+                message = yield self._messages_buffer.get(timeout=timeout_get)
+                self._log(logging.DEBUG, "Handling message: {}".format(message.data))
+                tornado.gen.convert_yielded(self._mqtt_handler.handle_message(message))
+            except tornado.util.TimeoutError:
                 pass
             except Exception as ex:
-                self._log(logging.WARNING, "Error on MQTT deliver: {}".format(ex), exc_info=True)
-
-                try:
-                    yield tornado.gen.sleep(self._sleep_error_reconnect)
-                    yield self.connect(force_reconnect=True)
-                except Exception as ex:
-                    self._log(logging.ERROR, "Error reconnecting: {}".format(ex), exc_info=True)
+                self._log(logging.WARNING, "MQTT handler error: {}".format(ex), exc_info=True)
 
     @tornado.gen.coroutine
     def _publish_queued_messages(self):
         """Gets the pending messages from the handler queue and publishes them on the broker."""
 
-        msg_publish = None
+        message = None
 
         while not self._event_stop_request.is_set():
             try:
-                if msg_publish is None:
-                    msg_publish = yield self._mqtt_handler.queue.get(
-                        timeout=datetime.timedelta(seconds=self._timeout_get_queue_secs))
+                if message is None:
+                    timeout_get = datetime.timedelta(seconds=self._timeout_loops_secs)
+                    message = yield self._mqtt_handler.queue.get(timeout=timeout_get)
                 else:
-                    self._log(logging.WARNING, "Republish attempt: {}".format(msg_publish))
+                    self._log(logging.WARNING, "Republish attempt: {}".format(message))
 
                 yield self._client.publish(
-                    topic=msg_publish["topic"],
-                    message=msg_publish["data"],
-                    qos=msg_publish.get("qos", None),
-                    retain=msg_publish.get("retain", None))
+                    topic=message["topic"],
+                    message=message["data"],
+                    qos=message.get("qos", None),
+                    retain=message.get("retain", None))
 
-                msg_publish = None
+                message = None
             except tornado.util.TimeoutError:
                 pass
             except Exception as ex:
@@ -183,8 +205,11 @@ class MQTTHandlerRunner(object):
         def run_loop():
             try:
                 with (yield self._lock_run.acquire(timeout=0)):
+                    self._log(logging.DEBUG, "Entering MQTT runner loop")
+
                     yield [
-                        self._handle_delivered_message(),
+                        self._deliver_messages(),
+                        self._handle_messages(),
                         self._publish_queued_messages()
                     ]
             except tornado.util.TimeoutError:
