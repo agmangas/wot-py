@@ -6,6 +6,7 @@ Base class for MQTT handlers.
 """
 
 import asyncio
+import copy
 import datetime
 import logging
 import uuid
@@ -29,24 +30,25 @@ class MQTTHandlerRunner(object):
     DEFAULT_SLEEP_ERR_RECONN = 2.0
     DEFAULT_MSGS_BUF_SIZE = 500
 
+    # Highly permissive default keep_alive to avoid
+    # disconnections from broker on high throughput scenarios:
+    # https://github.com/beerfactory/hbmqtt/issues/119#issuecomment-430398094
+
     DEFAULT_CLIENT_CONFIG = {
-        "keep_alive": 10,
-        "auto_reconnect": False,
-        "default_qos": 0,
-        "default_retain": False
+        "keep_alive": 90
     }
 
     def __init__(self, broker_url, mqtt_handler,
                  messages_buffer_size=DEFAULT_MSGS_BUF_SIZE,
                  timeout_loops=DEFAULT_TIMEOUT_LOOPS_SECS,
                  sleep_error_reconnect=DEFAULT_SLEEP_ERR_RECONN,
-                 client_config=None):
+                 hbmqtt_config=None):
         self._broker_url = broker_url
         self._mqtt_handler = mqtt_handler
         self._messages_buffer = Queue(maxsize=messages_buffer_size)
         self._timeout_loops_secs = timeout_loops
         self._sleep_error_reconnect = sleep_error_reconnect
-        self._client_config = client_config if client_config else self.DEFAULT_CLIENT_CONFIG
+        self._hbmqtt_config = hbmqtt_config
         self._client = None
         self._client_id = uuid.uuid4().hex
         self._lock_conn = tornado.locks.Lock()
@@ -59,14 +61,30 @@ class MQTTHandlerRunner(object):
 
         self._logr.log(level, "{} - {}".format(self._mqtt_handler.__class__.__name__, msg), **kwargs)
 
+    def _build_client_config(self):
+        """Returns the config dict for a new hbmqtt client instance."""
+
+        config = copy.copy(self.DEFAULT_CLIENT_CONFIG)
+        config_arg = self._hbmqtt_config if self._hbmqtt_config else {}
+        config.update(config_arg)
+
+        # The library does not resubscribe when reconnecting.
+        # We need to handle it manually.
+
+        config.update({"auto_reconnect": False})
+
+        return config
+
     @tornado.gen.coroutine
     def _connect(self):
         """MQTT connection helper function."""
 
-        self._log(logging.DEBUG, "MQTT client ID: {}".format(self._client_id))
-        self._log(logging.DEBUG, "MQTT client config: {}".format(self._client_config))
+        config = self._build_client_config()
 
-        hbmqtt_client = MQTTClient(client_id=self._client_id, config=self._client_config)
+        self._log(logging.DEBUG, "MQTT client ID: {}".format(self._client_id))
+        self._log(logging.DEBUG, "MQTT client config: {}".format(config))
+
+        hbmqtt_client = MQTTClient(client_id=self._client_id, config=config)
 
         self._log(logging.INFO, "Connecting MQTT client to broker: {}".format(self._broker_url))
 

@@ -6,6 +6,7 @@ Classes that contain the client logic for the MQTT protocol.
 """
 
 import asyncio
+import copy
 import datetime
 import json
 import logging
@@ -45,18 +46,26 @@ class MQTTClient(BaseProtocolClient):
     DEFAULT_MSG_TTL_SECS = 15
     DEFAULT_STOP_LOOP_TIMEOUT_SECS = 60
 
+    # Highly permissive default keep_alive to avoid
+    # disconnections from broker on high throughput scenarios:
+    # https://github.com/beerfactory/hbmqtt/issues/119#issuecomment-430398094
+
+    DEFAULT_CLIENT_CONFIG = {
+        "keep_alive": 90
+    }
+
     def __init__(self,
                  deliver_timeout_secs=DEFAULT_DELIVER_TIMEOUT_SECS,
                  msg_wait_timeout_secs=DEFAULT_MSG_WAIT_TIMEOUT_SECS,
                  msg_ttl_secs=DEFAULT_MSG_TTL_SECS,
                  timeout_default=None,
-                 config=None,
+                 hbmqtt_config=None,
                  stop_loop_timeout_secs=DEFAULT_STOP_LOOP_TIMEOUT_SECS):
         self._deliver_timeout_secs = deliver_timeout_secs
         self._msg_wait_timeout_secs = msg_wait_timeout_secs
         self._msg_ttl_secs = msg_ttl_secs
         self._timeout_default = timeout_default
-        self._config = config
+        self._hbmqtt_config = hbmqtt_config
         self._stop_loop_timeout_secs = stop_loop_timeout_secs
         self._lock_client = tornado.locks.Lock()
         self._deliver_stop_events = {}
@@ -66,6 +75,20 @@ class MQTTClient(BaseProtocolClient):
         self._topics = {}
         self._ref_counter = ConnRefCounter()
         self._logr = logging.getLogger(__name__)
+
+    def _build_client_config(self):
+        """Returns the config dict for a new hbmqtt client instance."""
+
+        config = copy.copy(self.DEFAULT_CLIENT_CONFIG)
+        config_arg = self._hbmqtt_config if self._hbmqtt_config else {}
+        config.update(config_arg)
+
+        # The library does not resubscribe when reconnecting.
+        # We need to handle it manually.
+
+        config.update({"auto_reconnect": False})
+
+        return config
 
     def _new_message(self, broker_url, msg):
         """Adds the message to the internal queue and notifies all topic listeners."""
@@ -198,8 +221,7 @@ class MQTTClient(BaseProtocolClient):
             if broker_url in self._clients:
                 return
 
-            config = self._config if self._config else {}
-            config.update({"auto_reconnect": False})
+            config = self._build_client_config()
 
             self._logr.debug("Connecting MQTT client to {} with config: {}".format(
                 broker_url, pprint.pformat(config)))
@@ -555,12 +577,15 @@ class MQTTClient(BaseProtocolClient):
             on a given topic and passes them to the Observer."""
 
             state = {"active": True}
-            client = hbmqtt.client.MQTTClient()
+
+            config = self._build_client_config()
+            client = hbmqtt.client.MQTTClient(config=config)
 
             @handle_observer_finalization(observer)
             @tornado.gen.coroutine
             def callback():
-                self._logr.debug("Subscribing on <{}> to: {}".format(broker_url, topic))
+                self._logr.debug("Subscribing on <{}> to {} with config: {}".format(
+                    broker_url, topic, config))
 
                 yield client.connect(broker_url)
                 yield client.subscribe([(topic, qos)])
