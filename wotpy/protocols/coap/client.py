@@ -257,7 +257,7 @@ class CoAPClient(BaseProtocolClient):
 
         try:
             payload = json.dumps({"value": value}).encode("utf-8")
-            msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
+            msg = aiocoap.Message(code=aiocoap.Code.PUT, payload=payload, uri=href)
             request = coap_client.request(msg)
 
             try:

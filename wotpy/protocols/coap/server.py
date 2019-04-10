@@ -18,9 +18,9 @@ import tornado.web
 
 from wotpy.codecs.enums import MediaTypes
 from wotpy.protocols.coap.enums import CoAPSchemes
-from wotpy.protocols.coap.resources.action import ActionInvokeResource
-from wotpy.protocols.coap.resources.event import EventObserveResource
-from wotpy.protocols.coap.resources.property import PropertyReadWriteResource, PropertyObservableResource
+from wotpy.protocols.coap.resources.action import ActionResource
+from wotpy.protocols.coap.resources.event import EventResource
+from wotpy.protocols.coap.resources.property import PropertyResource
 from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.server import BaseProtocolServer
 from wotpy.utils.utils import get_main_ipv4_address
@@ -64,37 +64,33 @@ class CoAPServer(BaseProtocolServer):
     def action_clear_ms(self):
         """Returns the timeout (ms) before completed actions are removed from the server."""
 
-        return self._action_clear_ms if self._action_clear_ms else ActionInvokeResource.DEFAULT_CLEAR_MS
+        return self._action_clear_ms if self._action_clear_ms else ActionResource.DEFAULT_CLEAR_MS
 
     def _build_forms_property(self, proprty, hostname):
         """Builds and returns the CoAP Form instances for the given Property interaction."""
 
-        href_read_write = "{}://{}:{}/property?thing={}&name={}".format(
+        href_prop = "{}://{}:{}/property?thing={}&name={}".format(
             self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
             proprty.thing.url_name, proprty.url_name)
 
         form_read = Form(
             interaction=proprty,
             protocol=self.protocol,
-            href=href_read_write,
+            href=href_prop,
             content_type=MediaTypes.JSON,
             op=InteractionVerbs.READ_PROPERTY)
 
         form_write = Form(
             interaction=proprty,
             protocol=self.protocol,
-            href=href_read_write,
+            href=href_prop,
             content_type=MediaTypes.JSON,
             op=InteractionVerbs.WRITE_PROPERTY)
-
-        href_observe = "{}://{}:{}/property/subscription?thing={}&name={}".format(
-            self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
-            proprty.thing.url_name, proprty.url_name)
 
         form_observe = Form(
             interaction=proprty,
             protocol=self.protocol,
-            href=href_observe,
+            href=href_prop,
             content_type=MediaTypes.JSON,
             op=InteractionVerbs.OBSERVE_PROPERTY)
 
@@ -119,7 +115,7 @@ class CoAPServer(BaseProtocolServer):
     def _build_forms_event(self, event, hostname):
         """Builds and returns the CoAP Form instances for the given Event interaction."""
 
-        href = "{}://{}:{}/event/subscription?thing={}&name={}".format(
+        href = "{}://{}:{}/event?thing={}&name={}".format(
             self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
             event.thing.url_name, event.url_name)
 
@@ -169,19 +165,15 @@ class CoAPServer(BaseProtocolServer):
 
         root.add_resource(
             ("property",),
-            PropertyReadWriteResource(self))
-
-        root.add_resource(
-            ("property", "subscription"),
-            PropertyObservableResource(self))
+            PropertyResource(self))
 
         root.add_resource(
             ("action",),
-            ActionInvokeResource(self, clear_ms=self._action_clear_ms))
+            ActionResource(self, clear_ms=self._action_clear_ms))
 
         root.add_resource(
-            ("event", "subscription"),
-            EventObserveResource(self))
+            ("event",),
+            EventResource(self))
 
         return root
 

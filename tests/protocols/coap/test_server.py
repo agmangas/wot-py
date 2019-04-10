@@ -138,7 +138,7 @@ def test_property_write(coap_server):
         yield exposed_thing.properties[prop_name].write(value_old)
         coap_client = yield aiocoap.Context.create_client_context()
         payload = json.dumps({"value": value_new}).encode("utf-8")
-        request_msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
+        request_msg = aiocoap.Message(code=aiocoap.Code.PUT, payload=payload, uri=href)
         response = yield coap_client.request(request_msg).response
 
         assert response.code.is_successful()

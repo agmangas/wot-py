@@ -46,13 +46,13 @@ def get_thing_action(server, request):
         raise aiocoap.error.NotFound("Action not found")
 
 
-class ActionInvokeResource(aiocoap.resource.ObservableResource):
+class ActionResource(aiocoap.resource.ObservableResource):
     """CoAP resource to invoke Actions and observe those invocations."""
 
     DEFAULT_CLEAR_MS = 1000 * 60 * 5
 
     def __init__(self, server, clear_ms=None):
-        super(ActionInvokeResource, self).__init__()
+        super(ActionResource, self).__init__()
         self._server = server
         self._clear_ms = self.DEFAULT_CLEAR_MS if clear_ms is None else clear_ms
         self._pending_actions = {}

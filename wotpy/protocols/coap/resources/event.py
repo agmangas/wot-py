@@ -43,11 +43,11 @@ def get_thing_event(server, request):
         raise aiocoap.error.NotFound("Event not found")
 
 
-class EventObserveResource(aiocoap.resource.ObservableResource):
+class EventResource(aiocoap.resource.ObservableResource):
     """CoAP resource to observe Event emissions."""
 
     def __init__(self, server):
-        super(EventObserveResource, self).__init__()
+        super(EventResource, self).__init__()
         self._server = server
         self._subscription = None
         self._last_events = {}
