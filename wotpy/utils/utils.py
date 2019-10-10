@@ -76,16 +76,19 @@ def get_main_ipv4_address():
     Attribution to the answer provided by Jamieson Becker on:
     https://stackoverflow.com/a/28950776"""
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    ip_range = ['10.255.255.255', '10.0.255.255', '10.0.0.255']
 
     # noinspection PyBroadException
-    try:
-        sock.connect(('10.255.255.255', 1))
-        addr = sock.getsockname()[0]
-    except Exception:
-        addr = '127.0.0.1'
-    finally:
-        sock.close()
+    for ip in ip_range:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            sock.connect((ip, 1))
+            addr = sock.getsockname()[0]
+            break
+        except Exception:
+            addr = '127.0.0.1'
+        finally:
+            sock.close()
 
     return addr
 
