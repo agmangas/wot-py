@@ -84,6 +84,7 @@ def get_main_ipv4_address():
         try:
             sock.connect((ip, 1))
             addr = sock.getsockname()[0]
+            sock.close()
             break
         except Exception:
             addr = '127.0.0.1'
