@@ -22,6 +22,8 @@ Field           Description
 Interaction Model mapping
 -------------------------
 
+.. note:: The HTTP binding adopts the *long-polling* pattern to deal with server-side messages. In practice, this means that the server will keep the connection open on requests to the *action invocation*, *property subscription* and *event subscription* endpoints until a value is emitted or a timeout occurs.
+
 Read Property
 ^^^^^^^^^^^^^
 
@@ -70,8 +72,6 @@ Response::
 
 Invoke Action
 ^^^^^^^^^^^^^
-
-.. note:: The HTTP binding adopts the *long-polling* pattern to deal with server-side messages. In practice, this means that the server will keep the connection open on requests to the *action invocation*, *property subscription* and *event subscription* endpoints until a value is emitted or a timeout occurs.
 
 Form::
 

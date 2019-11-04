@@ -6,3 +6,4 @@ Protocol Bindings
     websockets
     http
     mqtt
+    coap
