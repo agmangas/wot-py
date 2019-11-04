@@ -5,3 +5,4 @@ Protocol Bindings
 
     websockets
     http
+    mqtt

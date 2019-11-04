@@ -1,7 +1,7 @@
 HTTP
 ====
 
-This section describes the mapping between the high-level actions that can be executed over a Thing and the
+This section describes the mapping between the high-level actions that can be executed on a Thing and the
 messages exchanged with the server when using the HTTP Protocol Binding.
 
 All messages are serialized in JSON format.
@@ -106,8 +106,8 @@ The response will contain the final ``result`` or an ``error`` message::
     HTTP 200
 
     {
-        "done": <boolean>
-        "result" <result_value>
+        "done": <boolean>,
+        "result" <result_value>,
         "error": <error_message>
     }
 

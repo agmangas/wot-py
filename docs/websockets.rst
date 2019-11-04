@@ -1,7 +1,7 @@
 WebSockets
 ==========
 
-This section describes the mapping between the high-level actions that can be executed over a Thing and the
+This section describes the mapping between the high-level actions that can be executed on a Thing and the
 messages exchanged with the server when using the WebSockets Protocol Binding.
 
 The format of the messages is based on `JSON-RPC 2.0 <http://www.jsonrpc.org/specification>`_.
