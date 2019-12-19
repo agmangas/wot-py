@@ -57,7 +57,7 @@ setup(
     author_email='andres.garcia@fundacionctic.org',
     url='https://github.com/agmangas/wot-py',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'Operating System :: OS Independent',
