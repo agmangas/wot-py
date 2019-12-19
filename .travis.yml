@@ -16,6 +16,22 @@ install:
 - pip install -U .[tests]
 script:
 - pytest -sv --cov=wotpy
+jobs:
+  include:
+    - python: '3.7'
+      name: "Deploy to GitHub Pages"
+      script: skip
+      before_deploy: cd ./docs/ && make html && cd ..
+      deploy:
+        provider: pages
+        skip_cleanup: true
+        local_dir: ./docs/_build/html
+        target_branch: gh-pages
+        github_token: $GITHUB_TOKEN
+        keep_history: false
+        on:
+          tags: true
+          branch: master
 deploy:
   provider: pypi
   user: agmangas
