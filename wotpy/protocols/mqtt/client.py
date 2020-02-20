@@ -19,20 +19,22 @@ import tornado.concurrent
 import tornado.gen
 import tornado.ioloop
 import tornado.locks
-from hbmqtt.mqtt.constants import QOS_1, QOS_0, QOS_2
+from hbmqtt.mqtt.constants import QOS_0, QOS_1, QOS_2
 from rx import Observable
 from six.moves.urllib import parse
 
 from wotpy.protocols.client import BaseProtocolClient
-from wotpy.protocols.enums import Protocols, InteractionVerbs
-from wotpy.protocols.exceptions import FormNotFoundException, ClientRequestTimeout
+from wotpy.protocols.enums import InteractionVerbs, Protocols
+from wotpy.protocols.exceptions import (ClientRequestTimeout,
+                                        FormNotFoundException)
 from wotpy.protocols.mqtt.enums import MQTTSchemes
 from wotpy.protocols.mqtt.handlers.action import ActionMQTTHandler
 from wotpy.protocols.mqtt.handlers.property import PropertyMQTTHandler
 from wotpy.protocols.refs import ConnRefCounter
 from wotpy.protocols.utils import is_scheme_form
 from wotpy.utils.utils import handle_observer_finalization
-from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent, EmittedEvent
+from wotpy.wot.events import (EmittedEvent, PropertyChangeEmittedEvent,
+                              PropertyChangeEventInit)
 
 
 class MQTTClient(BaseProtocolClient):
@@ -139,11 +141,13 @@ class MQTTClient(BaseProtocolClient):
             """Sleeps for a while and tries to reconnect and resubscribe afterwards."""
 
             try:
-                self._logr.debug("Sleeping for {} s".format(self.SLEEP_SECS_DELIVER_ERR))
+                self._logr.debug("Sleeping for {} s".format(
+                    self.SLEEP_SECS_DELIVER_ERR))
                 yield tornado.gen.sleep(self.SLEEP_SECS_DELIVER_ERR)
                 yield self._reconnect_client(broker_url)
             except Exception as ex_reconn:
-                self._logr.warning("Error reconnecting: {}".format(ex_reconn), exc_info=True)
+                self._logr.warning("Error reconnecting: {}".format(
+                    ex_reconn), exc_info=True)
 
         @tornado.gen.coroutine
         def deliver():
@@ -151,24 +155,30 @@ class MQTTClient(BaseProtocolClient):
 
             assert broker_url in self._clients
 
-            self._logr.debug("Entering message delivery loop: {}".format(broker_url))
+            self._logr.debug(
+                "Entering message delivery loop: {}".format(broker_url))
 
             while not stop_event.is_set():
                 try:
-                    msg = yield self._clients[broker_url].deliver_message(timeout=self._deliver_timeout_secs)
+                    msg = yield self._clients[broker_url].deliver_message(
+                        timeout=self._deliver_timeout_secs)
                 except asyncio.TimeoutError:
                     continue
                 except Exception as ex:
-                    self._logr.warning("Error delivering message: {}".format(ex))
+                    self._logr.warning(
+                        "Error delivering message: {}".format(ex))
                     yield reconnect()
                     continue
 
                 try:
                     self._new_message(broker_url, msg)
                 except Exception as ex:
-                    self._logr.warning("Error processing message: {}".format(ex), exc_info=True)
+                    self._logr.warning(
+                        "Error processing message: {}".format(ex),
+                        exc_info=True)
 
-            self._logr.debug("Exiting message delivery loop: {}".format(broker_url))
+            self._logr.debug(
+                "Exiting message delivery loop: {}".format(broker_url))
 
             stop_event.clear()
 
@@ -190,7 +200,9 @@ class MQTTClient(BaseProtocolClient):
         """Asks the message delivery loop to stop gracefully."""
 
         assert broker_url in self._deliver_stop_events, "Unknown broker"
-        assert not self._deliver_stop_events[broker_url].is_set(), "Stop event is already set"
+
+        assert not self._deliver_stop_events[broker_url].is_set(), \
+            "Stop event is already set"
 
         self._deliver_stop_events[broker_url].set()
 
@@ -203,7 +215,8 @@ class MQTTClient(BaseProtocolClient):
                 return
 
             if (time.time() - now) > self._stop_loop_timeout_secs:
-                raise asyncio.TimeoutError("Timeout waiting for message delivery loop")
+                raise asyncio.TimeoutError(
+                    "Timeout waiting for message delivery loop")
 
         while self._deliver_stop_events[broker_url].is_set():
             raise_timeout()
@@ -244,16 +257,22 @@ class MQTTClient(BaseProtocolClient):
                 return
 
             try:
-                self._logr.debug("Stopping message delivery loop: {}".format(broker_url))
+                self._logr.debug(
+                    "Stopping message delivery loop: {}".format(broker_url))
                 yield self._stop_deliver_loop(broker_url)
             except Exception as ex:
-                self._logr.warning("Error stopping deliver loop: {}".format(ex), exc_info=True)
+                self._logr.warning(
+                    "Error stopping deliver loop: {}".format(ex),
+                    exc_info=True)
 
             try:
-                self._logr.debug("Disconnecting MQTT client: {}".format(broker_url))
+                self._logr.debug(
+                    "Disconnecting MQTT client: {}".format(broker_url))
                 yield self._clients[broker_url].disconnect()
             except Exception as ex:
-                self._logr.warning("Error disconnecting: {}".format(ex), exc_info=True)
+                self._logr.warning(
+                    "Error disconnecting: {}".format(ex),
+                    exc_info=True)
 
             self._clients.pop(broker_url, None)
             self._messages.pop(broker_url, None)
@@ -272,7 +291,8 @@ class MQTTClient(BaseProtocolClient):
                 self._msg_conditions[broker_url] = {}
 
             if topic not in self._msg_conditions[broker_url]:
-                self._msg_conditions[broker_url][topic] = tornado.locks.Condition()
+                self._msg_conditions[broker_url][topic] = \
+                    tornado.locks.Condition()
 
             if broker_url not in self._topics:
                 self._topics[broker_url] = set()
@@ -306,7 +326,7 @@ class MQTTClient(BaseProtocolClient):
             is_ignored = ignore_ids is not None and msg["id"] in ignore_ids
 
             if is_on_time and not is_ignored:
-                yield msg["id"], msg["data"]
+                yield msg["id"], msg["data"], msg["time"]
 
     def _clean_messages(self, broker_url):
         """Removes the messages that have expired according to the TTL."""
@@ -423,10 +443,12 @@ class MQTTClient(BaseProtocolClient):
             ini = time.time()
 
             while True:
-                self._logr.debug("Checking invocation topic: {}".format(topic_result))
+                self._logr.debug(
+                    "Checking invocation topic: {}".format(topic_result))
 
                 if timeout and (time.time() - ini) > timeout:
-                    self._logr.warning("Timeout invoking Action: {}".format(topic_result))
+                    self._logr.warning(
+                        "Timeout invoking Action: {}".format(topic_result))
                     raise ClientRequestTimeout
 
                 msg_match = self._next_match(
@@ -437,7 +459,7 @@ class MQTTClient(BaseProtocolClient):
                     yield self._wait_on_message(broker_url, topic_result)
                     continue
 
-                msg_id, msg_data = msg_match
+                msg_id, msg_data, msg_time = msg_match
 
                 if msg_data.get("error", None) is not None:
                     raise Exception(msg_data.get("error"))
@@ -490,10 +512,12 @@ class MQTTClient(BaseProtocolClient):
             ini = time.time()
 
             while True:
-                self._logr.debug("Checking write ACK topic: {}".format(topic_ack))
+                self._logr.debug(
+                    "Checking write ACK topic: {}".format(topic_ack))
 
                 if timeout and (time.time() - ini) > timeout:
-                    self._logr.warning("Timeout writing Property: {}".format(topic_ack))
+                    self._logr.warning(
+                        "Timeout writing Property: {}".format(topic_ack))
                     raise ClientRequestTimeout
 
                 msg_match = self._next_match(
@@ -518,8 +542,13 @@ class MQTTClient(BaseProtocolClient):
 
         forms = td.get_property_forms(name)
 
-        href_read = self._pick_mqtt_href(td, forms, op=InteractionVerbs.READ_PROPERTY)
-        href_obsv = self._pick_mqtt_href(td, forms, op=InteractionVerbs.OBSERVE_PROPERTY)
+        href_read = self._pick_mqtt_href(
+            td, forms,
+            op=InteractionVerbs.READ_PROPERTY)
+
+        href_obsv = self._pick_mqtt_href(
+            td, forms,
+            op=InteractionVerbs.OBSERVE_PROPERTY)
 
         if href_read is None or href_obsv is None:
             raise FormNotFoundException()
@@ -539,7 +568,7 @@ class MQTTClient(BaseProtocolClient):
 
             yield self._subscribe(broker_obsv, topic_obsv, qos_subscribe)
 
-            read_time = int(time.time() * 1000)
+            read_time = time.time()
             read_payload = json.dumps({"action": "read"}).encode()
 
             yield self._publish(broker_read, topic_read, read_payload, qos_publish)
@@ -547,21 +576,23 @@ class MQTTClient(BaseProtocolClient):
             ini = time.time()
 
             while True:
-                self._logr.debug("Checking property update topic: {}".format(topic_obsv))
+                self._logr.debug(
+                    "Checking property update topic: {}".format(topic_obsv))
 
                 if timeout and (time.time() - ini) > timeout:
-                    self._logr.warning("Timeout reading Property: {}".format(topic_obsv))
+                    self._logr.warning(
+                        "Timeout reading Property: {}".format(topic_obsv))
                     raise ClientRequestTimeout
 
                 msg_match = self._next_match(
                     broker_obsv, topic_obsv,
-                    lambda item: item[1].get("timestamp") >= read_time)
+                    lambda item: item[2] >= read_time)
 
                 if not msg_match:
                     yield self._wait_on_message(broker_obsv, topic_obsv)
                     continue
 
-                msg_id, msg_data = msg_match
+                msg_id, msg_data, msg_time = msg_match
 
                 raise tornado.gen.Return(msg_data.get("value"))
         finally:
@@ -601,7 +632,8 @@ class MQTTClient(BaseProtocolClient):
                         next_item = next_item_builder(msg_data)
                         observer.on_next(next_item)
                     except Exception as ex:
-                        self._logr.warning("Subscription message error: {}".format(ex), exc_info=True)
+                        self._logr.warning(
+                            "Subscription message error: {}".format(ex), exc_info=True)
 
             def unsubscribe():
                 """Disconnects from the MQTT broker and stops the message delivering loop."""
@@ -611,7 +643,8 @@ class MQTTClient(BaseProtocolClient):
                     try:
                         yield client.disconnect()
                     except Exception as ex:
-                        self._logr.warning("Subscription disconnection error: {}".format(ex))
+                        self._logr.warning(
+                            "Subscription disconnection error: {}".format(ex))
 
                 tornado.ioloop.IOLoop.current().add_callback(disconnect)
 
@@ -628,7 +661,10 @@ class MQTTClient(BaseProtocolClient):
         Returns an Observable"""
 
         forms = td.get_property_forms(name)
-        href = self._pick_mqtt_href(td, forms, op=InteractionVerbs.OBSERVE_PROPERTY)
+
+        href = self._pick_mqtt_href(
+            td, forms,
+            op=InteractionVerbs.OBSERVE_PROPERTY)
 
         if href is None:
             raise FormNotFoundException()
@@ -657,7 +693,10 @@ class MQTTClient(BaseProtocolClient):
         Returns an Observable."""
 
         forms = td.get_event_forms(name)
-        href = self._pick_mqtt_href(td, forms, op=InteractionVerbs.SUBSCRIBE_EVENT)
+
+        href = self._pick_mqtt_href(
+            td, forms,
+            op=InteractionVerbs.SUBSCRIBE_EVENT)
 
         if href is None:
             raise FormNotFoundException()
