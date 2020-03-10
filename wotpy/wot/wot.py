@@ -203,9 +203,10 @@ class WoT(object):
 
         return ConsumedThing(servient=self._servient, td=td)
 
-    def produce(self, model):
-        """Accepts a model argument of type ThingModel and returns an ExposedThing
-        object, locally created based on the provided initialization parameters."""
+    @classmethod
+    def thing_from_model(cls, model):
+        """Takes a ThingModel and builds a Thing. 
+        Raises if the model has an unexpected type."""
 
         expected_types = (six.string_types, ThingFragment, ConsumedThing)
 
@@ -219,6 +220,13 @@ class WoT(object):
         else:
             thing = model.td.build_thing()
 
+        return thing
+
+    def produce(self, model):
+        """Accepts a model argument of type ThingModel and returns an ExposedThing
+        object, locally created based on the provided initialization parameters."""
+
+        thing = self.thing_from_model(model)
         exposed_thing = ExposedThing(servient=self._servient, thing=thing)
         self._servient.add_exposed_thing(exposed_thing)
 
