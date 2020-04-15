@@ -35,6 +35,8 @@ def test_produce_model_str():
 
     servient = Servient()
     wot = WoT(servient=servient)
+    
+    assert wot.servient is servient
 
     exp_thing = wot.produce(td_str)
 

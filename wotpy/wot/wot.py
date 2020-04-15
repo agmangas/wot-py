@@ -38,6 +38,12 @@ class WoT(object):
         self._servient = servient
         self._logr = logging.getLogger(__name__)
 
+    @property
+    def servient(self):
+        """Servient instance of this WoT entrypoint."""
+
+        return self._servient
+
     @classmethod
     def _is_fragment_match(cls, item, thing_filter):
         """Returns True if the given item (an ExposedThing, Thing or TD)
@@ -115,7 +121,8 @@ class WoT(object):
                     try:
                         catalogue_resp = yield wait_iter.next()
                     except Exception as ex:
-                        self._logr.warning("Exception on HTTP request to TD catalogue: {}".format(ex))
+                        self._logr.warning(
+                            "Exception on HTTP request to TD catalogue: {}".format(ex))
                     else:
                         catalogue = json.loads(catalogue_resp.body)
 
@@ -123,7 +130,8 @@ class WoT(object):
                             return
 
                         td_resps = yield [
-                            http_client.fetch(build_pair_url(wait_iter.current_index, path=path))
+                            http_client.fetch(build_pair_url(
+                                wait_iter.current_index, path=path))
                             for thing_id, path in six.iteritems(catalogue)
                         ]
 
@@ -132,7 +140,8 @@ class WoT(object):
                             for td_resp in td_resps
                         ]
 
-                        tds_filtered = [td for td in tds if self._is_fragment_match(td, thing_filter)]
+                        tds_filtered = [
+                            td for td in tds if self._is_fragment_match(td, thing_filter)]
 
                         [observer.on_next(td.to_str()) for td in tds_filtered]
 
@@ -162,17 +171,20 @@ class WoT(object):
             return Observable.throw(err)
 
         if thing_filter.query:
-            err = NotImplementedError("Queries are not supported yet (please use filter.fragment)")
+            err = NotImplementedError(
+                "Queries are not supported yet (please use filter.fragment)")
             # noinspection PyUnresolvedReferences
             return Observable.throw(err)
 
         observables = []
 
         if thing_filter.method in [DiscoveryMethod.ANY, DiscoveryMethod.LOCAL]:
-            observables.append(self._build_local_discover_observable(thing_filter))
+            observables.append(
+                self._build_local_discover_observable(thing_filter))
 
         if thing_filter.method in [DiscoveryMethod.ANY, DiscoveryMethod.MULTICAST]:
-            observables.append(self._build_dnssd_discover_observable(thing_filter, dnssd_find_kwargs))
+            observables.append(self._build_dnssd_discover_observable(
+                thing_filter, dnssd_find_kwargs))
 
         # noinspection PyUnresolvedReferences
         return Observable.merge(*observables)
