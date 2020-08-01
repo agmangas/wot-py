@@ -16,6 +16,9 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.abspath('.'), '..', 'wotpy'))
+sys.path.insert(0, os.path.join(os.path.abspath('.'), '..', '.venv/lib/python3.6/site-packages'))
+#print(sys.path)
+#sys.exit(0)
 
 from wotpy.__version__ import __version__
 
