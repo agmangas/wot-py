@@ -5,6 +5,7 @@
 WoT client application that takes a Thing Description URL and
 subscribes to all observable properties and events in the consumed Thing.
 """
+
 import argparse
 import asyncio
 import logging

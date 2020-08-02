@@ -4,6 +4,7 @@
 """
 WoT application to expose a Thing that provides simulated temperature values.
 """
+
 import json
 import logging
 import random

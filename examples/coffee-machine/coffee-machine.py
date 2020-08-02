@@ -6,14 +6,10 @@ WoT application to expose a Thing that provides simulated temperature values.
 """
 import json
 import logging
-import random
 import math
 import six
-
 import tornado.gen
-from tornado.concurrent import Future
-from tornado.ioloop import IOLoop, PeriodicCallback
-
+from tornado.ioloop import IOLoop
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.wot.servient import Servient
