@@ -4,11 +4,6 @@
 """
 WoT application to expose a Thing that provides simulated temperature values.
 """
-import sys
-import os
-sys.path.insert(1, os.path.abspath('.'))
-
-
 import json
 import logging
 import random

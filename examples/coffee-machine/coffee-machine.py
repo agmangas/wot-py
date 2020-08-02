@@ -4,10 +4,6 @@
 """
 WoT application to expose a Thing that provides simulated temperature values.
 """
-import sys
-import os
-sys.path.insert(1, os.path.abspath('.'))
-
 import json
 import logging
 import random
@@ -26,19 +22,11 @@ CATALOGUE_PORT = 9090
 WEBSOCKET_PORT = 9393
 HTTP_PORT = 9494
 
-GLOBAL_TEMPERATURE = None
-PERIODIC_MS = 300000
-DEFAULT_TEMP_THRESHOLD = 27.0
-
 logging.basicConfig()
 LOGGER = logging.getLogger()
 LOGGER.setLevel(logging.INFO)
 
-NAME_PROP_TEMP = "temperature"
-NAME_PROP_TEMP_THRESHOLD = "high-temperature-threshold"
-NAME_EVENT_TEMP_HIGH = "high-temperature"
-
-DESCRIPTION = {
+TD = {
     "title": 'Smart-Coffee-Machine',
     "id": 'urn:dev:wot:example:coffee-machine',
     "description": '''A smart coffee machine with a range of capabilities.
@@ -48,16 +36,6 @@ A complementary tutorial is available at http://www.thingweb.io/smart-coffee-mac
         'https://www.w3.org/2019/wot/td/v1',
     ],
     "properties": {
-        NAME_PROP_TEMP: {
-            "type": "number",
-            "observable": True
-        },
-        NAME_PROP_TEMP_THRESHOLD: {
-            "type": "number",
-            "observable": True
-        },
-
-
         "allAvailableResources": {
             "type": 'object',
             "description": '''Current level of all available resources given as an integer percentage for each particular resource.
@@ -221,11 +199,6 @@ Assumes one medium americano if not specified, but time and mode are mandatory f
         },
     },
     "events": {
-        NAME_EVENT_TEMP_HIGH: {
-            "data": {
-                "type": "number"
-            }
-        },
         "outOfResource": {
             "description": '''Out of resource event. Emitted when the available resource level is not sufficient for a desired drink.''',
             "data": {
@@ -234,36 +207,6 @@ Assumes one medium americano if not specified, but time and mode are mandatory f
         },
     },
 }
-
-
-def update_temp():
-    """Updates the global temperature value."""
-
-    global GLOBAL_TEMPERATURE
-    GLOBAL_TEMPERATURE = round(random.randint(20.0, 30.0) + random.random(), 2)
-    LOGGER.info("Current temperature: {}".format(GLOBAL_TEMPERATURE))
-
-
-@tornado.gen.coroutine
-def emit_temp_high(exp_thing):
-    """Emits a 'Temperature High' event if the temperature is over the threshold."""
-
-    temp_threshold = yield exp_thing.read_property(NAME_PROP_TEMP_THRESHOLD)
-
-    if temp_threshold and GLOBAL_TEMPERATURE > temp_threshold:
-        LOGGER.info("Emitting high temperature event: {}".format(GLOBAL_TEMPERATURE))
-        exp_thing.emit_event(NAME_EVENT_TEMP_HIGH, GLOBAL_TEMPERATURE)
-
-
-@tornado.gen.coroutine
-def temp_read_handler():
-    """Custom handler for the 'Temperature' property."""
-
-    LOGGER.info("Doing some work to simulate temperature retrieval")
-    yield tornado.gen.sleep(random.random() * 3.0)
-
-    raise tornado.gen.Return(GLOBAL_TEMPERATURE)
-
 
 
 @tornado.gen.coroutine
@@ -285,7 +228,7 @@ def main():
     LOGGER.info("Exposing and configuring Thing")
 
     # Produce the Thing from Thing Description
-    exposed_thing = wot.produce(json.dumps(DESCRIPTION))
+    exposed_thing = wot.produce(json.dumps(TD))
 
     # Initialize the property values
     yield exposed_thing.properties['allAvailableResources'].write({
@@ -395,6 +338,7 @@ def main():
         for resource, value in six.iteritems(newResources):
             if value <= 0:
                 # Emit outOfResource event
+                exposed_thing.emit_event('outOfResource', f'Low level of {resource}: {resources[resource]}%')
                 return {'result': False, 'message': f'{resource} level is not sufficient'}
         
         # Now store the new level of allAvailableResources and servedCounter
@@ -409,9 +353,30 @@ def main():
 
     exposed_thing.set_action_handler('makeDrink', make_drink_action_handler)
 
+    # Set up a handler for setSchedule action
+    async def set_schedule_action_handler(params):
+        params = params['input'] if params['input'] else {}
 
+        # Check if required fields are provided in input
+        if 'time' in params and 'mode' in params:
+            
+            # Use default values for non-required fields if not provided
+            params['drinkId'] = params.get('drinkId', 'americano')
+            params['size'] = params.get('size', 'm')
+            params['quantity'] = params.get('quantity', 1)
+
+            # Now read the schedules property, add a new schedule to it and then rewrite the schedules property
+            schedules = await exposed_thing.read_property('schedules')
+            schedules.append(params)
+            await exposed_thing.properties['schedules'].write(schedules)
+            return {'result': True, 'message': 'Your schedule has been set!'}
+        
+        return {'result': False, 'message': 'Please provide all the required parameters: time and mode.'}
+
+    exposed_thing.set_action_handler('setSchedule', set_schedule_action_handler)
 
     exposed_thing.expose()
+    LOGGER.info(f"{TD['title']} is ready")
 
 
 def read_from_sensor(sensorType):
