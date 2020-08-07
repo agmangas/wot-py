@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-WoT application to expose a Thing that provides simulated temperature values.
-"""
+'''
+This is an example of Web of Things producer ("server" mode) Thing script.
+It considers a fictional smart coffee machine in order to demonstrate the capabilities of Web of Things.
+The example is ported from the node-wot environment -
+https://github.com/eclipse/thingweb.node-wot/blob/master/packages/examples/src/scripts/coffee-machine.ts.
+'''
 import json
 import logging
 import math
@@ -23,182 +26,182 @@ LOGGER = logging.getLogger()
 LOGGER.setLevel(logging.INFO)
 
 TD = {
-    "title": 'Smart-Coffee-Machine',
-    "id": 'urn:dev:wot:example:coffee-machine',
-    "description": '''A smart coffee machine with a range of capabilities.
+    'title': 'Smart-Coffee-Machine',
+    'id': 'urn:dev:wot:example:coffee-machine',
+    'description': '''A smart coffee machine with a range of capabilities.
 A complementary tutorial is available at http://www.thingweb.io/smart-coffee-machine.html.''',
-    "support": 'git://github.com/eclipse/thingweb.node-wot.git',
+    'support': 'git://github.com/eclipse/thingweb.node-wot.git',
     '@context': [
         'https://www.w3.org/2019/wot/td/v1',
     ],
-    "properties": {
-        "allAvailableResources": {
-            "type": 'object',
-            "description": '''Current level of all available resources given as an integer percentage for each particular resource.
+    'properties': {
+        'allAvailableResources': {
+            'type': 'object',
+            'description': '''Current level of all available resources given as an integer percentage for each particular resource.
 The data is obtained from the machine's sensors but can be set manually in case the sensors are broken.''',
-            "properties": {
-                "water": {
-                    "type": 'integer',
-                    "minimum": 0,
-                    "maximum": 100,
+            'properties': {
+                'water': {
+                    'type': 'integer',
+                    'minimum': 0,
+                    'maximum': 100,
                 },
-                "milk": {
-                    "type": 'integer',
-                    "minimum": 0,
-                    "maximum": 100,
+                'milk': {
+                    'type': 'integer',
+                    'minimum': 0,
+                    'maximum': 100,
                 },
-                "chocolate": {
-                    "type": 'integer',
-                    "minimum": 0,
-                    "maximum": 100,
+                'chocolate': {
+                    'type': 'integer',
+                    'minimum': 0,
+                    'maximum': 100,
                 },
-                "coffeeBeans": {
-                    "type": 'integer',
-                    "minimum": 0,
-                    "maximum": 100,
+                'coffeeBeans': {
+                    'type': 'integer',
+                    'minimum': 0,
+                    'maximum': 100,
                 },
             },
         },
-        "possibleDrinks": {
-            "type": 'array',
-            "description": '''The list of possible drinks in general. Doesn't depend on the available resources.''',
-            "items": {
-                "type": 'string',
+        'possibleDrinks': {
+            'type': 'array',
+            'description': '''The list of possible drinks in general. Doesn't depend on the available resources.''',
+            'items': {
+                'type': 'string',
             }
         },
-        "servedCounter": {
-            "type": 'integer',
-            "description": '''The total number of served beverages.''',
-            "minimum": 0,
+        'servedCounter': {
+            'type': 'integer',
+            'description': '''The total number of served beverages.''',
+            'minimum': 0,
         },
-        "maintenanceNeeded": {
-            "type": 'boolean',
-            "description": '''Shows whether a maintenance is needed. The property is observable. Automatically set to True when the servedCounter property exceeds 1000.''',
-            "observable": True,
+        'maintenanceNeeded': {
+            'type': 'boolean',
+            'description': '''Shows whether a maintenance is needed. The property is observable. Automatically set to True when the servedCounter property exceeds 1000.''',
+            'observable': True,
         },
-        "schedules": {
-            "type": 'array',
-            "description": '''The list of scheduled tasks.''',
-            "items": {
-                "type": 'object',
-                "properties": {
-                    "drinkId": {
-                        "type": 'string',
-                        "description": '''Defines what drink to make, drinkId is one of possibleDrinks property values, e.g. latte.''',
+        'schedules': {
+            'type': 'array',
+            'description': '''The list of scheduled tasks.''',
+            'items': {
+                'type': 'object',
+                'properties': {
+                    'drinkId': {
+                        'type': 'string',
+                        'description': '''Defines what drink to make, drinkId is one of possibleDrinks property values, e.g. latte.''',
                     },
-                    "size": {
-                        "type": 'string',
-                        "description": '''Defines the size of a drink, s = small, m = medium, l = large.''',
-                        "enum": ['s', 'm', 'l'],
+                    'size': {
+                        'type': 'string',
+                        'description': '''Defines the size of a drink, s = small, m = medium, l = large.''',
+                        'enum': ['s', 'm', 'l'],
                     },
-                    "quantity": {
-                        "type": 'integer',
-                        "description": '''Defines how many drinks to make, ranging from 1 to 5.''',
-                        "minimum": 1,
-                        "maximum": 5,
+                    'quantity': {
+                        'type': 'integer',
+                        'description': '''Defines how many drinks to make, ranging from 1 to 5.''',
+                        'minimum': 1,
+                        'maximum': 5,
                     },
-                    "time": {
-                        "type": 'string',
-                        "description": '''Defines the time of the scheduled task in 24h format, e.g. 10:00 or 21:00.''',
+                    'time': {
+                        'type': 'string',
+                        'description': '''Defines the time of the scheduled task in 24h format, e.g. 10:00 or 21:00.''',
                     },
-                    "mode": {
-                        "type": 'string',
-                        "description": '''Defines the mode of the scheduled task, e.g. once or everyday. All the possible values are given in the enum field of this Thing Description.''',
-                        "enum": ['once', 'everyday', 'everyMo', 'everyTu', 'everyWe', 'everyTh', 'everyFr', 'everySat', 'everySun'],
+                    'mode': {
+                        'type': 'string',
+                        'description': '''Defines the mode of the scheduled task, e.g. once or everyday. All the possible values are given in the enum field of this Thing Description.''',
+                        'enum': ['once', 'everyday', 'everyMo', 'everyTu', 'everyWe', 'everyTh', 'everyFr', 'everySat', 'everySun'],
                     },
                 },
             },
         },
     },
-    "actions": {
-        "makeDrink": {
-            "description": '''Make a drink from available list of beverages. Accepts drink id, size and quantity as input.
+    'actions': {
+        'makeDrink': {
+            'description': '''Make a drink from available list of beverages. Accepts drink id, size and quantity as input.
 Brews one medium americano if no input is specified.''',
-            "input": {
-                "type": 'object',
-                "properties": {
-                    "drinkId": {
-                        "type": 'string',
-                        "description": '''Defines what drink to make, drinkId is one of possibleDrinks property values, e.g. latte.''',
+            'input': {
+                'type': 'object',
+                'properties': {
+                    'drinkId': {
+                        'type': 'string',
+                        'description': '''Defines what drink to make, drinkId is one of possibleDrinks property values, e.g. latte.''',
                     },
-                    "size": {
-                        "type": 'string',
-                        "description": '''Defines the size of a drink, s = small, m = medium, l = large.''',
-                        "enum": ['s', 'm', 'l'],
+                    'size': {
+                        'type': 'string',
+                        'description': '''Defines the size of a drink, s = small, m = medium, l = large.''',
+                        'enum': ['s', 'm', 'l'],
                     },
-                    "quantity": {
-                        "type": 'integer',
-                        "description": '''Defines how many drinks to make, ranging from 1 to 5.''',
-                        "minimum": 1,
-                        "maximum": 5
+                    'quantity': {
+                        'type': 'integer',
+                        'description': '''Defines how many drinks to make, ranging from 1 to 5.''',
+                        'minimum': 1,
+                        'maximum': 5
                     },
                 },
             },
-            "output": {
-                "type": 'object',
-                "description": '''Returns True/false and a message when all invoked promises are resolved (asynchronous).''',
-                "properties": {
-                    "result": {
-                        "type": 'boolean',
+            'output': {
+                'type': 'object',
+                'description': '''Returns True/false and a message when all invoked promises are resolved (asynchronous).''',
+                'properties': {
+                    'result': {
+                        'type': 'boolean',
                     },
-                    "message": {
-                        "type": 'string',
+                    'message': {
+                        'type': 'string',
                     },
                 },
             },
         },
-        "setSchedule": {
-            "description": '''Add a scheduled task to the schedules property. Accepts drink id, size, quantity, time and mode as body of a request.
+        'setSchedule': {
+            'description': '''Add a scheduled task to the schedules property. Accepts drink id, size, quantity, time and mode as body of a request.
 Assumes one medium americano if not specified, but time and mode are mandatory fields.''',
-            "input": {
-                "type": 'object',
-                "properties": {
-                    "drinkId": {
-                        "type": 'string',
-                        "description": '''Defines what drink to make, drinkId is one of possibleDrinks property values, e.g. latte.''',
+            'input': {
+                'type': 'object',
+                'properties': {
+                    'drinkId': {
+                        'type': 'string',
+                        'description': '''Defines what drink to make, drinkId is one of possibleDrinks property values, e.g. latte.''',
                     },
-                    "size": {
-                        "type": 'string',
-                        "description": '''Defines the size of a drink, s = small, m = medium, l = large.''',
-                        "enum": ['s', 'm', 'l'],
+                    'size': {
+                        'type': 'string',
+                        'description': '''Defines the size of a drink, s = small, m = medium, l = large.''',
+                        'enum': ['s', 'm', 'l'],
                     },
-                    "quantity": {
-                        "type": 'integer',
-                        "description": '''Defines how many drinks to make, ranging from 1 to 5.''',
-                        "minimum": 1,
-                        "maximum": 5
+                    'quantity': {
+                        'type': 'integer',
+                        'description': '''Defines how many drinks to make, ranging from 1 to 5.''',
+                        'minimum': 1,
+                        'maximum': 5
                     },
-                    "time": {
-                        "type": 'string',
-                        "description": '''Defines the time of the scheduled task in 24h format, e.g. 10:00 or 21:00.''',
+                    'time': {
+                        'type': 'string',
+                        'description': '''Defines the time of the scheduled task in 24h format, e.g. 10:00 or 21:00.''',
                     },
-                    "mode": {
-                        "type": 'string',
-                        "description": '''Defines the mode of the scheduled task, e.g. once or everyday. All the possible values are given in the enum field of this Thing Description.''',
-                        "enum": ['once', 'everyday', 'everyMo', 'everyTu', 'everyWe', 'everyTh', 'everyFr', 'everySat', 'everySun'],
+                    'mode': {
+                        'type': 'string',
+                        'description': '''Defines the mode of the scheduled task, e.g. once or everyday. All the possible values are given in the enum field of this Thing Description.''',
+                        'enum': ['once', 'everyday', 'everyMo', 'everyTu', 'everyWe', 'everyTh', 'everyFr', 'everySat', 'everySun'],
                     },
                 },
-                "required": ['time', 'mode'],
+                'required': ['time', 'mode'],
             },
-            "output": {
-                "type": 'object',
-                "description": '''Returns True/false and a message when all invoked promises are resolved (asynchronous).''',
-                "properties": {
-                    "result": {
-                        "type": 'boolean',
+            'output': {
+                'type': 'object',
+                'description': '''Returns True/false and a message when all invoked promises are resolved (asynchronous).''',
+                'properties': {
+                    'result': {
+                        'type': 'boolean',
                     },
-                    "message": {
-                        "type": 'string',
+                    'message': {
+                        'type': 'string',
                     },
                 },
             },
         },
     },
-    "events": {
-        "outOfResource": {
-            "description": '''Out of resource event. Emitted when the available resource level is not sufficient for a desired drink.''',
-            "data": {
-                "type": 'string',
+    'events': {
+        'outOfResource': {
+            'description': '''Out of resource event. Emitted when the available resource level is not sufficient for a desired drink.''',
+            'data': {
+                'type': 'string',
             },
         },
     },
@@ -207,21 +210,21 @@ Assumes one medium americano if not specified, but time and mode are mandatory f
 
 @tornado.gen.coroutine
 def main():
-    LOGGER.info("Creating WebSocket server on: {}".format(WEBSOCKET_PORT))
+    LOGGER.info('Creating WebSocket server on: {}'.format(WEBSOCKET_PORT))
     ws_server = WebsocketServer(port=WEBSOCKET_PORT)
 
-    LOGGER.info("Creating HTTP server on: {}".format(HTTP_PORT))
+    LOGGER.info('Creating HTTP server on: {}'.format(HTTP_PORT))
     http_server = HTTPServer(port=HTTP_PORT)
 
-    LOGGER.info("Creating servient with TD catalogue on: {}".format(CATALOGUE_PORT))
+    LOGGER.info('Creating servient with TD catalogue on: {}'.format(CATALOGUE_PORT))
     servient = Servient(catalogue_port=CATALOGUE_PORT)
     servient.add_server(ws_server)
     servient.add_server(http_server)
 
-    LOGGER.info("Starting servient")
+    LOGGER.info('Starting servient')
     wot = yield servient.start()
 
-    LOGGER.info("Exposing and configuring Thing")
+    LOGGER.info('Exposing and configuring Thing')
 
     # Produce the Thing from Thing Description
     exposed_thing = wot.produce(json.dumps(TD))
@@ -372,7 +375,7 @@ def main():
     exposed_thing.set_action_handler('setSchedule', set_schedule_action_handler)
 
     exposed_thing.expose()
-    LOGGER.info(f"{TD['title']} is ready")
+    LOGGER.info(f'{TD["title"]} is ready')
 
 
 def read_from_sensor(sensorType):
@@ -386,7 +389,7 @@ def notify(msg, subscribers=['admin@coffeeMachine.com']):
     LOGGER.info(msg)
 
 
-if __name__ == "__main__":
-    LOGGER.info("Starting loop")
+if __name__ == '__main__':
+    LOGGER.info('Starting loop')
     IOLoop.current().add_callback(main)
     IOLoop.current().start()
