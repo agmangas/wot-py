@@ -109,19 +109,12 @@ class HTTPServer(BaseProtocolServer):
             self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
             proprty.thing.url_name, proprty.url_name)
 
-        form_read = Form(
+        form_read_write = Form(
             interaction=proprty,
             protocol=self.protocol,
             href=href_read_write,
             content_type=MediaTypes.JSON,
-            op=InteractionVerbs.READ_PROPERTY)
-
-        form_write = Form(
-            interaction=proprty,
-            protocol=self.protocol,
-            href=href_read_write,
-            content_type=MediaTypes.JSON,
-            op=InteractionVerbs.WRITE_PROPERTY)
+            op=[InteractionVerbs.READ_PROPERTY, InteractionVerbs.WRITE_PROPERTY])
 
         href_observe = "{}/subscription".format(href_read_write)
 
@@ -130,9 +123,9 @@ class HTTPServer(BaseProtocolServer):
             protocol=self.protocol,
             href=href_observe,
             content_type=MediaTypes.JSON,
-            op=InteractionVerbs.OBSERVE_PROPERTY)
+            op=[InteractionVerbs.OBSERVE_PROPERTY])
 
-        return [form_read, form_write, form_observe]
+        return [form_read_write, form_observe]
 
     def _build_forms_action(self, action, hostname):
         """Builds and returns the HTTP Form instances for the given Action interaction."""
@@ -146,7 +139,7 @@ class HTTPServer(BaseProtocolServer):
             protocol=self.protocol,
             href=href_invoke,
             content_type=MediaTypes.JSON,
-            op=InteractionVerbs.INVOKE_ACTION)
+            op=[InteractionVerbs.INVOKE_ACTION])
 
         return [form_invoke]
 
@@ -162,7 +155,7 @@ class HTTPServer(BaseProtocolServer):
             protocol=self.protocol,
             href=href_observe,
             content_type=MediaTypes.JSON,
-            op=InteractionVerbs.SUBSCRIBE_EVENT)
+            op=[InteractionVerbs.SUBSCRIBE_EVENT])
 
         return [form_observe]
 
