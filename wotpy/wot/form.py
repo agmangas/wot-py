@@ -51,5 +51,5 @@ class Form(object):
             self.protocol,
             self.href,
             self.content_type,
-            self.op
+            tuple(self.op) if isinstance(self.op, list) else self.op
         ))
