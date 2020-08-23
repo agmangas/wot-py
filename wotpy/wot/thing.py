@@ -139,10 +139,9 @@ class Thing(object):
 
     @property
     def url_name(self):
-        """Returns the URL-safe name of this Thing.
-        The URL name of a Thing is always unique and stable as long as the ID is unique."""
+        """Returns the URL-safe name of this Thing."""
 
-        return slugify("{}-{}".format(self.title, self.uuid))
+        return slugify(self.title)
 
     @property
     def properties(self):
