@@ -214,7 +214,7 @@ SCHEMA_THING = {
             "pattern": REGEX_ANY_URI
         },
         "version": SCHEMA_VERSIONING,
-        "name": {"type": "string"},
+        "title": {"type": "string"},
         "description": {"type": "string"},
         "support": {"type": "string"},
         "created": {"type": "string"},
@@ -249,7 +249,7 @@ SCHEMA_THING = {
     },
     "required": [
         "id",
-        "name",
+        "title",
         "security"
     ]
 }

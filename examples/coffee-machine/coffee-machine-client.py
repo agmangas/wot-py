@@ -21,7 +21,7 @@ LOGGER.setLevel(logging.INFO)
 
 async def main():
     wot = WoT(servient=Servient())
-    consumed_thing = await wot.consume_from_url('http://127.0.0.1:9090/urn-dev-wot-example-coffee-machine-97e83de1-f5c9-a4a0-23b6-be918d3a22ca')
+    consumed_thing = await wot.consume_from_url('http://127.0.0.1:9090/smart-coffee-machine-97e83de1-f5c9-a4a0-23b6-be918d3a22ca')
 
     LOGGER.info('Consumed Thing: {}'.format(consumed_thing))
 
