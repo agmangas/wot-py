@@ -23,7 +23,7 @@ class Thing(object):
 
     THING_FRAGMENT_WRITABLE_FIELDS = {
         "version",
-        "name",
+        "title",
         "description",
         "support",
         "created",
@@ -120,10 +120,10 @@ class Thing(object):
         return self.thing_fragment.id
 
     @property
-    def name(self):
-        """Thing name."""
+    def title(self):
+        """Thing title."""
 
-        return self.thing_fragment.name
+        return self.thing_fragment.title
 
     @property
     def uuid(self):
@@ -142,7 +142,7 @@ class Thing(object):
         """Returns the URL-safe name of this Thing.
         The URL name of a Thing is always unique and stable as long as the ID is unique."""
 
-        return slugify("{}-{}".format(self.name, self.uuid))
+        return slugify("{}-{}".format(self.title, self.uuid))
 
     @property
     def properties(self):
