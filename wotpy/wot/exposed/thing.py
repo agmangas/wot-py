@@ -227,15 +227,17 @@ class ExposedThing(object):
         if not proprty.writable:
             raise TypeError("Property is non-writable")
 
+        # Notify state change if the new value is different from the stored one
+        if self._get_property_value(proprty) != value:
+            event_init = PropertyChangeEventInit(name=name, value=value)
+            self._events_stream.on_next(PropertyChangeEmittedEvent(init=event_init))
+
         handler = self._handlers.get(self.HandlerKeys.UPDATE_PROPERTY, {}).get(proprty, None)
 
         if handler:
             yield handler(value)
         else:
             yield self._default_update_property_handler(name, value)
-
-        event_init = PropertyChangeEventInit(name=name, value=value)
-        self._events_stream.on_next(PropertyChangeEmittedEvent(init=event_init))
 
     @tornado.gen.coroutine
     def invoke_action(self, name, input_value=None):
