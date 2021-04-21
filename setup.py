@@ -3,10 +3,11 @@
 
 from os import path
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 from wotpy.__version__ import __version__
-from wotpy.support import is_dnssd_supported, is_coap_supported, is_mqtt_supported
+from wotpy.support import (is_coap_supported, is_dnssd_supported,
+                           is_mqtt_supported)
 
 install_requires = [
     'tornado>=5.1,<6.0',
@@ -27,8 +28,10 @@ test_requires = [
     'sphinx-rtd-theme>=0.4.0,<0.5.0',
     'futures>=3.1.1,<4.0.0',
     'pyOpenSSL>=18.0.0,<19.0.0',
-    'python-coveralls==2.9.1',
-    'coverage==4.0.3'
+    'python-coveralls>=2.9,<3.0',
+    'coverage>=5.0<6.0',
+    'autopep8>=1.4,<2.0',
+    'rope>=0.14.0,<1.0'
 ]
 
 if is_coap_supported():
