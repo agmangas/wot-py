@@ -1,6 +1,6 @@
 # WoTPy
 
-[![Build Status](https://travis-ci.org/agmangas/wot-py.svg?branch=develop)](https://travis-ci.org/agmangas/wot-py) [![Coverage Status](https://coveralls.io/repos/github/agmangas/wot-py/badge.svg?branch=develop)](https://coveralls.io/github/agmangas/wot-py?branch=develop)
+[![Travis (.com)](https://img.shields.io/travis/com/agmangas/wot-py)](https://travis-ci.com/agmangas/wot-py) [![Coverage Status](https://coveralls.io/repos/github/agmangas/wot-py/badge.svg)](https://coveralls.io/github/agmangas/wot-py?branch=develop) [![PyPI](https://img.shields.io/pypi/v/wotpy)](https://pypi.org/project/wotpy/)
 
 ## Introduction
 
