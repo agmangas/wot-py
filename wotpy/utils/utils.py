@@ -78,7 +78,6 @@ def get_main_ipv4_address():
 
     ip_range = ['10.255.255.255', '10.0.255.255', '10.0.0.255']
 
-    # noinspection PyBroadException
     for ip in ip_range:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
@@ -86,7 +85,7 @@ def get_main_ipv4_address():
             addr = sock.getsockname()[0]
             sock.close()
             break
-        except Exception:
+        except:
             addr = '127.0.0.1'
         finally:
             sock.close()

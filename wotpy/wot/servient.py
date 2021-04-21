@@ -6,6 +6,7 @@ Class that represents a WoT servient.
 """
 
 import functools
+import re
 import socket
 
 import six
@@ -14,11 +15,11 @@ import tornado.gen
 import tornado.ioloop
 import tornado.locks
 import tornado.web
-
 from wotpy.protocols.enums import Protocols
 from wotpy.protocols.http.client import HTTPClient
 from wotpy.protocols.ws.client import WebsocketClient
-from wotpy.support import is_coap_supported, is_mqtt_supported, is_dnssd_supported
+from wotpy.support import (is_coap_supported, is_dnssd_supported,
+                           is_mqtt_supported)
 from wotpy.utils.utils import get_main_ipv4_address
 from wotpy.wot.enums import InteractionTypes
 from wotpy.wot.exposed.thing_set import ExposedThingSet
@@ -26,7 +27,6 @@ from wotpy.wot.td import ThingDescription
 from wotpy.wot.wot import WoT
 
 
-# noinspection PyAbstractClass,PyMethodOverriding,PyAttributeOutsideInit
 class TDHandler(tornado.web.RequestHandler):
     """Handler that returns the TD document of a given Thing."""
 
@@ -34,7 +34,8 @@ class TDHandler(tornado.web.RequestHandler):
         self.servient = servient
 
     def get(self, thing_url_name):
-        exp_thing = self.servient.exposed_thing_set.find_by_thing_id(thing_url_name)
+        exp_thing = self.servient.exposed_thing_set.find_by_thing_id(
+            thing_url_name)
 
         td_doc = ThingDescription.from_thing(exp_thing.thing).to_dict()
         base_url = self.servient.get_thing_base_url(exp_thing)
@@ -45,7 +46,6 @@ class TDHandler(tornado.web.RequestHandler):
         self.write(td_doc)
 
 
-# noinspection PyAbstractClass,PyMethodOverriding,PyAttributeOutsideInit
 class TDCatalogueHandler(tornado.web.RequestHandler):
     """Handler that returns the entire catalogue of Things contained in this servient.
     May return TDs in expanded format or URL pointers to the individual TDs."""
@@ -61,7 +61,8 @@ class TDCatalogueHandler(tornado.web.RequestHandler):
 
             if self.get_argument("expanded", False):
                 val = ThingDescription.from_thing(exp_thing.thing).to_dict()
-                val.update({"base": self.servient.get_thing_base_url(exp_thing)})
+                val.update(
+                    {"base": self.servient.get_thing_base_url(exp_thing)})
             else:
                 val = "/{}".format(exp_thing.thing.url_name)
 
@@ -86,11 +87,16 @@ def _stopped_servient_only(func):
         servient = args[0]
 
         if servient.is_running:
-            raise ServientStateException("Attempted to modify the Servient while it was running")
+            raise ServientStateException(
+                "Attempted to modify the Servient while it was running")
 
         return func(*args, **kwargs)
 
     return wrapper
+
+
+_REGEX_HOSTNAME = r"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$"
+_REGEX_ARPA = r".*\.(ip6|in-addr)\.arpa$"
 
 
 def _get_hostname_fallback():
@@ -100,7 +106,10 @@ def _get_hostname_fallback():
 
     fqdn = socket.getfqdn()
 
-    return fqdn if "." in fqdn else get_main_ipv4_address()
+    valid_fqdn = re.search(_REGEX_HOSTNAME, fqdn) \
+        and not re.search(_REGEX_ARPA, fqdn)
+
+    return fqdn if valid_fqdn else get_main_ipv4_address()
 
 
 class Servient(object):
@@ -177,17 +186,20 @@ class Servient(object):
         }
 
         try:
-            intrct_type = next(key for key, names in six.iteritems(intrct_names) if name in names)
+            intrct_type = next(key for key, names in six.iteritems(
+                intrct_names) if name in names)
         except StopIteration:
             raise ValueError("Unknown interaction: {}".format(name))
 
         protocol_prefs = protocol_preference_map[intrct_type]
-        protocol_choices = set(protocol_prefs).intersection(set(supported_protocols))
+        protocol_choices = set(protocol_prefs).intersection(
+            set(supported_protocols))
 
         if not len(protocol_choices):
             return list(clients)[0]
 
-        protocol = next(proto for proto in protocol_prefs if proto in protocol_choices)
+        protocol = next(
+            proto for proto in protocol_prefs if proto in protocol_choices)
 
         return next(client for client in clients if client.protocol == protocol)
 
@@ -287,7 +299,6 @@ class Servient(object):
 
         self._dnssd = None
 
-    # noinspection PyArgumentList
     def _build_default_clients(self):
         """Builds the default Protocol Binding clients."""
 
@@ -302,11 +313,13 @@ class Servient(object):
 
         if is_coap_supported():
             from wotpy.protocols.coap.client import CoAPClient
-            self._clients.update({Protocols.COAP: CoAPClient(**conf.get(Protocols.COAP, {}))})
+            self._clients.update(
+                {Protocols.COAP: CoAPClient(**conf.get(Protocols.COAP, {}))})
 
         if is_mqtt_supported():
             from wotpy.protocols.mqtt.client import MQTTClient
-            self._clients.update({Protocols.MQTT: MQTTClient(**conf.get(Protocols.MQTT, {}))})
+            self._clients.update(
+                {Protocols.MQTT: MQTTClient(**conf.get(Protocols.MQTT, {}))})
 
     def _build_td_catalogue_app(self):
         """Returns a Tornado app that provides one endpoint to retrieve the
@@ -373,7 +386,8 @@ class Servient(object):
         assert self._exposed_thing_set.contains(exposed_thing)
 
         for interaction in exposed_thing.thing.interactions:
-            forms = server.build_forms(hostname=self._hostname, interaction=interaction)
+            forms = server.build_forms(
+                hostname=self._hostname, interaction=interaction)
 
             for form in forms:
                 interaction.add_form(form)
@@ -465,7 +479,8 @@ class Servient(object):
         exposed_thing = self.get_exposed_thing(thing_id)
 
         if exposed_thing.id not in self._enabled_exposed_thing_ids:
-            raise ValueError("ExposedThing {} is already disabled".format(thing_id))
+            raise ValueError(
+                "ExposedThing {} is already disabled".format(thing_id))
 
         for server in self._servers.values():
             server.remove_exposed_thing(exposed_thing.id)
