@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
 from os import path
 
 from setuptools import find_packages, setup
@@ -33,6 +34,9 @@ test_requires = [
     'autopep8>=1.4,<2.0',
     'rope>=0.14.0,<1.0'
 ]
+
+if sys.version_info[0] is 3:
+    test_requires.append("bump2version>=1.0,<2.0")
 
 if is_coap_supported():
     install_requires.append('aiocoap[linkheader]==0.4a1')
