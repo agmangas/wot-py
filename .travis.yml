@@ -1,4 +1,5 @@
 language: python
+os: linux
 dist: focal
 services:
   - docker
@@ -7,6 +8,7 @@ python:
   - "3.6"
   - "3.7"
   - "3.8"
+  - "3.9"
 env:
   - WOTPY_TESTS_MQTT_BROKER_URL=mqtt://localhost
 before_install:
@@ -26,6 +28,7 @@ jobs:
       deploy:
         edge: true
         provider: pages
+        strategy: git
         local_dir: ./docs/_build/html
         target_branch: gh-pages
         token: $GITHUB_TOKEN
