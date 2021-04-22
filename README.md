@@ -2,7 +2,7 @@
 
 # WoTPy
 
-[![Travis (.com)](https://img.shields.io/travis/com/agmangas/wot-py)](https://travis-ci.com/agmangas/wot-py) [![Coverage Status](https://coveralls.io/repos/github/agmangas/wot-py/badge.svg)](https://coveralls.io/github/agmangas/wot-py?branch=develop) [![PyPI](https://img.shields.io/pypi/v/wotpy)](https://pypi.org/project/wotpy/)
+[![Travis (.com)](https://img.shields.io/travis/com/agmangas/wot-py)](https://travis-ci.com/agmangas/wot-py) [![Coveralls](https://img.shields.io/coveralls/github/agmangas/wot-py)](https://coveralls.io/github/agmangas/wot-py) [![PyPI](https://img.shields.io/pypi/v/wotpy)](https://pypi.org/project/wotpy/)
 
 ## Introduction
 
@@ -53,6 +53,20 @@ To run the tests in all supported environments:
 
 ```
 WOTPY_TESTS_MQTT_BROKER_URL=mqtt://broker-url tox
+```
+
+Some WoTPy features (e.g. CoAP binding) are not available outside of Linux. If you have Docker available in your system, and want to easily run the tests in a Linux environment (whether you're on macOS or Windows) you can use the Docker-based test script:
+
+```
+$ WOTPY_TESTS_MQTT_BROKER_URL=mqtt://192.168.1.141 ./pytest-docker-all.sh
+...
++ docker run --rm -it -v /var/folders/zd/02pk7r3954s_t03lktjmvbdc0000gn/T/wotpy-547bed6bacf34ddc95b41eceb46553dd:/app -e WOTPY_TESTS_MQTT_BROKER_URL=mqtt://192.168.1.141 python:3.9 /bin/bash -c 'cd /app && pip install -U .[tests] && pytest -v --disable-warnings'
+...
+Python 2.7 :: OK
+Python 3.6 :: OK
+Python 3.7 :: OK
+Python 3.8 :: OK
+Python 3.9 :: OK
 ```
 
 ## Docs
