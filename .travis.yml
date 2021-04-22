@@ -24,8 +24,8 @@ jobs:
       script: skip
       before_deploy: cd ./docs/ && make html && cd ..
       deploy:
+        edge: true
         provider: pages
-        cleanup: false
         local_dir: ./docs/_build/html
         target_branch: gh-pages
         token: $GITHUB_TOKEN
@@ -34,6 +34,7 @@ jobs:
           tags: true
           branch: master
 deploy:
+  edge: true
   provider: pypi
   username: agmangas
   password:
