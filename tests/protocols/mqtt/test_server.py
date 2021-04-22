@@ -5,6 +5,7 @@ import json
 import time
 import uuid
 from asyncio import TimeoutError
+import random
 
 import pytest
 import six
@@ -119,6 +120,7 @@ def test_servient_id():
     def assert_ping_loop(srv, num_iters=10):
         for _ in range(num_iters):
             assert (yield _ping(srv, timeout=DEFAULT_PING_TIMEOUT))
+            yield tornado.gen.sleep(random.uniform(0.1, 0.3))
 
     @tornado.gen.coroutine
     def test_coroutine():
