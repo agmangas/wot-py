@@ -1,25 +1,25 @@
 language: python
 dist: focal
 services:
-- docker
+  - docker
 python:
-- '2.7'
-- '3.6'
-- '3.7'
-- '3.8'
+  - "2.7"
+  - "3.6"
+  - "3.7"
+  - "3.8"
 env:
-- WOTPY_TESTS_MQTT_BROKER_URL=mqtt://localhost
+  - WOTPY_TESTS_MQTT_BROKER_URL=mqtt://localhost
 before_install:
-- docker run -d -p 1883:1883 --name broker eclipse-mosquitto:1.6
-- docker ps -a
+  - docker run -d -p 1883:1883 --name broker eclipse-mosquitto:1.6
+  - docker ps -a
 install:
-- pip install -U .[tests]
+  - pip install -U .[tests]
 script:
-- travis_retry pytest -sv --disable-warnings --cov=wotpy
+  - travis_retry pytest -sv --disable-warnings --cov=wotpy
 jobs:
   include:
     - stage: docs
-      python: '3.7'
+      python: "3.7"
       name: "Deploy docs to GitHub Pages"
       script: skip
       before_deploy: cd ./docs/ && make html && cd ..
@@ -41,7 +41,8 @@ deploy:
   on:
     tags: true
     branch: master
+    condition: $TRAVIS_PYTHON_VERSION != 2.7
   distributions: "sdist bdist_wheel"
   skip_existing: true
 after_success:
-- coveralls
+  - coveralls
