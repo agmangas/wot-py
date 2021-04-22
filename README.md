@@ -35,14 +35,6 @@ WoTPy is based on the [Tornado Framework](https://www.tornadoweb.org). Users the
 - Users on **Python 3** may use the native [asyncio](https://docs.python.org/3/library/asyncio.html) module. This is, in fact, the recommended approach. It should be noted that Tornado on Python 3 acts basically [as a wrapper](https://www.tornadoweb.org/en/stable/asyncio.html) around `asyncio`.
 - Users on **Python 2.7** are restricted to writing [Tornado coroutines](https://www.tornadoweb.org/en/stable/guide/coroutines.html) (`asyncio` is not available on Python 2.7).
 
-## ToDo
-
-- Add missing sections to docs and deploy on a public site.
-- Subscription to Thing Description changes.
-- Validation of data schemas.
-- Enable Action handlers to return Observables.
-- Update protocol bindings to accept event subscription and cancellation data.
-
 ## Installation
 
 ```
