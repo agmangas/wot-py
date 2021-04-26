@@ -67,7 +67,9 @@ def all_protocols_servient():
                     }
                 ]
             }
-        }
+        },
+        "security": "nosec_sc",
+        "securityDefinitions": {"nosec_sc": {"scheme": "nosec"}},
     }
 
     td = ThingDescription(td_dict)
