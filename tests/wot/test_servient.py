@@ -25,7 +25,7 @@ from wotpy.wot.wot import WoT
 
 TD_DICT_01 = {
     "id": uuid.uuid4().urn,
-    "name": Faker().sentence(),
+    "title": Faker().sentence(),
     "properties": {
         "status": {
             "description": "Shows the current status of the lamp",
@@ -39,7 +39,7 @@ TD_DICT_01 = {
 
 TD_DICT_02 = {
     "id": uuid.uuid4().urn,
-    "name": Faker().sentence()
+    "title": Faker().sentence()
 }
 
 
@@ -95,7 +95,7 @@ def test_servient_td_catalogue(servient):
         td_01_catalogue = yield fetch_catalogue_td(servient, TD_DICT_01["id"])
 
         assert td_01_catalogue["id"] == TD_DICT_01["id"]
-        assert td_01_catalogue["name"] == TD_DICT_01["name"]
+        assert td_01_catalogue["title"] == TD_DICT_01["title"]
 
         catalogue_expanded = yield fetch_catalogue(servient, expanded=True)
 
@@ -133,7 +133,7 @@ def test_servient_start_stop():
 
     td_doc = {
         "id": thing_id,
-        "name": Faker().sentence(),
+        "title": Faker().sentence(),
         "properties": {
             name_prop_string: {
                 "observable": True,
@@ -202,19 +202,19 @@ def test_duplicated_thing_names(servient):
     description_01 = {
         "@context": [WOT_TD_CONTEXT_URL],
         "id": uuid.uuid4().urn,
-        "name": Faker().sentence()
+        "title": Faker().sentence()
     }
 
     description_02 = {
         "@context": [WOT_TD_CONTEXT_URL],
         "id": uuid.uuid4().urn,
-        "name": Faker().sentence()
+        "title": Faker().sentence()
     }
 
     description_03 = {
         "@context": [WOT_TD_CONTEXT_URL],
         "id": description_01.get("id"),
-        "name": Faker().sentence()
+        "title": Faker().sentence()
     }
 
     description_01_str = json.dumps(description_01)

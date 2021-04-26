@@ -102,7 +102,7 @@ def test_thing_template_getters(consumed_exposed_pair):
     thing_template = consumed_thing.td.to_thing_fragment()
 
     assert consumed_thing.id == thing_template.id
-    assert consumed_thing.name == thing_template.name
+    assert consumed_thing.title == thing_template.title
     assert consumed_thing.description == thing_template.description
 
 

@@ -93,7 +93,7 @@ def http_servient():
 
     td_dict = {
         "id": uuid.uuid4().urn,
-        "name": uuid.uuid4().hex,
+        "title": uuid.uuid4().hex,
         "properties": {
             property_name_01: {
                 "observable": True,

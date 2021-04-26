@@ -101,7 +101,7 @@ def test_action_fragment():
             "description": "Fake output schema.",
             "type": "object",
             "properties": {
-                "name": {"type": "string"},
+                "title": {"type": "string"},
                 "id": {"type": "string"},
                 "description": {"type": "string"}
             },
@@ -145,7 +145,7 @@ def test_event_fragment():
 
 THING_INIT = {
     "id": "urn:dev:wot:com:example:servient:lamp",
-    "name": "MyLampThing",
+    "title": "MyLampThing",
     "description": "MyLampThing uses JSON-LD 1.1 serialization",
     "security": [{"scheme": "nosec"}],
     "version": {"instance": "1.2.1"},
@@ -184,7 +184,7 @@ def test_thing_fragment():
     thing_fragment = ThingFragment(THING_INIT)
 
     assert thing_fragment.id == THING_INIT["id"]
-    assert thing_fragment.name == THING_INIT["name"]
+    assert thing_fragment.title == THING_INIT["title"]
     assert thing_fragment.description == THING_INIT["description"]
     assert isinstance(next(six.itervalues(thing_fragment.properties)), PropertyFragmentDict)
     assert isinstance(next(six.itervalues(thing_fragment.actions)), ActionFragmentDict)
@@ -205,15 +205,15 @@ def test_thing_fragment_setters():
     with pytest.raises(AttributeError):
         thing_fragment.id = Faker().pystr()
 
-    assert thing_fragment.name == THING_INIT["name"]
+    assert thing_fragment.title == THING_INIT["title"]
 
-    name = Faker().pystr()
+    title = Faker().pystr()
 
     # noinspection PyPropertyAccess
-    thing_fragment.name = name
+    thing_fragment.title = title
 
-    assert thing_fragment.name != THING_INIT["name"]
-    assert thing_fragment.name == name
+    assert thing_fragment.title != THING_INIT["title"]
+    assert thing_fragment.title == title
 
     prop_fragment = PropertyFragmentDict(description=Faker().pystr(), type=DataType.NUMBER)
     props_updated = {Faker().pystr(): prop_fragment}

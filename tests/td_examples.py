@@ -3,7 +3,7 @@
 
 TD_EXAMPLE = {
     "id": "urn:dev:wot:com:example:servient:lamp",
-    "name": "MyLampThing",
+    "title": "MyLampThing",
     "description": "MyLampThing uses JSON-LD 1.1 serialization",
     "security": [{"scheme": "nosec"}],
     "properties": {

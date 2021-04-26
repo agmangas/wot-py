@@ -49,11 +49,11 @@ def test_produce_model_thing_template():
     """Things can be produced from ThingTemplate instances."""
 
     thing_id = Faker().url()
-    thing_name = Faker().sentence()
+    thing_title = Faker().sentence()
 
     thing_template = ThingFragment({
         "id": thing_id,
-        "name": thing_name
+        "title": thing_title
     })
 
     servient = Servient()
@@ -63,7 +63,7 @@ def test_produce_model_thing_template():
 
     assert servient.get_exposed_thing(thing_id)
     assert exp_thing.id == thing_id
-    assert exp_thing.name == thing_name
+    assert exp_thing.title == thing_title
 
 
 def test_produce_model_consumed_thing():
@@ -77,7 +77,7 @@ def test_produce_model_consumed_thing():
     exposed_thing = wot.produce(consumed_thing)
 
     assert exposed_thing.id == consumed_thing.td.id
-    assert exposed_thing.name == consumed_thing.td.name
+    assert exposed_thing.title == consumed_thing.td.title
     assert len(exposed_thing.properties) == len(consumed_thing.td.properties)
     assert len(exposed_thing.actions) == len(consumed_thing.td.actions)
     assert len(exposed_thing.events) == len(consumed_thing.td.events)
@@ -131,7 +131,7 @@ def test_consume_from_url(td_example_tornado_app):
 
 TD_DICT_01 = {
     "id": uuid.uuid4().urn,
-    "name": Faker().pystr(),
+    "title": Faker().pystr(),
     "security": [{"scheme": "psk"}],
     "version": {"instance": "1.2.1"},
     "properties": {
@@ -311,7 +311,7 @@ def test_discovery_fragment():
         return tornado.ioloop.IOLoop.current().run_sync(discover_first, timeout=TIMEOUT_DISCOVER)
 
     fragment_td_pairs = [
-        ({"name": TD_DICT_01.get("name")}, TD_DICT_01),
+        ({"title": TD_DICT_01.get("title")}, TD_DICT_01),
         ({"version": {"instance": "2.0.0"}}, TD_DICT_02),
         ({"id": TD_DICT_02.get("id")}, TD_DICT_02),
         ({"security": [{"scheme": "psk"}]}, TD_DICT_01)

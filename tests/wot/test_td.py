@@ -46,7 +46,7 @@ def test_from_dict():
     td = ThingDescription(TD_EXAMPLE)
 
     assert td.id == TD_EXAMPLE.get("id")
-    assert td.name == TD_EXAMPLE.get("name")
+    assert td.title == TD_EXAMPLE.get("title")
     assert td.description == TD_EXAMPLE.get("description")
 
 
@@ -81,7 +81,7 @@ def test_from_thing():
     td_dict = json_td.to_dict()
 
     assert td_dict["id"] == thing.id
-    assert td_dict["name"] == thing.name
+    assert td_dict["title"] == thing.title
     assert len(td_dict["properties"]) == 1
     assert len(td_dict["actions"]) == 1
     assert len(td_dict["events"]) == 1
@@ -102,7 +102,7 @@ def test_build_thing():
         assert sorted(list(dict_a.keys())) == sorted(list(dict_b.keys()))
 
     assert thing.id == td_dict.get("id")
-    assert thing.name == td_dict.get("name")
+    assert thing.title == td_dict.get("title")
     assert thing.description == td_dict.get("description")
     assert_same_keys(thing.properties, td_dict.get("properties", {}))
     assert_same_keys(thing.actions, td_dict.get("actions", {}))
