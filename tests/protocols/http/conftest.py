@@ -21,7 +21,9 @@ from wotpy.wot.thing import Thing
 def http_server():
     """Builds an HTTPServer instance that contains an ExposedThing."""
 
-    exposed_thing = ExposedThing(servient=Servient(), thing=Thing(id=uuid.uuid4().urn))
+    kwargs = {'id': uuid.uuid4().urn, '@context': "https://www.w3.org/2019/wot/td/v1", "title": "MyTestThing"}
+
+    exposed_thing = ExposedThing(servient=Servient(), thing=Thing(**kwargs))
 
     exposed_thing.add_property(uuid.uuid4().hex, PropertyFragmentDict({
         "type": "number",
@@ -94,14 +96,25 @@ def http_servient():
     td_dict = {
         "id": uuid.uuid4().urn,
         "title": uuid.uuid4().hex,
+        "@context": "https://www.w3.org/2019/wot/td/v1",
         "properties": {
             property_name_01: {
                 "observable": True,
-                "type": "string"
+                "type": "string",
+                "forms": [
+                    {
+                        "href": "http://example.com/property1"
+                    }
+                ]
             },
             property_name_02: {
                 "observable": True,
-                "type": "string"
+                "type": "string",
+                "forms": [
+                    {
+                        "href": "http://example.com/property2"
+                    }
+                ]
             }
         },
         "actions": {
@@ -112,11 +125,21 @@ def http_servient():
                 "output": {
                     "type": "number"
                 },
+                "forms": [
+                    {
+                        "href": "http://example.com/action"
+                    }
+                ]
             }
         },
         "events": {
             event_name_01: {
-                "type": "string"
+                "type": "string",
+                "forms": [
+                    {
+                        "href": "http://example.com/event"
+                    }
+                ]
             }
         },
     }

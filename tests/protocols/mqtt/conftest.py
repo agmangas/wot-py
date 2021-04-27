@@ -98,10 +98,16 @@ def mqtt_servient():
     td_dict = {
         "id": uuid.uuid4().urn,
         "name": uuid.uuid4().hex,
+        "@context": "https://www.w3.org/2019/wot/td/v1",
         "properties": {
             property_name_01: {
                 "observable": True,
-                "type": "string"
+                "type": "string",
+                "forms": [
+                    {
+                        "href": "propertyTopic"
+                    }
+                ]
             }
         },
         "actions": {
@@ -112,11 +118,21 @@ def mqtt_servient():
                 "output": {
                     "type": "number"
                 },
+                "forms": [
+                    {
+                        "href": "actionTopic"
+                    }
+                ]
             }
         },
         "events": {
             event_name_01: {
-                "type": "string"
+                "type": "string",
+                "forms": [
+                    {
+                        "href": "eventTopic"
+                    }
+                ]
             }
         },
     }

@@ -24,6 +24,7 @@ class ThingFragment(WotBaseDict):
 
     class Meta:
         fields = {
+            "@context",
             "id",
             "version",
             "title",
@@ -36,11 +37,15 @@ class ThingFragment(WotBaseDict):
             "actions",
             "events",
             "links",
-            "security"
+            "security",
+            "securityDefinitions",
         }
 
         required = {
-            "id"
+            "@context",
+            "title",
+            "security",
+            "securityDefinitions",
         }
 
         fields_readonly = [
@@ -53,25 +58,28 @@ class ThingFragment(WotBaseDict):
             "support",
             "created",
             "lastModified",
-            "base"
+            "base",
+            "security"
         ]
 
         fields_dict = [
             "properties",
             "actions",
-            "events"
+            "events",
+            "securityDefinitions",
         ]
 
         fields_list = [
+            "@context",
             "links",
-            "security"
         ]
 
         fields_instance = [
             "version"
         ]
 
-        assert set(fields_readonly + fields_str + fields_dict + fields_list + fields_instance) == fields
+        assert set(fields_readonly + fields_str + fields_dict +
+                   fields_list + fields_instance) == fields
 
     def __setattr__(self, name, value):
         """Checks to see if the attribute that is being set is a
@@ -90,7 +98,8 @@ class ThingFragment(WotBaseDict):
             return
 
         if name_camel in self.Meta.fields_dict:
-            self._init[name_camel] = {key: val.to_dict() for key, val in six.iteritems(value)}
+            self._init[name_camel] = {key: val.to_dict()
+                                      for key, val in six.iteritems(value)}
             return
 
         if name_camel in self.Meta.fields_list:
@@ -109,16 +118,37 @@ class ThingFragment(WotBaseDict):
         return self._init.get("title", self.id)
 
     @property
+    def security_definitions(self):
+        """Set of security configurations, provided as a dict,
+        that must all be satisfied for access to resources at or
+        below the current level, if not overridden at a lower level.
+        A default nosec security scheme will be provided if none are defined."""
+
+        security_definitions = self._init.get("securityDefinitions")
+
+        if not security_definitions:
+            return {"nosec_sc": SecuritySchemeDict.build({"scheme": SecuritySchemeType.NOSEC})}
+
+        security_definitions_map = {}
+
+        for name, item in six.iteritems(security_definitions):
+            security_definitions_map[name] = SecuritySchemeDict.build(item)
+
+        return security_definitions_map
+
+    @property
     def security(self):
         """Set of security configurations, provided as an array,
         that must all be satisfied for access to resources at or
         below the current level, if not overridden at a lower level.
         A default nosec security scheme will be provided if none are defined."""
 
-        if "security" not in self._init:
-            return [SecuritySchemeDict.build({"scheme": SecuritySchemeType.NOSEC})]
+        security = self._init.get("security")
 
-        return [SecuritySchemeDict.build(item) for item in self._init.get("security")]
+        if not security:
+            return ["nosec_sc"]
+            
+        return security
 
     @property
     def properties(self):

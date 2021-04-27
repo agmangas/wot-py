@@ -56,10 +56,16 @@ def all_protocols_servient():
     td_dict = {
         "id": uuid.uuid4().urn,
         "title": uuid.uuid4().hex,
+        "@context": "https://www.w3.org/2019/wot/td/v1",
         "properties": {
             uuid.uuid4().hex: {
                 "observable": True,
-                "type": "string"
+                "type": "string",
+                "forms": [
+                    {
+                        "href": "http://example.com/property"
+                    }
+                ]
             }
         }
     }
