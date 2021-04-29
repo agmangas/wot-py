@@ -92,7 +92,15 @@ SCHEMA_FORM = {
             "type": "string",
             "default": "application/json"
         },
-        "op": {"type": "string"},
+        "op": { "oneOf": [
+            {
+                "type": "string"
+            },
+            {
+                "type": "array",
+                "items": {"type": "string"}
+            }
+            ]},
         "subprotocol": {"type": "string"},
         "security": {
             "type": "array",
