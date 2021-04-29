@@ -83,7 +83,7 @@ def test_thing_template_getters(exposed_thing):
     thing_template = exposed_thing.thing.thing_fragment
 
     assert exposed_thing.id == thing_template.id
-    assert exposed_thing.name == thing_template.name
+    assert exposed_thing.title == thing_template.title
     assert exposed_thing.description == thing_template.description
 
 
@@ -556,7 +556,7 @@ def test_thing_fragment_getters_setters():
 
     thing_fragment = ThingFragment({
         "id": uuid.uuid4().urn,
-        "name": Faker().pystr(),
+        "title": Faker().pystr(),
         "description": Faker().pystr(),
         "properties": {
             uuid.uuid4().hex: {
@@ -569,21 +569,21 @@ def test_thing_fragment_getters_setters():
     thing = Thing(thing_fragment=thing_fragment)
     exp_thing = ExposedThing(servient=Servient(), thing=thing)
 
-    assert exp_thing.name == thing_fragment.name
+    assert exp_thing.title == thing_fragment.title
     assert exp_thing.description == thing_fragment.description
     assert list(exp_thing.properties) == list(six.iterkeys(thing_fragment.properties))
 
-    name_original = thing_fragment.name
-    name_updated = Faker().pystr()
+    title_original = thing_fragment.title
+    title_updated = Faker().pystr()
 
     description_original = thing_fragment.description
     description_updated = Faker().pystr()
 
-    exp_thing.name = name_updated
+    exp_thing.title = title_updated
     exp_thing.description = description_updated
 
-    assert exp_thing.name == name_updated
-    assert exp_thing.name != name_original
+    assert exp_thing.title == title_updated
+    assert exp_thing.title != title_original
     assert exp_thing.description == description_updated
     assert exp_thing.description != description_original
 

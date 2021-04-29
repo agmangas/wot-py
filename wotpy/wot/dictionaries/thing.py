@@ -26,7 +26,7 @@ class ThingFragment(WotBaseDict):
         fields = {
             "id",
             "version",
-            "name",
+            "title",
             "description",
             "support",
             "created",
@@ -48,7 +48,7 @@ class ThingFragment(WotBaseDict):
         ]
 
         fields_str = [
-            "name",
+            "title",
             "description",
             "support",
             "created",
@@ -102,11 +102,11 @@ class ThingFragment(WotBaseDict):
             return
 
     @property
-    def name(self):
-        """The name of the Thing.
-        This property returns the ID if the name is undefined."""
+    def title(self):
+        """The title of the Thing.
+        This property returns the ID if the title is undefined."""
 
-        return self._init.get("name", self.id)
+        return self._init.get("title", self.id)
 
     @property
     def security(self):

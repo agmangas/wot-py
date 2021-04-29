@@ -29,7 +29,7 @@ class ExposedThingSet(object):
         """Add a new ExposedThing to this set."""
 
         if exposed_thing.thing.id in self._exposed_things:
-            raise ValueError("Duplicate Exposed Thing: {}".format(exposed_thing.name))
+            raise ValueError("Duplicate Exposed Thing: {}".format(exposed_thing.title))
 
         self._exposed_things[exposed_thing.thing.id] = exposed_thing
 
