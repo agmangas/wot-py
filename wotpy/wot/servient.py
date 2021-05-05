@@ -95,7 +95,6 @@ def _stopped_servient_only(func):
     return wrapper
 
 
-_REGEX_HOSTNAME = r"^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$"
 _REGEX_ARPA = r".*\.(ip6|in-addr)\.arpa$"
 
 
@@ -105,10 +104,7 @@ def _get_hostname_fallback():
     value is not a FQDN then we try to get the IPv4 address of the main network interface."""
 
     fqdn = socket.getfqdn()
-
-    valid_fqdn = re.search(_REGEX_HOSTNAME, fqdn) \
-        and not re.search(_REGEX_ARPA, fqdn)
-
+    valid_fqdn = fqdn and not re.search(_REGEX_ARPA, fqdn)
     return fqdn if valid_fqdn else get_main_ipv4_address()
 
 
