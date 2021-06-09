@@ -1,0 +1,377 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>wotpy.wot.interaction &mdash; WoTPy 0.16.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="wotpy.wot.servient" href="wotpy.wot.servient.html" />
+    <link rel="prev" title="wotpy.wot.form" href="wotpy.wot.form.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> WoTPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../protocols.html">Protocol Bindings</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../wotpy.wot.html">wotpy.wot</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.consumed.html">wotpy.wot.consumed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.dictionaries.html">wotpy.wot.dictionaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.discovery.html">wotpy.wot.discovery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.exposed.html">wotpy.wot.exposed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.constants.html">wotpy.wot.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.enums.html">wotpy.wot.enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.events.html">wotpy.wot.events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.form.html">wotpy.wot.form</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wotpy.wot.interaction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.servient.html">wotpy.wot.servient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.td.html">wotpy.wot.td</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.thing.html">wotpy.wot.thing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.validation.html">wotpy.wot.validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.wot.html">wotpy.wot.wot</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../wotpy.utils.html">wotpy.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../wotpy.protocols.html">wotpy.protocols</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../wotpy.codecs.html">wotpy.codecs</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">WoTPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../api.html">API Reference</a> &raquo;</li>
+        
+          <li><a href="../wotpy.wot.html">wotpy.wot</a> &raquo;</li>
+        
+      <li>wotpy.wot.interaction</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/_autosummary/_wot/wotpy.wot.interaction.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-wotpy.wot.interaction">
+<span id="wotpy-wot-interaction"></span><h1>wotpy.wot.interaction<a class="headerlink" href="#module-wotpy.wot.interaction" title="Permalink to this headline">¶</a></h1>
+<p>Classes that represent all interaction patterns.</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.interaction.Action" title="wotpy.wot.interaction.Action"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Action</span></code></a>(thing,&nbsp;name[,&nbsp;init_dict])</td>
+<td>Actions offer functions of the Thing.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#wotpy.wot.interaction.Event" title="wotpy.wot.interaction.Event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Event</span></code></a>(thing,&nbsp;name[,&nbsp;init_dict])</td>
+<td>The Event Interaction Pattern describes event sources that asynchronously push messages.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.interaction.InteractionPattern" title="wotpy.wot.interaction.InteractionPattern"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InteractionPattern</span></code></a>(thing,&nbsp;name[,&nbsp;init_dict])</td>
+<td>A functionality exposed by Thing that is defined by the TD Interaction Model.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#wotpy.wot.interaction.Property" title="wotpy.wot.interaction.Property"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Property</span></code></a>(thing,&nbsp;name[,&nbsp;init_dict])</td>
+<td>Properties expose internal state of a Thing that can be directly accessed (get) and optionally manipulated (set).</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="wotpy.wot.interaction.Action">
+<em class="property">class </em><code class="descclassname">wotpy.wot.interaction.</code><code class="descname">Action</code><span class="sig-paren">(</span><em>thing</em>, <em>name</em>, <em>init_dict=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.interaction.Action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.interaction.InteractionPattern" title="wotpy.wot.interaction.InteractionPattern"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.interaction.InteractionPattern</span></code></a></p>
+<p>Actions offer functions of the Thing. These functions may manipulate the
+internal state of a Thing in a way that is not possible through setting Properties.</p>
+<dl class="attribute">
+<dt id="wotpy.wot.interaction.Action.init_class">
+<code class="descname">init_class</code><a class="headerlink" href="#wotpy.wot.interaction.Action.init_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the init dict class for this type of interaction.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.interaction.Action.interaction_type">
+<code class="descname">interaction_type</code><a class="headerlink" href="#wotpy.wot.interaction.Action.interaction_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interaction type.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.interaction.Event">
+<em class="property">class </em><code class="descclassname">wotpy.wot.interaction.</code><code class="descname">Event</code><span class="sig-paren">(</span><em>thing</em>, <em>name</em>, <em>init_dict=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.interaction.Event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.interaction.InteractionPattern" title="wotpy.wot.interaction.InteractionPattern"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.interaction.InteractionPattern</span></code></a></p>
+<p>The Event Interaction Pattern describes event sources that asynchronously push messages.
+Here not state, but state transitions (events) are communicated (e.g., clicked).</p>
+<dl class="attribute">
+<dt id="wotpy.wot.interaction.Event.init_class">
+<code class="descname">init_class</code><a class="headerlink" href="#wotpy.wot.interaction.Event.init_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the init dict class for this type of interaction.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.interaction.Event.interaction_type">
+<code class="descname">interaction_type</code><a class="headerlink" href="#wotpy.wot.interaction.Event.interaction_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interaction type.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.interaction.InteractionPattern">
+<em class="property">class </em><code class="descclassname">wotpy.wot.interaction.</code><code class="descname">InteractionPattern</code><span class="sig-paren">(</span><em>thing</em>, <em>name</em>, <em>init_dict=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.interaction.InteractionPattern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A functionality exposed by Thing that is defined by the TD Interaction Model.</p>
+<dl class="method">
+<dt id="wotpy.wot.interaction.InteractionPattern.add_form">
+<code class="descname">add_form</code><span class="sig-paren">(</span><em>form</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.interaction.InteractionPattern.add_form" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a new Form.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.interaction.InteractionPattern.clean_forms">
+<code class="descname">clean_forms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.interaction.InteractionPattern.clean_forms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all the Forms from this Interaction.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.interaction.InteractionPattern.forms">
+<code class="descname">forms</code><a class="headerlink" href="#wotpy.wot.interaction.InteractionPattern.forms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sequence of forms linked to this interaction.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.interaction.InteractionPattern.init_class">
+<code class="descname">init_class</code><a class="headerlink" href="#wotpy.wot.interaction.InteractionPattern.init_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the init dict class for this type of interaction.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.interaction.InteractionPattern.interaction_fragment">
+<code class="descname">interaction_fragment</code><a class="headerlink" href="#wotpy.wot.interaction.InteractionPattern.interaction_fragment" title="Permalink to this definition">¶</a></dt>
+<dd><p>The InteractionFragment dictionary of this interaction.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.interaction.InteractionPattern.name">
+<code class="descname">name</code><a class="headerlink" href="#wotpy.wot.interaction.InteractionPattern.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interaction name.
+No two Interactions with the same name may exist in a Thing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.interaction.InteractionPattern.remove_form">
+<code class="descname">remove_form</code><span class="sig-paren">(</span><em>form</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.interaction.InteractionPattern.remove_form" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove an existing Form.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.interaction.InteractionPattern.thing">
+<code class="descname">thing</code><a class="headerlink" href="#wotpy.wot.interaction.InteractionPattern.thing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Thing that contains this Interaction.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.interaction.InteractionPattern.url_name">
+<code class="descname">url_name</code><a class="headerlink" href="#wotpy.wot.interaction.InteractionPattern.url_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>URL-safe version of the name.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.interaction.Property">
+<em class="property">class </em><code class="descclassname">wotpy.wot.interaction.</code><code class="descname">Property</code><span class="sig-paren">(</span><em>thing</em>, <em>name</em>, <em>init_dict=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.interaction.Property" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.interaction.InteractionPattern" title="wotpy.wot.interaction.InteractionPattern"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.interaction.InteractionPattern</span></code></a></p>
+<p>Properties expose internal state of a Thing that can be
+directly accessed (get) and optionally manipulated (set).</p>
+<dl class="attribute">
+<dt id="wotpy.wot.interaction.Property.init_class">
+<code class="descname">init_class</code><a class="headerlink" href="#wotpy.wot.interaction.Property.init_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the init dict class for this type of interaction.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.interaction.Property.interaction_type">
+<code class="descname">interaction_type</code><a class="headerlink" href="#wotpy.wot.interaction.Property.interaction_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interaction type.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="wotpy.wot.servient.html" class="btn btn-neutral float-right" title="wotpy.wot.servient" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="wotpy.wot.form.html" class="btn btn-neutral float-left" title="wotpy.wot.form" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Fundacion CTIC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

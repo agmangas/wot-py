@@ -1,0 +1,22 @@
+wotpy.protocols.coap.resources.utils
+====================================
+
+.. automodule:: wotpy.protocols.coap.resources.utils
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      parse_request_opt_query
+   
+   
+
+   
+   
+   
+
+   
+   
+   

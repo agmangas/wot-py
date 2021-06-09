@@ -1,0 +1,28 @@
+wotpy.protocols.coap.resources.event
+====================================
+
+.. automodule:: wotpy.protocols.coap.resources.event
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_thing_event
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      EventResource
+   
+   
+
+   
+   
+   

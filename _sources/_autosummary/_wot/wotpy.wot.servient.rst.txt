@@ -1,0 +1,30 @@
+wotpy.wot.servient
+==================
+
+.. automodule:: wotpy.wot.servient
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Servient
+      TDCatalogueHandler
+      TDHandler
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      ServientStateException
+   
+   

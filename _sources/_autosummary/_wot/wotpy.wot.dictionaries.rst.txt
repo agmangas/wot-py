@@ -1,0 +1,16 @@
+wotpy.wot.dictionaries
+======================
+
+.. automodule:: wotpy.wot.dictionaries
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   

@@ -1,0 +1,23 @@
+wotpy.wot.dictionaries.link
+===========================
+
+.. automodule:: wotpy.wot.dictionaries.link
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      FormDict
+      LinkDict
+   
+   
+
+   
+   
+   

@@ -1,0 +1,259 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>wotpy.protocols.mqtt &mdash; WoTPy 0.16.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="wotpy.protocols.mqtt.handlers" href="_mqtt/wotpy.protocols.mqtt.handlers.html" />
+    <link rel="prev" title="wotpy.protocols.http.server" href="_http/wotpy.protocols.http.server.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> WoTPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../protocols.html">Protocol Bindings</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../wotpy.wot.html">wotpy.wot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../wotpy.utils.html">wotpy.utils</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../wotpy.protocols.html">wotpy.protocols</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wotpy.protocols.coap.html">wotpy.protocols.coap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.protocols.http.html">wotpy.protocols.http</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wotpy.protocols.mqtt</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="_mqtt/wotpy.protocols.mqtt.handlers.html">wotpy.protocols.mqtt.handlers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="_mqtt/wotpy.protocols.mqtt.client.html">wotpy.protocols.mqtt.client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="_mqtt/wotpy.protocols.mqtt.enums.html">wotpy.protocols.mqtt.enums</a></li>
+<li class="toctree-l4"><a class="reference internal" href="_mqtt/wotpy.protocols.mqtt.runner.html">wotpy.protocols.mqtt.runner</a></li>
+<li class="toctree-l4"><a class="reference internal" href="_mqtt/wotpy.protocols.mqtt.server.html">wotpy.protocols.mqtt.server</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.protocols.ws.html">wotpy.protocols.ws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.protocols.client.html">wotpy.protocols.client</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.protocols.enums.html">wotpy.protocols.enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.protocols.exceptions.html">wotpy.protocols.exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.protocols.server.html">wotpy.protocols.server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.protocols.utils.html">wotpy.protocols.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../wotpy.codecs.html">wotpy.codecs</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">WoTPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../api.html">API Reference</a> &raquo;</li>
+        
+          <li><a href="../wotpy.protocols.html">wotpy.protocols</a> &raquo;</li>
+        
+      <li>wotpy.protocols.mqtt</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/_autosummary/_protocols/wotpy.protocols.mqtt.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-wotpy.protocols.mqtt">
+<span id="wotpy-protocols-mqtt"></span><h1>wotpy.protocols.mqtt<a class="headerlink" href="#module-wotpy.protocols.mqtt" title="Permalink to this headline">¶</a></h1>
+<p>MQTT Protocol Binding implementation.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="_mqtt/wotpy.protocols.mqtt.handlers.html#module-wotpy.protocols.mqtt.handlers" title="wotpy.protocols.mqtt.handlers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wotpy.protocols.mqtt.handlers</span></code></a></td>
+<td>Entities that handle the MQTT operations needed to support each of the Interaction verbs.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="_mqtt/wotpy.protocols.mqtt.client.html#module-wotpy.protocols.mqtt.client" title="wotpy.protocols.mqtt.client"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wotpy.protocols.mqtt.client</span></code></a></td>
+<td>Classes that contain the client logic for the MQTT protocol.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="_mqtt/wotpy.protocols.mqtt.enums.html#module-wotpy.protocols.mqtt.enums" title="wotpy.protocols.mqtt.enums"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wotpy.protocols.mqtt.enums</span></code></a></td>
+<td>Enumeration classes related to the MQTT protocol binding.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="_mqtt/wotpy.protocols.mqtt.runner.html#module-wotpy.protocols.mqtt.runner" title="wotpy.protocols.mqtt.runner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wotpy.protocols.mqtt.runner</span></code></a></td>
+<td>Base class for MQTT handlers.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="_mqtt/wotpy.protocols.mqtt.server.html#module-wotpy.protocols.mqtt.server" title="wotpy.protocols.mqtt.server"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wotpy.protocols.mqtt.server</span></code></a></td>
+<td>Class that implements the MQTT server (broker).</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="_mqtt/wotpy.protocols.mqtt.handlers.html" class="btn btn-neutral float-right" title="wotpy.protocols.mqtt.handlers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="_http/wotpy.protocols.http.server.html" class="btn btn-neutral float-left" title="wotpy.protocols.http.server" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Fundacion CTIC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

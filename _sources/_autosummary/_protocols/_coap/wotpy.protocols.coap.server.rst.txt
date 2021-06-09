@@ -1,0 +1,22 @@
+wotpy.protocols.coap.server
+===========================
+
+.. automodule:: wotpy.protocols.coap.server
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CoAPServer
+   
+   
+
+   
+   
+   

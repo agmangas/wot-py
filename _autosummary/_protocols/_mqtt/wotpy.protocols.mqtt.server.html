@@ -1,0 +1,302 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>wotpy.protocols.mqtt.server &mdash; WoTPy 0.16.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="wotpy.protocols.ws" href="../wotpy.protocols.ws.html" />
+    <link rel="prev" title="wotpy.protocols.mqtt.runner" href="wotpy.protocols.mqtt.runner.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> WoTPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../protocols.html">Protocol Bindings</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.wot.html">wotpy.wot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.utils.html">wotpy.utils</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../wotpy.protocols.html">wotpy.protocols</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.coap.html">wotpy.protocols.coap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.http.html">wotpy.protocols.http</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../wotpy.protocols.mqtt.html">wotpy.protocols.mqtt</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="wotpy.protocols.mqtt.handlers.html">wotpy.protocols.mqtt.handlers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.protocols.mqtt.client.html">wotpy.protocols.mqtt.client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.protocols.mqtt.enums.html">wotpy.protocols.mqtt.enums</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.protocols.mqtt.runner.html">wotpy.protocols.mqtt.runner</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">wotpy.protocols.mqtt.server</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.ws.html">wotpy.protocols.ws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.client.html">wotpy.protocols.client</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.enums.html">wotpy.protocols.enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.exceptions.html">wotpy.protocols.exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.server.html">wotpy.protocols.server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.utils.html">wotpy.protocols.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.codecs.html">wotpy.codecs</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">WoTPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../api.html">API Reference</a> &raquo;</li>
+        
+          <li><a href="../../wotpy.protocols.html">wotpy.protocols</a> &raquo;</li>
+        
+          <li><a href="../wotpy.protocols.mqtt.html">wotpy.protocols.mqtt</a> &raquo;</li>
+        
+      <li>wotpy.protocols.mqtt.server</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/_autosummary/_protocols/_mqtt/wotpy.protocols.mqtt.server.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-wotpy.protocols.mqtt.server">
+<span id="wotpy-protocols-mqtt-server"></span><h1>wotpy.protocols.mqtt.server<a class="headerlink" href="#module-wotpy.protocols.mqtt.server" title="Permalink to this headline">¶</a></h1>
+<p>Class that implements the MQTT server (broker).</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.protocols.mqtt.server.MQTTServer" title="wotpy.protocols.mqtt.server.MQTTServer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MQTTServer</span></code></a>(broker_url[,&nbsp;…])</td>
+<td>MQTT binding server implementation.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="wotpy.protocols.mqtt.server.MQTTServer">
+<em class="property">class </em><code class="descclassname">wotpy.protocols.mqtt.server.</code><code class="descname">MQTTServer</code><span class="sig-paren">(</span><em>broker_url</em>, <em>property_callback_ms=None</em>, <em>event_callback_ms=None</em>, <em>servient_id=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.server.MQTTServer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../wotpy.protocols.server.html#wotpy.protocols.server.BaseProtocolServer" title="wotpy.protocols.server.BaseProtocolServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.protocols.server.BaseProtocolServer</span></code></a></p>
+<p>MQTT binding server implementation.</p>
+<dl class="attribute">
+<dt id="wotpy.protocols.mqtt.server.MQTTServer.DEFAULT_SERVIENT_ID">
+<code class="descname">DEFAULT_SERVIENT_ID</code><em class="property"> = 'wotpy'</em><a class="headerlink" href="#wotpy.protocols.mqtt.server.MQTTServer.DEFAULT_SERVIENT_ID" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.mqtt.server.MQTTServer.build_base_url">
+<code class="descname">build_base_url</code><span class="sig-paren">(</span><em>hostname</em>, <em>thing</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.server.MQTTServer.build_base_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the base URL for the given Thing in the context of this server.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.mqtt.server.MQTTServer.build_forms">
+<code class="descname">build_forms</code><span class="sig-paren">(</span><em>hostname</em>, <em>interaction</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.server.MQTTServer.build_forms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds and returns a list with all Forms that are
+linked to this server for the given Interaction.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.mqtt.server.MQTTServer.protocol">
+<code class="descname">protocol</code><a class="headerlink" href="#wotpy.protocols.mqtt.server.MQTTServer.protocol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Protocol of this server instance.
+A member of the Protocols enum.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.mqtt.server.MQTTServer.servient_id">
+<code class="descname">servient_id</code><a class="headerlink" href="#wotpy.protocols.mqtt.server.MQTTServer.servient_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Servient ID that is used to avoid topic collisions
+øwhen multiple Servients are connected to the same broker.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.mqtt.server.MQTTServer.start">
+<code class="descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.server.MQTTServer.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts the MQTT broker and all the MQTT clients
+that handle the WoT clients requests.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.mqtt.server.MQTTServer.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.server.MQTTServer.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stops the MQTT broker and the MQTT clients.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../wotpy.protocols.ws.html" class="btn btn-neutral float-right" title="wotpy.protocols.ws" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="wotpy.protocols.mqtt.runner.html" class="btn btn-neutral float-left" title="wotpy.protocols.mqtt.runner" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Fundacion CTIC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

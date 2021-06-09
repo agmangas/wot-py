@@ -1,0 +1,474 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>wotpy.wot.exposed.thing &mdash; WoTPy 0.16.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="wotpy.wot.exposed.thing_set" href="wotpy.wot.exposed.thing_set.html" />
+    <link rel="prev" title="wotpy.wot.exposed.interaction_map" href="wotpy.wot.exposed.interaction_map.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> WoTPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../protocols.html">Protocol Bindings</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../wotpy.wot.html">wotpy.wot</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.consumed.html">wotpy.wot.consumed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.dictionaries.html">wotpy.wot.dictionaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.discovery.html">wotpy.wot.discovery</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../wotpy.wot.exposed.html">wotpy.wot.exposed</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.exposed.interaction_map.html">wotpy.wot.exposed.interaction_map</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">wotpy.wot.exposed.thing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.exposed.thing_set.html">wotpy.wot.exposed.thing_set</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.constants.html">wotpy.wot.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.enums.html">wotpy.wot.enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.events.html">wotpy.wot.events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.form.html">wotpy.wot.form</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.interaction.html">wotpy.wot.interaction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.servient.html">wotpy.wot.servient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.td.html">wotpy.wot.td</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.thing.html">wotpy.wot.thing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.validation.html">wotpy.wot.validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.wot.html">wotpy.wot.wot</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.utils.html">wotpy.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.protocols.html">wotpy.protocols</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.codecs.html">wotpy.codecs</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">WoTPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../api.html">API Reference</a> &raquo;</li>
+        
+          <li><a href="../../wotpy.wot.html">wotpy.wot</a> &raquo;</li>
+        
+          <li><a href="../wotpy.wot.exposed.html">wotpy.wot.exposed</a> &raquo;</li>
+        
+      <li>wotpy.wot.exposed.thing</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/_autosummary/_wot/_exposed/wotpy.wot.exposed.thing.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-wotpy.wot.exposed.thing">
+<span id="wotpy-wot-exposed-thing"></span><h1>wotpy.wot.exposed.thing<a class="headerlink" href="#module-wotpy.wot.exposed.thing" title="Permalink to this headline">¶</a></h1>
+<p>Classes that represent Things exposed by a servient.</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.exposed.thing.ExposedThing" title="wotpy.wot.exposed.thing.ExposedThing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExposedThing</span></code></a>(servient,&nbsp;thing)</td>
+<td>An entity that serves to define the behavior of a Thing.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="wotpy.wot.exposed.thing.ExposedThing">
+<em class="property">class </em><code class="descclassname">wotpy.wot.exposed.thing.</code><code class="descname">ExposedThing</code><span class="sig-paren">(</span><em>servient</em>, <em>thing</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>An entity that serves to define the behavior of a Thing.
+An application uses this class when it acts as the Thing ‘server’.</p>
+<dl class="class">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.HandlerKeys">
+<em class="property">class </em><code class="descname">HandlerKeys</code><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.HandlerKeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../_utils/wotpy.utils.enums.html#wotpy.utils.enums.EnumListMixin" title="wotpy.utils.enums.EnumListMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.utils.enums.EnumListMixin</span></code></a></p>
+<p>Enumeration of handler keys.</p>
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.INVOKE_ACTION">
+<code class="descname">INVOKE_ACTION</code><em class="property"> = 'invoke_action'</em><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.INVOKE_ACTION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.OBSERVE">
+<code class="descname">OBSERVE</code><em class="property"> = 'observe'</em><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.OBSERVE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.RETRIEVE_PROPERTY">
+<code class="descname">RETRIEVE_PROPERTY</code><em class="property"> = 'retrieve_property'</em><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.RETRIEVE_PROPERTY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.UPDATE_PROPERTY">
+<code class="descname">UPDATE_PROPERTY</code><em class="property"> = 'update_property'</em><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.UPDATE_PROPERTY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.InteractionStateKeys">
+<em class="property">class </em><code class="descname">InteractionStateKeys</code><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.InteractionStateKeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../_utils/wotpy.utils.enums.html#wotpy.utils.enums.EnumListMixin" title="wotpy.utils.enums.EnumListMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.utils.enums.EnumListMixin</span></code></a></p>
+<p>Enumeration of interaction state keys.</p>
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.InteractionStateKeys.PROPERTY_VALUES">
+<code class="descname">PROPERTY_VALUES</code><em class="property"> = 'property_values'</em><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.InteractionStateKeys.PROPERTY_VALUES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.actions">
+<code class="descname">actions</code><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of ThingAction items.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.add_action">
+<code class="descname">add_action</code><span class="sig-paren">(</span><em>name</em>, <em>action_init</em>, <em>action_handler=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.add_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds an Action to the Thing object as defined by the action
+argument of type ThingActionInit and updates th,e Thing Description.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.add_event">
+<code class="descname">add_event</code><span class="sig-paren">(</span><em>name</em>, <em>event_init</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.add_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds an event to the Thing object as defined by the event argument
+of type ThingEventInit and updates the Thing Description.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.add_property">
+<code class="descname">add_property</code><span class="sig-paren">(</span><em>name</em>, <em>property_init</em>, <em>value=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.add_property" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a Property defined by the argument and updates the Thing Description.
+Takes an instance of ThingPropertyInit as argument.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.destroy">
+<code class="descname">destroy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.destroy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop serving external requests for the Thing and destroy the object.
+Note that eventual unregistering should be done before invoking this method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.emit_event">
+<code class="descname">emit_event</code><span class="sig-paren">(</span><em>event_name</em>, <em>payload</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.emit_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Emits an the event initialized with the event name specified by
+the event_name argument and data specified by the payload argument.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.events">
+<code class="descname">events</code><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of ThingEvent items.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.expose">
+<code class="descname">expose</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.expose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start serving external requests for the Thing, so that
+WoT interactions using Properties, Actions and Events will be possible.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.id">
+<code class="descname">id</code><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the ID of the Thing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.invoke_action">
+<code class="descname">invoke_action</code><span class="sig-paren">(</span><em>name</em>, <em>input_value=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.invoke_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invokes an Action with the given parameters and yields with the invocation result.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.on_event">
+<code class="descname">on_event</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.on_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an Observable for the Event specified in the name argument,
+allowing subscribing to and unsubscribing from notifications.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.on_property_change">
+<code class="descname">on_property_change</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.on_property_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an Observable for the Property specified in the name argument,
+allowing subscribing to and unsubscribing from notifications.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.on_td_change">
+<code class="descname">on_td_change</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.on_td_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an Observable, allowing subscribing to and unsubscribing
+from notifications to the Thing Description.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.properties">
+<code class="descname">properties</code><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of ThingProperty items.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.read_property">
+<code class="descname">read_property</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.read_property" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes the Property name as the name argument, then requests from
+the underlying platform and the Protocol Bindings to retrieve the
+Property on the remote Thing and return the result. Returns a Future
+that resolves with the Property value or rejects with an Error.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.remove_action">
+<code class="descname">remove_action</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.remove_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the Action specified by the name argument,
+updates the Thing Description and returns the object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.remove_event">
+<code class="descname">remove_event</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.remove_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the event specified by the name argument,
+updates the Thing Description and returns the object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.remove_property">
+<code class="descname">remove_property</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.remove_property" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the Property specified by the name argument,
+updates the Thing Description and returns the object.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.servient">
+<code class="descname">servient</code><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.servient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Servient that contains this ExposedThing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.set_action_handler">
+<code class="descname">set_action_handler</code><span class="sig-paren">(</span><em>name</em>, <em>action_handler</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.set_action_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes name as string argument and action_handler as argument of type ActionHandler.
+Sets the handler function for the specified Action matched by name.
+Throws on error. Returns a reference to the same object for supporting chaining.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.set_property_read_handler">
+<code class="descname">set_property_read_handler</code><span class="sig-paren">(</span><em>name</em>, <em>read_handler</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.set_property_read_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes name as string argument and read_handler as argument of type PropertyReadHandler.
+Sets the handler function for reading the specified Property matched by name.
+Throws on error. Returns a reference to the same object for supporting chaining.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.set_property_write_handler">
+<code class="descname">set_property_write_handler</code><span class="sig-paren">(</span><em>name</em>, <em>write_handler</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.set_property_write_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes name as string argument and write_handler as argument of type PropertyWriteHandler.
+Sets the handler function for writing the specified Property matched by name.
+Throws on error. Returns a reference to the same object for supporting chaining.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.subscribe">
+<code class="descname">subscribe</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.subscribe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribes to changes on the TD of this thing.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.thing">
+<code class="descname">thing</code><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.thing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the object that represents the Thing beneath this ExposedThing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.thing.ExposedThing.write_property">
+<code class="descname">write_property</code><span class="sig-paren">(</span><em>name</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.write_property" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes the Property name as the name argument and the new value as the
+value argument, then requests from the underlying platform and the Protocol
+Bindings to update the Property on the remote Thing and return the result.
+Returns a Future that resolves on success or rejects with an Error.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="wotpy.wot.exposed.thing_set.html" class="btn btn-neutral float-right" title="wotpy.wot.exposed.thing_set" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="wotpy.wot.exposed.interaction_map.html" class="btn btn-neutral float-left" title="wotpy.wot.exposed.interaction_map" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Fundacion CTIC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

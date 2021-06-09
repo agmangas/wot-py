@@ -1,0 +1,23 @@
+wotpy.protocols.enums
+=====================
+
+.. automodule:: wotpy.protocols.enums
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      InteractionVerbs
+      Protocols
+   
+   
+
+   
+   
+   

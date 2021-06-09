@@ -1,0 +1,335 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>wotpy.protocols.http.handlers.property &mdash; WoTPy 0.16.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="wotpy.protocols.http.handlers.utils" href="wotpy.protocols.http.handlers.utils.html" />
+    <link rel="prev" title="wotpy.protocols.http.handlers.event" href="wotpy.protocols.http.handlers.event.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> WoTPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../protocols.html">Protocol Bindings</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../../wotpy.wot.html">wotpy.wot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../wotpy.utils.html">wotpy.utils</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../../wotpy.protocols.html">wotpy.protocols</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../../wotpy.protocols.coap.html">wotpy.protocols.coap</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../../wotpy.protocols.http.html">wotpy.protocols.http</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="../wotpy.protocols.http.handlers.html">wotpy.protocols.http.handlers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../wotpy.protocols.http.client.html">wotpy.protocols.http.client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../wotpy.protocols.http.enums.html">wotpy.protocols.http.enums</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../wotpy.protocols.http.server.html">wotpy.protocols.http.server</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../wotpy.protocols.mqtt.html">wotpy.protocols.mqtt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../wotpy.protocols.ws.html">wotpy.protocols.ws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../wotpy.protocols.client.html">wotpy.protocols.client</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../wotpy.protocols.enums.html">wotpy.protocols.enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../wotpy.protocols.exceptions.html">wotpy.protocols.exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../wotpy.protocols.server.html">wotpy.protocols.server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../wotpy.protocols.utils.html">wotpy.protocols.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../wotpy.codecs.html">wotpy.codecs</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">WoTPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../../api.html">API Reference</a> &raquo;</li>
+        
+          <li><a href="../../../wotpy.protocols.html">wotpy.protocols</a> &raquo;</li>
+        
+          <li><a href="../../wotpy.protocols.http.html">wotpy.protocols.http</a> &raquo;</li>
+        
+          <li><a href="../wotpy.protocols.http.handlers.html">wotpy.protocols.http.handlers</a> &raquo;</li>
+        
+      <li>wotpy.protocols.http.handlers.property</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../../_sources/_autosummary/_protocols/_http/_handlers/wotpy.protocols.http.handlers.property.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-wotpy.protocols.http.handlers.property">
+<span id="wotpy-protocols-http-handlers-property"></span><h1>wotpy.protocols.http.handlers.property<a class="headerlink" href="#module-wotpy.protocols.http.handlers.property" title="Permalink to this headline">¶</a></h1>
+<p>Request handler for Property interactions.</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.protocols.http.handlers.property.PropertyObserverHandler" title="wotpy.protocols.http.handlers.property.PropertyObserverHandler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PropertyObserverHandler</span></code></a>(application,&nbsp;…)</td>
+<td>Handler for Property subscription requests.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#wotpy.protocols.http.handlers.property.PropertyReadWriteHandler" title="wotpy.protocols.http.handlers.property.PropertyReadWriteHandler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PropertyReadWriteHandler</span></code></a>(application,&nbsp;…)</td>
+<td>Handler for Property get/set requests.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="wotpy.protocols.http.handlers.property.PropertyObserverHandler">
+<em class="property">class </em><code class="descclassname">wotpy.protocols.http.handlers.property.</code><code class="descname">PropertyObserverHandler</code><span class="sig-paren">(</span><em>application</em>, <em>request</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.handlers.property.PropertyObserverHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tornado.web.RequestHandler</span></code></p>
+<p>Handler for Property subscription requests.</p>
+<dl class="method">
+<dt id="wotpy.protocols.http.handlers.property.PropertyObserverHandler.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>thing_name</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.handlers.property.PropertyObserverHandler.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribes to Property updates and waits for the next event (HTTP long-polling pattern).
+Returns the updated value and destroys the subscription.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.http.handlers.property.PropertyObserverHandler.initialize">
+<code class="descname">initialize</code><span class="sig-paren">(</span><em>http_server</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.handlers.property.PropertyObserverHandler.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook for subclass initialization. Called for each request.</p>
+<p>A dictionary passed as the third argument of a url spec will be
+supplied as keyword arguments to initialize().</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ProfileHandler</span><span class="p">(</span><span class="n">RequestHandler</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">database</span>
+
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">):</span>
+        <span class="o">...</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Application</span><span class="p">([</span>
+    <span class="p">(</span><span class="sa">r</span><span class="s1">&#39;/user/(.*)&#39;</span><span class="p">,</span> <span class="n">ProfileHandler</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">)),</span>
+    <span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.http.handlers.property.PropertyObserverHandler.on_finish">
+<code class="descname">on_finish</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.handlers.property.PropertyObserverHandler.on_finish" title="Permalink to this definition">¶</a></dt>
+<dd><p>Destroys the subscription to the observable when the request finishes.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.protocols.http.handlers.property.PropertyReadWriteHandler">
+<em class="property">class </em><code class="descclassname">wotpy.protocols.http.handlers.property.</code><code class="descname">PropertyReadWriteHandler</code><span class="sig-paren">(</span><em>application</em>, <em>request</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.handlers.property.PropertyReadWriteHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tornado.web.RequestHandler</span></code></p>
+<p>Handler for Property get/set requests.</p>
+<dl class="method">
+<dt id="wotpy.protocols.http.handlers.property.PropertyReadWriteHandler.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>thing_name</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.handlers.property.PropertyReadWriteHandler.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads and returns the Property value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.http.handlers.property.PropertyReadWriteHandler.initialize">
+<code class="descname">initialize</code><span class="sig-paren">(</span><em>http_server</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.handlers.property.PropertyReadWriteHandler.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hook for subclass initialization. Called for each request.</p>
+<p>A dictionary passed as the third argument of a url spec will be
+supplied as keyword arguments to initialize().</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ProfileHandler</span><span class="p">(</span><span class="n">RequestHandler</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">database</span>
+
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">):</span>
+        <span class="o">...</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Application</span><span class="p">([</span>
+    <span class="p">(</span><span class="sa">r</span><span class="s1">&#39;/user/(.*)&#39;</span><span class="p">,</span> <span class="n">ProfileHandler</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">)),</span>
+    <span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.http.handlers.property.PropertyReadWriteHandler.put">
+<code class="descname">put</code><span class="sig-paren">(</span><em>thing_name</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.handlers.property.PropertyReadWriteHandler.put" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the Property value.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="wotpy.protocols.http.handlers.utils.html" class="btn btn-neutral float-right" title="wotpy.protocols.http.handlers.utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="wotpy.protocols.http.handlers.event.html" class="btn btn-neutral float-left" title="wotpy.protocols.http.handlers.event" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Fundacion CTIC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

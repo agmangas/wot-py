@@ -1,0 +1,385 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>MQTT &mdash; WoTPy 0.16.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="CoAP" href="coap.html" />
+    <link rel="prev" title="HTTP" href="http.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> WoTPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="protocols.html">Protocol Bindings</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="websockets.html">WebSockets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="http.html">HTTP</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">MQTT</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#form-elements">Form elements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#topics">Topics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#interaction-model-mapping">Interaction Model mapping</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#read-property">Read Property</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#observe-property-changes">Observe Property changes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#write-property">Write Property</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#invoke-action">Invoke Action</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#observe-event">Observe Event</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="coap.html">CoAP</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">WoTPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="protocols.html">Protocol Bindings</a> &raquo;</li>
+        
+      <li>MQTT</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/mqtt.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="mqtt">
+<h1>MQTT<a class="headerlink" href="#mqtt" title="Permalink to this headline">¶</a></h1>
+<p>This section describes the mapping between the high-level actions that can be executed on a Thing and the
+messages exchanged with the MQTT broker when using the MQTT Protocol Binding.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Unlike the other bindings, the MQTT binding is not self-contained and requires the presence of an external MQTT broker.</p>
+</div>
+<p>All messages are serialized in JSON format.</p>
+<div class="section" id="form-elements">
+<h2>Form elements<a class="headerlink" href="#form-elements" title="Permalink to this headline">¶</a></h2>
+<p>Form elements produced by the MQTT binding vary depending on the type of interaction. All forms contain the following fields:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="87%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Field</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">op</span></code></td>
+<td>Interaction verb (e.g. <code class="docutils literal notranslate"><span class="pre">readproperty</span></code>) associated with this form element.</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">href</span></code></td>
+<td>Contains the MQTT broker URL joined with the servient ID and the name of an MQTT topic.</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">mediaType</span></code></td>
+<td>This field will always contain the MIME media type for JSON.</td>
+</tr>
+</tbody>
+</table>
+<p>An example of an MQTT form <code class="docutils literal notranslate"><span class="pre">href</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mqtt</span><span class="p">:</span><span class="o">//</span><span class="n">my</span><span class="o">.</span><span class="n">mqtt</span><span class="o">.</span><span class="n">broker</span><span class="p">:</span><span class="mi">1883</span><span class="o">/</span><span class="n">my</span><span class="o">-</span><span class="n">servient</span><span class="o">/</span><span class="nb">property</span><span class="o">/</span><span class="n">requests</span><span class="o">/</span><span class="n">benchmark</span><span class="o">-</span><span class="n">thing</span><span class="o">/</span><span class="n">currenttime</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">my.mqtt.broker:1883</span></code> is the broker URL.</li>
+<li><code class="docutils literal notranslate"><span class="pre">my-servient</span></code> is the servient ID used as a namespace to avoid collisions between servients using the same broker.</li>
+<li><code class="docutils literal notranslate"><span class="pre">property/requests/benchmark-thing/currenttime</span></code> is the topic where messages are exchanged for this specific interaction and verb.</li>
+</ul>
+</div>
+<div class="section" id="topics">
+<h2>Topics<a class="headerlink" href="#topics" title="Permalink to this headline">¶</a></h2>
+<p>There are six different types of topics used by clients and servers of the MQTT binding to exchange messages:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Topic</th>
+<th class="head">Pattern</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Property request</td>
+<td><code class="docutils literal notranslate"><span class="pre">&lt;servient_id&gt;/property/requests/&lt;thing_name&gt;/&lt;property_name&gt;</span></code></td>
+</tr>
+<tr class="row-odd"><td>Property update</td>
+<td><code class="docutils literal notranslate"><span class="pre">&lt;servient_id&gt;/property/updates/&lt;thing_name&gt;/&lt;property_name&gt;</span></code></td>
+</tr>
+<tr class="row-even"><td>Property write ACK</td>
+<td><code class="docutils literal notranslate"><span class="pre">&lt;servient_id&gt;/property/ack/&lt;thing_name&gt;/&lt;property_name&gt;</span></code></td>
+</tr>
+<tr class="row-odd"><td>Action invocation</td>
+<td><code class="docutils literal notranslate"><span class="pre">&lt;servient_id&gt;/action/invocation/&lt;thing_name&gt;/&lt;action_name&gt;</span></code></td>
+</tr>
+<tr class="row-even"><td>Action result</td>
+<td><code class="docutils literal notranslate"><span class="pre">&lt;servient_id&gt;/action/result/&lt;thing_name&gt;/&lt;action_name&gt;</span></code></td>
+</tr>
+<tr class="row-odd"><td>Event emission</td>
+<td><code class="docutils literal notranslate"><span class="pre">&lt;servient_id&gt;/event/&lt;thing_name&gt;/&lt;event_name&gt;</span></code></td>
+</tr>
+</tbody>
+</table>
+<p>The format of the messages published in these topics and the way the binding interfaces with them is described in the next section.</p>
+</div>
+<div class="section" id="interaction-model-mapping">
+<h2>Interaction Model mapping<a class="headerlink" href="#interaction-model-mapping" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">There is no need to manually manage subscriptions as the MQTT server maintains an internal subscription to all properties and events throughout its lifetime.</p>
+</div>
+<div class="section" id="read-property">
+<h3>Read Property<a class="headerlink" href="#read-property" title="Permalink to this headline">¶</a></h3>
+<p>The client may publish a message in the <strong>property request</strong> topic to force the server to publish the current value of the property:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;read&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The property value will be published in the <strong>property update</strong> topic:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unix_timestamp_ms</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="observe-property-changes">
+<h3>Observe Property changes<a class="headerlink" href="#observe-property-changes" title="Permalink to this headline">¶</a></h3>
+<p>All property changes are automatically published in the <strong>property update</strong> topic without further intervention from the client:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unix_timestamp_ms</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="write-property">
+<h3>Write Property<a class="headerlink" href="#write-property" title="Permalink to this headline">¶</a></h3>
+<p>To update the value of a property, the client will publish a message in the <strong>property request</strong> topic with the following format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;write&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;ack&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unique_ack_handler</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The server will acknowledge the write by publishing a message in the <strong>property write ACK</strong> topic:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;ack&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unique_ack_handler</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="invoke-action">
+<h3>Invoke Action<a class="headerlink" href="#invoke-action" title="Permalink to this headline">¶</a></h3>
+<p>An invocation may be started by publishing a message in the <strong>action invocation</strong> topic:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unique_invocation_handler</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">action_argument</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The invocation result will be published in the <strong>action result</strong> topic:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unique_invocation_handler</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unix_timestamp_ms</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;result&quot;</span> <span class="o">&lt;</span><span class="n">result_value</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">error_message</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="observe-event">
+<h3>Observe Event<a class="headerlink" href="#observe-event" title="Permalink to this headline">¶</a></h3>
+<p>All event emissions are automatically published in the <strong>event emission</strong> topic without further intervention from the client:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_name</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_payload</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unix_timestamp_ms</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="coap.html" class="btn btn-neutral float-right" title="CoAP" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="http.html" class="btn btn-neutral float-left" title="HTTP" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Fundacion CTIC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

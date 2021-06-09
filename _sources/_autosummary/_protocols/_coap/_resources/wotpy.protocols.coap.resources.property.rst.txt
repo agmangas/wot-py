@@ -1,0 +1,28 @@
+wotpy.protocols.coap.resources.property
+=======================================
+
+.. automodule:: wotpy.protocols.coap.resources.property
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_thing_property
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PropertyResource
+   
+   
+
+   
+   
+   

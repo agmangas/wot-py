@@ -1,0 +1,22 @@
+wotpy.protocols.http.handlers.event
+===================================
+
+.. automodule:: wotpy.protocols.http.handlers.event
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      EventObserverHandler
+   
+   
+
+   
+   
+   

@@ -1,0 +1,28 @@
+wotpy.wot.dictionaries.schema
+=============================
+
+.. automodule:: wotpy.wot.dictionaries.schema
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ArraySchemaDict
+      BooleanSchemaDict
+      DataSchemaDict
+      IntegerSchema
+      NumberSchemaDict
+      ObjectSchemaDict
+      StringSchemaDict
+   
+   
+
+   
+   
+   

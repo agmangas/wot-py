@@ -1,0 +1,23 @@
+wotpy.protocols.utils
+=====================
+
+.. automodule:: wotpy.protocols.utils
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      is_scheme_form
+      pick_form
+   
+   
+
+   
+   
+   
+
+   
+   
+   

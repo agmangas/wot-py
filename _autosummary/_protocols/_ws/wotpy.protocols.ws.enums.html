@@ -1,0 +1,353 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>wotpy.protocols.ws.enums &mdash; WoTPy 0.16.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="wotpy.protocols.ws.handler" href="wotpy.protocols.ws.handler.html" />
+    <link rel="prev" title="wotpy.protocols.ws.client" href="wotpy.protocols.ws.client.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> WoTPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../protocols.html">Protocol Bindings</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.wot.html">wotpy.wot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.utils.html">wotpy.utils</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../wotpy.protocols.html">wotpy.protocols</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.coap.html">wotpy.protocols.coap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.http.html">wotpy.protocols.http</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.mqtt.html">wotpy.protocols.mqtt</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../wotpy.protocols.ws.html">wotpy.protocols.ws</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="wotpy.protocols.ws.client.html">wotpy.protocols.ws.client</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">wotpy.protocols.ws.enums</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.protocols.ws.handler.html">wotpy.protocols.ws.handler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.protocols.ws.messages.html">wotpy.protocols.ws.messages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.protocols.ws.schemas.html">wotpy.protocols.ws.schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.protocols.ws.server.html">wotpy.protocols.ws.server</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.client.html">wotpy.protocols.client</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.enums.html">wotpy.protocols.enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.exceptions.html">wotpy.protocols.exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.server.html">wotpy.protocols.server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.utils.html">wotpy.protocols.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.codecs.html">wotpy.codecs</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">WoTPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../api.html">API Reference</a> &raquo;</li>
+        
+          <li><a href="../../wotpy.protocols.html">wotpy.protocols</a> &raquo;</li>
+        
+          <li><a href="../wotpy.protocols.ws.html">wotpy.protocols.ws</a> &raquo;</li>
+        
+      <li>wotpy.protocols.ws.enums</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/_autosummary/_protocols/_ws/wotpy.protocols.ws.enums.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-wotpy.protocols.ws.enums">
+<span id="wotpy-protocols-ws-enums"></span><h1>wotpy.protocols.ws.enums<a class="headerlink" href="#module-wotpy.protocols.ws.enums" title="Permalink to this headline">¶</a></h1>
+<p>Enumeration classes related to the WebSockets server.</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.protocols.ws.enums.WebsocketErrors" title="wotpy.protocols.ws.enums.WebsocketErrors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WebsocketErrors</span></code></a></td>
+<td>Enumeration of JSON RPC error codes.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#wotpy.protocols.ws.enums.WebsocketMethods" title="wotpy.protocols.ws.enums.WebsocketMethods"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WebsocketMethods</span></code></a></td>
+<td>Enumeration of available websocket message actions.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.protocols.ws.enums.WebsocketSchemes" title="wotpy.protocols.ws.enums.WebsocketSchemes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WebsocketSchemes</span></code></a></td>
+<td>Enumeration of Websocket schemes.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="wotpy.protocols.ws.enums.WebsocketErrors">
+<em class="property">class </em><code class="descclassname">wotpy.protocols.ws.enums.</code><code class="descname">WebsocketErrors</code><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketErrors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../_utils/wotpy.utils.enums.html#wotpy.utils.enums.EnumListMixin" title="wotpy.utils.enums.EnumListMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.utils.enums.EnumListMixin</span></code></a></p>
+<p>Enumeration of JSON RPC error codes.</p>
+<dl class="attribute">
+<dt id="wotpy.protocols.ws.enums.WebsocketErrors.INTERNAL_ERROR">
+<code class="descname">INTERNAL_ERROR</code><em class="property"> = -32603</em><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketErrors.INTERNAL_ERROR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.ws.enums.WebsocketErrors.INVALID_METHOD_PARAMS">
+<code class="descname">INVALID_METHOD_PARAMS</code><em class="property"> = -32602</em><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketErrors.INVALID_METHOD_PARAMS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.ws.enums.WebsocketErrors.INVALID_REQUEST">
+<code class="descname">INVALID_REQUEST</code><em class="property"> = -32600</em><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketErrors.INVALID_REQUEST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.ws.enums.WebsocketErrors.METHOD_NOT_FOUND">
+<code class="descname">METHOD_NOT_FOUND</code><em class="property"> = -32601</em><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketErrors.METHOD_NOT_FOUND" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.ws.enums.WebsocketErrors.PARSE_ERROR">
+<code class="descname">PARSE_ERROR</code><em class="property"> = -32700</em><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketErrors.PARSE_ERROR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.ws.enums.WebsocketErrors.SUBSCRIPTION_ERROR">
+<code class="descname">SUBSCRIPTION_ERROR</code><em class="property"> = -32000</em><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketErrors.SUBSCRIPTION_ERROR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.protocols.ws.enums.WebsocketMethods">
+<em class="property">class </em><code class="descclassname">wotpy.protocols.ws.enums.</code><code class="descname">WebsocketMethods</code><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketMethods" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../_utils/wotpy.utils.enums.html#wotpy.utils.enums.EnumListMixin" title="wotpy.utils.enums.EnumListMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.utils.enums.EnumListMixin</span></code></a></p>
+<p>Enumeration of available websocket message actions.</p>
+<dl class="attribute">
+<dt id="wotpy.protocols.ws.enums.WebsocketMethods.DISPOSE">
+<code class="descname">DISPOSE</code><em class="property"> = 'dispose'</em><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketMethods.DISPOSE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.ws.enums.WebsocketMethods.INVOKE_ACTION">
+<code class="descname">INVOKE_ACTION</code><em class="property"> = 'invoke_action'</em><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketMethods.INVOKE_ACTION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.ws.enums.WebsocketMethods.ON_EVENT">
+<code class="descname">ON_EVENT</code><em class="property"> = 'on_event'</em><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketMethods.ON_EVENT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.ws.enums.WebsocketMethods.ON_PROPERTY_CHANGE">
+<code class="descname">ON_PROPERTY_CHANGE</code><em class="property"> = 'on_property_change'</em><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketMethods.ON_PROPERTY_CHANGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.ws.enums.WebsocketMethods.ON_TD_CHANGE">
+<code class="descname">ON_TD_CHANGE</code><em class="property"> = 'on_td_change'</em><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketMethods.ON_TD_CHANGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.ws.enums.WebsocketMethods.READ_PROPERTY">
+<code class="descname">READ_PROPERTY</code><em class="property"> = 'read_property'</em><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketMethods.READ_PROPERTY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.ws.enums.WebsocketMethods.WRITE_PROPERTY">
+<code class="descname">WRITE_PROPERTY</code><em class="property"> = 'write_property'</em><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketMethods.WRITE_PROPERTY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.protocols.ws.enums.WebsocketSchemes">
+<em class="property">class </em><code class="descclassname">wotpy.protocols.ws.enums.</code><code class="descname">WebsocketSchemes</code><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketSchemes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../_utils/wotpy.utils.enums.html#wotpy.utils.enums.EnumListMixin" title="wotpy.utils.enums.EnumListMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.utils.enums.EnumListMixin</span></code></a></p>
+<p>Enumeration of Websocket schemes.</p>
+<dl class="attribute">
+<dt id="wotpy.protocols.ws.enums.WebsocketSchemes.WS">
+<code class="descname">WS</code><em class="property"> = 'ws'</em><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketSchemes.WS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.ws.enums.WebsocketSchemes.WSS">
+<code class="descname">WSS</code><em class="property"> = 'wss'</em><a class="headerlink" href="#wotpy.protocols.ws.enums.WebsocketSchemes.WSS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="wotpy.protocols.ws.handler.html" class="btn btn-neutral float-right" title="wotpy.protocols.ws.handler" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="wotpy.protocols.ws.client.html" class="btn btn-neutral float-left" title="wotpy.protocols.ws.client" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Fundacion CTIC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

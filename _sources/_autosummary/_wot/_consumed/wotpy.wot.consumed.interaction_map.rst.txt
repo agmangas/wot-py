@@ -1,0 +1,28 @@
+wotpy.wot.consumed.interaction\_map
+===================================
+
+.. automodule:: wotpy.wot.consumed.interaction_map
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ConsumedThingAction
+      ConsumedThingActionDict
+      ConsumedThingEvent
+      ConsumedThingEventDict
+      ConsumedThingInteractionDict
+      ConsumedThingProperty
+      ConsumedThingPropertyDict
+   
+   
+
+   
+   
+   

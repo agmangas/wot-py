@@ -1,0 +1,27 @@
+wotpy.utils.utils
+=================
+
+.. automodule:: wotpy.utils.utils
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_main_ipv4_address
+      handle_observer_finalization
+      merge_args_kwargs_dict
+      to_camel
+      to_json_obj
+      to_snake
+   
+   
+
+   
+   
+   
+
+   
+   
+   

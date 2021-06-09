@@ -1,0 +1,28 @@
+wotpy.wot.discovery.dnssd.service
+=================================
+
+.. automodule:: wotpy.wot.discovery.dnssd.service
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      build_servient_service_info
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DNSSDDiscoveryService
+   
+   
+
+   
+   
+   

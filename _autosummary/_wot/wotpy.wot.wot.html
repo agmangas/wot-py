@@ -1,0 +1,324 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>wotpy.wot.wot &mdash; WoTPy 0.16.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="wotpy.utils" href="../wotpy.utils.html" />
+    <link rel="prev" title="wotpy.wot.validation" href="wotpy.wot.validation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> WoTPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../protocols.html">Protocol Bindings</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../wotpy.wot.html">wotpy.wot</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.consumed.html">wotpy.wot.consumed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.dictionaries.html">wotpy.wot.dictionaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.discovery.html">wotpy.wot.discovery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.exposed.html">wotpy.wot.exposed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.constants.html">wotpy.wot.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.enums.html">wotpy.wot.enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.events.html">wotpy.wot.events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.form.html">wotpy.wot.form</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.interaction.html">wotpy.wot.interaction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.servient.html">wotpy.wot.servient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.td.html">wotpy.wot.td</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.thing.html">wotpy.wot.thing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.validation.html">wotpy.wot.validation</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wotpy.wot.wot</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../wotpy.utils.html">wotpy.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../wotpy.protocols.html">wotpy.protocols</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../wotpy.codecs.html">wotpy.codecs</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">WoTPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../api.html">API Reference</a> &raquo;</li>
+        
+          <li><a href="../wotpy.wot.html">wotpy.wot</a> &raquo;</li>
+        
+      <li>wotpy.wot.wot</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/_autosummary/_wot/wotpy.wot.wot.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-wotpy.wot.wot">
+<span id="wotpy-wot-wot"></span><h1>wotpy.wot.wot<a class="headerlink" href="#module-wotpy.wot.wot" title="Permalink to this headline">¶</a></h1>
+<p>Class that serves as the WoT entrypoint.</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.wot.WoT" title="wotpy.wot.wot.WoT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WoT</span></code></a>(servient)</td>
+<td>The WoT object is the API entry point and it is exposed by an implementation of the WoT Runtime.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="wotpy.wot.wot.WoT">
+<em class="property">class </em><code class="descclassname">wotpy.wot.wot.</code><code class="descname">WoT</code><span class="sig-paren">(</span><em>servient</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The WoT object is the API entry point and it is exposed by an
+implementation of the WoT Runtime. The WoT object does not expose
+properties, only methods for discovering, consuming and exposing a Thing.</p>
+<dl class="method">
+<dt id="wotpy.wot.wot.WoT.consume">
+<code class="descname">consume</code><span class="sig-paren">(</span><em>td_str</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.consume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accepts a thing description string argument and returns a
+ConsumedThing object instantiated based on that description.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.wot.WoT.consume_from_url">
+<code class="descname">consume_from_url</code><span class="sig-paren">(</span><em>url</em>, <em>timeout_secs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.consume_from_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a Future that resolves to a ConsumedThing created
+from the thing description retrieved from the given URL.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.wot.WoT.discover">
+<code class="descname">discover</code><span class="sig-paren">(</span><em>thing_filter</em>, <em>dnssd_find_kwargs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.discover" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts the discovery process that will provide ThingDescriptions
+that match the optional argument filter of type ThingFilter.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="wotpy.wot.wot.WoT.fetch">
+<em class="property">classmethod </em><code class="descname">fetch</code><span class="sig-paren">(</span><em>url</em>, <em>timeout_secs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.fetch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accepts an url argument and returns a Future
+that resolves with a Thing Description string.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.wot.WoT.produce">
+<code class="descname">produce</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.produce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accepts a model argument of type ThingModel and returns an ExposedThing
+object, locally created based on the provided initialization parameters.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.wot.WoT.produce_from_url">
+<code class="descname">produce_from_url</code><span class="sig-paren">(</span><em>url</em>, <em>timeout_secs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.produce_from_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a Future that resolves to an ExposedThing created
+from the thing description retrieved from the given URL.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.wot.WoT.register">
+<code class="descname">register</code><span class="sig-paren">(</span><em>directory</em>, <em>thing</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the Thing Description as td, given the Properties,
+Actions and Events defined for this ExposedThing object.
+Then make a request to register td to the given WoT Thing Directory.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.wot.WoT.servient">
+<code class="descname">servient</code><a class="headerlink" href="#wotpy.wot.wot.WoT.servient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Servient instance of this WoT entrypoint.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="wotpy.wot.wot.WoT.thing_from_model">
+<em class="property">classmethod </em><code class="descname">thing_from_model</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.thing_from_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a ThingModel and builds a Thing.
+Raises if the model has an unexpected type.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.wot.WoT.unregister">
+<code class="descname">unregister</code><span class="sig-paren">(</span><em>directory</em>, <em>thing</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.unregister" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a request to unregister the thing from the given WoT Thing Directory.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../wotpy.utils.html" class="btn btn-neutral float-right" title="wotpy.utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="wotpy.wot.validation.html" class="btn btn-neutral float-left" title="wotpy.wot.validation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Fundacion CTIC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

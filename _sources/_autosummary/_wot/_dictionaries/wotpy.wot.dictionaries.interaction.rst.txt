@@ -1,0 +1,25 @@
+wotpy.wot.dictionaries.interaction
+==================================
+
+.. automodule:: wotpy.wot.dictionaries.interaction
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ActionFragmentDict
+      EventFragmentDict
+      InteractionFragmentDict
+      PropertyFragmentDict
+   
+   
+
+   
+   
+   

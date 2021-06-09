@@ -1,0 +1,22 @@
+wotpy.protocols.http.enums
+==========================
+
+.. automodule:: wotpy.protocols.http.enums
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      HTTPSchemes
+   
+   
+
+   
+   
+   

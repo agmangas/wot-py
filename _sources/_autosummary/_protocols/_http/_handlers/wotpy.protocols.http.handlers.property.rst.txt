@@ -1,0 +1,23 @@
+wotpy.protocols.http.handlers.property
+======================================
+
+.. automodule:: wotpy.protocols.http.handlers.property
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PropertyObserverHandler
+      PropertyReadWriteHandler
+   
+   
+
+   
+   
+   

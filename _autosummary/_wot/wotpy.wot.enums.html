@@ -1,0 +1,481 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>wotpy.wot.enums &mdash; WoTPy 0.16.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="wotpy.wot.events" href="wotpy.wot.events.html" />
+    <link rel="prev" title="wotpy.wot.constants" href="wotpy.wot.constants.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> WoTPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../protocols.html">Protocol Bindings</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../wotpy.wot.html">wotpy.wot</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.consumed.html">wotpy.wot.consumed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.dictionaries.html">wotpy.wot.dictionaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.discovery.html">wotpy.wot.discovery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.exposed.html">wotpy.wot.exposed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.constants.html">wotpy.wot.constants</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wotpy.wot.enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.events.html">wotpy.wot.events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.form.html">wotpy.wot.form</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.interaction.html">wotpy.wot.interaction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.servient.html">wotpy.wot.servient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.td.html">wotpy.wot.td</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.thing.html">wotpy.wot.thing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.validation.html">wotpy.wot.validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.wot.wot.html">wotpy.wot.wot</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../wotpy.utils.html">wotpy.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../wotpy.protocols.html">wotpy.protocols</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../wotpy.codecs.html">wotpy.codecs</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">WoTPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../api.html">API Reference</a> &raquo;</li>
+        
+          <li><a href="../wotpy.wot.html">wotpy.wot</a> &raquo;</li>
+        
+      <li>wotpy.wot.enums</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/_autosummary/_wot/wotpy.wot.enums.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-wotpy.wot.enums">
+<span id="wotpy-wot-enums"></span><h1>wotpy.wot.enums<a class="headerlink" href="#module-wotpy.wot.enums" title="Permalink to this headline">¶</a></h1>
+<p>Classes that contain various enumerations.</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.enums.DataType" title="wotpy.wot.enums.DataType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataType</span></code></a></td>
+<td>Defines the types that values can take.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#wotpy.wot.enums.DefaultThingEvent" title="wotpy.wot.enums.DefaultThingEvent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DefaultThingEvent</span></code></a></td>
+<td>Enumeration for the default events that are supported on all ExposedThings.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.enums.DiscoveryMethod" title="wotpy.wot.enums.DiscoveryMethod"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DiscoveryMethod</span></code></a></td>
+<td>Enumeration of discovery types.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#wotpy.wot.enums.InteractionTypes" title="wotpy.wot.enums.InteractionTypes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InteractionTypes</span></code></a></td>
+<td>Enumeration of interaction types.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.enums.SecuritySchemeType" title="wotpy.wot.enums.SecuritySchemeType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SecuritySchemeType</span></code></a></td>
+<td>Defines the supported security schemes.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#wotpy.wot.enums.TDChangeMethod" title="wotpy.wot.enums.TDChangeMethod"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TDChangeMethod</span></code></a></td>
+<td>This attribute tells what operation has been applied to the TD: addition, removal or change.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.enums.TDChangeType" title="wotpy.wot.enums.TDChangeType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TDChangeType</span></code></a></td>
+<td>Represents the change type, whether has it been applied on properties, Actions or Events.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="wotpy.wot.enums.DataType">
+<em class="property">class </em><code class="descclassname">wotpy.wot.enums.</code><code class="descname">DataType</code><a class="headerlink" href="#wotpy.wot.enums.DataType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../_utils/wotpy.utils.enums.html#wotpy.utils.enums.EnumListMixin" title="wotpy.utils.enums.EnumListMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.utils.enums.EnumListMixin</span></code></a></p>
+<p>Defines the types that values can take.</p>
+<dl class="attribute">
+<dt id="wotpy.wot.enums.DataType.ARRAY">
+<code class="descname">ARRAY</code><em class="property"> = 'array'</em><a class="headerlink" href="#wotpy.wot.enums.DataType.ARRAY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.DataType.BOOLEAN">
+<code class="descname">BOOLEAN</code><em class="property"> = 'boolean'</em><a class="headerlink" href="#wotpy.wot.enums.DataType.BOOLEAN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.DataType.INTEGER">
+<code class="descname">INTEGER</code><em class="property"> = 'integer'</em><a class="headerlink" href="#wotpy.wot.enums.DataType.INTEGER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.DataType.NULL">
+<code class="descname">NULL</code><em class="property"> = 'null'</em><a class="headerlink" href="#wotpy.wot.enums.DataType.NULL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.DataType.NUMBER">
+<code class="descname">NUMBER</code><em class="property"> = 'number'</em><a class="headerlink" href="#wotpy.wot.enums.DataType.NUMBER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.DataType.OBJECT">
+<code class="descname">OBJECT</code><em class="property"> = 'object'</em><a class="headerlink" href="#wotpy.wot.enums.DataType.OBJECT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.DataType.STRING">
+<code class="descname">STRING</code><em class="property"> = 'string'</em><a class="headerlink" href="#wotpy.wot.enums.DataType.STRING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.enums.DefaultThingEvent">
+<em class="property">class </em><code class="descclassname">wotpy.wot.enums.</code><code class="descname">DefaultThingEvent</code><a class="headerlink" href="#wotpy.wot.enums.DefaultThingEvent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../_utils/wotpy.utils.enums.html#wotpy.utils.enums.EnumListMixin" title="wotpy.utils.enums.EnumListMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.utils.enums.EnumListMixin</span></code></a></p>
+<p>Enumeration for the default events
+that are supported on all ExposedThings.</p>
+<dl class="attribute">
+<dt id="wotpy.wot.enums.DefaultThingEvent.ACTION_INVOCATION">
+<code class="descname">ACTION_INVOCATION</code><em class="property"> = 'actioninvocation'</em><a class="headerlink" href="#wotpy.wot.enums.DefaultThingEvent.ACTION_INVOCATION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.DefaultThingEvent.DESCRIPTION_CHANGE">
+<code class="descname">DESCRIPTION_CHANGE</code><em class="property"> = 'descriptionchange'</em><a class="headerlink" href="#wotpy.wot.enums.DefaultThingEvent.DESCRIPTION_CHANGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.DefaultThingEvent.PROPERTY_CHANGE">
+<code class="descname">PROPERTY_CHANGE</code><em class="property"> = 'propertychange'</em><a class="headerlink" href="#wotpy.wot.enums.DefaultThingEvent.PROPERTY_CHANGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.enums.DiscoveryMethod">
+<em class="property">class </em><code class="descclassname">wotpy.wot.enums.</code><code class="descname">DiscoveryMethod</code><a class="headerlink" href="#wotpy.wot.enums.DiscoveryMethod" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../_utils/wotpy.utils.enums.html#wotpy.utils.enums.EnumListMixin" title="wotpy.utils.enums.EnumListMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.utils.enums.EnumListMixin</span></code></a></p>
+<p>Enumeration of discovery types.</p>
+<dl class="attribute">
+<dt id="wotpy.wot.enums.DiscoveryMethod.ANY">
+<code class="descname">ANY</code><em class="property"> = 'any'</em><a class="headerlink" href="#wotpy.wot.enums.DiscoveryMethod.ANY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.DiscoveryMethod.DIRECTORY">
+<code class="descname">DIRECTORY</code><em class="property"> = 'directory'</em><a class="headerlink" href="#wotpy.wot.enums.DiscoveryMethod.DIRECTORY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.DiscoveryMethod.LOCAL">
+<code class="descname">LOCAL</code><em class="property"> = 'local'</em><a class="headerlink" href="#wotpy.wot.enums.DiscoveryMethod.LOCAL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.DiscoveryMethod.MULTICAST">
+<code class="descname">MULTICAST</code><em class="property"> = 'multicast'</em><a class="headerlink" href="#wotpy.wot.enums.DiscoveryMethod.MULTICAST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.enums.InteractionTypes">
+<em class="property">class </em><code class="descclassname">wotpy.wot.enums.</code><code class="descname">InteractionTypes</code><a class="headerlink" href="#wotpy.wot.enums.InteractionTypes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../_utils/wotpy.utils.enums.html#wotpy.utils.enums.EnumListMixin" title="wotpy.utils.enums.EnumListMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.utils.enums.EnumListMixin</span></code></a></p>
+<p>Enumeration of interaction types.</p>
+<dl class="attribute">
+<dt id="wotpy.wot.enums.InteractionTypes.ACTION">
+<code class="descname">ACTION</code><em class="property"> = 'Action'</em><a class="headerlink" href="#wotpy.wot.enums.InteractionTypes.ACTION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.InteractionTypes.EVENT">
+<code class="descname">EVENT</code><em class="property"> = 'Event'</em><a class="headerlink" href="#wotpy.wot.enums.InteractionTypes.EVENT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.InteractionTypes.PROPERTY">
+<code class="descname">PROPERTY</code><em class="property"> = 'Property'</em><a class="headerlink" href="#wotpy.wot.enums.InteractionTypes.PROPERTY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.enums.SecuritySchemeType">
+<em class="property">class </em><code class="descclassname">wotpy.wot.enums.</code><code class="descname">SecuritySchemeType</code><a class="headerlink" href="#wotpy.wot.enums.SecuritySchemeType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../_utils/wotpy.utils.enums.html#wotpy.utils.enums.EnumListMixin" title="wotpy.utils.enums.EnumListMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.utils.enums.EnumListMixin</span></code></a></p>
+<p>Defines the supported security schemes.</p>
+<dl class="attribute">
+<dt id="wotpy.wot.enums.SecuritySchemeType.APIKEY">
+<code class="descname">APIKEY</code><em class="property"> = 'apikey'</em><a class="headerlink" href="#wotpy.wot.enums.SecuritySchemeType.APIKEY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.SecuritySchemeType.BASIC">
+<code class="descname">BASIC</code><em class="property"> = 'basic'</em><a class="headerlink" href="#wotpy.wot.enums.SecuritySchemeType.BASIC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.SecuritySchemeType.BEARER">
+<code class="descname">BEARER</code><em class="property"> = 'bearer'</em><a class="headerlink" href="#wotpy.wot.enums.SecuritySchemeType.BEARER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.SecuritySchemeType.CERT">
+<code class="descname">CERT</code><em class="property"> = 'cert'</em><a class="headerlink" href="#wotpy.wot.enums.SecuritySchemeType.CERT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.SecuritySchemeType.DIGEST">
+<code class="descname">DIGEST</code><em class="property"> = 'digest'</em><a class="headerlink" href="#wotpy.wot.enums.SecuritySchemeType.DIGEST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.SecuritySchemeType.NOSEC">
+<code class="descname">NOSEC</code><em class="property"> = 'nosec'</em><a class="headerlink" href="#wotpy.wot.enums.SecuritySchemeType.NOSEC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.SecuritySchemeType.OAUTH2">
+<code class="descname">OAUTH2</code><em class="property"> = 'oauth2'</em><a class="headerlink" href="#wotpy.wot.enums.SecuritySchemeType.OAUTH2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.SecuritySchemeType.POP">
+<code class="descname">POP</code><em class="property"> = 'pop'</em><a class="headerlink" href="#wotpy.wot.enums.SecuritySchemeType.POP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.SecuritySchemeType.PSK">
+<code class="descname">PSK</code><em class="property"> = 'psk'</em><a class="headerlink" href="#wotpy.wot.enums.SecuritySchemeType.PSK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.SecuritySchemeType.PUBLIC">
+<code class="descname">PUBLIC</code><em class="property"> = 'public'</em><a class="headerlink" href="#wotpy.wot.enums.SecuritySchemeType.PUBLIC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.enums.TDChangeMethod">
+<em class="property">class </em><code class="descclassname">wotpy.wot.enums.</code><code class="descname">TDChangeMethod</code><a class="headerlink" href="#wotpy.wot.enums.TDChangeMethod" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../_utils/wotpy.utils.enums.html#wotpy.utils.enums.EnumListMixin" title="wotpy.utils.enums.EnumListMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.utils.enums.EnumListMixin</span></code></a></p>
+<p>This attribute tells what operation has been
+applied to the TD: addition, removal or change.</p>
+<dl class="attribute">
+<dt id="wotpy.wot.enums.TDChangeMethod.ADD">
+<code class="descname">ADD</code><em class="property"> = 'add'</em><a class="headerlink" href="#wotpy.wot.enums.TDChangeMethod.ADD" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.TDChangeMethod.CHANGE">
+<code class="descname">CHANGE</code><em class="property"> = 'change'</em><a class="headerlink" href="#wotpy.wot.enums.TDChangeMethod.CHANGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.TDChangeMethod.REMOVE">
+<code class="descname">REMOVE</code><em class="property"> = 'remove'</em><a class="headerlink" href="#wotpy.wot.enums.TDChangeMethod.REMOVE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.enums.TDChangeType">
+<em class="property">class </em><code class="descclassname">wotpy.wot.enums.</code><code class="descname">TDChangeType</code><a class="headerlink" href="#wotpy.wot.enums.TDChangeType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../_utils/wotpy.utils.enums.html#wotpy.utils.enums.EnumListMixin" title="wotpy.utils.enums.EnumListMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.utils.enums.EnumListMixin</span></code></a></p>
+<p>Represents the change type, whether has it been
+applied on properties, Actions or Events.</p>
+<dl class="attribute">
+<dt id="wotpy.wot.enums.TDChangeType.ACTION">
+<code class="descname">ACTION</code><em class="property"> = 'action'</em><a class="headerlink" href="#wotpy.wot.enums.TDChangeType.ACTION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.TDChangeType.EVENT">
+<code class="descname">EVENT</code><em class="property"> = 'event'</em><a class="headerlink" href="#wotpy.wot.enums.TDChangeType.EVENT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.enums.TDChangeType.PROPERTY">
+<code class="descname">PROPERTY</code><em class="property"> = 'property'</em><a class="headerlink" href="#wotpy.wot.enums.TDChangeType.PROPERTY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="wotpy.wot.events.html" class="btn btn-neutral float-right" title="wotpy.wot.events" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="wotpy.wot.constants.html" class="btn btn-neutral float-left" title="wotpy.wot.constants" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Fundacion CTIC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

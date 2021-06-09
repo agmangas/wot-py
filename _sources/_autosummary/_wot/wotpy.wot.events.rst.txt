@@ -1,0 +1,28 @@
+wotpy.wot.events
+================
+
+.. automodule:: wotpy.wot.events
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ActionInvocationEmittedEvent
+      ActionInvocationEventInit
+      EmittedEvent
+      PropertyChangeEmittedEvent
+      PropertyChangeEventInit
+      ThingDescriptionChangeEmittedEvent
+      ThingDescriptionChangeEventInit
+   
+   
+
+   
+   
+   

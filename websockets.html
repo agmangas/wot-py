@@ -1,0 +1,608 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>WebSockets &mdash; WoTPy 0.16.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="HTTP" href="http.html" />
+    <link rel="prev" title="Protocol Bindings" href="protocols.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> WoTPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="protocols.html">Protocol Bindings</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">WebSockets</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#form-elements">Form elements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#messages-format">Messages format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#interaction-model-mapping">Interaction Model mapping</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#read-property">Read Property</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#write-property">Write Property</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#invoke-action">Invoke Action</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#observe-property-changes">Observe Property changes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#observe-event">Observe Event</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#observe-td-changes">Observe TD changes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#dispose-subscription">Dispose subscription</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="http.html">HTTP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mqtt.html">MQTT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="coap.html">CoAP</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">WoTPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="protocols.html">Protocol Bindings</a> &raquo;</li>
+        
+      <li>WebSockets</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/websockets.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="websockets">
+<h1>WebSockets<a class="headerlink" href="#websockets" title="Permalink to this headline">¶</a></h1>
+<p>This section describes the mapping between the high-level actions that can be executed on a Thing and the
+messages exchanged with the server when using the WebSockets Protocol Binding.</p>
+<p>The format of the messages is based on <a class="reference external" href="http://www.jsonrpc.org/specification">JSON-RPC 2.0</a>.</p>
+<div class="section" id="form-elements">
+<h2>Form elements<a class="headerlink" href="#form-elements" title="Permalink to this headline">¶</a></h2>
+<p>Form elements associated with the WebSockets binding that are found in Thing Description documents serialized in
+JSON-LD have the following format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;href&quot;</span><span class="p">:</span> <span class="s2">&quot;ws://host.fundacionctic.org:9393/temperaturething&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mediaType&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="92%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Field</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">href</span></code></td>
+<td>URL where the WebSocket server for this Interaction will respond. The WebSocket server URL is the same for all Interactions in a given Thing.</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">mediaType</span></code></td>
+<td>This field will always contain the MIME media type for JSON.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="messages-format">
+<h2>Messages format<a class="headerlink" href="#messages-format" title="Permalink to this headline">¶</a></h2>
+<p>All interactions with the WebSocket server are based on exchanging messages that contain serialized
+JSON objects (JSON-RPC).</p>
+<p><strong>Request</strong> messages are sent by the client to interact with one of the Thing Interactions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">method_name</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">method_params</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">message_id</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="7%" />
+<col width="85%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Field</th>
+<th class="head">Optional</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">method</span></code></td>
+<td>No</td>
+<td>ID of the method that is being requested (e.g. <code class="docutils literal notranslate"><span class="pre">read_property</span></code>).</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">params</span></code></td>
+<td>No</td>
+<td>Parameters for the method that is being requested.</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">id</span></code></td>
+<td>Yes</td>
+<td>Message ID of the request. The response message associated with this request will contain the same ID.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Response</strong> messages are sent by the server to respond to client requests:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">request_result</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">message_id</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="7%" />
+<col width="83%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Field</th>
+<th class="head">Optional</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">result</span></code></td>
+<td>No</td>
+<td>Result for the request that originated this response.</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">id</span></code></td>
+<td>No</td>
+<td>Message ID of the request. If the request didn’t contain an ID this field will be <em>null</em>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Error</strong> messages are sometimes returned instead of a response if some error arises:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">error_code</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">error_message</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">error_data</span><span class="o">&gt;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">message_id</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="7%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Field</th>
+<th class="head">Optional</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">error.code</span></code></td>
+<td>No</td>
+<td>Number code that identifies the error.</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">error.message</span></code></td>
+<td>No</td>
+<td>Text description of the error.</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">error.data</span></code></td>
+<td>Yes</td>
+<td>Arbitrary data associated with the error.</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">id</span></code></td>
+<td>No</td>
+<td>Message ID of the request. If the request didn’t contain an ID this field will be <em>null</em>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Emitted Item</strong> messages are sent for active subscriptions when new events are emitted under that subscription:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;subscription&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_name</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_payload</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="11%" />
+<col width="68%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Field</th>
+<th class="head">Optional</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">subscription</span></code></td>
+<td>No</td>
+<td>ID of the subscription linked to this emitted item.</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">name</span></code></td>
+<td>No</td>
+<td>Name of the event.</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">data</span></code></td>
+<td>No</td>
+<td>Arbitrary event payload.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="interaction-model-mapping">
+<h2>Interaction Model mapping<a class="headerlink" href="#interaction-model-mapping" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="read-property">
+<h3>Read Property<a class="headerlink" href="#read-property" title="Permalink to this headline">¶</a></h3>
+<p>Request:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;read_property&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_name</span><span class="o">&gt;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;09bca9be-7e78-4106-bf4e-e3d503290191&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;09bca9be-7e78-4106-bf4e-e3d503290191&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="write-property">
+<h3>Write Property<a class="headerlink" href="#write-property" title="Permalink to this headline">¶</a></h3>
+<p>Request:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;write_property&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_name</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;77b06e1f-02dd-4f17-a551-f86045d07099&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;77b06e1f-02dd-4f17-a551-f86045d07099&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The value of <code class="docutils literal notranslate"><span class="pre">result</span></code> will always contain <code class="docutils literal notranslate"><span class="pre">null</span></code> to indicate that the property update was successfully applied.</p>
+</div>
+<div class="section" id="invoke-action">
+<h3>Invoke Action<a class="headerlink" href="#invoke-action" title="Permalink to this headline">¶</a></h3>
+<p>Request:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;invoke_action&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">action_name</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">invocation_parameters</span><span class="o">&gt;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;ec7455c4-f08a-4e8f-85c1-8b944ad9dc0e&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">action_result</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;ec7455c4-f08a-4e8f-85c1-8b944ad9dc0e&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="observe-property-changes">
+<h3>Observe Property changes<a class="headerlink" href="#observe-property-changes" title="Permalink to this headline">¶</a></h3>
+<p>Request:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;on_property_change&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_name</span><span class="o">&gt;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;dcd518b1-97d6-4b4b-9483-f26907734165&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;dcd518b1-97d6-4b4b-9483-f26907734165&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Message sent by the server for each property change:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;subscription&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;propertychange&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_name</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The value of <code class="docutils literal notranslate"><span class="pre">data</span></code> contains a JSON object that is the dict representation of an instance of
+<a class="reference internal" href="_autosummary/_wot/wotpy.wot.events.html#wotpy.wot.events.PropertyChangeEventInit" title="wotpy.wot.events.PropertyChangeEventInit"><code class="xref py py-class docutils literal notranslate"><span class="pre">PropertyChangeEventInit</span></code></a>.</p>
+</div>
+<div class="section" id="observe-event">
+<h3>Observe Event<a class="headerlink" href="#observe-event" title="Permalink to this headline">¶</a></h3>
+<p>Request:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;on_event&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_name</span><span class="o">&gt;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;7fc84fa6-ef83-474c-8c91-06965bde3749&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;7fc84fa6-ef83-474c-8c91-06965bde3749&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Message sent by the server for each event emission:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;subscription&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_name</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_payload</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="observe-td-changes">
+<h3>Observe TD changes<a class="headerlink" href="#observe-td-changes" title="Permalink to this headline">¶</a></h3>
+<p>Request:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;on_td_change&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d52636f1-0c45-4603-8b7b-326937891917&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d52636f1-0c45-4603-8b7b-326937891917&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Message sent by the server for each Thing Description change:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;subscription&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;descriptionchange&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;td_change_type&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">td_change_type</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">method</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">data</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">description</span><span class="o">&gt;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The value of <code class="docutils literal notranslate"><span class="pre">data</span></code> contains a JSON object that is the dict representation of an instance of
+<a class="reference internal" href="_autosummary/_wot/wotpy.wot.events.html#wotpy.wot.events.ThingDescriptionChangeEventInit" title="wotpy.wot.events.ThingDescriptionChangeEventInit"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThingDescriptionChangeEventInit</span></code></a>.</p>
+</div>
+<div class="section" id="dispose-subscription">
+<h3>Dispose subscription<a class="headerlink" href="#dispose-subscription" title="Permalink to this headline">¶</a></h3>
+<p>Request:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;dispose&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;subscription&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e02de075-7d5f-4466-b901-2ffd96437939&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e02de075-7d5f-4466-b901-2ffd96437939&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The value of <code class="docutils literal notranslate"><span class="pre">result</span></code> may contain <code class="docutils literal notranslate"><span class="pre">null</span></code> if an active subscription for the given ID could not be found.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="http.html" class="btn btn-neutral float-right" title="HTTP" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="protocols.html" class="btn btn-neutral float-left" title="Protocol Bindings" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Fundacion CTIC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

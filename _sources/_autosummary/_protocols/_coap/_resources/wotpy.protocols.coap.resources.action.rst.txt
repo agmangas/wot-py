@@ -1,0 +1,28 @@
+wotpy.protocols.coap.resources.action
+=====================================
+
+.. automodule:: wotpy.protocols.coap.resources.action
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_thing_action
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ActionResource
+   
+   
+
+   
+   
+   

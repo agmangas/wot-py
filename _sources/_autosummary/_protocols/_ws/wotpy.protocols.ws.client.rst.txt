@@ -1,0 +1,22 @@
+wotpy.protocols.ws.client
+=========================
+
+.. automodule:: wotpy.protocols.ws.client
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      WebsocketClient
+   
+   
+
+   
+   
+   

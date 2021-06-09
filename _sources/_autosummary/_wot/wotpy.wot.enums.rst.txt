@@ -1,0 +1,28 @@
+wotpy.wot.enums
+===============
+
+.. automodule:: wotpy.wot.enums
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DataType
+      DefaultThingEvent
+      DiscoveryMethod
+      InteractionTypes
+      SecuritySchemeType
+      TDChangeMethod
+      TDChangeType
+   
+   
+
+   
+   
+   

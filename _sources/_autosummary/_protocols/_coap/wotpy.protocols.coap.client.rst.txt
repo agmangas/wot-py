@@ -1,0 +1,22 @@
+wotpy.protocols.coap.client
+===========================
+
+.. automodule:: wotpy.protocols.coap.client
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CoAPClient
+   
+   
+
+   
+   
+   

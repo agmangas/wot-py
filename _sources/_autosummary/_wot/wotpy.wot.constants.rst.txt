@@ -1,0 +1,16 @@
+wotpy.wot.constants
+===================
+
+.. automodule:: wotpy.wot.constants
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   

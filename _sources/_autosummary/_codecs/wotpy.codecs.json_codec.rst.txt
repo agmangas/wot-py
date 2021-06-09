@@ -1,0 +1,22 @@
+wotpy.codecs.json\_codec
+========================
+
+.. automodule:: wotpy.codecs.json_codec
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      JsonCodec
+   
+   
+
+   
+   
+   

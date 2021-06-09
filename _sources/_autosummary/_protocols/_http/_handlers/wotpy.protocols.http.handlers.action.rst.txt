@@ -1,0 +1,23 @@
+wotpy.protocols.http.handlers.action
+====================================
+
+.. automodule:: wotpy.protocols.http.handlers.action
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ActionInvokeHandler
+      PendingInvocationHandler
+   
+   
+
+   
+   
+   

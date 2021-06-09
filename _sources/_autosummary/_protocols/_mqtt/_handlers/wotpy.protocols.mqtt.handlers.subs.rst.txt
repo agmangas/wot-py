@@ -1,0 +1,22 @@
+wotpy.protocols.mqtt.handlers.subs
+==================================
+
+.. automodule:: wotpy.protocols.mqtt.handlers.subs
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      InteractionsSubscriber
+   
+   
+
+   
+   
+   

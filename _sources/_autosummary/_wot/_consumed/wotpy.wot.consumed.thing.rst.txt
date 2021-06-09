@@ -1,0 +1,22 @@
+wotpy.wot.consumed.thing
+========================
+
+.. automodule:: wotpy.wot.consumed.thing
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ConsumedThing
+   
+   
+
+   
+   
+   

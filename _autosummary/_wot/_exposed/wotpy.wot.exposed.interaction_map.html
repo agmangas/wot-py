@@ -1,0 +1,417 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>wotpy.wot.exposed.interaction_map &mdash; WoTPy 0.16.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="wotpy.wot.exposed.thing" href="wotpy.wot.exposed.thing.html" />
+    <link rel="prev" title="wotpy.wot.exposed" href="../wotpy.wot.exposed.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> WoTPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../protocols.html">Protocol Bindings</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../wotpy.wot.html">wotpy.wot</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.consumed.html">wotpy.wot.consumed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.dictionaries.html">wotpy.wot.dictionaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.discovery.html">wotpy.wot.discovery</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../wotpy.wot.exposed.html">wotpy.wot.exposed</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">wotpy.wot.exposed.interaction_map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.exposed.thing.html">wotpy.wot.exposed.thing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.exposed.thing_set.html">wotpy.wot.exposed.thing_set</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.constants.html">wotpy.wot.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.enums.html">wotpy.wot.enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.events.html">wotpy.wot.events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.form.html">wotpy.wot.form</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.interaction.html">wotpy.wot.interaction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.servient.html">wotpy.wot.servient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.td.html">wotpy.wot.td</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.thing.html">wotpy.wot.thing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.validation.html">wotpy.wot.validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.wot.html">wotpy.wot.wot</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.utils.html">wotpy.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.protocols.html">wotpy.protocols</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.codecs.html">wotpy.codecs</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">WoTPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../api.html">API Reference</a> &raquo;</li>
+        
+          <li><a href="../../wotpy.wot.html">wotpy.wot</a> &raquo;</li>
+        
+          <li><a href="../wotpy.wot.exposed.html">wotpy.wot.exposed</a> &raquo;</li>
+        
+      <li>wotpy.wot.exposed.interaction_map</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/_autosummary/_wot/_exposed/wotpy.wot.exposed.interaction_map.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-wotpy.wot.exposed.interaction_map">
+<span id="wotpy-wot-exposed-interaction-map"></span><h1>wotpy.wot.exposed.interaction_map<a class="headerlink" href="#module-wotpy.wot.exposed.interaction_map" title="Permalink to this headline">¶</a></h1>
+<p>Classes that represent Interaction instances accessed on a ExposedThing.</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.exposed.interaction_map.ExposedThingAction" title="wotpy.wot.exposed.interaction_map.ExposedThingAction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExposedThingAction</span></code></a>(exposed_thing,&nbsp;name)</td>
+<td>The ThingAction interface implementation for ExposedThing objects.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#wotpy.wot.exposed.interaction_map.ExposedThingActionDict" title="wotpy.wot.exposed.interaction_map.ExposedThingActionDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExposedThingActionDict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>A dictionary that provides lazy access to the objects that implement the ThingAction interface for each action in a given ExposedThing.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.exposed.interaction_map.ExposedThingEvent" title="wotpy.wot.exposed.interaction_map.ExposedThingEvent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExposedThingEvent</span></code></a>(exposed_thing,&nbsp;name)</td>
+<td>The ThingEvent interface implementation for ExposedThing objects.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#wotpy.wot.exposed.interaction_map.ExposedThingEventDict" title="wotpy.wot.exposed.interaction_map.ExposedThingEventDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExposedThingEventDict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>A dictionary that provides lazy access to the objects that implement the ThingEvent interface for each event in a given ExposedThing.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict" title="wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExposedThingInteractionDict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>A dictionary that provides lazy access to the objects that implement the Interaction interface for each interaction in a given ExposedThing.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#wotpy.wot.exposed.interaction_map.ExposedThingProperty" title="wotpy.wot.exposed.interaction_map.ExposedThingProperty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExposedThingProperty</span></code></a>(exposed_thing,&nbsp;name)</td>
+<td>The ThingProperty interface implementation for ExposedThing objects.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.exposed.interaction_map.ExposedThingPropertyDict" title="wotpy.wot.exposed.interaction_map.ExposedThingPropertyDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExposedThingPropertyDict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>A dictionary that provides lazy access to the objects that implement the ThingProperty interface for each property in a given ExposedThing.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingAction">
+<em class="property">class </em><code class="descclassname">wotpy.wot.exposed.interaction_map.</code><code class="descname">ExposedThingAction</code><span class="sig-paren">(</span><em>exposed_thing</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The ThingAction interface implementation for ExposedThing objects.</p>
+<dl class="method">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingAction.invoke">
+<code class="descname">invoke</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingAction.invoke" title="Permalink to this definition">¶</a></dt>
+<dd><p>The run() method when invoked, starts the Action interaction
+with the input value provided by the inputValue argument.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingActionDict">
+<em class="property">class </em><code class="descclassname">wotpy.wot.exposed.interaction_map.</code><code class="descname">ExposedThingActionDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingActionDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict" title="wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict</span></code></a></p>
+<p>A dictionary that provides lazy access to the objects that implement
+the ThingAction interface for each action in a given ExposedThing.</p>
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingActionDict.interaction_dict">
+<code class="descname">interaction_dict</code><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingActionDict.interaction_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the InteractionPattern objects dict by name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingActionDict.thing_interaction_class">
+<code class="descname">thing_interaction_class</code><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingActionDict.thing_interaction_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the class that implements the
+Interaction interface for this type of interaction.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingEvent">
+<em class="property">class </em><code class="descclassname">wotpy.wot.exposed.interaction_map.</code><code class="descname">ExposedThingEvent</code><span class="sig-paren">(</span><em>exposed_thing</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingEvent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The ThingEvent interface implementation for ExposedThing objects.</p>
+<dl class="method">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingEvent.emit">
+<code class="descname">emit</code><span class="sig-paren">(</span><em>payload</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingEvent.emit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Emits an event that carries data specified by the payload argument.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingEvent.subscribe">
+<code class="descname">subscribe</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingEvent.subscribe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribe to an stream of emissions of this event.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingEventDict">
+<em class="property">class </em><code class="descclassname">wotpy.wot.exposed.interaction_map.</code><code class="descname">ExposedThingEventDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingEventDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict" title="wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict</span></code></a></p>
+<p>A dictionary that provides lazy access to the objects that implement
+the ThingEvent interface for each event in a given ExposedThing.</p>
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingEventDict.interaction_dict">
+<code class="descname">interaction_dict</code><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingEventDict.interaction_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the InteractionPattern objects dict by name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingEventDict.thing_interaction_class">
+<code class="descname">thing_interaction_class</code><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingEventDict.thing_interaction_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the class that implements the
+Interaction interface for this type of interaction.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict">
+<em class="property">class </em><code class="descclassname">wotpy.wot.exposed.interaction_map.</code><code class="descname">ExposedThingInteractionDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">collections.UserDict</span></code></p>
+<p>A dictionary that provides lazy access to the objects that implement
+the Interaction interface for each interaction in a given ExposedThing.</p>
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict.interaction_dict">
+<code class="descname">interaction_dict</code><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict.interaction_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the InteractionPattern objects dict by name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict.thing_interaction_class">
+<code class="descname">thing_interaction_class</code><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict.thing_interaction_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the class that implements the
+Interaction interface for this type of interaction.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingProperty">
+<em class="property">class </em><code class="descclassname">wotpy.wot.exposed.interaction_map.</code><code class="descname">ExposedThingProperty</code><span class="sig-paren">(</span><em>exposed_thing</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingProperty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The ThingProperty interface implementation for ExposedThing objects.</p>
+<dl class="method">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingProperty.read">
+<code class="descname">read</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingProperty.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>The get() method will fetch the value of the Property.
+A coroutine that yields the value or raises an error.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingProperty.subscribe">
+<code class="descname">subscribe</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingProperty.subscribe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribe to an stream of events emitted when the property value changes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingProperty.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingProperty.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>The set() method will attempt to set the value of the
+Property specified in the value argument whose type SHOULD
+match the one specified by the type property.
+A coroutine that yields on success or raises an error.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingPropertyDict">
+<em class="property">class </em><code class="descclassname">wotpy.wot.exposed.interaction_map.</code><code class="descname">ExposedThingPropertyDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingPropertyDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict" title="wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict</span></code></a></p>
+<p>A dictionary that provides lazy access to the objects that implement
+the ThingProperty interface for each property in a given ExposedThing.</p>
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingPropertyDict.interaction_dict">
+<code class="descname">interaction_dict</code><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingPropertyDict.interaction_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the InteractionPattern objects dict by name.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.exposed.interaction_map.ExposedThingPropertyDict.thing_interaction_class">
+<code class="descname">thing_interaction_class</code><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingPropertyDict.thing_interaction_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the class that implements the
+Interaction interface for this type of interaction.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="wotpy.wot.exposed.thing.html" class="btn btn-neutral float-right" title="wotpy.wot.exposed.thing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../wotpy.wot.exposed.html" class="btn btn-neutral float-left" title="wotpy.wot.exposed" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Fundacion CTIC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

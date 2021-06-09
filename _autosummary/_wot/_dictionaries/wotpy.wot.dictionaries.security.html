@@ -1,0 +1,640 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>wotpy.wot.dictionaries.security &mdash; WoTPy 0.16.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="wotpy.wot.dictionaries.thing" href="wotpy.wot.dictionaries.thing.html" />
+    <link rel="prev" title="wotpy.wot.dictionaries.schema" href="wotpy.wot.dictionaries.schema.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> WoTPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../protocols.html">Protocol Bindings</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../wotpy.wot.html">wotpy.wot</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.consumed.html">wotpy.wot.consumed</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../wotpy.wot.dictionaries.html">wotpy.wot.dictionaries</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.dictionaries.base.html">wotpy.wot.dictionaries.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.dictionaries.filter.html">wotpy.wot.dictionaries.filter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.dictionaries.interaction.html">wotpy.wot.dictionaries.interaction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.dictionaries.link.html">wotpy.wot.dictionaries.link</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.dictionaries.schema.html">wotpy.wot.dictionaries.schema</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">wotpy.wot.dictionaries.security</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.dictionaries.thing.html">wotpy.wot.dictionaries.thing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.dictionaries.version.html">wotpy.wot.dictionaries.version</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.discovery.html">wotpy.wot.discovery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.exposed.html">wotpy.wot.exposed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.constants.html">wotpy.wot.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.enums.html">wotpy.wot.enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.events.html">wotpy.wot.events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.form.html">wotpy.wot.form</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.interaction.html">wotpy.wot.interaction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.servient.html">wotpy.wot.servient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.td.html">wotpy.wot.td</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.thing.html">wotpy.wot.thing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.validation.html">wotpy.wot.validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.wot.html">wotpy.wot.wot</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.utils.html">wotpy.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.protocols.html">wotpy.protocols</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.codecs.html">wotpy.codecs</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">WoTPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../api.html">API Reference</a> &raquo;</li>
+        
+          <li><a href="../../wotpy.wot.html">wotpy.wot</a> &raquo;</li>
+        
+          <li><a href="../wotpy.wot.dictionaries.html">wotpy.wot.dictionaries</a> &raquo;</li>
+        
+      <li>wotpy.wot.dictionaries.security</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/_autosummary/_wot/_dictionaries/wotpy.wot.dictionaries.security.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-wotpy.wot.dictionaries.security">
+<span id="wotpy-wot-dictionaries-security"></span><h1>wotpy.wot.dictionaries.security<a class="headerlink" href="#module-wotpy.wot.dictionaries.security" title="Permalink to this headline">¶</a></h1>
+<p>Wrapper classes for security dictionaries defined in the Scripting API.</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict" title="wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">APIKeySecuritySchemeDict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>API key authentication security configuration.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict" title="wotpy.wot.dictionaries.security.BasicSecuritySchemeDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BasicSecuritySchemeDict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Basic authentication security configuration using an unencrypted username and password.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict" title="wotpy.wot.dictionaries.security.BearerSecuritySchemeDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BearerSecuritySchemeDict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Bearer token authentication security configuration.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#wotpy.wot.dictionaries.security.CertSecuritySchemeDict" title="wotpy.wot.dictionaries.security.CertSecuritySchemeDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CertSecuritySchemeDict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Certificate-base asymmetric key security configuration.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict" title="wotpy.wot.dictionaries.security.DigestSecuritySchemeDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DigestSecuritySchemeDict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Digest authentication security configuration.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#wotpy.wot.dictionaries.security.NoSecuritySchemeDict" title="wotpy.wot.dictionaries.security.NoSecuritySchemeDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NoSecuritySchemeDict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>A security configuration indicating there is no authentication or other mechanism required to access the resource.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict" title="wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OAuth2SecuritySchemeDict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>OAuth2 authentication security configuration.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#wotpy.wot.dictionaries.security.PSKSecuritySchemeDict" title="wotpy.wot.dictionaries.security.PSKSecuritySchemeDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PSKSecuritySchemeDict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Pre-shared key authentication security configuration.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.dictionaries.security.PoPSecuritySchemeDict" title="wotpy.wot.dictionaries.security.PoPSecuritySchemeDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PoPSecuritySchemeDict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Proof-of-possession token authentication security configuration.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#wotpy.wot.dictionaries.security.PublicSecuritySchemeDict" title="wotpy.wot.dictionaries.security.PublicSecuritySchemeDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PublicSecuritySchemeDict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Raw public key asymmetric key security configuration.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SecuritySchemeDict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Contains security related configuration.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict">
+<em class="property">class </em><code class="descclassname">wotpy.wot.dictionaries.security.</code><code class="descname">APIKeySecuritySchemeDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.dictionaries.security.SecuritySchemeDict</span></code></a></p>
+<p>API key authentication security configuration.
+This is for the case where the access token is opaque and is not using a standard token format.</p>
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta">
+<em class="property">class </em><code class="descname">Meta</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta.defaults">
+<code class="descname">defaults</code><em class="property"> = {'in': 'query'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta.defaults" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta.fields">
+<code class="descname">fields</code><em class="property"> = {'description', 'in', 'name', 'proxy', 'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta.required">
+<code class="descname">required</code><em class="property"> = {'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta.required" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.scheme">
+<code class="descname">scheme</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.scheme" title="Permalink to this definition">¶</a></dt>
+<dd><p>The scheme property represents the identification
+of the security scheme to be used for the Thing.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.BasicSecuritySchemeDict">
+<em class="property">class </em><code class="descclassname">wotpy.wot.dictionaries.security.</code><code class="descname">BasicSecuritySchemeDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.dictionaries.security.SecuritySchemeDict</span></code></a></p>
+<p>Basic authentication security configuration using an unencrypted username and password.</p>
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta">
+<em class="property">class </em><code class="descname">Meta</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta.defaults">
+<code class="descname">defaults</code><em class="property"> = {'in': 'header'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta.defaults" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta.fields">
+<code class="descname">fields</code><em class="property"> = {'description', 'in', 'name', 'proxy', 'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta.required">
+<code class="descname">required</code><em class="property"> = {'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta.required" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.scheme">
+<code class="descname">scheme</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.scheme" title="Permalink to this definition">¶</a></dt>
+<dd><p>The scheme property represents the identification
+of the security scheme to be used for the Thing.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.BearerSecuritySchemeDict">
+<em class="property">class </em><code class="descclassname">wotpy.wot.dictionaries.security.</code><code class="descname">BearerSecuritySchemeDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.dictionaries.security.SecuritySchemeDict</span></code></a></p>
+<p>Bearer token authentication security configuration. This scheme is intended
+for situations where bearer tokens are used independently of OAuth2.
+If the oauth2 scheme is specified it is not generally necessary to
+specify this scheme as well as it is implied.</p>
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta">
+<em class="property">class </em><code class="descname">Meta</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta.defaults">
+<code class="descname">defaults</code><em class="property"> = {'alg': 'ES256', 'format': 'jwt', 'in': 'header'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta.defaults" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta.fields">
+<code class="descname">fields</code><em class="property"> = {'alg', 'authorization', 'description', 'format', 'in', 'name', 'proxy', 'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta.required">
+<code class="descname">required</code><em class="property"> = {'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta.required" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.scheme">
+<code class="descname">scheme</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.scheme" title="Permalink to this definition">¶</a></dt>
+<dd><p>The scheme property represents the identification
+of the security scheme to be used for the Thing.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.CertSecuritySchemeDict">
+<em class="property">class </em><code class="descclassname">wotpy.wot.dictionaries.security.</code><code class="descname">CertSecuritySchemeDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.CertSecuritySchemeDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.dictionaries.security.SecuritySchemeDict</span></code></a></p>
+<p>Certificate-base asymmetric key security configuration.</p>
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.CertSecuritySchemeDict.Meta">
+<em class="property">class </em><code class="descname">Meta</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.CertSecuritySchemeDict.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.CertSecuritySchemeDict.Meta.fields">
+<code class="descname">fields</code><em class="property"> = {'description', 'identity', 'proxy', 'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.CertSecuritySchemeDict.Meta.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.CertSecuritySchemeDict.Meta.required">
+<code class="descname">required</code><em class="property"> = {'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.CertSecuritySchemeDict.Meta.required" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.CertSecuritySchemeDict.scheme">
+<code class="descname">scheme</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.CertSecuritySchemeDict.scheme" title="Permalink to this definition">¶</a></dt>
+<dd><p>The scheme property represents the identification
+of the security scheme to be used for the Thing.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.DigestSecuritySchemeDict">
+<em class="property">class </em><code class="descclassname">wotpy.wot.dictionaries.security.</code><code class="descname">DigestSecuritySchemeDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.dictionaries.security.SecuritySchemeDict</span></code></a></p>
+<p>Digest authentication security configuration. This scheme is similar to
+basic authentication but with added features to avoid man-in-the-middle attacks.</p>
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta">
+<em class="property">class </em><code class="descname">Meta</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta.defaults">
+<code class="descname">defaults</code><em class="property"> = {'in': 'header', 'qop': 'auth'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta.defaults" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta.fields">
+<code class="descname">fields</code><em class="property"> = {'description', 'in', 'name', 'proxy', 'qop', 'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta.required">
+<code class="descname">required</code><em class="property"> = {'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta.required" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.scheme">
+<code class="descname">scheme</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.scheme" title="Permalink to this definition">¶</a></dt>
+<dd><p>The scheme property represents the identification
+of the security scheme to be used for the Thing.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.NoSecuritySchemeDict">
+<em class="property">class </em><code class="descclassname">wotpy.wot.dictionaries.security.</code><code class="descname">NoSecuritySchemeDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.NoSecuritySchemeDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.dictionaries.security.SecuritySchemeDict</span></code></a></p>
+<p>A security configuration indicating there is no authentication
+or other mechanism required to access the resource.</p>
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.NoSecuritySchemeDict.scheme">
+<code class="descname">scheme</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.NoSecuritySchemeDict.scheme" title="Permalink to this definition">¶</a></dt>
+<dd><p>The scheme property represents the identification
+of the security scheme to be used for the Thing.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict">
+<em class="property">class </em><code class="descclassname">wotpy.wot.dictionaries.security.</code><code class="descname">OAuth2SecuritySchemeDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.dictionaries.security.SecuritySchemeDict</span></code></a></p>
+<p>OAuth2 authentication security configuration.
+For the implicit flow the authorization and scopes are required.
+For the password and client flows both token and scopes are required.
+For the code flow authorization, token, and scopes are required.</p>
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta">
+<em class="property">class </em><code class="descname">Meta</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta.defaults">
+<code class="descname">defaults</code><em class="property"> = {'flow': 'implicit'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta.defaults" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta.fields">
+<code class="descname">fields</code><em class="property"> = {'authorization', 'description', 'flow', 'proxy', 'refresh', 'scheme', 'scopes', 'token'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta.required">
+<code class="descname">required</code><em class="property"> = {'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta.required" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.scheme">
+<code class="descname">scheme</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.scheme" title="Permalink to this definition">¶</a></dt>
+<dd><p>The scheme property represents the identification
+of the security scheme to be used for the Thing.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.PSKSecuritySchemeDict">
+<em class="property">class </em><code class="descclassname">wotpy.wot.dictionaries.security.</code><code class="descname">PSKSecuritySchemeDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.PSKSecuritySchemeDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.dictionaries.security.SecuritySchemeDict</span></code></a></p>
+<p>Pre-shared key authentication security configuration.</p>
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.Meta">
+<em class="property">class </em><code class="descname">Meta</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.Meta.fields">
+<code class="descname">fields</code><em class="property"> = {'description', 'identity', 'proxy', 'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.Meta.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.Meta.required">
+<code class="descname">required</code><em class="property"> = {'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.Meta.required" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.scheme">
+<code class="descname">scheme</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.scheme" title="Permalink to this definition">¶</a></dt>
+<dd><p>The scheme property represents the identification
+of the security scheme to be used for the Thing.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.PoPSecuritySchemeDict">
+<em class="property">class </em><code class="descclassname">wotpy.wot.dictionaries.security.</code><code class="descname">PoPSecuritySchemeDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.PoPSecuritySchemeDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.dictionaries.security.SecuritySchemeDict</span></code></a></p>
+<p>Proof-of-possession token authentication security configuration.</p>
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.PoPSecuritySchemeDict.Meta">
+<em class="property">class </em><code class="descname">Meta</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.PoPSecuritySchemeDict.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.PoPSecuritySchemeDict.Meta.defaults">
+<code class="descname">defaults</code><em class="property"> = {'alg': 'ES256', 'format': 'jwt', 'in': 'header'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.PoPSecuritySchemeDict.Meta.defaults" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.PoPSecuritySchemeDict.Meta.fields">
+<code class="descname">fields</code><em class="property"> = {'alg', 'authorization', 'description', 'format', 'in', 'name', 'proxy', 'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.PoPSecuritySchemeDict.Meta.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.PoPSecuritySchemeDict.Meta.required">
+<code class="descname">required</code><em class="property"> = {'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.PoPSecuritySchemeDict.Meta.required" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.PoPSecuritySchemeDict.scheme">
+<code class="descname">scheme</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.PoPSecuritySchemeDict.scheme" title="Permalink to this definition">¶</a></dt>
+<dd><p>The scheme property represents the identification
+of the security scheme to be used for the Thing.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.PublicSecuritySchemeDict">
+<em class="property">class </em><code class="descclassname">wotpy.wot.dictionaries.security.</code><code class="descname">PublicSecuritySchemeDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.PublicSecuritySchemeDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.dictionaries.security.SecuritySchemeDict</span></code></a></p>
+<p>Raw public key asymmetric key security configuration.</p>
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.PublicSecuritySchemeDict.Meta">
+<em class="property">class </em><code class="descname">Meta</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.PublicSecuritySchemeDict.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.PublicSecuritySchemeDict.Meta.fields">
+<code class="descname">fields</code><em class="property"> = {'description', 'identity', 'proxy', 'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.PublicSecuritySchemeDict.Meta.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.PublicSecuritySchemeDict.Meta.required">
+<code class="descname">required</code><em class="property"> = {'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.PublicSecuritySchemeDict.Meta.required" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.PublicSecuritySchemeDict.scheme">
+<code class="descname">scheme</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.PublicSecuritySchemeDict.scheme" title="Permalink to this definition">¶</a></dt>
+<dd><p>The scheme property represents the identification
+of the security scheme to be used for the Thing.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.SecuritySchemeDict">
+<em class="property">class </em><code class="descclassname">wotpy.wot.dictionaries.security.</code><code class="descname">SecuritySchemeDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="wotpy.wot.dictionaries.base.html#wotpy.wot.dictionaries.base.WotBaseDict" title="wotpy.wot.dictionaries.base.WotBaseDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.dictionaries.base.WotBaseDict</span></code></a></p>
+<p>Contains security related configuration.</p>
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.security.SecuritySchemeDict.Meta">
+<em class="property">class </em><code class="descname">Meta</code><a class="headerlink" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.SecuritySchemeDict.Meta.fields">
+<code class="descname">fields</code><em class="property"> = {'description', 'proxy', 'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict.Meta.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.security.SecuritySchemeDict.Meta.required">
+<code class="descname">required</code><em class="property"> = {'scheme'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict.Meta.required" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="wotpy.wot.dictionaries.security.SecuritySchemeDict.build">
+<em class="property">classmethod </em><code class="descname">build</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict.build" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds an instance of the appropriate subclass for the given SecurityScheme.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="wotpy.wot.dictionaries.thing.html" class="btn btn-neutral float-right" title="wotpy.wot.dictionaries.thing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="wotpy.wot.dictionaries.schema.html" class="btn btn-neutral float-left" title="wotpy.wot.dictionaries.schema" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Fundacion CTIC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

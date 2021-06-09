@@ -1,0 +1,328 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>wotpy.wot.dictionaries.link &mdash; WoTPy 0.16.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="wotpy.wot.dictionaries.schema" href="wotpy.wot.dictionaries.schema.html" />
+    <link rel="prev" title="wotpy.wot.dictionaries.interaction" href="wotpy.wot.dictionaries.interaction.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> WoTPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../protocols.html">Protocol Bindings</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../wotpy.wot.html">wotpy.wot</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.consumed.html">wotpy.wot.consumed</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../wotpy.wot.dictionaries.html">wotpy.wot.dictionaries</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.dictionaries.base.html">wotpy.wot.dictionaries.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.dictionaries.filter.html">wotpy.wot.dictionaries.filter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.dictionaries.interaction.html">wotpy.wot.dictionaries.interaction</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">wotpy.wot.dictionaries.link</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.dictionaries.schema.html">wotpy.wot.dictionaries.schema</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.dictionaries.security.html">wotpy.wot.dictionaries.security</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.dictionaries.thing.html">wotpy.wot.dictionaries.thing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.wot.dictionaries.version.html">wotpy.wot.dictionaries.version</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.discovery.html">wotpy.wot.discovery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.exposed.html">wotpy.wot.exposed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.constants.html">wotpy.wot.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.enums.html">wotpy.wot.enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.events.html">wotpy.wot.events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.form.html">wotpy.wot.form</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.interaction.html">wotpy.wot.interaction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.servient.html">wotpy.wot.servient</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.td.html">wotpy.wot.td</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.thing.html">wotpy.wot.thing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.validation.html">wotpy.wot.validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.wot.html">wotpy.wot.wot</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.utils.html">wotpy.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.protocols.html">wotpy.protocols</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.codecs.html">wotpy.codecs</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">WoTPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../api.html">API Reference</a> &raquo;</li>
+        
+          <li><a href="../../wotpy.wot.html">wotpy.wot</a> &raquo;</li>
+        
+          <li><a href="../wotpy.wot.dictionaries.html">wotpy.wot.dictionaries</a> &raquo;</li>
+        
+      <li>wotpy.wot.dictionaries.link</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/_autosummary/_wot/_dictionaries/wotpy.wot.dictionaries.link.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-wotpy.wot.dictionaries.link">
+<span id="wotpy-wot-dictionaries-link"></span><h1>wotpy.wot.dictionaries.link<a class="headerlink" href="#module-wotpy.wot.dictionaries.link" title="Permalink to this headline">¶</a></h1>
+<p>Wrapper classes for link dictionaries defined in the Scripting API.</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.dictionaries.link.FormDict" title="wotpy.wot.dictionaries.link.FormDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FormDict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>Communication metadata indicating where a service can be accessed by a client application.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#wotpy.wot.dictionaries.link.LinkDict" title="wotpy.wot.dictionaries.link.LinkDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LinkDict</span></code></a>(*args,&nbsp;**kwargs)</td>
+<td>A Web link, as specified by IETF RFC 8288.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.link.FormDict">
+<em class="property">class </em><code class="descclassname">wotpy.wot.dictionaries.link.</code><code class="descname">FormDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.link.FormDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.link.LinkDict" title="wotpy.wot.dictionaries.link.LinkDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.dictionaries.link.LinkDict</span></code></a></p>
+<p>Communication metadata indicating where a service can be accessed
+by a client application. An interaction might have more than one form.</p>
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.link.FormDict.Meta">
+<em class="property">class </em><code class="descname">Meta</code><a class="headerlink" href="#wotpy.wot.dictionaries.link.FormDict.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.link.FormDict.Meta.defaults">
+<code class="descname">defaults</code><em class="property"> = {'contentType': 'application/json'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.link.FormDict.Meta.defaults" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.link.FormDict.Meta.fields">
+<code class="descname">fields</code><em class="property"> = {'anchor', 'contentType', 'href', 'op', 'rel', 'scopes', 'security', 'subprotocol', 'type'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.link.FormDict.Meta.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.link.FormDict.Meta.required">
+<code class="descname">required</code><em class="property"> = {'href'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.link.FormDict.Meta.required" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.wot.dictionaries.link.FormDict.resolve_uri">
+<code class="descname">resolve_uri</code><span class="sig-paren">(</span><em>base=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.link.FormDict.resolve_uri" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolves and returns the Link URI.
+When the href does not contain a full URL the base URI is joined with said href.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.link.FormDict.security">
+<code class="descname">security</code><a class="headerlink" href="#wotpy.wot.dictionaries.link.FormDict.security" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set of security configurations, provided as an array,
+that must all be satisfied for access to resources at or
+below the current level, if not overridden at a lower level</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.link.LinkDict">
+<em class="property">class </em><code class="descclassname">wotpy.wot.dictionaries.link.</code><code class="descname">LinkDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.link.LinkDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="wotpy.wot.dictionaries.base.html#wotpy.wot.dictionaries.base.WotBaseDict" title="wotpy.wot.dictionaries.base.WotBaseDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.dictionaries.base.WotBaseDict</span></code></a></p>
+<p>A Web link, as specified by IETF RFC 8288.</p>
+<dl class="class">
+<dt id="wotpy.wot.dictionaries.link.LinkDict.Meta">
+<em class="property">class </em><code class="descname">Meta</code><a class="headerlink" href="#wotpy.wot.dictionaries.link.LinkDict.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.link.LinkDict.Meta.fields">
+<code class="descname">fields</code><em class="property"> = {'anchor', 'href', 'rel', 'type'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.link.LinkDict.Meta.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.wot.dictionaries.link.LinkDict.Meta.required">
+<code class="descname">required</code><em class="property"> = {'href'}</em><a class="headerlink" href="#wotpy.wot.dictionaries.link.LinkDict.Meta.required" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="wotpy.wot.dictionaries.schema.html" class="btn btn-neutral float-right" title="wotpy.wot.dictionaries.schema" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="wotpy.wot.dictionaries.interaction.html" class="btn btn-neutral float-left" title="wotpy.wot.dictionaries.interaction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Fundacion CTIC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,30 @@
+wotpy.wot.validation
+====================
+
+.. automodule:: wotpy.wot.validation
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      interaction_schema_for_type
+      is_valid_safe_name
+      is_valid_uri
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      InvalidDescription
+   
+   

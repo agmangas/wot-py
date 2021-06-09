@@ -1,0 +1,22 @@
+wotpy.protocols.mqtt.client
+===========================
+
+.. automodule:: wotpy.protocols.mqtt.client
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MQTTClient
+   
+   
+
+   
+   
+   

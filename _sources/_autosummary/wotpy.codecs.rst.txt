@@ -1,0 +1,16 @@
+wotpy.codecs
+============
+
+.. automodule:: wotpy.codecs
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   

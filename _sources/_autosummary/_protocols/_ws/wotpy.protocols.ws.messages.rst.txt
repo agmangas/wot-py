@@ -1,0 +1,37 @@
+wotpy.protocols.ws.messages
+===========================
+
+.. automodule:: wotpy.protocols.ws.messages
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      parse_ws_message
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      WebsocketMessageEmittedItem
+      WebsocketMessageError
+      WebsocketMessageRequest
+      WebsocketMessageResponse
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      WebsocketMessageException
+   
+   

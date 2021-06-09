@@ -1,0 +1,350 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>wotpy.protocols.mqtt.client &mdash; WoTPy 0.16.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="wotpy.protocols.mqtt.enums" href="wotpy.protocols.mqtt.enums.html" />
+    <link rel="prev" title="wotpy.protocols.mqtt.handlers.subs" href="_handlers/wotpy.protocols.mqtt.handlers.subs.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> WoTPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../protocols.html">Protocol Bindings</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.wot.html">wotpy.wot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.utils.html">wotpy.utils</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../wotpy.protocols.html">wotpy.protocols</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.coap.html">wotpy.protocols.coap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.http.html">wotpy.protocols.http</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../wotpy.protocols.mqtt.html">wotpy.protocols.mqtt</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="wotpy.protocols.mqtt.handlers.html">wotpy.protocols.mqtt.handlers</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">wotpy.protocols.mqtt.client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.protocols.mqtt.enums.html">wotpy.protocols.mqtt.enums</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.protocols.mqtt.runner.html">wotpy.protocols.mqtt.runner</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.protocols.mqtt.server.html">wotpy.protocols.mqtt.server</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.ws.html">wotpy.protocols.ws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.client.html">wotpy.protocols.client</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.enums.html">wotpy.protocols.enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.exceptions.html">wotpy.protocols.exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.server.html">wotpy.protocols.server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.utils.html">wotpy.protocols.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.codecs.html">wotpy.codecs</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">WoTPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../api.html">API Reference</a> &raquo;</li>
+        
+          <li><a href="../../wotpy.protocols.html">wotpy.protocols</a> &raquo;</li>
+        
+          <li><a href="../wotpy.protocols.mqtt.html">wotpy.protocols.mqtt</a> &raquo;</li>
+        
+      <li>wotpy.protocols.mqtt.client</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/_autosummary/_protocols/_mqtt/wotpy.protocols.mqtt.client.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-wotpy.protocols.mqtt.client">
+<span id="wotpy-protocols-mqtt-client"></span><h1>wotpy.protocols.mqtt.client<a class="headerlink" href="#module-wotpy.protocols.mqtt.client" title="Permalink to this headline">¶</a></h1>
+<p>Classes that contain the client logic for the MQTT protocol.</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.protocols.mqtt.client.MQTTClient" title="wotpy.protocols.mqtt.client.MQTTClient"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MQTTClient</span></code></a>([deliver_timeout_secs,&nbsp;…])</td>
+<td>Implementation of the protocol client interface for the MQTT protocol.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="wotpy.protocols.mqtt.client.MQTTClient">
+<em class="property">class </em><code class="descclassname">wotpy.protocols.mqtt.client.</code><code class="descname">MQTTClient</code><span class="sig-paren">(</span><em>deliver_timeout_secs=1</em>, <em>msg_wait_timeout_secs=5</em>, <em>msg_ttl_secs=15</em>, <em>timeout_default=None</em>, <em>hbmqtt_config=None</em>, <em>stop_loop_timeout_secs=60</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.client.MQTTClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../wotpy.protocols.client.html#wotpy.protocols.client.BaseProtocolClient" title="wotpy.protocols.client.BaseProtocolClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.protocols.client.BaseProtocolClient</span></code></a></p>
+<p>Implementation of the protocol client interface for the MQTT protocol.</p>
+<dl class="attribute">
+<dt id="wotpy.protocols.mqtt.client.MQTTClient.DEFAULT_CLIENT_CONFIG">
+<code class="descname">DEFAULT_CLIENT_CONFIG</code><em class="property"> = {'keep_alive': 90}</em><a class="headerlink" href="#wotpy.protocols.mqtt.client.MQTTClient.DEFAULT_CLIENT_CONFIG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.mqtt.client.MQTTClient.DEFAULT_DELIVER_TIMEOUT_SECS">
+<code class="descname">DEFAULT_DELIVER_TIMEOUT_SECS</code><em class="property"> = 1</em><a class="headerlink" href="#wotpy.protocols.mqtt.client.MQTTClient.DEFAULT_DELIVER_TIMEOUT_SECS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.mqtt.client.MQTTClient.DEFAULT_MSG_TTL_SECS">
+<code class="descname">DEFAULT_MSG_TTL_SECS</code><em class="property"> = 15</em><a class="headerlink" href="#wotpy.protocols.mqtt.client.MQTTClient.DEFAULT_MSG_TTL_SECS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.mqtt.client.MQTTClient.DEFAULT_MSG_WAIT_TIMEOUT_SECS">
+<code class="descname">DEFAULT_MSG_WAIT_TIMEOUT_SECS</code><em class="property"> = 5</em><a class="headerlink" href="#wotpy.protocols.mqtt.client.MQTTClient.DEFAULT_MSG_WAIT_TIMEOUT_SECS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.mqtt.client.MQTTClient.DEFAULT_STOP_LOOP_TIMEOUT_SECS">
+<code class="descname">DEFAULT_STOP_LOOP_TIMEOUT_SECS</code><em class="property"> = 60</em><a class="headerlink" href="#wotpy.protocols.mqtt.client.MQTTClient.DEFAULT_STOP_LOOP_TIMEOUT_SECS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.mqtt.client.MQTTClient.DELIVER_TERMINATE_LOOP_SLEEP_SECS">
+<code class="descname">DELIVER_TERMINATE_LOOP_SLEEP_SECS</code><em class="property"> = 0.1</em><a class="headerlink" href="#wotpy.protocols.mqtt.client.MQTTClient.DELIVER_TERMINATE_LOOP_SLEEP_SECS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.mqtt.client.MQTTClient.SLEEP_SECS_DELIVER_ERR">
+<code class="descname">SLEEP_SECS_DELIVER_ERR</code><em class="property"> = 1.0</em><a class="headerlink" href="#wotpy.protocols.mqtt.client.MQTTClient.SLEEP_SECS_DELIVER_ERR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.mqtt.client.MQTTClient.invoke_action">
+<code class="descname">invoke_action</code><span class="sig-paren">(</span><em>td</em>, <em>name</em>, <em>input_value</em>, <em>timeout=None</em>, <em>qos_publish=2</em>, <em>qos_subscribe=1</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.client.MQTTClient.invoke_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invokes an Action on a remote Thing.
+Returns a Future.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.mqtt.client.MQTTClient.is_supported_interaction">
+<code class="descname">is_supported_interaction</code><span class="sig-paren">(</span><em>td</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.client.MQTTClient.is_supported_interaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the any of the Forms for the Interaction
+with the given name is supported in this Protocol Binding client.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.mqtt.client.MQTTClient.on_event">
+<code class="descname">on_event</code><span class="sig-paren">(</span><em>td</em>, <em>name</em>, <em>qos=0</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.client.MQTTClient.on_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribes to an event on a remote Thing.
+Returns an Observable.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.mqtt.client.MQTTClient.on_property_change">
+<code class="descname">on_property_change</code><span class="sig-paren">(</span><em>td</em>, <em>name</em>, <em>qos=0</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.client.MQTTClient.on_property_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribes to property changes on a remote Thing.
+Returns an Observable</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.mqtt.client.MQTTClient.on_td_change">
+<code class="descname">on_td_change</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.client.MQTTClient.on_td_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribes to Thing Description changes on a remote Thing.
+Returns an Observable.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.mqtt.client.MQTTClient.protocol">
+<code class="descname">protocol</code><a class="headerlink" href="#wotpy.protocols.mqtt.client.MQTTClient.protocol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Protocol of this client instance.
+A member of the Protocols enum.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.mqtt.client.MQTTClient.read_property">
+<code class="descname">read_property</code><span class="sig-paren">(</span><em>td</em>, <em>name</em>, <em>timeout=None</em>, <em>qos_publish=1</em>, <em>qos_subscribe=1</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.client.MQTTClient.read_property" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the value of a Property on a remote Thing.
+Returns a Future.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.mqtt.client.MQTTClient.write_property">
+<code class="descname">write_property</code><span class="sig-paren">(</span><em>td</em>, <em>name</em>, <em>value</em>, <em>timeout=None</em>, <em>qos_publish=2</em>, <em>qos_subscribe=1</em>, <em>wait_ack=True</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.client.MQTTClient.write_property" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the value of a Property on a remote Thing.
+Due to the MQTT binding design this coroutine yields as soon as the write message has
+been published and will not wait for a custom write handler that yields to another coroutine
+Returns a Future.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="wotpy.protocols.mqtt.enums.html" class="btn btn-neutral float-right" title="wotpy.protocols.mqtt.enums" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="_handlers/wotpy.protocols.mqtt.handlers.subs.html" class="btn btn-neutral float-left" title="wotpy.protocols.mqtt.handlers.subs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Fundacion CTIC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,345 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>wotpy.protocols.http.client &mdash; WoTPy 0.16.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="wotpy.protocols.http.enums" href="wotpy.protocols.http.enums.html" />
+    <link rel="prev" title="wotpy.protocols.http.handlers.utils" href="_handlers/wotpy.protocols.http.handlers.utils.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> WoTPy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.16.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../protocols.html">Protocol Bindings</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.wot.html">wotpy.wot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.utils.html">wotpy.utils</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../wotpy.protocols.html">wotpy.protocols</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.coap.html">wotpy.protocols.coap</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../wotpy.protocols.http.html">wotpy.protocols.http</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="wotpy.protocols.http.handlers.html">wotpy.protocols.http.handlers</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">wotpy.protocols.http.client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.protocols.http.enums.html">wotpy.protocols.http.enums</a></li>
+<li class="toctree-l4"><a class="reference internal" href="wotpy.protocols.http.server.html">wotpy.protocols.http.server</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.mqtt.html">wotpy.protocols.mqtt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.ws.html">wotpy.protocols.ws</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.client.html">wotpy.protocols.client</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.enums.html">wotpy.protocols.enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.exceptions.html">wotpy.protocols.exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.server.html">wotpy.protocols.server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../wotpy.protocols.utils.html">wotpy.protocols.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.codecs.html">wotpy.codecs</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">WoTPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../api.html">API Reference</a> &raquo;</li>
+        
+          <li><a href="../../wotpy.protocols.html">wotpy.protocols</a> &raquo;</li>
+        
+          <li><a href="../wotpy.protocols.http.html">wotpy.protocols.http</a> &raquo;</li>
+        
+      <li>wotpy.protocols.http.client</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/_autosummary/_protocols/_http/wotpy.protocols.http.client.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-wotpy.protocols.http.client">
+<span id="wotpy-protocols-http-client"></span><h1>wotpy.protocols.http.client<a class="headerlink" href="#module-wotpy.protocols.http.client" title="Permalink to this headline">¶</a></h1>
+<p>Classes that contain the client logic for the HTTP protocol.</p>
+<p class="rubric">Classes</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#wotpy.protocols.http.client.HTTPClient" title="wotpy.protocols.http.client.HTTPClient"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HTTPClient</span></code></a>([connect_timeout,&nbsp;request_timeout])</td>
+<td>Implementation of the protocol client interface for the HTTP protocol.</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="wotpy.protocols.http.client.HTTPClient">
+<em class="property">class </em><code class="descclassname">wotpy.protocols.http.client.</code><code class="descname">HTTPClient</code><span class="sig-paren">(</span><em>connect_timeout=60</em>, <em>request_timeout=60</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.client.HTTPClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../wotpy.protocols.client.html#wotpy.protocols.client.BaseProtocolClient" title="wotpy.protocols.client.BaseProtocolClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.protocols.client.BaseProtocolClient</span></code></a></p>
+<p>Implementation of the protocol client interface for the HTTP protocol.</p>
+<dl class="attribute">
+<dt id="wotpy.protocols.http.client.HTTPClient.DEFAULT_CON_TIMEOUT">
+<code class="descname">DEFAULT_CON_TIMEOUT</code><em class="property"> = 60</em><a class="headerlink" href="#wotpy.protocols.http.client.HTTPClient.DEFAULT_CON_TIMEOUT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.http.client.HTTPClient.DEFAULT_REQ_TIMEOUT">
+<code class="descname">DEFAULT_REQ_TIMEOUT</code><em class="property"> = 60</em><a class="headerlink" href="#wotpy.protocols.http.client.HTTPClient.DEFAULT_REQ_TIMEOUT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.http.client.HTTPClient.JSON_HEADERS">
+<code class="descname">JSON_HEADERS</code><em class="property"> = {'Content-Type': 'application/json'}</em><a class="headerlink" href="#wotpy.protocols.http.client.HTTPClient.JSON_HEADERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.http.client.HTTPClient.connect_timeout">
+<code class="descname">connect_timeout</code><a class="headerlink" href="#wotpy.protocols.http.client.HTTPClient.connect_timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the default connection timeout for all HTTP requests.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.http.client.HTTPClient.invoke_action">
+<code class="descname">invoke_action</code><span class="sig-paren">(</span><em>td</em>, <em>name</em>, <em>input_value</em>, <em>timeout=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.client.HTTPClient.invoke_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Invokes an Action on a remote Thing.
+Returns a Future.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.http.client.HTTPClient.is_supported_interaction">
+<code class="descname">is_supported_interaction</code><span class="sig-paren">(</span><em>td</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.client.HTTPClient.is_supported_interaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the any of the Forms for the Interaction
+with the given name is supported in this Protocol Binding client.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.http.client.HTTPClient.on_event">
+<code class="descname">on_event</code><span class="sig-paren">(</span><em>td</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.client.HTTPClient.on_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribes to an event on a remote Thing.
+Returns an Observable.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.http.client.HTTPClient.on_property_change">
+<code class="descname">on_property_change</code><span class="sig-paren">(</span><em>td</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.client.HTTPClient.on_property_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribes to property changes on a remote Thing.
+Returns an Observable</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.http.client.HTTPClient.on_td_change">
+<code class="descname">on_td_change</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.client.HTTPClient.on_td_change" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribes to Thing Description changes on a remote Thing.
+Returns an Observable.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="wotpy.protocols.http.client.HTTPClient.pick_http_href">
+<em class="property">classmethod </em><code class="descname">pick_http_href</code><span class="sig-paren">(</span><em>td</em>, <em>forms</em>, <em>op=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.client.HTTPClient.pick_http_href" title="Permalink to this definition">¶</a></dt>
+<dd><p>Picks the most appropriate HTTP form href from the given list of forms.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.http.client.HTTPClient.protocol">
+<code class="descname">protocol</code><a class="headerlink" href="#wotpy.protocols.http.client.HTTPClient.protocol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Protocol of this client instance.
+A member of the Protocols enum.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.http.client.HTTPClient.read_property">
+<code class="descname">read_property</code><span class="sig-paren">(</span><em>td</em>, <em>name</em>, <em>timeout=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.client.HTTPClient.read_property" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the value of a Property on a remote Thing.
+Returns a Future.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wotpy.protocols.http.client.HTTPClient.request_timeout">
+<code class="descname">request_timeout</code><a class="headerlink" href="#wotpy.protocols.http.client.HTTPClient.request_timeout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the default request timeout for all HTTP requests.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wotpy.protocols.http.client.HTTPClient.write_property">
+<code class="descname">write_property</code><span class="sig-paren">(</span><em>td</em>, <em>name</em>, <em>value</em>, <em>timeout=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.client.HTTPClient.write_property" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the value of a Property on a remote Thing.
+Returns a Future.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="wotpy.protocols.http.enums.html" class="btn btn-neutral float-right" title="wotpy.protocols.http.enums" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="_handlers/wotpy.protocols.http.handlers.utils.html" class="btn btn-neutral float-left" title="wotpy.protocols.http.handlers.utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Fundacion CTIC
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

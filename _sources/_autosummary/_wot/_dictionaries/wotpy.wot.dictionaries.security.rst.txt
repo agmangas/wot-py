@@ -1,0 +1,32 @@
+wotpy.wot.dictionaries.security
+===============================
+
+.. automodule:: wotpy.wot.dictionaries.security
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      APIKeySecuritySchemeDict
+      BasicSecuritySchemeDict
+      BearerSecuritySchemeDict
+      CertSecuritySchemeDict
+      DigestSecuritySchemeDict
+      NoSecuritySchemeDict
+      OAuth2SecuritySchemeDict
+      PSKSecuritySchemeDict
+      PoPSecuritySchemeDict
+      PublicSecuritySchemeDict
+      SecuritySchemeDict
+   
+   
+
+   
+   
+   

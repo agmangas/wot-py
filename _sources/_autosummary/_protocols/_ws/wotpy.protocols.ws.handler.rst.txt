@@ -1,0 +1,22 @@
+wotpy.protocols.ws.handler
+==========================
+
+.. automodule:: wotpy.protocols.ws.handler
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      WebsocketHandler
+   
+   
+
+   
+   
+   
