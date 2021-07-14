@@ -215,8 +215,10 @@ class HTTPClient(BaseProtocolClient):
             raise ClientRequestTimeout
 
         response = yield http_client.fetch(http_request)
+        result = json.loads(response.body)
+        result = result.get("value", result)
 
-        raise tornado.gen.Return(json.loads(response.body).get("value"))
+        raise tornado.gen.Return(result)
 
     def on_event(self, td, name):
         """Subscribes to an event on a remote Thing.
@@ -279,7 +281,8 @@ class HTTPClient(BaseProtocolClient):
                 while state["active"]:
                     try:
                         response = yield http_client.fetch(http_request)
-                        value = json.loads(response.body).get("value")
+                        value = json.loads(response.body)
+                        value = value.get("value", value)
                         init = PropertyChangeEventInit(name=name, value=value)
                         observer.on_next(PropertyChangeEmittedEvent(init=init))
                     except HTTPTimeoutError:
