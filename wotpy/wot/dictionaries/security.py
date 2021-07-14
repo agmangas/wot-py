@@ -15,8 +15,10 @@ class SecuritySchemeDict(WotBaseDict):
 
     class Meta:
         fields = {
+            "@type",
             "scheme",
             "description",
+            "descriptions",
             "proxy"
         }
 
