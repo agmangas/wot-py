@@ -21,7 +21,8 @@ from wotpy.wot.thing import Thing
 def http_server():
     """Builds an HTTPServer instance that contains an ExposedThing."""
 
-    kwargs = {'id': uuid.uuid4().urn, '@context': "https://www.w3.org/2019/wot/td/v1", "title": "MyTestThing"}
+    kwargs = {'id': uuid.uuid4().urn, '@context': "https://www.w3.org/2019/wot/td/v1", "title": "MyTestThing",        "security": "nosec_sc",
+              "securityDefinitions": {"nosec_sc": {"scheme": "nosec"}}, }
 
     exposed_thing = ExposedThing(servient=Servient(), thing=Thing(**kwargs))
 

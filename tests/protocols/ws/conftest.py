@@ -168,6 +168,8 @@ def websocket_servient():
         "id": uuid.uuid4().urn,
         "name": uuid.uuid4().hex,
         "@context": "https://www.w3.org/2019/wot/td/v1",
+        "security": "nosec_sc",
+        "securityDefinitions": {"nosec_sc": {"scheme": "nosec"}},
         "properties": {
             property_name_01: {
                 "observable": True,
