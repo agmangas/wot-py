@@ -147,7 +147,9 @@ def test_property_subscribe(http_server):
 
         periodic_set.stop()
 
-        assert json.loads(response.body).get("value") == prop_value
+        result = json.loads(response.body)
+        result = result.get("value", result)
+        assert result == prop_value
 
     run_test_coroutine(test_coroutine)
 
@@ -304,7 +306,9 @@ def test_ssl_context(self_signed_ssl_context):
         http_request = tornado.httpclient.HTTPRequest(href, method="GET", validate_cert=False)
         response = yield http_client.fetch(http_request)
 
-        assert json.loads(response.body).get("value") == prop_value
+        result = json.loads(response.body)
+        result = result.get("value", result)
+        assert result == prop_value
 
         yield server.stop()
 

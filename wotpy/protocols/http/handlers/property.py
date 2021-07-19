@@ -35,7 +35,7 @@ class PropertyReadWriteHandler(RequestHandler):
         """Updates the Property value."""
 
         exposed_thing = handler_utils.get_exposed_thing(self._server, thing_name)
-        value = handler_utils.get_argument(self, "value")
+        value = handler_utils.get_argument(self, "value", self.request.body)
         yield exposed_thing.properties[name].write(value)
 
 
