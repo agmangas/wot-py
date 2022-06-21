@@ -2,5 +2,5 @@ Logbook==1.4.1
 lxml==4.9.1
 py==1.7.0
 pyshark==0.4.2.2
-numpy==1.15.4
+numpy==1.22.0
 netifaces==0.10.9
