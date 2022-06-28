@@ -5,9 +5,6 @@ on:
   pull_request:
     branches: [ "wot-py-next" ]
 
-permissions:
-  contents: read
-
 jobs:       
   test-wot-py:
     runs-on: ubuntu-latest
