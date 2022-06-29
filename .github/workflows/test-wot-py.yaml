@@ -15,6 +15,7 @@ jobs:
         ports:
           - 1883:1883
 
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
