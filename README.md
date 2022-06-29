@@ -2,7 +2,9 @@
 
 # WoTPy
 
-[![Travis (.com)](https://img.shields.io/travis/com/agmangas/wot-py)](https://travis-ci.com/agmangas/wot-py) [![Coveralls](https://img.shields.io/coveralls/github/agmangas/wot-py)](https://coveralls.io/github/agmangas/wot-py) [![PyPI](https://img.shields.io/pypi/v/wotpy)](https://pypi.org/project/wotpy/)
+[![Tests](https://img.shields.io/github/workflow/status/agmangas/wot-py/testing/wot-py-next?label=tests)](https://github.com/agmangas/wot-py/actions/workflows/test-wot-py.yaml)
+[![Coveralls](https://img.shields.io/coveralls/github/agmangas/wot-py/wot-py-next)](https://coveralls.io/github/agmangas/wot-py?branch=wot-py-next)
+[![PyPI](https://img.shields.io/pypi/v/wotpy)](https://pypi.org/project/wotpy/)
 
 ## Introduction
 
