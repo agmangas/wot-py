@@ -11,11 +11,9 @@ jobs:
     
     services:
       mqtt-broker:
-        image: eclipse-mosquitto
+        image: eclipse-mosquitto:1.6
         ports:
           - 1883:1883
-        volumes:
-          - ${{ github.workspace }}/.github/workflows/config:/mosquitto/config
 
     strategy:
       matrix:
