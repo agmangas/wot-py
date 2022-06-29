@@ -9,9 +9,8 @@ import uuid
 import pytest
 import tornado.gen
 import tornado.ioloop
-from OpenSSL import crypto
 from faker import Faker
-
+from OpenSSL import crypto
 from tests.utils import find_free_port
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.ws.server import WebsocketServer
@@ -41,8 +40,9 @@ def all_protocols_servient():
         servient.add_server(coap_server)
 
     if is_mqtt_supported():
+        from tests.protocols.mqtt.broker import (get_test_broker_url,
+                                                 is_test_broker_online)
         from wotpy.protocols.mqtt.server import MQTTServer
-        from tests.protocols.mqtt.broker import get_test_broker_url, is_test_broker_online
         if is_test_broker_online():
             mqtt_server = MQTTServer(broker_url=get_test_broker_url())
             servient.add_server(mqtt_server)

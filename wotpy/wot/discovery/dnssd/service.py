@@ -17,7 +17,7 @@ import tornado.ioloop
 import tornado.locks
 from six.moves import queue
 from slugify import slugify
-from zeroconf import Zeroconf, ServiceStateChange, ServiceInfo, ServiceBrowser
+from zeroconf import IPVersion, Zeroconf, ServiceStateChange, ServiceInfo, ServiceBrowser
 
 from wotpy.utils.utils import get_main_ipv4_address
 
@@ -35,13 +35,14 @@ def build_servient_service_info(servient, address=None, instance_name=None):
     instance_name = instance_name if instance_name else servient_urlname
     servient_fqdn = "{}.".format(servient.hostname.strip('.'))
     server_default = "{}.local.".format(servient_urlname)
-    server = servient_fqdn if servient_fqdn.endswith('.local.') else server_default
+    server = servient_fqdn if servient_fqdn.endswith(
+        '.local.') else server_default
 
     return ServiceInfo(
         DNSSDDiscoveryService.WOT_SERVICE_TYPE,
         "{}.{}".format(instance_name, DNSSDDiscoveryService.WOT_SERVICE_TYPE),
         port=servient.catalogue_port,
-        address=socket.inet_aton(address),
+        addresses=[socket.inet_aton(address)],
         properties={},
         server=server)
 
@@ -70,7 +71,10 @@ def _start_zeroconf(close_event, services, services_lock, register_queue, addres
 
         def _add_result():
             info = zeroconf.get_service_info(service_type, name)
-            info_addr = socket.inet_ntoa(cast(bytes, info.address))
+            if not info:
+                raise TimeoutError("zeroconf: no matches for the service info")
+
+            info_addr = info.parsed_addresses(IPVersion.V4Only)[0]
             info_port = cast(int, info.port)
 
             with services_lock:

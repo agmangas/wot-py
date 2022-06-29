@@ -19,16 +19,16 @@ install_requires = [
 ]
 
 test_requires = [
-    'pytest>=3.6.1,<4.0.0',
+    'pytest>=6.2.5',
     'pytest-cov>=2.5.1,<2.6.0',
-    'pytest-rerunfailures>=4.1,<5.0',
+    'pytest-rerunfailures>=10.2,<11.0',
     'mock>=2.0,<3.0',
     'tox>=3.0,<4.0',
     'faker>=0.8.15,<0.9',
     'Sphinx>=1.7.5,<2.0.0',
     'sphinx-rtd-theme>=0.4.0,<0.5.0',
     'futures>=3.1.1,<4.0.0; python_version == "2.7"',
-    'pyOpenSSL>=18.0.0,<=22.0.0',
+    'pyOpenSSL>=21.0.0,<=22.0.0',
     'coveralls>=1.0,<2.0',
     'coverage>=5.0<6.0',
     'cryptography>=37.0.0',
@@ -47,7 +47,7 @@ if is_mqtt_supported():
     install_requires.append('websockets>=8.0,<9.0')
 
 if is_dnssd_supported():
-    install_requires.append('zeroconf>=0.21.3,<0.22.0')
+    install_requires.append('zeroconf>=0.30.0,<0.37.0')
     test_requires.append('aiozeroconf==0.1.8')
 
 this_dir = path.abspath(path.dirname(__file__))
