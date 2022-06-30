@@ -73,7 +73,7 @@ def test_register(asyncio_zeroconf, dnssd_discovery):
         servient = Servient(catalogue_port=port_catalogue)
 
         with pytest.raises(ValueError):
-            yield dnssd_discovery.register(servient)
+            yield dnssd_discovery.register(servient, "testing_device")
 
         yield dnssd_discovery.start()
 
@@ -126,7 +126,8 @@ def test_find(asyncio_zeroconf, dnssd_discovery):
 
         ipaddr = Faker().ipv4_private()
         port = find_free_port()
-        service_name = "{}.{}".format(Faker().pystr(), DNSSDDiscoveryService.WOT_SERVICE_TYPE)
+        service_name = "{}.{}".format(
+            Faker().pystr(), DNSSDDiscoveryService.WOT_SERVICE_TYPE)
         server = "{}.local.".format(Faker().pystr())
 
         info = ServiceInfo(
@@ -173,7 +174,8 @@ def test_register_instance_name(asyncio_zeroconf, dnssd_discovery):
         while _num_service_instance_items(servient, service_history, instance_name) < 2:
             yield tornado.gen.sleep(0.1)
 
-        assert len([item[1].startswith(instance_name) for item in service_history]) == 2
+        assert len([item[1].startswith(instance_name)
+                   for item in service_history]) == 2
 
         with pytest.raises(Exception):
             _assert_service_added_removed(servient, service_history)
@@ -202,6 +204,7 @@ def test_enable_on_servient(asyncio_zeroconf, dnssd_servient):
         while _num_service_instance_items(dnssd_servient, service_history, instance_name) < 2:
             yield tornado.gen.sleep(0.1)
 
-        _assert_service_added_removed(dnssd_servient, service_history, instance_name)
+        _assert_service_added_removed(
+            dnssd_servient, service_history, instance_name)
 
     run_test_coroutine(test_coroutine)
