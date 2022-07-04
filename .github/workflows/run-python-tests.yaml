@@ -4,7 +4,7 @@ on:
     inputs:
       python-version:
         required: true
-        type: number
+        type: string
 
 jobs:       
   python-testing:
