@@ -8,5 +8,5 @@ on:
 jobs:
   call-python-37-testing:
     uses: ./.github/workflows/run-python-tests.yaml
-      with:
-        python-version: 3.7
+    with:
+      python-version: 3.7
