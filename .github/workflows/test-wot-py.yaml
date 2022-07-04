@@ -10,3 +10,18 @@ jobs:
     uses: ./.github/workflows/run-python-tests.yaml
     with:
       python-version: 3.7
+
+  call-python-38-testing:
+    uses: ./.github/workflows/run-python-tests.yaml
+    with:
+      python-version: 3.8
+
+  call-python-39-testing:
+    uses: ./.github/workflows/run-python-tests.yaml
+    with:
+      python-version: 3.9
+
+  call-python-310-testing:
+    uses: ./.github/workflows/run-python-tests.yaml
+    with:
+      python-version: 3.10
