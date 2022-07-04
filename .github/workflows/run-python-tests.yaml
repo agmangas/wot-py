@@ -2,7 +2,7 @@ name: Python testing reusable workflow
 on:
   workflow_call:
     inputs:
-      python-version:
+      python-version-tag:
         required: true
         type: string
 
@@ -10,7 +10,7 @@ jobs:
   python-testing:
     runs-on: ubuntu-latest
     container:
-      image: ${{ format('python:{0}', inputs.python-version) }}
+      image: ${{ format('python:{0}', inputs.python-version-tag) }}
 
     services:
       mqtt-broker:
