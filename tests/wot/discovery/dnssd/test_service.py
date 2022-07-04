@@ -73,7 +73,7 @@ def test_register(asyncio_zeroconf, dnssd_discovery):
         servient = Servient(catalogue_port=port_catalogue)
 
         with pytest.raises(ValueError):
-            yield dnssd_discovery.register(servient, "testing_device")
+            yield dnssd_discovery.register(servient)
 
         yield dnssd_discovery.start()
 
