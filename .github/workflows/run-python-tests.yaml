@@ -10,7 +10,7 @@ jobs:
   python-testing:
     runs-on: ubuntu-latest
     container:
-      image: ${{ format('{{python:{0}}}', inputs.python-version) }}
+      image: ${{ format('python:{0}', inputs.python-version) }}
 
     services:
       mqtt-broker:
