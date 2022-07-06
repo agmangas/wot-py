@@ -14,14 +14,17 @@ FEATURE_MQTT = 'MQTT'
 
 FEATURE_REQUISITES = {
     FEATURE_DNSSD: {
+        'max_version': (3, 10, 0),
         'min_version': (3, 4, 0),
         'platforms': ['Linux', 'Darwin']
     },
     FEATURE_COAP: {
+        'max_version': (3, 10, 0),
         'min_version': (3, 4, 0),
         'platforms': ['Linux']
     },
     FEATURE_MQTT: {
+        'max_version': (3, 7, 0),
         'min_version': (3, 4, 0),
         'platforms': ['Linux', 'Darwin']
     }
@@ -39,6 +42,11 @@ def is_supported(feature):
     min_version = reqs.get('min_version')
 
     if min_version and sys.version_info < min_version:
+        return False
+
+    max_version = reqs.get('max_version')
+
+    if max_version and sys.version_info > max_version:
         return False
 
     platforms = reqs.get('platforms')

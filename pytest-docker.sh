@@ -1,30 +1,39 @@
 #!/usr/bin/env bash
 
 set -e
-set -x
 
 : ${PYTHON_TAG:="3.8"}
 : ${PYTEST_ARGS:="-v"}
 
-CURR_DIR="$(cd "$( dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )"
-TEMP_BASE=$(python3 -c "import tempfile; print(tempfile.gettempdir());")
-TEMP_NAME=$(python3 -c "import uuid; print(\"wotpy-{}\".format(uuid.uuid4().hex));")
-TEMP_PATH=${TEMP_BASE}/${TEMP_NAME}
+echo "Running python tests for version ${PYTHON_TAG} with arguments \"${PYTEST_ARGS}\""
 
-rm -fr ${TEMP_PATH}
-cp -r ${CURR_DIR} ${TEMP_PATH}
-cd ${TEMP_PATH}
-git clean -x -d -f
+CURR_DIR="$(cd "$( dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )"
+
+echo "Creating temporary container volume"
+VOL_NAME=$(python3 -c "import uuid; print(\"wotpy_tests_{}\".format(uuid.uuid4().hex));")
+
+docker volume create ${VOL_NAME}
+
+docker run --rm -it \
+    -v ${VOL_NAME}:/vol \
+    -v ${CURR_DIR}:/src \
+    alpine \
+    sh -c "rm -fr /vol/{*,.*} && cp -a /src/. /vol/"
 
 PYTEST_EXIT_CODE=0
 
+echo "Running test container. Environment setup will take a while."
+
+set -x
+
 docker run --rm -it \
--v $(pwd):/app \
+-v ${VOL_NAME}:/app \
 -e WOTPY_TESTS_MQTT_BROKER_URL=${WOTPY_TESTS_MQTT_BROKER_URL} \
 python:${PYTHON_TAG} \
-/bin/bash -c "cd /app && pip install -U .[tests] && pytest ${PYTEST_ARGS}" || PYTEST_EXIT_CODE=$?
+/bin/bash -c "cd /app && pip install --quiet -U .[tests] && pytest ${PYTEST_ARGS}" || PYTEST_EXIT_CODE=$?
 
-cd ${CURR_DIR}
-rm -fr ${TEMP_PATH}
+set +x
+
+docker volume rm ${VOL_NAME}
 
 exit $PYTEST_EXIT_CODE

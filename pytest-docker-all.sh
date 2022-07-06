@@ -1,14 +1,8 @@
 #!/usr/bin/env bash
 
+: ${PYTEST_ARGS:=" "}
+
 set -x
-
-: ${PYTEST_ARGS:="-v --disable-warnings"}
-
-PYTHON_TAG="2.7" PYTEST_ARGS=${PYTEST_ARGS} ./pytest-docker.sh
-EXIT_27=$?
-
-PYTHON_TAG="3.6" PYTEST_ARGS=${PYTEST_ARGS} ./pytest-docker.sh
-EXIT_36=$?
 
 PYTHON_TAG="3.7" PYTEST_ARGS=${PYTEST_ARGS} ./pytest-docker.sh
 EXIT_37=$?
@@ -18,6 +12,9 @@ EXIT_38=$?
 
 PYTHON_TAG="3.9" PYTEST_ARGS=${PYTEST_ARGS} ./pytest-docker.sh
 EXIT_39=$?
+
+PYTHON_TAG="3.10" PYTEST_ARGS=${PYTEST_ARGS} ./pytest-docker.sh
+EXIT_310=$?
 
 set +x
 
@@ -34,8 +31,7 @@ print_section () {
     fi
 }
 
-print_section "Python 2.7" $EXIT_27
-print_section "Python 3.6" $EXIT_36
 print_section "Python 3.7" $EXIT_37
 print_section "Python 3.8" $EXIT_38
 print_section "Python 3.9" $EXIT_39
+print_section "Python 3.10" $EXIT_310
