@@ -24,7 +24,7 @@ test_requires = [
     'pytest-rerunfailures>=10.2,<11.0',
     'mock>=2.0,<3.0',
     'tox>=3.0,<4.0',
-    'faker>=0.8.15,<0.9',
+    'faker>=13.14.0,<14.0.0',
     'Sphinx>=1.7.5,<2.0.0',
     'sphinx-rtd-theme>=0.4.0,<0.5.0',
     'futures>=3.1.1,<4.0.0; python_version == "2.7"',

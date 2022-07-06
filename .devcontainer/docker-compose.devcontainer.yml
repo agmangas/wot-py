@@ -3,8 +3,7 @@ version: "3.9"
 services:
   mqtt-broker:
     image: eclipse-mosquitto:1.6
-    ports:
-      - 1883:1883  
+    
   wot-py:
     build:
       context: ..
