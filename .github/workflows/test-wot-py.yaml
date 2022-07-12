@@ -1,9 +1,5 @@
 name: testing
-on:
-  push:
-    branches: [ "wot-py-next" ]
-  pull_request:
-    branches: [ "wot-py-next" ]
+on: [push, pull_request]
 
 jobs:
   call-python-37-testing:
