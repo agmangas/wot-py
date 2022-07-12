@@ -15,7 +15,7 @@ TIMEOUT_CORO_VAR = "WOTPY_TESTS_CORO_TIMEOUT"
 def run_test_coroutine(coro, timeout=None):
     """Synchronously runs the given test coroutine with an optinally defined timeout."""
 
-    timeout = timeout if timeout else os.getenv(TIMEOUT_CORO_VAR, DEFAULT_TIMEOUT_SECS)
+    timeout = timeout if timeout else os.getenv(TIMEOUT_CORO_VAR, str(DEFAULT_TIMEOUT_SECS))
 
     tornado.ioloop.IOLoop.current().run_sync(coro, timeout=float(timeout))
 
@@ -38,11 +38,12 @@ def assert_equal_dict(dict_a, dict_b, compare_as_unicode=False):
 def find_free_port():
     """Returns a free TCP port by attempting to open a socket on an OS-assigned port."""
 
+    sock = None
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.bind(("", 0))
         return sock.getsockname()[1]
     finally:
-        # noinspection PyUnboundLocalVariable
-        sock.close()
+        if sock:
+            sock.close()

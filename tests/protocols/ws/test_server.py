@@ -286,9 +286,9 @@ def test_on_event(websocket_server):
     @tornado.gen.coroutine
     def test_coroutine():
         observe_msg_id = Faker().pyint()
-        payload_01 = Faker().pydict(10, True, str, float)
-        payload_02 = Faker().pydict(10, True, str, float)
-        payload_03 = Faker().pydict(10, True, int)
+        payload_01 = Faker().pydict(10, True, [str, float])
+        payload_02 = Faker().pydict(10, True, [str, float])
+        payload_03 = Faker().pydict(10, True, [int])
 
         conn = yield tornado.websocket.websocket_connect(url_thing_01)
 

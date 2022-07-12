@@ -184,13 +184,18 @@ class CoAPServer(BaseProtocolServer):
         When the full-featured UDP6 transport is not available it
         will try to guess the main IPv4 address and bind to that."""
 
-        transports = list(aiocoap.defaults.get_default_servertransports())
+        # TODO: Check if this is needed in this version of aiocoap.
+        # Keep in mind that "get_default_servertransports" is only intented for internal use.
+        
+        # transports = list(aiocoap.defaults.get_default_servertransports())
 
-        if not (len(transports) == 1 and transports[0] == "udp6"):
-            self._logr.warning("Platform does not support aiocoap udp6 transport: {}".format(transports))
-            return get_main_ipv4_address(), self.port
-        else:
-            return "::", self.port
+        # if not (len(transports) == 1 and transports[0] == "udp6"):
+        #     self._logr.warning("Platform does not support aiocoap udp6 transport: {}".format(transports))
+        #     return get_main_ipv4_address(), self.port
+        # else:
+        #     return "::", self.port
+
+        return "::", self.port
 
     @tornado.gen.coroutine
     def start(self):

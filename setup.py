@@ -40,7 +40,7 @@ if sys.version_info[0] is 3:
     test_requires.append("bump2version>=1.0,<2.0")
 
 if is_coap_supported():
-    install_requires.append('aiocoap[linkheader]==0.4a1')
+    install_requires.append('aiocoap[linkheader]==0.4.3')
 
 if is_mqtt_supported():
     install_requires.append('hbmqtt>=0.9.4,<1.0')

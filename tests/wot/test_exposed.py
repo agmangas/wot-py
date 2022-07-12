@@ -225,7 +225,7 @@ def test_on_property_change(exposed_thing, property_fragment):
 
         observable_prop = exposed_thing.on_property_change(prop_name)
 
-        property_values = Faker().pylist(5, True, *(str,))
+        property_values = Faker().pylist(5, True, [str])
 
         emitted_values = []
 
