@@ -36,7 +36,8 @@ class ThingFragment(WotBaseDict):
             "actions",
             "events",
             "links",
-            "security"
+            "security",
+            "securityDefinitions"
         }
 
         required = {
@@ -59,7 +60,8 @@ class ThingFragment(WotBaseDict):
         fields_dict = [
             "properties",
             "actions",
-            "events"
+            "events",
+            "securityDefinitions"
         ]
 
         fields_list = [
@@ -115,10 +117,20 @@ class ThingFragment(WotBaseDict):
         below the current level, if not overridden at a lower level.
         A default nosec security scheme will be provided if none are defined."""
 
-        if "security" not in self._init:
-            return [SecuritySchemeDict.build({"scheme": SecuritySchemeType.NOSEC})]
+        if "security" not in self._init and "securityDefinitions" not in self._init:
+            return ["nosec_sc"]
 
-        return [SecuritySchemeDict.build(item) for item in self._init.get("security")]
+        return self._init.get("security")
+
+    @property
+    def security_definitions(self):
+        if "security" not in self._init and "securityDefinitions" not in self._init:
+            return {"nosec_sc": SecuritySchemeDict.build({"scheme": SecuritySchemeType.NOSEC})}
+
+        return {
+            key: SecuritySchemeDict.build(val) 
+            for key, val in six.iteritems(self._init.get("securityDefinitions", {}))
+        }
 
     @property
     def properties(self):
