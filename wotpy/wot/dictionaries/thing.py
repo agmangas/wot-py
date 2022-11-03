@@ -59,7 +59,6 @@ class ThingFragment(WotBaseDict):
             "created",
             "lastModified",
             "base",
-            "security"
         ]
 
         fields_dict = [
@@ -72,6 +71,7 @@ class ThingFragment(WotBaseDict):
         fields_list = [
             "@context",
             "links",
+            "security"
         ]
 
         fields_instance = [

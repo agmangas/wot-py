@@ -30,7 +30,12 @@ def coap_server(request):
 
     from wotpy.protocols.coap.server import CoAPServer
 
-    exposed_thing = ExposedThing(servient=Servient(), thing=Thing(id=uuid.uuid4().urn))
+    exposed_thing = ExposedThing(servient=Servient(),
+                                 thing=Thing(id=uuid.uuid4().urn,
+                                             title="MyTestThing",
+                                             security="nosec_sc",
+                                             security_definitions={"nosec_sc": {"scheme": "nosec"}})
+                                 )
 
     exposed_thing.add_property(uuid.uuid4().hex, PropertyFragmentDict({
         "type": "number",
