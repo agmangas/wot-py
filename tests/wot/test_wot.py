@@ -132,7 +132,10 @@ def test_consume_from_url(td_example_tornado_app):
 TD_DICT_01 = {
     "id": uuid.uuid4().urn,
     "title": Faker().pystr(),
-    "security": [{"scheme": "psk"}],
+    "security": ["psk_sc"],
+    "securityDefinitions": {
+        "psk_sc": {"scheme": "psk"}
+    },
     "version": {"instance": "1.2.1"},
     "properties": {
         "status": {
@@ -314,7 +317,7 @@ def test_discovery_fragment():
         ({"title": TD_DICT_01.get("title")}, TD_DICT_01),
         ({"version": {"instance": "2.0.0"}}, TD_DICT_02),
         ({"id": TD_DICT_02.get("id")}, TD_DICT_02),
-        ({"security": [{"scheme": "psk"}]}, TD_DICT_01)
+        ({"securityDefinitions": {"psk_sc": {"scheme": "psk"}}}, TD_DICT_01)
     ]
 
     for fragment, td_expected in fragment_td_pairs:

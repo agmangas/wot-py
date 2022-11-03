@@ -252,13 +252,19 @@ SCHEMA_THING = {
         },
         "security": {
             "type": "array",
-            "items": SCHEMA_SECURITY_SCHEME
+            "items": {"type": "string"}
+        },
+        "securityDefinitions": {
+            "type": "object",
+            "patternProperties": {REGEX_SAFE_NAME: SCHEMA_SECURITY_SCHEME},
+            "additionalProperties": False
         }
     },
     "required": [
         "id",
         "title",
-        "security"
+        "security",
+        "securityDefinitions"
     ]
 }
 
