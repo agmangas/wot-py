@@ -223,12 +223,12 @@ def test_thing_fragment_setters():
 
     assert next(six.itervalues(thing_fragment.properties)).description == prop_fragment.description
 
-    security_updated = [SecuritySchemeDict(scheme=SecuritySchemeType.PSK)]
+    security_defs_updated = {"psk_sc": SecuritySchemeDict(scheme=SecuritySchemeType.PSK)}
 
     # noinspection PyPropertyAccess
-    thing_fragment.security = security_updated
+    thing_fragment.security_definitions = security_defs_updated
 
-    assert thing_fragment.security[0].scheme == security_updated[0].scheme
+    assert thing_fragment.security_definitions["psk_sc"].scheme == security_defs_updated["psk_sc"].scheme
 
     version_updated = VersioningDict(instance=Faker().pystr())
 
