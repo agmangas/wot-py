@@ -132,7 +132,9 @@ def test_consume_from_url(td_example_tornado_app):
 TD_DICT_01 = {
     "id": uuid.uuid4().urn,
     "title": Faker().pystr(),
-    "security": [{"scheme": "psk"}],
+    "@context": "https://www.w3.org/2019/wot/td/v1",
+    "security": ["psk_sc"],
+    "securityDefinitions": {"psk_sc": {"scheme": "psk"}},
     "version": {"instance": "1.2.1"},
     "properties": {
         "status": {

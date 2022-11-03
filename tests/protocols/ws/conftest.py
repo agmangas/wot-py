@@ -166,15 +166,24 @@ def websocket_servient():
 
     td_dict = {
         "id": uuid.uuid4().urn,
-        "name": uuid.uuid4().hex,
+        "title": uuid.uuid4().hex,
+        "@context": "https://www.w3.org/2019/wot/td/v1",
+        "security": "nosec_sc",
+        "securityDefinitions": {"nosec_sc": {"scheme": "nosec"}},
         "properties": {
             property_name_01: {
                 "observable": True,
-                "type": "string"
+                "type": "string",
+                "forms": [{
+                    "href": "ws://example.com/property1"
+                }]
             },
             property_name_02: {
                 "observable": True,
-                "type": "string"
+                "type": "string",
+                "forms": [{
+                    "href": "ws://example.com/property2"
+                }]
             }
         },
         "actions": {
@@ -185,11 +194,17 @@ def websocket_servient():
                 "output": {
                     "type": "string"
                 },
+                "forms": [{
+                    "href": "ws://example.com/action"
+                }]
             }
         },
         "events": {
             event_name_01: {
-                "type": "string"
+                "type": "string",
+                "forms": [{
+                    "href": "ws://example.com/event"
+                }]
             }
         },
     }

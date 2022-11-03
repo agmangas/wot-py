@@ -274,7 +274,13 @@ def test_event_subscribe(http_server):
 def test_ssl_context(self_signed_ssl_context):
     """An SSL context can be passed to the HTTP server to enable encryption."""
 
-    exposed_thing = ExposedThing(servient=Servient(), thing=Thing(id=uuid.uuid4().urn))
+    exposed_thing = ExposedThing(servient=Servient(), thing=Thing(id=uuid.uuid4().urn,
+                                                                  title="MyTestThing",
+                                                                  security="nosec_sc",
+                                                                  
+                                                                  security_definitions={
+                                                                      "nosec_sc": {"scheme": "nosec"}}
+                                                                  ))
 
     prop_name = uuid.uuid4().hex
 

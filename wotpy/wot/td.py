@@ -33,8 +33,11 @@ class ThingDescription(object):
         """Validates the given Thing Description document against its schema.
         Raises ValidationError if validation fails."""
 
+        from wotpy.wot.schemas.td import schema
+        # thing_json_schema = json.load(fObj)
+
         try:
-            jsonschema.validate(doc, SCHEMA_THING)
+            jsonschema.validate(doc, schema)
         except (jsonschema.ValidationError, TypeError) as ex:
             raise InvalidDescription(str(ex))
 

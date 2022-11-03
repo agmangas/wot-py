@@ -391,7 +391,9 @@ def test_consumed_client_protocols_preference():
 
     td_produce = ThingDescription({
         "id": uuid.uuid4().urn,
-        "name": uuid.uuid4().hex,
+        "title": uuid.uuid4().hex,
+        "security": "nosec_sc",
+        "securityDefinitions": {"nosec_sc": {"scheme": "nosec"}},
         "properties": {
             prop_name: {
                 "observable": True,
