@@ -5,29 +5,25 @@ on:
       python-version-tag:
         required: true
         type: string
-
-jobs:       
+jobs:
   python-testing:
     runs-on: ubuntu-latest
     container:
       image: ${{ format('python:{0}', inputs.python-version-tag) }}
-
     services:
       mqtt-broker:
         image: eclipse-mosquitto:1.6
         ports:
           - 1883:1883
-
     timeout-minutes: 15
-
     steps:
-    - uses: actions/checkout@v3
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -U .[tests]
-    - name: Test with pytest
-      run: |
-        pytest -sv --disable-warnings --cov=wotpy
-      env:
-        WOTPY_TESTS_MQTT_BROKER_URL: mqtt://mqtt-broker:1883
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -U .[tests]
+      - name: Test with pytest
+        run: |
+          pytest -sv --disable-warnings --cov=wotpy
+        env:
+          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://mqtt-broker:1883

@@ -1,0 +1,65 @@
+version: "3"
+
+vars:
+  TEST_BROKER_IMAGE: eclipse-mosquitto:1.6
+  TEST_BROKER_NAME: wotpy_test_broker
+  TEST_BROKER_MAPPED_PORT: "{{default 1883 .TEST_BROKER_MAPPED_PORT}}"
+  VENV_PATH: "{{.ROOT_DIR}}/.venv"
+
+env:
+  WOTPY_TESTS_MQTT_BROKER_URL: mqtt://localhost:{{.TEST_BROKER_MAPPED_PORT}}
+
+tasks:
+  clean:
+    desc: Clean the development and testing resources
+    cmds:
+      - cmd: rm -fr {{.VENV_PATH}}
+        ignore_error: true
+      - cmd: docker rm -f {{.TEST_BROKER_NAME}}
+        ignore_error: true
+
+  test-broker:
+    desc: Run the MQTT broker used for testing
+    cmds:
+      - >
+        docker run -d
+        -p {{.TEST_BROKER_MAPPED_PORT}}:1883
+        --name {{.TEST_BROKER_NAME}}
+        {{.TEST_BROKER_IMAGE}}
+    status:
+      - docker ps | grep {{.TEST_BROKER_NAME}}
+
+  venv:
+    desc: Create the virtual environment for development
+    cmds:
+      - virtualenv --python python3 {{.VENV_PATH}}
+      - "{{.VENV_PATH}}/bin/pip install -U -e '{{.ROOT_DIR}}[tests]'"
+
+  docker-tests:
+    desc: Run the tests in a Docker container
+    vars:
+      PYTEST_ARGS_DEFAULT: -v
+      PYTHON_TAG: "{{default 3.7 .PYTHON_TAG}}"
+      PYTEST_ARGS: "{{default .PYTEST_ARGS_DEFAULT .PYTEST_ARGS}}"
+    env:
+      PYTHON_TAG: "{{.PYTHON_TAG}}"
+      PYTEST_ARGS: "{{.PYTEST_ARGS}}"
+    cmds:
+      - echo "✅ Running tests for Python {{.PYTHON_TAG}}..."
+      - "{{.ROOT_DIR}}/pytest-docker.sh"
+
+  docker-tests-all:
+    desc: Run the tests in a Docker container for all Python versions
+    cmds:
+      - for: ["3.7", "3.8", "3.9", "3.10"]
+        task: docker-tests
+        vars:
+          PYTHON_TAG: "{{.ITEM}}"
+
+  version:
+    desc: Bump the package version
+    requires:
+      vars: [VERSION_PART]
+    cmds:
+      - source {{.VENV_PATH}}/bin/activate
+      - "{{.ROOT_DIR}}/version.sh {{.VERSION_PART}}"
