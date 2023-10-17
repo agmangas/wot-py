@@ -122,7 +122,7 @@ class Servient(object):
                  dnssd_enabled=False, dnssd_instance_name=None):
         self._hostname = hostname if hostname is not None else _get_hostname_fallback()
 
-        if not isinstance(self._hostname, six.string_types):
+        if not isinstance(self._hostname, str):
             raise ValueError("Invalid hostname: {}".format(self._hostname))
 
         if isinstance(clients, list):

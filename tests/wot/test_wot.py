@@ -1,20 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import asyncio
 import json
 import uuid
 import warnings
 
 import pytest
 import tornado.concurrent
-import tornado.gen
-import tornado.ioloop
-import tornado.testing
-import tornado.web
 from faker import Faker
 
 from tests.td_examples import TD_EXAMPLE
-from tests.utils import find_free_port, run_test_coroutine
+from tests.utils import find_free_port
 from tests.wot.utils import assert_exposed_thing_equal
 from wotpy.support import is_dnssd_supported
 from wotpy.wot.dictionaries.filter import ThingFilterDict
@@ -35,7 +32,7 @@ def test_produce_model_str():
 
     servient = Servient()
     wot = WoT(servient=servient)
-    
+
     assert wot.servient is servient
 
     exp_thing = wot.produce(td_str)
@@ -51,10 +48,7 @@ def test_produce_model_thing_template():
     thing_id = Faker().url()
     thing_title = Faker().sentence()
 
-    thing_template = ThingFragment({
-        "id": thing_id,
-        "title": thing_title
-    })
+    thing_template = ThingFragment({"id": thing_id, "title": thing_title})
 
     servient = Servient()
     wot = WoT(servient=servient)
@@ -83,7 +77,8 @@ def test_produce_model_consumed_thing():
     assert len(exposed_thing.events) == len(consumed_thing.td.events)
 
 
-def test_produce_from_url(td_example_tornado_app):
+@pytest.mark.asyncio
+async def test_produce_from_url(td_example_tornado_app):
     """ExposedThings can be created from URLs that provide Thing Description documents."""
 
     app_port = find_free_port()
@@ -94,19 +89,17 @@ def test_produce_from_url(td_example_tornado_app):
 
     wot = WoT(servient=Servient())
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        exposed_thing = yield wot.produce_from_url(url_valid)
+    exposed_thing = await wot.produce_from_url(url_valid)
 
-        assert exposed_thing.thing.id == TD_EXAMPLE.get("id")
+    assert exposed_thing.thing.id == TD_EXAMPLE.get("id")
 
-        with pytest.raises(Exception):
-            yield wot.produce_from_url(url_error)
-
-    run_test_coroutine(test_coroutine)
+    # trunk-ignore(ruff/B017)
+    with pytest.raises(Exception):
+        await wot.produce_from_url(url_error)
 
 
-def test_consume_from_url(td_example_tornado_app):
+@pytest.mark.asyncio
+async def test_consume_from_url(td_example_tornado_app):
     """ConsumedThings can be created from URLs that provide Thing Description documents."""
 
     app_port = find_free_port()
@@ -117,42 +110,28 @@ def test_consume_from_url(td_example_tornado_app):
 
     wot = WoT(servient=Servient())
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        consumed_thing = yield wot.consume_from_url(url_valid)
+    consumed_thing = await wot.consume_from_url(url_valid)
 
-        assert consumed_thing.td.id == TD_EXAMPLE.get("id")
+    assert consumed_thing.td.id == TD_EXAMPLE.get("id")
 
-        with pytest.raises(Exception):
-            yield wot.consume_from_url(url_error)
-
-    run_test_coroutine(test_coroutine)
+    # trunk-ignore(ruff/B017)
+    with pytest.raises(Exception):
+        await wot.consume_from_url(url_error)
 
 
 TD_DICT_01 = {
     "id": uuid.uuid4().urn,
     "title": Faker().pystr(),
     "security": ["psk_sc"],
-    "securityDefinitions": {
-        "psk_sc": {"scheme": "psk"}
-    },
+    "securityDefinitions": {"psk_sc": {"scheme": "psk"}},
     "version": {"instance": "1.2.1"},
-    "properties": {
-        "status": {
-            "description": Faker().pystr(),
-            "type": "string"
-        }
-    }
+    "properties": {"status": {"description": Faker().pystr(), "type": "string"}},
 }
 
 TD_DICT_02 = {
     "id": uuid.uuid4().urn,
     "version": {"instance": "2.0.0"},
-    "actions": {
-        "toggle": {
-            "output": {"type": "boolean"}
-        }
-    }
+    "actions": {"toggle": {"output": {"type": "boolean"}}},
 }
 
 
@@ -160,7 +139,9 @@ def assert_equal_tds(one, other):
     """Asserts that both TDs are equal."""
 
     one = ThingDescription(one) if not isinstance(one, ThingDescription) else one
-    other = ThingDescription(other) if not isinstance(other, ThingDescription) else other
+    other = (
+        ThingDescription(other) if not isinstance(other, ThingDescription) else other
+    )
     assert one.to_dict() == other.to_dict()
 
 
@@ -174,7 +155,8 @@ def assert_equal_td_sequences(tds, td_dicts):
         assert_equal_tds(td_match, td_dict)
 
 
-def test_discovery_method_local():
+@pytest.mark.asyncio
+async def test_discovery_method_local():
     """All TDs contained in the Servient are returned when using the local
     discovery method without defining the fragment nor the query fields."""
 
@@ -188,25 +170,25 @@ def test_discovery_method_local():
     def resolve():
         len(found) == 2 and not future_done.done() and future_done.set_result(True)
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        thing_filter = ThingFilterDict(method=DiscoveryMethod.LOCAL)
-        observable = wot.discover(thing_filter)
+    thing_filter = ThingFilterDict(method=DiscoveryMethod.LOCAL)
+    observable = wot.discover(thing_filter)
 
-        subscription = observable.subscribe(
-            on_next=lambda td_str: found.append(ThingDescription(td_str)) or resolve())
+    subscription = observable.subscribe(
+        on_next=lambda td_str: found.append(ThingDescription(td_str)) or resolve()
+    )
 
-        yield future_done
+    await future_done
 
-        assert_equal_td_sequences(found, [TD_DICT_01, TD_DICT_02])
+    assert_equal_td_sequences(found, [TD_DICT_01, TD_DICT_02])
 
-        subscription.dispose()
-
-    run_test_coroutine(test_coroutine)
+    subscription.dispose()
 
 
-@pytest.mark.skipif(not is_dnssd_supported(), reason="Only for platforms that support DNS-SD")
-def test_discovery_method_multicast_dnssd():
+@pytest.mark.asyncio
+@pytest.mark.skipif(
+    not is_dnssd_supported(), reason="Only for platforms that support DNS-SD"
+)
+async def test_discovery_method_multicast_dnssd():
     """Things can be discovered usin the multicast method supported by DNS-SD."""
 
     catalogue_port_01 = find_free_port()
@@ -218,69 +200,67 @@ def test_discovery_method_multicast_dnssd():
     servient_01 = Servient(
         catalogue_port=catalogue_port_01,
         dnssd_enabled=True,
-        dnssd_instance_name=instance_name_01)
+        dnssd_instance_name=instance_name_01,
+    )
 
     servient_02 = Servient(
         catalogue_port=catalogue_port_02,
         dnssd_enabled=True,
-        dnssd_instance_name=instance_name_02)
+        dnssd_instance_name=instance_name_02,
+    )
 
     future_done, found = tornado.concurrent.Future(), []
 
     def resolve():
         len(found) == 2 and not future_done.done() and future_done.set_result(True)
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        wot_01 = yield servient_01.start()
-        wot_02 = yield servient_02.start()
+    wot_01 = await servient_01.start()
+    wot_02 = await servient_02.start()
 
-        wot_01.produce(ThingFragment(TD_DICT_01)).expose()
-        wot_01.produce(ThingFragment(TD_DICT_02)).expose()
+    wot_01.produce(ThingFragment(TD_DICT_01)).expose()
+    wot_01.produce(ThingFragment(TD_DICT_02)).expose()
 
-        thing_filter = ThingFilterDict(method=DiscoveryMethod.MULTICAST)
+    thing_filter = ThingFilterDict(method=DiscoveryMethod.MULTICAST)
 
-        observable = wot_02.discover(thing_filter, dnssd_find_kwargs={
-            "min_results": 1,
-            "timeout": 5
-        })
+    observable = wot_02.discover(
+        thing_filter, dnssd_find_kwargs={"min_results": 1, "timeout": 5}
+    )
 
-        subscription = observable.subscribe(
-            on_next=lambda td_str: found.append(ThingDescription(td_str)) or resolve())
+    subscription = observable.subscribe(
+        on_next=lambda td_str: found.append(ThingDescription(td_str)) or resolve()
+    )
 
-        yield future_done
+    await future_done
 
-        assert_equal_td_sequences(found, [TD_DICT_01, TD_DICT_02])
+    assert_equal_td_sequences(found, [TD_DICT_01, TD_DICT_02])
 
-        subscription.dispose()
+    subscription.dispose()
 
-        yield servient_01.shutdown()
-        yield servient_02.shutdown()
-
-    run_test_coroutine(test_coroutine)
+    await servient_01.shutdown()
+    await servient_02.shutdown()
 
 
-@pytest.mark.skipif(is_dnssd_supported(), reason="Only for platforms that do not support DNS-SD")
-def test_discovery_method_multicast_dnssd_unsupported():
+@pytest.mark.asyncio
+@pytest.mark.skipif(
+    is_dnssd_supported(), reason="Only for platforms that do not support DNS-SD"
+)
+async def test_discovery_method_multicast_dnssd_unsupported():
     """Attempting to discover other Things using multicast
     DNS-SD in an unsupported platform raises a warning."""
 
     servient = Servient(catalogue_port=None, dnssd_enabled=True)
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        wot = yield servient.start()
+    wot = await servient.start()
 
-        with warnings.catch_warnings(record=True) as warns:
-            wot.discover(ThingFilterDict(method=DiscoveryMethod.MULTICAST))
-            assert len(warns)
+    with warnings.catch_warnings(record=True) as warns:
+        wot.discover(ThingFilterDict(method=DiscoveryMethod.MULTICAST))
+        assert len(warns)
 
-        yield servient.shutdown()
-
-    run_test_coroutine(test_coroutine)
+    await servient.shutdown()
 
 
-def test_discovery_fragment():
+@pytest.mark.asyncio
+async def test_discovery_fragment():
     """The Thing filter fragment attribute enables discovering Things by matching TD fields."""
 
     servient = Servient(dnssd_enabled=False)
@@ -288,7 +268,7 @@ def test_discovery_fragment():
     wot.produce(ThingFragment(TD_DICT_01))
     wot.produce(ThingFragment(TD_DICT_02))
 
-    def first(thing_filter):
+    async def first(thing_filter):
         """Returns the first TD discovery for the given Thing filter."""
 
         future_done, found = tornado.concurrent.Future(), []
@@ -296,30 +276,32 @@ def test_discovery_fragment():
         def resolve():
             not future_done.done() and future_done.set_result(True)
 
-        @tornado.gen.coroutine
-        def discover_first():
+        async def discover_first():
             observable = wot.discover(thing_filter)
 
             subscription = observable.subscribe(
-                on_next=lambda td_str: found.append(ThingDescription(td_str)) or resolve())
+                on_next=lambda td_str: found.append(ThingDescription(td_str))
+                or resolve()
+            )
 
-            yield future_done
-
+            await future_done
             subscription.dispose()
-
             assert len(found)
 
-            raise tornado.gen.Return(found[0])
+            return found[0]
 
-        return tornado.ioloop.IOLoop.current().run_sync(discover_first, timeout=TIMEOUT_DISCOVER)
+        return await asyncio.wait_for(discover_first(), timeout=TIMEOUT_DISCOVER)
 
     fragment_td_pairs = [
         ({"title": TD_DICT_01.get("title")}, TD_DICT_01),
         ({"version": {"instance": "2.0.0"}}, TD_DICT_02),
         ({"id": TD_DICT_02.get("id")}, TD_DICT_02),
-        ({"securityDefinitions": {"psk_sc": {"scheme": "psk"}}}, TD_DICT_01)
+        ({"securityDefinitions": {"psk_sc": {"scheme": "psk"}}}, TD_DICT_01),
     ]
 
     for fragment, td_expected in fragment_td_pairs:
-        td_found = first(ThingFilterDict(method=DiscoveryMethod.LOCAL, fragment=fragment))
+        td_found = await first(
+            ThingFilterDict(method=DiscoveryMethod.LOCAL, fragment=fragment)
+        )
+
         assert_equal_tds(td_found, td_expected)

@@ -31,4 +31,4 @@ class JsonCodec(BaseCodec):
 
         json_str = json.dumps(value)
 
-        return json_str if isinstance(json_str, bytes) else json_str.encode('utf8')
+        return json_str if isinstance(json_str, bytes) else json_str.encode("utf8")

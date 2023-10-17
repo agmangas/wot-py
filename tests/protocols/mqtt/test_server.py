@@ -38,7 +38,7 @@ def build_topic(server, interaction, interaction_verb):
 def connect_broker(topics):
     """Connects to the test MQTT broker and subscribes to the topics."""
 
-    topics = [(topics, QOS_0)] if isinstance(topics, six.string_types) else topics
+    topics = [(topics, QOS_0)] if isinstance(topics, str) else topics
 
     hbmqtt_client = MQTTClient()
     yield hbmqtt_client.connect(get_test_broker_url())

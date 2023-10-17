@@ -22,9 +22,9 @@ class TextCodec(BaseCodec):
         """Takes an encoded value from a request that may be a UTF8 bytes
         or unicode string and decodes it to an unicode string."""
 
-        return value.decode('utf8') if isinstance(value, bytes) else value
+        return value.decode("utf8") if isinstance(value, bytes) else value
 
     def to_bytes(self, value):
         """Takes an unicode string and encodes it to an UTF8 bytes string."""
 
-        return value.encode('utf8')
+        return value.encode("utf8")

@@ -31,7 +31,7 @@ def merge_args_kwargs_dict(args, kwargs):
 def to_camel(val):
     """Takes a string and transforms it to camelCase."""
 
-    if not isinstance(val, six.string_types):
+    if not isinstance(val, str):
         raise ValueError
 
     parts = val.split("_")
@@ -43,7 +43,7 @@ def to_camel(val):
 def to_snake(val):
     """Takes a string and transforms it to snake_case."""
 
-    if not isinstance(val, six.string_types):
+    if not isinstance(val, str):
         raise ValueError
 
     return "".join(["_" + x.lower() if x.isupper() else x for x in val])
@@ -63,10 +63,7 @@ def to_json_obj(obj):
         pass
 
     try:
-        return {
-            key: to_json_obj(val)
-            for key, val in six.iteritems(vars(obj))
-        }
+        return {key: to_json_obj(val) for key, val in six.iteritems(vars(obj))}
     except TypeError:
         raise ValueError("Object {} is not JSON serializable".format(obj))
 
@@ -76,7 +73,7 @@ def get_main_ipv4_address():
     Attribution to the answer provided by Jamieson Becker on:
     https://stackoverflow.com/a/28950776"""
 
-    ip_range = ['10.255.255.255', '10.0.255.255', '10.0.0.255']
+    ip_range = ["10.255.255.255", "10.0.255.255", "10.0.0.255"]
 
     for ip in ip_range:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -86,7 +83,7 @@ def get_main_ipv4_address():
             sock.close()
             break
         except:
-            addr = '127.0.0.1'
+            addr = "127.0.0.1"
         finally:
             sock.close()
 

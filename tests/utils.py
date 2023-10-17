@@ -4,7 +4,6 @@
 import os
 import socket
 
-import six
 import tornado.ioloop
 from tornado.escape import to_unicode
 
@@ -15,7 +14,9 @@ TIMEOUT_CORO_VAR = "WOTPY_TESTS_CORO_TIMEOUT"
 def run_test_coroutine(coro, timeout=None):
     """Synchronously runs the given test coroutine with an optinally defined timeout."""
 
-    timeout = timeout if timeout else os.getenv(TIMEOUT_CORO_VAR, str(DEFAULT_TIMEOUT_SECS))
+    timeout = (
+        timeout if timeout else os.getenv(TIMEOUT_CORO_VAR, str(DEFAULT_TIMEOUT_SECS))
+    )
 
     tornado.ioloop.IOLoop.current().run_sync(coro, timeout=float(timeout))
 
@@ -29,7 +30,7 @@ def assert_equal_dict(dict_a, dict_b, compare_as_unicode=False):
         value_a = dict_a[key]
         value_b = dict_b[key]
 
-        if compare_as_unicode and isinstance(value_a, six.string_types):
+        if compare_as_unicode and isinstance(value_a, str):
             assert to_unicode(value_a) == to_unicode(value_b)
         else:
             assert value_a == value_b

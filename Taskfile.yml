@@ -34,6 +34,8 @@ tasks:
     cmds:
       - virtualenv --python python3 {{.VENV_PATH}}
       - "{{.VENV_PATH}}/bin/pip install -U -e '{{.ROOT_DIR}}[tests]'"
+    status:
+      - test -d {{.VENV_PATH}}
 
   docker-tests:
     desc: Run the tests in a Docker container
@@ -45,8 +47,9 @@ tasks:
       PYTHON_TAG: "{{.PYTHON_TAG}}"
       PYTEST_ARGS: "{{.PYTEST_ARGS}}"
     cmds:
-      - echo "✅ Running tests for Python {{.PYTHON_TAG}}..."
+      - echo "⚙️ Running tests for Python {{.PYTHON_TAG}}..."
       - "{{.ROOT_DIR}}/pytest-docker.sh"
+      - echo "✅ Tests for Python {{.PYTHON_TAG}} completed successfully"
 
   docker-tests-all:
     desc: Run the tests in a Docker container for all Python versions
@@ -55,6 +58,14 @@ tasks:
         task: docker-tests
         vars:
           PYTHON_TAG: "{{.ITEM}}"
+
+  tests:
+    desc: Run the tests in the local virtualenv
+    deps:
+      - venv
+    dir: "{{.ROOT_DIR}}"
+    cmds:
+      - "{{.VENV_PATH}}/bin/pytest -v"
 
   version:
     desc: Bump the package version

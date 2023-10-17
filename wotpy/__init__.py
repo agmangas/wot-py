@@ -6,6 +6,7 @@ logger_base.addHandler(logging.NullHandler())
 
 if os.environ.get("WOTPY_ENABLE_UVLOOP", False):
     try:
+        # trunk-ignore(ruff/F401)
         import asyncio
         import uvloop
 
