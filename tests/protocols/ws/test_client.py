@@ -4,7 +4,6 @@ import random
 import uuid
 
 import pytest
-import six
 import tornado.concurrent
 import tornado.gen
 import tornado.ioloop
@@ -14,15 +13,16 @@ from mock import patch
 from rx.concurrency import IOLoopScheduler
 from tornado.concurrent import Future
 
-from tests.protocols.helpers import \
-    client_test_on_event, \
-    client_test_read_property, \
-    client_test_write_property, \
-    client_test_invoke_action, \
-    client_test_invoke_action_error, \
-    client_test_on_property_change_error
+from tests.protocols.helpers import (
+    client_test_invoke_action,
+    client_test_invoke_action_error,
+    client_test_on_event,
+    client_test_on_property_change_error,
+    client_test_read_property,
+    client_test_write_property,
+)
 from tests.utils import run_test_coroutine
-from wotpy.protocols.exceptions import ProtocolClientException, ClientRequestTimeout
+from wotpy.protocols.exceptions import ClientRequestTimeout, ProtocolClientException
 from wotpy.protocols.ws.client import WebsocketClient
 from wotpy.wot.td import ThingDescription
 
@@ -128,11 +128,11 @@ def test_on_property_change(websocket_servient):
 
         yield list(future_values_01.values())
 
-        assert next(fut for fut in six.itervalues(future_values_02) if not fut.done())
+        assert next(fut for fut in future_values_02.values() if not fut.done())
 
         subscription_01.dispose()
 
-        for val in prop_values_02[len(prop_values_01):]:
+        for val in prop_values_02[len(prop_values_01) :]:
             yield exposed_thing.write_property(prop_name_02, val)
 
         yield list(future_values_02.values())
@@ -164,24 +164,30 @@ def test_timeout_read_property(websocket_servient):
     """Timeouts can be defined on Property reads."""
 
     # noinspection PyUnresolvedReferences
-    with patch.object(WebsocketClient, '_send_message', _condition_coro):
+    with patch.object(WebsocketClient, "_send_message", _condition_coro):
         with pytest.raises(ClientRequestTimeout):
-            client_test_read_property(websocket_servient, WebsocketClient, timeout=random.random())
+            client_test_read_property(
+                websocket_servient, WebsocketClient, timeout=random.random()
+            )
 
 
 def test_timeout_write_property(websocket_servient):
     """Timeouts can be defined on Property writes."""
 
     # noinspection PyUnresolvedReferences
-    with patch.object(WebsocketClient, '_send_message', _condition_coro):
+    with patch.object(WebsocketClient, "_send_message", _condition_coro):
         with pytest.raises(ClientRequestTimeout):
-            client_test_write_property(websocket_servient, WebsocketClient, timeout=random.random())
+            client_test_write_property(
+                websocket_servient, WebsocketClient, timeout=random.random()
+            )
 
 
 def test_timeout_invoke_action(websocket_servient):
     """Timeouts can be defined on Action invocations."""
 
     # noinspection PyUnresolvedReferences
-    with patch.object(WebsocketClient, '_send_message', _condition_coro):
+    with patch.object(WebsocketClient, "_send_message", _condition_coro):
         with pytest.raises(ClientRequestTimeout):
-            client_test_invoke_action(websocket_servient, WebsocketClient, timeout=random.random())
+            client_test_invoke_action(
+                websocket_servient, WebsocketClient, timeout=random.random()
+            )

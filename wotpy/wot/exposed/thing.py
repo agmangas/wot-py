@@ -5,29 +5,36 @@
 Classes that represent Things exposed by a servient.
 """
 
-import tornado.gen
+import asyncio
+from asyncio import Future
+
 from rx import Observable
 from rx.concurrency import IOLoopScheduler
 from rx.subjects import Subject
-from tornado.concurrent import Future
 
 from wotpy.utils.enums import EnumListMixin
 from wotpy.utils.utils import to_camel
-from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
+from wotpy.wot.dictionaries.interaction import (
+    ActionFragmentDict,
+    EventFragmentDict,
+    PropertyFragmentDict,
+)
 from wotpy.wot.enums import DefaultThingEvent, TDChangeMethod, TDChangeType
-from wotpy.wot.events import \
-    EmittedEvent, \
-    PropertyChangeEmittedEvent, \
-    ThingDescriptionChangeEmittedEvent, \
-    ActionInvocationEmittedEvent, \
-    PropertyChangeEventInit, \
-    ActionInvocationEventInit, \
-    ThingDescriptionChangeEventInit
-from wotpy.wot.exposed.interaction_map import \
-    ExposedThingEventDict, \
-    ExposedThingActionDict, \
-    ExposedThingPropertyDict
-from wotpy.wot.interaction import Property, Action, Event
+from wotpy.wot.events import (
+    ActionInvocationEmittedEvent,
+    ActionInvocationEventInit,
+    EmittedEvent,
+    PropertyChangeEmittedEvent,
+    PropertyChangeEventInit,
+    ThingDescriptionChangeEmittedEvent,
+    ThingDescriptionChangeEventInit,
+)
+from wotpy.wot.exposed.interaction_map import (
+    ExposedThingActionDict,
+    ExposedThingEventDict,
+    ExposedThingPropertyDict,
+)
+from wotpy.wot.interaction import Action, Event, Property
 from wotpy.wot.td import ThingDescription
 from wotpy.wot.thing import Thing
 
@@ -53,20 +60,18 @@ class ExposedThing(object):
         self._servient = servient
         self._thing = thing
 
-        self._interaction_states = {
-            self.InteractionStateKeys.PROPERTY_VALUES: {}
-        }
+        self._interaction_states = {self.InteractionStateKeys.PROPERTY_VALUES: {}}
 
         self._handlers_global = {
             self.HandlerKeys.RETRIEVE_PROPERTY: self._default_retrieve_property_handler,
             self.HandlerKeys.UPDATE_PROPERTY: self._default_update_property_handler,
-            self.HandlerKeys.INVOKE_ACTION: self._default_invoke_action_handler
+            self.HandlerKeys.INVOKE_ACTION: self._default_invoke_action_handler,
         }
 
         self._handlers = {
             self.HandlerKeys.RETRIEVE_PROPERTY: {},
             self.HandlerKeys.UPDATE_PROPERTY: {},
-            self.HandlerKeys.INVOKE_ACTION: {}
+            self.HandlerKeys.INVOKE_ACTION: {},
         }
 
         self._events_stream = Subject()
@@ -119,7 +124,10 @@ class ExposedThing(object):
     def _get_handler(self, handler_type, interaction=None):
         """Returns the currently defined handler for the given handler type."""
 
-        interaction_handler = self._handlers.get(handler_type, {}).get(interaction, None)
+        interaction_handler = self._handlers.get(handler_type, {}).get(
+            interaction, None
+        )
+
         return interaction_handler or self._handlers_global[handler_type]
 
     def _find_interaction(self, name):
@@ -152,7 +160,6 @@ class ExposedThing(object):
 
         return future_write
 
-    # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def _default_invoke_action_handler(self, parameters):
         """Default handler for onInvokeAction."""
 
@@ -197,8 +204,7 @@ class ExposedThing(object):
 
         return ExposedThingEventDict(exposed_thing=self)
 
-    @tornado.gen.coroutine
-    def read_property(self, name):
+    async def read_property(self, name):
         """Takes the Property name as the name argument, then requests from
         the underlying platform and the Protocol Bindings to retrieve the
         Property on the remote Thing and return the result. Returns a Future
@@ -206,17 +212,18 @@ class ExposedThing(object):
 
         proprty = self.thing.properties[name]
 
-        handler = self._handlers.get(self.HandlerKeys.RETRIEVE_PROPERTY, {}).get(proprty, None)
+        handler = self._handlers.get(self.HandlerKeys.RETRIEVE_PROPERTY, {}).get(
+            proprty, None
+        )
 
         if handler:
-            value = yield handler()
+            value = await handler()
         else:
-            value = yield self._default_retrieve_property_handler(name)
+            value = await self._default_retrieve_property_handler(name)
 
-        raise tornado.gen.Return(value)
+        return value
 
-    @tornado.gen.coroutine
-    def write_property(self, name, value):
+    async def write_property(self, name, value):
         """Takes the Property name as the name argument and the new value as the
         value argument, then requests from the underlying platform and the Protocol
         Bindings to update the Property on the remote Thing and return the result.
@@ -227,48 +234,45 @@ class ExposedThing(object):
         if not proprty.writable:
             raise TypeError("Property is non-writable")
 
-        handler = self._handlers.get(self.HandlerKeys.UPDATE_PROPERTY, {}).get(proprty, None)
+        handler = self._handlers.get(self.HandlerKeys.UPDATE_PROPERTY, {}).get(
+            proprty, None
+        )
 
         if handler:
-            yield handler(value)
+            await asyncio.wrap_future(handler(value))
         else:
-            yield self._default_update_property_handler(name, value)
+            await self._default_update_property_handler(name, value)
 
         event_init = PropertyChangeEventInit(name=name, value=value)
         self._events_stream.on_next(PropertyChangeEmittedEvent(init=event_init))
 
-    @tornado.gen.coroutine
-    def invoke_action(self, name, input_value=None):
+    async def invoke_action(self, name, input_value=None):
         """Invokes an Action with the given parameters and yields with the invocation result."""
 
         action = self.thing.actions[name]
 
         handler = self._get_handler(
-            handler_type=self.HandlerKeys.INVOKE_ACTION,
-            interaction=action)
+            handler_type=self.HandlerKeys.INVOKE_ACTION, interaction=action
+        )
 
-        result = yield handler({
-            "input": input_value
-        })
+        result = await asyncio.wrap_future(handler({"input": input_value}))
 
         event_init = ActionInvocationEventInit(action_name=name, return_value=result)
         emitted_event = ActionInvocationEmittedEvent(init=event_init)
         self._events_stream.on_next(emitted_event)
 
-        raise tornado.gen.Return(result)
+        return result
 
     def on_event(self, name):
         """Returns an Observable for the Event specified in the name argument,
         allowing subscribing to and unsubscribing from notifications."""
 
         if name not in self.thing.events:
-            # noinspection PyUnresolvedReferences
             return Observable.throw(Exception("Unknown event"))
 
         def event_filter(item):
             return item.name == name
 
-        # noinspection PyUnresolvedReferences
         return self._events_stream.filter(event_filter)
 
     def on_property_change(self, name):
@@ -278,18 +282,17 @@ class ExposedThing(object):
         try:
             interaction = self._find_interaction(name=name)
         except ValueError:
-            # noinspection PyUnresolvedReferences
             return Observable.throw(Exception("Unknown property"))
 
         if not interaction.observable:
-            # noinspection PyUnresolvedReferences
             return Observable.throw(Exception("Property is not observable"))
 
         def property_change_filter(item):
-            return item.name == DefaultThingEvent.PROPERTY_CHANGE and \
-                   item.data.name == name
+            return (
+                item.name == DefaultThingEvent.PROPERTY_CHANGE
+                and item.data.name == name
+            )
 
-        # noinspection PyUnresolvedReferences
         return self._events_stream.filter(property_change_filter)
 
     def on_td_change(self):
@@ -299,7 +302,6 @@ class ExposedThing(object):
         def td_change_filter(item):
             return item.name == DefaultThingEvent.DESCRIPTION_CHANGE
 
-        # noinspection PyUnresolvedReferences
         return self._events_stream.filter(td_change_filter)
 
     def expose(self):
@@ -340,7 +342,8 @@ class ExposedThing(object):
             method=TDChangeMethod.ADD,
             name=name,
             data=property_init.to_dict(),
-            description=ThingDescription.from_thing(self.thing).to_dict())
+            description=ThingDescription.from_thing(self.thing).to_dict(),
+        )
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
@@ -353,7 +356,8 @@ class ExposedThing(object):
         event_data = ThingDescriptionChangeEventInit(
             td_change_type=TDChangeType.PROPERTY,
             method=TDChangeMethod.REMOVE,
-            name=name)
+            name=name,
+        )
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
@@ -373,7 +377,8 @@ class ExposedThing(object):
             method=TDChangeMethod.ADD,
             name=name,
             data=action_init.to_dict(),
-            description=ThingDescription.from_thing(self.thing).to_dict())
+            description=ThingDescription.from_thing(self.thing).to_dict(),
+        )
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
@@ -387,9 +392,8 @@ class ExposedThing(object):
         self._thing.remove_interaction(name=name)
 
         event_data = ThingDescriptionChangeEventInit(
-            td_change_type=TDChangeType.ACTION,
-            method=TDChangeMethod.REMOVE,
-            name=name)
+            td_change_type=TDChangeType.ACTION, method=TDChangeMethod.REMOVE, name=name
+        )
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
@@ -409,7 +413,8 @@ class ExposedThing(object):
             method=TDChangeMethod.ADD,
             name=name,
             data=event_init.to_dict(),
-            description=ThingDescription.from_thing(self.thing).to_dict())
+            description=ThingDescription.from_thing(self.thing).to_dict(),
+        )
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
@@ -420,51 +425,56 @@ class ExposedThing(object):
         self._thing.remove_interaction(name=name)
 
         event_data = ThingDescriptionChangeEventInit(
-            td_change_type=TDChangeType.EVENT,
-            method=TDChangeMethod.REMOVE,
-            name=name)
+            td_change_type=TDChangeType.EVENT, method=TDChangeMethod.REMOVE, name=name
+        )
 
         self._events_stream.on_next(ThingDescriptionChangeEmittedEvent(init=event_data))
 
     def set_action_handler(self, name, action_handler):
         """Takes name as string argument and action_handler as argument of type ActionHandler.
         Sets the handler function for the specified Action matched by name.
-        Throws on error. Returns a reference to the same object for supporting chaining."""
+        Throws on error. Returns a reference to the same object for supporting chaining.
+        """
 
         action = self.thing.actions[name]
 
         self._set_handler(
             handler_type=self.HandlerKeys.INVOKE_ACTION,
             handler=action_handler,
-            interaction=action)
+            interaction=action,
+        )
 
         return self
 
     def set_property_read_handler(self, name, read_handler):
         """Takes name as string argument and read_handler as argument of type PropertyReadHandler.
         Sets the handler function for reading the specified Property matched by name.
-        Throws on error. Returns a reference to the same object for supporting chaining."""
+        Throws on error. Returns a reference to the same object for supporting chaining.
+        """
 
         proprty = self.thing.properties[name]
 
         self._set_handler(
             handler_type=self.HandlerKeys.RETRIEVE_PROPERTY,
             handler=read_handler,
-            interaction=proprty)
+            interaction=proprty,
+        )
 
         return self
 
     def set_property_write_handler(self, name, write_handler):
         """Takes name as string argument and write_handler as argument of type PropertyWriteHandler.
         Sets the handler function for writing the specified Property matched by name.
-        Throws on error. Returns a reference to the same object for supporting chaining."""
+        Throws on error. Returns a reference to the same object for supporting chaining.
+        """
 
         proprty = self.thing.properties[name]
 
         self._set_handler(
             handler_type=self.HandlerKeys.UPDATE_PROPERTY,
             handler=write_handler,
-            interaction=proprty)
+            interaction=proprty,
+        )
 
         return self
 

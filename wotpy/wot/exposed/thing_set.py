@@ -39,10 +39,9 @@ class ExposedThingSet(object):
 
         exposed_thing = self.find_by_thing_id(thing_id)
 
-        if exposed_thing is None:
+        if exposed_thing is None or exposed_thing.thing.id not in self._exposed_things:
             raise ValueError("Unknown Exposed Thing: {}".format(thing_id))
 
-        assert exposed_thing.thing.id in self._exposed_things
         self._exposed_things.pop(exposed_thing.thing.id)
 
     def find_by_thing_id(self, thing_id):
@@ -51,9 +50,13 @@ class ExposedThingSet(object):
         (which is also unique and based on the ID)."""
 
         def is_match(exp_thing):
-            return exp_thing.thing.id == thing_id or exp_thing.thing.url_name == thing_id
+            return (
+                exp_thing.thing.id == thing_id or exp_thing.thing.url_name == thing_id
+            )
 
-        return next((item for item in self._exposed_things.values() if is_match(item)), None)
+        return next(
+            (item for item in self._exposed_things.values() if is_match(item)), None
+        )
 
     def find_by_interaction(self, interaction):
         """Finds the ExposedThing whose Thing contains the given Interaction."""
@@ -61,4 +64,6 @@ class ExposedThingSet(object):
         def is_match(exp_thing):
             return exp_thing.thing is interaction.thing
 
-        return next((item for item in self._exposed_things.values() if is_match(item)), None)
+        return next(
+            (item for item in self._exposed_things.values() if is_match(item)), None
+        )

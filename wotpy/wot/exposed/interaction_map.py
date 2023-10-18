@@ -5,10 +5,9 @@
 Classes that represent Interaction instances accessed on a ExposedThing.
 """
 
-import six
-import tornado.gen
+from collections import UserDict
+
 from rx.concurrency import IOLoopScheduler
-from six.moves import UserDict
 from slugify import slugify
 
 
@@ -24,7 +23,14 @@ class ExposedThingInteractionDict(UserDict):
         """Takes a case-insensitive URL-safe interaction name and returns
         the actual name in the interaction dict."""
 
-        return next((key for key in six.iterkeys(self.interaction_dict) if slugify(key) == slugify(name)), None)
+        return next(
+            (
+                key
+                for key in self.interaction_dict.keys()
+                if slugify(key) == slugify(name)
+            ),
+            None,
+        )
 
     def __getitem__(self, name):
         """Lazily build and return an object that implements the Interaction interface."""
@@ -43,7 +49,7 @@ class ExposedThingInteractionDict(UserDict):
         return self._find_normalized_name(item) is not None
 
     def __iter__(self):
-        return six.iterkeys(self.interaction_dict)
+        return iter(self.interaction_dict.keys())
 
     @property
     def interaction_dict(self):
@@ -106,7 +112,9 @@ class ExposedThingProperty(object):
         self._name = name
 
     def __str__(self):
-        return "<{}> ({}::{})".format(self.__class__.__name__, self._exposed_thing.id, self._name)
+        return "<{}> ({}::{})".format(
+            self.__class__.__name__, self._exposed_thing.id, self._name
+        )
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
@@ -114,22 +122,20 @@ class ExposedThingProperty(object):
 
         return getattr(self._exposed_thing.thing.properties[self._name], name)
 
-    @tornado.gen.coroutine
-    def read(self):
+    async def read(self):
         """The get() method will fetch the value of the Property.
         A coroutine that yields the value or raises an error."""
 
-        value = yield self._exposed_thing.read_property(self._name)
-        raise tornado.gen.Return(value)
+        value = await self._exposed_thing.read_property(self._name)
+        return value
 
-    @tornado.gen.coroutine
-    def write(self, value):
+    async def write(self, value):
         """The set() method will attempt to set the value of the
         Property specified in the value argument whose type SHOULD
         match the one specified by the type property.
         A coroutine that yields on success or raises an error."""
 
-        yield self._exposed_thing.write_property(self._name, value)
+        await self._exposed_thing.write_property(self._name, value)
 
     def subscribe(self, *args, **kwargs):
         """Subscribe to an stream of events emitted when the property value changes."""
@@ -146,7 +152,9 @@ class ExposedThingAction(object):
         self._name = name
 
     def __str__(self):
-        return "<{}> ({}::{})".format(self.__class__.__name__, self._exposed_thing.id, self._name)
+        return "<{}> ({}::{})".format(
+            self.__class__.__name__, self._exposed_thing.id, self._name
+        )
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
@@ -154,14 +162,13 @@ class ExposedThingAction(object):
 
         return getattr(self._exposed_thing.thing.actions[self._name], name)
 
-    @tornado.gen.coroutine
-    def invoke(self, *args):
+    async def invoke(self, *args):
         """The run() method when invoked, starts the Action interaction
         with the input value provided by the inputValue argument."""
 
         input_value = args[0] if len(args) else None
-        result = yield self._exposed_thing.invoke_action(self._name, input_value)
-        raise tornado.gen.Return(result)
+        result = await self._exposed_thing.invoke_action(self._name, input_value)
+        return result
 
 
 class ExposedThingEvent(object):
@@ -172,7 +179,9 @@ class ExposedThingEvent(object):
         self._name = name
 
     def __str__(self):
-        return "<{}> ({}::{})".format(self.__class__.__name__, self._exposed_thing.id, self._name)
+        return "<{}> ({}::{})".format(
+            self.__class__.__name__, self._exposed_thing.id, self._name
+        )
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in

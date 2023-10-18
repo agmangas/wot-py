@@ -5,10 +5,8 @@
 Wrapper classes for data schema dictionaries defined in the Scripting API.
 """
 
-import six
-
-from wotpy.wot.dictionaries.base import WotBaseDict
 from wotpy.utils.utils import merge_args_kwargs_dict
+from wotpy.wot.dictionaries.base import WotBaseDict
 from wotpy.wot.enums import DataType
 
 
@@ -24,13 +22,10 @@ class DataSchemaDict(WotBaseDict):
             "unit",
             "enum",
             "readOnly",
-            "writeOnly"
+            "writeOnly",
         }
 
-        defaults = {
-            "readOnly": False,
-            "writeOnly": False
-        }
+        defaults = {"readOnly": False, "writeOnly": False}
 
     @classmethod
     def build(cls, *args, **kwargs):
@@ -44,7 +39,7 @@ class DataSchemaDict(WotBaseDict):
             DataType.STRING: StringSchemaDict,
             DataType.OBJECT: ObjectSchemaDict,
             DataType.ARRAY: ArraySchemaDict,
-            DataType.INTEGER: IntegerSchema
+            DataType.INTEGER: IntegerSchema,
         }
 
         klass_type = init_dict.get("type")
@@ -60,10 +55,7 @@ class NumberSchemaDict(DataSchemaDict):
     """Properties to describe a numeric type."""
 
     class Meta:
-        fields = DataSchemaDict.Meta.fields.union({
-            "minimum",
-            "maximum"
-        })
+        fields = DataSchemaDict.Meta.fields.union({"minimum", "maximum"})
 
         defaults = DataSchemaDict.Meta.defaults
 
@@ -98,10 +90,7 @@ class ObjectSchemaDict(DataSchemaDict):
     """Properties to describe an object type."""
 
     class Meta:
-        fields = DataSchemaDict.Meta.fields.union({
-            "properties",
-            "required"
-        })
+        fields = DataSchemaDict.Meta.fields.union({"properties", "required"})
 
         defaults = DataSchemaDict.Meta.defaults
 
@@ -117,7 +106,7 @@ class ObjectSchemaDict(DataSchemaDict):
 
         return {
             key: DataSchemaDict.build(val)
-            for key, val in six.iteritems(self._init.get("properties", {}))
+            for key, val in self._init.get("properties", {}).items()
         }
 
 
@@ -125,12 +114,7 @@ class ArraySchemaDict(DataSchemaDict):
     """Properties to describe an array type."""
 
     class Meta:
-        fields = DataSchemaDict.Meta.fields.union({
-            "items",
-            "minItems",
-            "maxItems"
-        })
-
+        fields = DataSchemaDict.Meta.fields.union({"items", "minItems", "maxItems"})
         defaults = DataSchemaDict.Meta.defaults
 
     @property
@@ -143,7 +127,9 @@ class ArraySchemaDict(DataSchemaDict):
     def items(self):
         """Used to define the characteristics of an array."""
 
-        return DataSchemaDict.build(self._init["items"]) if "items" in self._init else None
+        return (
+            DataSchemaDict.build(self._init["items"]) if "items" in self._init else None
+        )
 
 
 class IntegerSchema(NumberSchemaDict):

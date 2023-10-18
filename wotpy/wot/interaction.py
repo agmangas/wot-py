@@ -7,12 +7,15 @@ Classes that represent all interaction patterns.
 
 from abc import ABCMeta, abstractmethod
 
-# noinspection PyPackageRequirements
 from slugify import slugify
 
+from wotpy.wot.dictionaries.interaction import (
+    ActionFragmentDict,
+    EventFragmentDict,
+    PropertyFragmentDict,
+)
 from wotpy.wot.enums import InteractionTypes
 from wotpy.wot.validation import is_valid_safe_name
-from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 
 
 class InteractionPattern(object):
@@ -120,7 +123,8 @@ class Property(InteractionPattern):
 
 class Action(InteractionPattern):
     """Actions offer functions of the Thing. These functions may manipulate the
-    internal state of a Thing in a way that is not possible through setting Properties."""
+    internal state of a Thing in a way that is not possible through setting Properties.
+    """
 
     @property
     def init_class(self):

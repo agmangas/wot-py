@@ -11,7 +11,6 @@ import logging
 import warnings
 
 import tornado.gen
-import tornado.ioloop
 from rx import Observable
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 
@@ -152,7 +151,7 @@ class WoT(object):
             def unsubscribe():
                 state["stop"] = True
 
-            tornado.ioloop.IOLoop.current().add_callback(callback)
+            asyncio.get_event_loop().call_soon(callback)
 
             return unsubscribe
 

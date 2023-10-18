@@ -8,7 +8,6 @@ from asyncio import TimeoutError
 import random
 
 import pytest
-import six
 import tornado.concurrent
 import tornado.gen
 import tornado.ioloop
@@ -16,14 +15,20 @@ from faker import Faker
 from hbmqtt.client import MQTTClient
 from hbmqtt.mqtt.constants import QOS_2, QOS_0
 
-from tests.protocols.mqtt.broker import is_test_broker_online, BROKER_SKIP_REASON, get_test_broker_url
+from tests.protocols.mqtt.broker import (
+    is_test_broker_online,
+    BROKER_SKIP_REASON,
+    get_test_broker_url,
+)
 from tests.utils import run_test_coroutine
 from wotpy.protocols.enums import InteractionVerbs
 from wotpy.protocols.mqtt.handlers.action import ActionMQTTHandler
 from wotpy.protocols.mqtt.server import MQTTServer
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict
 
-pytestmark = pytest.mark.skipif(is_test_broker_online() is False, reason=BROKER_SKIP_REASON)
+pytestmark = pytest.mark.skipif(
+    is_test_broker_online() is False, reason=BROKER_SKIP_REASON
+)
 
 
 def build_topic(server, interaction, interaction_verb):
@@ -112,7 +117,9 @@ def test_servient_id():
     mqtt_srv_02 = MQTTServer(broker_url=broker_url)
     mqtt_srv_03 = MQTTServer(broker_url=broker_url, servient_id=Faker().pystr())
 
-    assert mqtt_srv_01.servient_id and mqtt_srv_02.servient_id and mqtt_srv_03.servient_id
+    assert (
+        mqtt_srv_01.servient_id and mqtt_srv_02.servient_id and mqtt_srv_03.servient_id
+    )
     assert mqtt_srv_01.servient_id == mqtt_srv_02.servient_id
     assert mqtt_srv_01.servient_id != mqtt_srv_03.servient_id
 
@@ -124,15 +131,8 @@ def test_servient_id():
 
     @tornado.gen.coroutine
     def test_coroutine():
-        yield [
-            mqtt_srv_01.start(),
-            mqtt_srv_03.start()
-        ]
-
-        yield [
-            assert_ping_loop(mqtt_srv_01),
-            assert_ping_loop(mqtt_srv_03)
-        ]
+        yield [mqtt_srv_01.start(), mqtt_srv_03.start()]
+        yield [assert_ping_loop(mqtt_srv_01), assert_ping_loop(mqtt_srv_03)]
 
     run_test_coroutine(test_coroutine)
 
@@ -141,7 +141,7 @@ def test_property_read(mqtt_server):
     """Current Property values may be requested using the MQTT binding."""
 
     exposed_thing = next(mqtt_server.exposed_things)
-    prop_name = next(six.iterkeys(exposed_thing.thing.properties))
+    prop_name = next(iter(exposed_thing.thing.properties.keys()))
     prop = exposed_thing.thing.properties[prop_name]
     topic_read = build_topic(mqtt_server, prop, InteractionVerbs.READ_PROPERTY)
     topic_observe = build_topic(mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY)
@@ -157,7 +157,7 @@ def test_property_read(mqtt_server):
 
         try:
             yield client_observe.deliver_message(timeout=observe_timeout_secs)
-            raise AssertionError('Unexpected message on topic {}'.format(topic_observe))
+            raise AssertionError("Unexpected message on topic {}".format(topic_observe))
         except TimeoutError:
             pass
 
@@ -182,7 +182,7 @@ def test_property_write(mqtt_server):
     """Property values may be updated using the MQTT binding."""
 
     exposed_thing = next(mqtt_server.exposed_things)
-    prop_name = next(six.iterkeys(exposed_thing.thing.properties))
+    prop_name = next(iter(exposed_thing.thing.properties.keys()))
     prop = exposed_thing.thing.properties[prop_name]
     topic_write = build_topic(mqtt_server, prop, InteractionVerbs.WRITE_PROPERTY)
     topic_observe = build_topic(mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY)
@@ -224,29 +224,34 @@ def test_property_write(mqtt_server):
 CALLBACK_MS = 50
 
 
-@pytest.mark.parametrize("mqtt_server", [{"property_callback_ms": CALLBACK_MS}], indirect=True)
+@pytest.mark.parametrize(
+    "mqtt_server", [{"property_callback_ms": CALLBACK_MS}], indirect=True
+)
 def test_property_add_remove(mqtt_server):
     """The MQTT binding reacts appropriately to Properties
     being added and removed from ExposedThings."""
 
     exposed_thing = next(mqtt_server.exposed_things)
-    prop_names = list(six.iterkeys(exposed_thing.thing.properties))
+    prop_names = list(exposed_thing.thing.properties.keys())
 
     for name in prop_names:
         exposed_thing.remove_property(name)
 
     def add_prop(pname):
-        exposed_thing.add_property(pname, PropertyFragmentDict({
-            "type": "number",
-            "observable": True
-        }), value=Faker().pyint())
+        exposed_thing.add_property(
+            pname,
+            PropertyFragmentDict({"type": "number", "observable": True}),
+            value=Faker().pyint(),
+        )
 
     def del_prop(pname):
         exposed_thing.remove_property(pname)
 
     @tornado.gen.coroutine
     def is_prop_active(prop, timeout_secs=1.0):
-        topic_observe = build_topic(mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY)
+        topic_observe = build_topic(
+            mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY
+        )
         topic_write = build_topic(mqtt_server, prop, InteractionVerbs.WRITE_PROPERTY)
 
         client_observe = yield connect_broker(topic_observe)
@@ -321,7 +326,7 @@ def test_observe_property_changes(mqtt_server):
     """Property updates may be observed using the MQTT binding."""
 
     exposed_thing = next(mqtt_server.exposed_things)
-    prop_name = next(six.iterkeys(exposed_thing.thing.properties))
+    prop_name = next(iter(exposed_thing.thing.properties.keys()))
     prop = exposed_thing.thing.properties[prop_name]
     topic_observe = build_topic(mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY)
 
@@ -353,7 +358,7 @@ def test_observe_event(mqtt_server):
     now_ms = int(time.time() * 1000)
 
     exposed_thing = next(mqtt_server.exposed_things)
-    event_name = next(six.iterkeys(exposed_thing.thing.events))
+    event_name = next(iter(exposed_thing.thing.events.keys()))
     event = exposed_thing.thing.events[event_name]
     topic = build_topic(mqtt_server, event, InteractionVerbs.SUBSCRIBE_EVENT)
 
@@ -387,7 +392,7 @@ def test_action_invoke(mqtt_server):
     """Actions can be invoked using the MQTT binding."""
 
     exposed_thing = next(mqtt_server.exposed_things)
-    action_name = next(six.iterkeys(exposed_thing.thing.actions))
+    action_name = next(iter(exposed_thing.thing.actions.keys()))
     action = exposed_thing.thing.actions[action_name]
 
     topic_invoke = build_topic(mqtt_server, action, InteractionVerbs.INVOKE_ACTION)
@@ -398,10 +403,7 @@ def test_action_invoke(mqtt_server):
         client_invoke = yield connect_broker(topic_invoke)
         client_result = yield connect_broker(topic_result)
 
-        data = {
-            "id": uuid.uuid4().hex,
-            "input": Faker().pyint()
-        }
+        data = {"id": uuid.uuid4().hex, "input": Faker().pyint()}
 
         now_ms = int(time.time() * 1000)
 
@@ -429,10 +431,11 @@ def test_action_invoke_error(mqtt_server):
     def handler(parameters):
         raise TypeError(err_message)
 
-    exposed_thing.add_action(action_name, ActionFragmentDict({
-        "input": {"type": "string"},
-        "output": {"type": "string"}
-    }), handler)
+    exposed_thing.add_action(
+        action_name,
+        ActionFragmentDict({"input": {"type": "string"}, "output": {"type": "string"}}),
+        handler,
+    )
 
     action = exposed_thing.thing.actions[action_name]
 
@@ -444,10 +447,7 @@ def test_action_invoke_error(mqtt_server):
         client_invoke = yield connect_broker(topic_invoke)
         client_result = yield connect_broker(topic_result)
 
-        data = {
-            "id": uuid.uuid4().hex,
-            "input": Faker().pyint()
-        }
+        data = {"id": uuid.uuid4().hex, "input": Faker().pyint()}
 
         yield client_invoke.publish(topic_invoke, json.dumps(data).encode(), qos=QOS_2)
 
@@ -465,7 +465,7 @@ def test_action_invoke_parallel(mqtt_server):
     """Multiple Actions can be invoked in parallel using the MQTT binding."""
 
     exposed_thing = next(mqtt_server.exposed_things)
-    action_name = next(six.iterkeys(exposed_thing.thing.actions))
+    action_name = next(iter(exposed_thing.thing.actions.keys()))
     action = exposed_thing.thing.actions[action_name]
 
     topic_invoke = build_topic(mqtt_server, action, InteractionVerbs.INVOKE_ACTION)
@@ -481,22 +481,23 @@ def test_action_invoke_parallel(mqtt_server):
         requests = []
 
         for idx in range(num_requests):
-            requests.append({
-                "id": uuid.uuid4().hex,
-                "input": Faker().pyint()
-            })
+            requests.append({"id": uuid.uuid4().hex, "input": Faker().pyint()})
 
         now_ms = int(time.time() * 1000)
 
         yield [
-            client_invoke.publish(topic_invoke, json.dumps(requests[idx]).encode(), qos=QOS_2)
+            client_invoke.publish(
+                topic_invoke, json.dumps(requests[idx]).encode(), qos=QOS_2
+            )
             for idx in range(num_requests)
         ]
 
         for idx in range(num_requests):
             msg = yield client_result.deliver_message()
             msg_data = json.loads(msg.data.decode())
-            expected = next(item for item in requests if item.get("id") == msg_data.get("id"))
+            expected = next(
+                item for item in requests if item.get("id") == msg_data.get("id")
+            )
 
             assert msg_data.get("id") == expected.get("id")
             assert msg_data.get("result") == "{:f}".format(expected.get("input"))

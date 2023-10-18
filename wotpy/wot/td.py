@@ -8,7 +8,6 @@ Classes that represent the JSON and JSON-LD serialization formats of a Thing Des
 import json
 
 import jsonschema
-import six
 
 from wotpy.wot.dictionaries.thing import ThingFragment
 from wotpy.wot.thing import Thing
@@ -17,7 +16,8 @@ from wotpy.wot.validation import SCHEMA_THING, InvalidDescription
 
 class ThingDescription(object):
     """Class that represents a Thing Description document.
-    Contains logic to validate and transform a Thing to a serialized TD and vice versa."""
+    Contains logic to validate and transform a Thing to a serialized TD and vice versa.
+    """
 
     def __init__(self, doc):
         """Constructor.
@@ -36,7 +36,7 @@ class ThingDescription(object):
         try:
             jsonschema.validate(doc, SCHEMA_THING)
         except (jsonschema.ValidationError, TypeError) as ex:
-            raise InvalidDescription(str(ex))
+            raise InvalidDescription(str(ex)) from ex
 
     @classmethod
     def from_thing(cls, thing):

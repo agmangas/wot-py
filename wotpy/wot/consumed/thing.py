@@ -5,13 +5,13 @@
 Class that represents a Thing consumed by a servient.
 """
 
-import tornado.gen
 from rx.concurrency import IOLoopScheduler
 
-from wotpy.wot.consumed.interaction_map import \
-    ConsumedThingPropertyDict, \
-    ConsumedThingActionDict, \
-    ConsumedThingEventDict
+from wotpy.wot.consumed.interaction_map import (
+    ConsumedThingActionDict,
+    ConsumedThingEventDict,
+    ConsumedThingPropertyDict,
+)
 
 
 class ConsumedThing(object):
@@ -44,25 +44,29 @@ class ConsumedThing(object):
 
         return self._td
 
-    @tornado.gen.coroutine
-    def invoke_action(self, name, input_value=None, timeout=None, client_kwargs=None):
+    async def invoke_action(
+        self, name, input_value=None, timeout=None, client_kwargs=None
+    ):
         """Takes the Action name from the name argument and the list of parameters,
         then requests from the underlying platform and the Protocol Bindings to invoke
         the Action on the remote Thing and return the result.
-        Returns a Future that resolves with the return value or rejects with an Error."""
+        Returns a Future that resolves with the return value or rejects with an Error.
+        """
 
         client = self.servient.select_client(self.td, name)
         client_kwargs = client_kwargs if client_kwargs else {}
 
-        result = yield client.invoke_action(
-            self.td, name, input_value,
+        result = await client.invoke_action(
+            self.td,
+            name,
+            input_value,
             timeout=timeout,
-            **client_kwargs.get(client.protocol, {}))
+            **client_kwargs.get(client.protocol, {})
+        )
 
-        raise tornado.gen.Return(result)
+        return result
 
-    @tornado.gen.coroutine
-    def write_property(self, name, value, timeout=None, client_kwargs=None):
+    async def write_property(self, name, value, timeout=None, client_kwargs=None):
         """Takes the Property name as the name argument and the new value as the value
         argument, then requests from the underlying platform and the Protocol Bindings
         to update the Property on the remote Thing and return the result.
@@ -71,27 +75,29 @@ class ConsumedThing(object):
         client = self.servient.select_client(self.td, name)
         client_kwargs = client_kwargs if client_kwargs else {}
 
-        yield client.write_property(
-            self.td, name, value,
+        await client.write_property(
+            self.td,
+            name,
+            value,
             timeout=timeout,
-            **client_kwargs.get(client.protocol, {}))
+            **client_kwargs.get(client.protocol, {})
+        )
 
-    @tornado.gen.coroutine
-    def read_property(self, name, timeout=None, client_kwargs=None):
+    async def read_property(self, name, timeout=None, client_kwargs=None):
         """Takes the Property name as the name argument, then requests from the
         underlying platform and the Protocol Bindings to retrieve the Property
         on the remote Thing and return the result.
-        Returns a Future that resolves with the Property value or rejects with an Error."""
+        Returns a Future that resolves with the Property value or rejects with an Error.
+        """
 
         client = self.servient.select_client(self.td, name)
         client_kwargs = client_kwargs if client_kwargs else {}
 
-        value = yield client.read_property(
-            self.td, name,
-            timeout=timeout,
-            **client_kwargs.get(client.protocol, {}))
+        value = await client.read_property(
+            self.td, name, timeout=timeout, **client_kwargs.get(client.protocol, {})
+        )
 
-        raise tornado.gen.Return(value)
+        return value
 
     def on_event(self, name, client_kwargs=None):
         """Returns an Observable for the Event specified in the name argument,
@@ -100,9 +106,7 @@ class ConsumedThing(object):
         client = self.servient.select_client(self.td, name)
         client_kwargs = client_kwargs if client_kwargs else {}
 
-        return client.on_event(
-            self.td, name,
-            **client_kwargs.get(client.protocol, {}))
+        return client.on_event(self.td, name, **client_kwargs.get(client.protocol, {}))
 
     def on_property_change(self, name, client_kwargs=None):
         """Returns an Observable for the Property specified in the name argument,
@@ -112,8 +116,8 @@ class ConsumedThing(object):
         client_kwargs = client_kwargs if client_kwargs else {}
 
         return client.on_property_change(
-            self.td, name,
-            **client_kwargs.get(client.protocol, {}))
+            self.td, name, **client_kwargs.get(client.protocol, {})
+        )
 
     def on_td_change(self):
         """Returns an Observable, allowing subscribing to and unsubscribing

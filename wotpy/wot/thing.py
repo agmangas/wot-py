@@ -9,12 +9,11 @@ import hashlib
 import itertools
 import uuid
 
-import six
 from slugify import slugify
 
 from wotpy.utils.utils import to_camel
 from wotpy.wot.dictionaries.thing import ThingFragment
-from wotpy.wot.interaction import Property, Action, Event
+from wotpy.wot.interaction import Action, Event, Property
 
 
 class Thing(object):
@@ -30,13 +29,15 @@ class Thing(object):
         "lastModified",
         "base",
         "links",
-        "security"
+        "security",
     }
 
     assert THING_FRAGMENT_WRITABLE_FIELDS.issubset(ThingFragment.Meta.fields)
 
     def __init__(self, thing_fragment=None, **kwargs):
-        self._thing_fragment = thing_fragment if thing_fragment else ThingFragment(**kwargs)
+        self._thing_fragment = (
+            thing_fragment if thing_fragment else ThingFragment(**kwargs)
+        )
         self._properties = {}
         self._actions = {}
         self._events = {}
@@ -61,15 +62,15 @@ class Thing(object):
     def _init_fragment_interactions(self):
         """Adds the interactions declared in the ThingFragment to the instance private dicts."""
 
-        for name, prop_fragment in six.iteritems(self._thing_fragment.properties):
+        for name, prop_fragment in self._thing_fragment.properties.items():
             prop = Property(thing=self, name=name, init_dict=prop_fragment)
             self.add_interaction(prop)
 
-        for name, action_fragment in six.iteritems(self._thing_fragment.actions):
+        for name, action_fragment in self._thing_fragment.actions.items():
             action = Action(thing=self, name=name, init_dict=action_fragment)
             self.add_interaction(action)
 
-        for name, event_fragment in six.iteritems(self._thing_fragment.events):
+        for name, event_fragment in self._thing_fragment.events.items():
             event = Event(thing=self, name=name, init_dict=event_fragment)
             self.add_interaction(event)
 
@@ -82,34 +83,36 @@ class Thing(object):
 
             ret = intrct.interaction_fragment.to_dict()
 
-            ret.update({
-                "forms": [form.form_dict.to_dict() for form in intrct.forms]
-            })
+            ret.update({"forms": [form.form_dict.to_dict() for form in intrct.forms]})
 
             return ret
 
         doc = self._thing_fragment.to_dict()
 
-        doc.update({
-            "properties": {
-                key: interaction_to_json(val)
-                for key, val in six.iteritems(self.properties)
+        doc.update(
+            {
+                "properties": {
+                    key: interaction_to_json(val)
+                    for key, val in self.properties.items()
+                }
             }
-        })
+        )
 
-        doc.update({
-            "actions": {
-                key: interaction_to_json(val)
-                for key, val in six.iteritems(self.actions)
+        doc.update(
+            {
+                "actions": {
+                    key: interaction_to_json(val) for key, val in self.actions.items()
+                }
             }
-        })
+        )
 
-        doc.update({
-            "events": {
-                key: interaction_to_json(val)
-                for key, val in six.iteritems(self.events)
+        doc.update(
+            {
+                "events": {
+                    key: interaction_to_json(val) for key, val in self.events.items()
+                }
             }
-        })
+        )
 
         return ThingFragment(doc)
 
@@ -131,6 +134,7 @@ class Thing(object):
         This value is deterministic and derived from the Thing ID.
         It may be of use when URL-unsafe chars are not acceptable."""
 
+        # trunk-ignore(bandit/B324)
         hasher = hashlib.md5()
         hasher.update(self.id.encode())
         bytes_id_hash = hasher.digest()
@@ -140,7 +144,8 @@ class Thing(object):
     @property
     def url_name(self):
         """Returns the URL-safe name of this Thing.
-        The URL name of a Thing is always unique and stable as long as the ID is unique."""
+        The URL name of a Thing is always unique and stable as long as the ID is unique.
+        """
 
         return slugify("{}-{}".format(self.title, self.uuid))
 
@@ -167,9 +172,8 @@ class Thing(object):
         """Sequence of interactions linked to this thing."""
 
         return itertools.chain(
-            self._properties.values(),
-            self._actions.values(),
-            self._events.values())
+            self._properties.values(), self._actions.values(), self._events.values()
+        )
 
     def find_interaction(self, name):
         """Finds an existing Interaction by name.
@@ -189,18 +193,22 @@ class Thing(object):
         if interaction.thing is not self:
             raise ValueError("Interaction linked to another Thing")
 
-        if self.find_interaction(interaction.name) or self.find_interaction(interaction.url_name):
+        if self.find_interaction(interaction.name) or self.find_interaction(
+            interaction.url_name
+        ):
             raise ValueError("Duplicate Interaction: {}".format(interaction.name))
 
         interaction_dict_map = {
             Property: self._properties,
             Action: self._actions,
-            Event: self._events
+            Event: self._events,
         }
 
         interaction_class = next(
-            klass for klass in [Property, Action, Event]
-            if isinstance(interaction, klass))
+            klass
+            for klass in [Property, Action, Event]
+            if isinstance(interaction, klass)
+        )
 
         interaction_dict_map[interaction_class][interaction.name] = interaction
 

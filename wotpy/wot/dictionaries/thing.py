@@ -5,13 +5,15 @@
 Wrapper class for dictionaries to represent Things.
 """
 
-import six
-
+from wotpy.utils.utils import to_camel
 from wotpy.wot.dictionaries.base import WotBaseDict
-from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
+from wotpy.wot.dictionaries.interaction import (
+    ActionFragmentDict,
+    EventFragmentDict,
+    PropertyFragmentDict,
+)
 from wotpy.wot.dictionaries.link import LinkDict
 from wotpy.wot.dictionaries.security import SecuritySchemeDict
-from wotpy.utils.utils import to_camel
 from wotpy.wot.dictionaries.version import VersioningDict
 from wotpy.wot.enums import SecuritySchemeType
 
@@ -37,16 +39,12 @@ class ThingFragment(WotBaseDict):
             "events",
             "links",
             "security",
-            "securityDefinitions"
+            "securityDefinitions",
         }
 
-        required = {
-            "id"
-        }
+        required = {"id"}
 
-        fields_readonly = [
-            "id"
-        ]
+        fields_readonly = ["id"]
 
         fields_str = [
             "title",
@@ -54,26 +52,25 @@ class ThingFragment(WotBaseDict):
             "support",
             "created",
             "lastModified",
-            "base"
+            "base",
         ]
 
-        fields_dict = [
-            "properties",
-            "actions",
-            "events",
-            "securityDefinitions"
-        ]
+        fields_dict = ["properties", "actions", "events", "securityDefinitions"]
 
-        fields_list = [
-            "links",
-            "security"
-        ]
+        fields_list = ["links", "security"]
 
-        fields_instance = [
-            "version"
-        ]
+        fields_instance = ["version"]
 
-        assert set(fields_readonly + fields_str + fields_dict + fields_list + fields_instance) == fields
+        assert (
+            set(
+                fields_readonly
+                + fields_str
+                + fields_dict
+                + fields_list
+                + fields_instance
+            )
+            == fields
+        )
 
     def __setattr__(self, name, value):
         """Checks to see if the attribute that is being set is a
@@ -92,7 +89,7 @@ class ThingFragment(WotBaseDict):
             return
 
         if name_camel in self.Meta.fields_dict:
-            self._init[name_camel] = {key: val.to_dict() for key, val in six.iteritems(value)}
+            self._init[name_camel] = {key: val.to_dict() for key, val in value.items()}
             return
 
         if name_camel in self.Meta.fields_list:
@@ -125,11 +122,15 @@ class ThingFragment(WotBaseDict):
     @property
     def security_definitions(self):
         if "security" not in self._init and "securityDefinitions" not in self._init:
-            return {"nosec_sc": SecuritySchemeDict.build({"scheme": SecuritySchemeType.NOSEC})}
+            return {
+                "nosec_sc": SecuritySchemeDict.build(
+                    {"scheme": SecuritySchemeType.NOSEC}
+                )
+            }
 
         return {
-            key: SecuritySchemeDict.build(val) 
-            for key, val in six.iteritems(self._init.get("securityDefinitions", {}))
+            key: SecuritySchemeDict.build(val)
+            for key, val in self._init.get("securityDefinitions", {}).items()
         }
 
     @property
@@ -139,7 +140,7 @@ class ThingFragment(WotBaseDict):
 
         return {
             key: PropertyFragmentDict(val)
-            for key, val in six.iteritems(self._init.get("properties", {}))
+            for key, val in self._init.get("properties", {}).items()
         }
 
     @property
@@ -149,7 +150,7 @@ class ThingFragment(WotBaseDict):
 
         return {
             key: ActionFragmentDict(val)
-            for key, val in six.iteritems(self._init.get("actions", {}))
+            for key, val in self._init.get("actions", {}).items()
         }
 
     @property
@@ -159,7 +160,7 @@ class ThingFragment(WotBaseDict):
 
         return {
             key: EventFragmentDict(val)
-            for key, val in six.iteritems(self._init.get("events", {}))
+            for key, val in self._init.get("events", {}).items()
         }
 
     @property
@@ -172,4 +173,8 @@ class ThingFragment(WotBaseDict):
     def version(self):
         """Provides version information."""
 
-        return VersioningDict(self._init.get("version")) if self._init.get("version") else None
+        return (
+            VersioningDict(self._init.get("version"))
+            if self._init.get("version")
+            else None
+        )

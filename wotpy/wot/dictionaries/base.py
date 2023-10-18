@@ -5,8 +5,6 @@
 Base class for WoT dictionaries.
 """
 
-import six
-
 from wotpy.utils.utils import merge_args_kwargs_dict, to_camel, to_snake
 
 
@@ -27,7 +25,7 @@ class WotBaseDict(object):
 
         self._init = {}
 
-        for key, val in six.iteritems(init_dict):
+        for key, val in init_dict.items():
             self._init.update({to_camel(key): val})
 
         try:
@@ -65,14 +63,20 @@ class WotBaseDict(object):
             return isinstance(x, list) and len(x) and hasattr(x[0], "to_dict")
 
         def is_dict_wot_dicts(x):
-            return isinstance(x, dict) and len(x) and hasattr(next(six.itervalues(x)), "to_dict")
+            return (
+                isinstance(x, dict)
+                and len(x)
+                and hasattr(next(iter(x.values())), "to_dict")
+            )
 
         def is_wot_dict(x):
             return hasattr(x, "to_dict")
 
         existing_fields = [
-            f for f in self.Meta.fields
-            if f in self._init or (to_snake(f) in dir(self) and getattr(self, to_snake(f)) is not None)
+            f
+            for f in self.Meta.fields
+            if f in self._init
+            or (to_snake(f) in dir(self) and getattr(self, to_snake(f)) is not None)
         ]
 
         for name_camel in existing_fields:
@@ -81,7 +85,7 @@ class WotBaseDict(object):
             if is_list_wot_dicts(field_val):
                 field_val = [item.to_dict() for item in field_val]
             elif is_dict_wot_dicts(field_val):
-                field_val = {key: val.to_dict() for key, val in six.iteritems(field_val)}
+                field_val = {key: val.to_dict() for key, val in field_val.items()}
             elif is_wot_dict(field_val):
                 field_val = field_val.to_dict()
 

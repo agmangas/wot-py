@@ -14,13 +14,5 @@ class ThingFilterDict(WotBaseDict):
     constraints for discovering Things as key-value pairs."""
 
     class Meta:
-        fields = {
-            "method",
-            "url",
-            "query",
-            "fragment"
-        }
-
-        defaults = {
-            "method": DiscoveryMethod.ANY
-        }
+        fields = {"method", "url", "query", "fragment"}
+        defaults = {"method": DiscoveryMethod.ANY}

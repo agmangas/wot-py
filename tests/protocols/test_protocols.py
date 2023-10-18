@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import six
 import tornado.gen
 import tornado.ioloop
 from faker import Faker
@@ -20,22 +19,21 @@ def test_all_protocols_combined(all_protocols_servient):
     exposed_thing = next(all_protocols_servient.exposed_things)
     td = ThingDescription.from_thing(exposed_thing.thing)
 
-    clients = [
-        WebsocketClient(),
-        HTTPClient()
-    ]
+    clients = [WebsocketClient(), HTTPClient()]
 
     if is_coap_supported():
         from wotpy.protocols.coap.client import CoAPClient
+
         clients.append(CoAPClient())
 
     if is_mqtt_supported():
         from tests.protocols.mqtt.broker import is_test_broker_online
         from wotpy.protocols.mqtt.client import MQTTClient
+
         if is_test_broker_online():
             clients.append(MQTTClient())
 
-    prop_name = next(six.iterkeys(td.properties))
+    prop_name = next(iter(td.properties.keys()))
 
     @tornado.gen.coroutine
     def read_property(the_client):

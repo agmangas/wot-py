@@ -4,15 +4,14 @@ import datetime
 import json
 import random
 import ssl
+import urllib.parse as parse
 import uuid
 
 import pytest
-import six
 import tornado.gen
 import tornado.httpclient
 import tornado.ioloop
 from faker import Faker
-from six.moves.urllib import parse
 from tornado.concurrent import Future
 
 from tests.utils import find_free_port, run_test_coroutine
@@ -33,7 +32,9 @@ def _get_property_href(exp_thing, prop_name, server):
 
     prop = exp_thing.thing.properties[prop_name]
     prop_forms = server.build_forms("localhost", prop)
-    return next(item.href for item in prop_forms if InteractionVerbs.READ_PROPERTY in item.op)
+    return next(
+        item.href for item in prop_forms if InteractionVerbs.READ_PROPERTY in item.op
+    )
 
 
 def _get_property_observe_href(exp_thing, prop_name, server):
@@ -41,7 +42,9 @@ def _get_property_observe_href(exp_thing, prop_name, server):
 
     prop = exp_thing.thing.properties[prop_name]
     prop_forms = server.build_forms("localhost", prop)
-    return next(item.href for item in prop_forms if InteractionVerbs.OBSERVE_PROPERTY in item.op)
+    return next(
+        item.href for item in prop_forms if InteractionVerbs.OBSERVE_PROPERTY in item.op
+    )
 
 
 def _get_action_href(exp_thing, action_name, server):
@@ -49,7 +52,9 @@ def _get_action_href(exp_thing, action_name, server):
 
     action = exp_thing.thing.actions[action_name]
     action_forms = server.build_forms("localhost", action)
-    return next(item.href for item in action_forms if InteractionVerbs.INVOKE_ACTION in item.op)
+    return next(
+        item.href for item in action_forms if InteractionVerbs.INVOKE_ACTION in item.op
+    )
 
 
 def _get_event_observe_href(exp_thing, event_name, server):
@@ -57,14 +62,16 @@ def _get_event_observe_href(exp_thing, event_name, server):
 
     event = exp_thing.thing.events[event_name]
     event_forms = server.build_forms("localhost", event)
-    return next(item.href for item in event_forms if InteractionVerbs.SUBSCRIBE_EVENT in item.op)
+    return next(
+        item.href for item in event_forms if InteractionVerbs.SUBSCRIBE_EVENT in item.op
+    )
 
 
 def test_property_get(http_server):
     """Properties exposed in an HTTP server can be read with an HTTP GET request."""
 
     exposed_thing = next(http_server.exposed_things)
-    prop_name = next(six.iterkeys(exposed_thing.thing.properties))
+    prop_name = next(iter(exposed_thing.thing.properties.keys()))
     href = _get_property_href(exposed_thing, prop_name, http_server)
 
     @tornado.gen.coroutine
@@ -84,13 +91,15 @@ def _test_property_set(server, body, prop_value, headers=None):
     """Helper function to test Property updates over HTTP."""
 
     exposed_thing = next(server.exposed_things)
-    prop_name = next(six.iterkeys(exposed_thing.thing.properties))
+    prop_name = next(iter(exposed_thing.thing.properties.keys()))
     href = _get_property_href(exposed_thing, prop_name, server)
 
     @tornado.gen.coroutine
     def test_coroutine():
         http_client = tornado.httpclient.AsyncHTTPClient()
-        http_request = tornado.httpclient.HTTPRequest(href, method="PUT", body=body, headers=headers)
+        http_request = tornado.httpclient.HTTPRequest(
+            href, method="PUT", body=body, headers=headers
+        )
         response = yield http_client.fetch(http_request)
         value = yield exposed_thing.properties[prop_name].read()
 
@@ -106,7 +115,9 @@ def test_property_set_form_urlencoded(http_server):
 
     prop_value = Faker().pyint()
     body = parse.urlencode({"value": prop_value})
-    _test_property_set(http_server, body, str(prop_value), headers=FORM_URLENCODED_HEADERS)
+    _test_property_set(
+        http_server, body, str(prop_value), headers=FORM_URLENCODED_HEADERS
+    )
 
 
 def test_property_set_json(http_server):
@@ -122,7 +133,7 @@ def test_property_subscribe(http_server):
     """Properties exposed in an HTTP server can be subscribed to with an HTTP GET request."""
 
     exposed_thing = next(http_server.exposed_things)
-    prop_name = next(six.iterkeys(exposed_thing.thing.properties))
+    prop_name = next(iter(exposed_thing.thing.properties.keys()))
     href = _get_property_observe_href(exposed_thing, prop_name, http_server)
 
     init_value = Faker().pyint()
@@ -159,7 +170,7 @@ def _test_action_run(server):
     """Helper to run Action invocation tests."""
 
     exposed_thing = next(server.exposed_things)
-    action_name = next(six.iterkeys(exposed_thing.thing.actions))
+    action_name = next(iter(exposed_thing.thing.actions.keys()))
     href = _get_action_href(exposed_thing, action_name, server)
 
     action_future = Future()
@@ -174,7 +185,9 @@ def _test_action_run(server):
     input_value = Faker().pyint()
     body = json.dumps({"input": input_value})
     http_client = tornado.httpclient.AsyncHTTPClient()
-    http_request = tornado.httpclient.HTTPRequest(href, method="POST", body=body, headers=JSON_HEADERS)
+    http_request = tornado.httpclient.HTTPRequest(
+        href, method="POST", body=body, headers=JSON_HEADERS
+    )
     response = yield http_client.fetch(http_request)
     invocation_url = json.loads(response.body).get("invocation")
 
@@ -182,16 +195,20 @@ def _test_action_run(server):
 
     @tornado.gen.coroutine
     def fetch_invocation():
-        href_invoc = "http://localhost:{}/{}".format(server.port, invocation_url.lstrip("/"))
+        href_invoc = "http://localhost:{}/{}".format(
+            server.port, invocation_url.lstrip("/")
+        )
         http_request_invoc = tornado.httpclient.HTTPRequest(href_invoc, method="GET")
         response_invoc = yield http_client.fetch(http_request_invoc)
         raise tornado.gen.Return(json.loads(response_invoc.body))
 
-    raise tornado.gen.Return({
-        "expected_result": input_value * 2,
-        "fetch_invocation": fetch_invocation,
-        "action_future": action_future
-    })
+    raise tornado.gen.Return(
+        {
+            "expected_result": input_value * 2,
+            "fetch_invocation": fetch_invocation,
+            "action_future": action_future,
+        }
+    )
 
 
 def test_action_run_success(http_server):
@@ -206,7 +223,8 @@ def test_action_run_success(http_server):
 
         tornado.ioloop.IOLoop.current().add_timeout(
             datetime.timedelta(seconds=random.random()),
-            lambda: action_future.set_result(True))
+            lambda: action_future.set_result(True),
+        )
 
         invocation = yield fetch_invocation()
 
@@ -230,7 +248,8 @@ def test_action_run_error(http_server):
 
         tornado.ioloop.IOLoop.current().add_timeout(
             datetime.timedelta(seconds=random.random()),
-            lambda: action_future.set_exception(Exception(ex_message)))
+            lambda: action_future.set_exception(Exception(ex_message)),
+        )
 
         invocation = yield fetch_invocation()
 
@@ -245,11 +264,13 @@ def test_event_subscribe(http_server):
     """Events exposed in an HTTP server can be subscribed to with an HTTP GET request."""
 
     exposed_thing = next(http_server.exposed_things)
-    event_name = next(six.iterkeys(exposed_thing.thing.events))
+    event_name = next(iter(exposed_thing.thing.events.keys()))
     href = _get_event_observe_href(exposed_thing, event_name, http_server)
 
     fake = Faker()
-    payload = {fake.pystr(): random.choice([fake.pystr(), fake.pyint()]) for _ in range(5)}
+    payload = {
+        fake.pystr(): random.choice([fake.pystr(), fake.pyint()]) for _ in range(5)
+    }
 
     @tornado.gen.coroutine
     def emit_event():
@@ -278,10 +299,11 @@ def test_ssl_context(self_signed_ssl_context):
 
     prop_name = uuid.uuid4().hex
 
-    exposed_thing.add_property(prop_name, PropertyFragmentDict({
-        "type": "string",
-        "observable": True
-    }), value=Faker().pystr())
+    exposed_thing.add_property(
+        prop_name,
+        PropertyFragmentDict({"type": "string", "observable": True}),
+        value=Faker().pystr(),
+    )
 
     port = find_free_port()
 
@@ -303,7 +325,9 @@ def test_ssl_context(self_signed_ssl_context):
         with pytest.raises(ssl.SSLError):
             yield http_client.fetch(tornado.httpclient.HTTPRequest(href, method="GET"))
 
-        http_request = tornado.httpclient.HTTPRequest(href, method="GET", validate_cert=False)
+        http_request = tornado.httpclient.HTTPRequest(
+            href, method="GET", validate_cert=False
+        )
         response = yield http_client.fetch(http_request)
 
         result = json.loads(response.body)

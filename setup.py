@@ -11,7 +11,6 @@ from wotpy.support import is_coap_supported, is_dnssd_supported, is_mqtt_support
 install_requires = [
     "tornado>=6.1,<7.0",
     "jsonschema>=2.0,<3.0",
-    "six>=1.10.0,<2.0",
     "rx>=1.6.0,<2.0",
     "python-slugify>=1.2.4,<2.0",
 ]
@@ -33,6 +32,7 @@ test_requires = [
     "autopep8>=1.4,<2.0",
     "rope>=0.14.0,<1.0",
     "bump2version>=1.0,<2.0",
+    "coloredlogs",
 ]
 
 if is_coap_supported():

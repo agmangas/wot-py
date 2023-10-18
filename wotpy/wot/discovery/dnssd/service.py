@@ -5,25 +5,28 @@
 Service discovery based on Multicast DNS and DNS-SD (Bonjour, Avahi).
 """
 
+import asyncio
+import queue
 import socket
 import threading
 import time
 from functools import partial
 from typing import cast
 
-import six
-import tornado.gen
-import tornado.ioloop
-import tornado.locks
-from six.moves import queue
 from slugify import slugify
-from zeroconf import IPVersion, Zeroconf, ServiceStateChange, ServiceInfo, ServiceBrowser
+from zeroconf import (
+    IPVersion,
+    ServiceBrowser,
+    ServiceInfo,
+    ServiceStateChange,
+    Zeroconf,
+)
 
 from wotpy.utils.utils import get_main_ipv4_address
 
 ITER_WAIT = 0.1
-TASK_REGISTER = 'register'
-TASK_UNREGISTER = 'unregister'
+TASK_REGISTER = "register"
+TASK_UNREGISTER = "unregister"
 
 
 def build_servient_service_info(servient, address=None, instance_name=None):
@@ -33,10 +36,9 @@ def build_servient_service_info(servient, address=None, instance_name=None):
     address = address if address else get_main_ipv4_address()
     servient_urlname = slugify(servient.hostname)
     instance_name = instance_name if instance_name else servient_urlname
-    servient_fqdn = "{}.".format(servient.hostname.strip('.'))
+    servient_fqdn = "{}.".format(servient.hostname.strip("."))
     server_default = "{}.local.".format(servient_urlname)
-    server = servient_fqdn if servient_fqdn.endswith(
-        '.local.') else server_default
+    server = servient_fqdn if servient_fqdn.endswith(".local.") else server_default
 
     return ServiceInfo(
         DNSSDDiscoveryService.WOT_SERVICE_TYPE,
@@ -44,12 +46,14 @@ def build_servient_service_info(servient, address=None, instance_name=None):
         port=servient.catalogue_port,
         addresses=[socket.inet_aton(address)],
         properties={},
-        server=server)
+        server=server,
+    )
 
 
 def _start_zeroconf(close_event, services, services_lock, register_queue, address):
     """Starts the zeroconf mDNS service.
-    Listens to the register tasks queue and starts browsing for WoT Servient services."""
+    Listens to the register tasks queue and starts browsing for WoT Servient services.
+    """
 
     address = address if address else get_main_ipv4_address()
     zeroconf = Zeroconf()
@@ -59,9 +63,9 @@ def _start_zeroconf(close_event, services, services_lock, register_queue, addres
     def _on_service_change(*args, **kwargs):
         """Callback for each time a WoT Servient service is added or removed from the link."""
 
-        service_type = kwargs.pop('service_type')
-        name = kwargs.pop('name')
-        state_change = kwargs.pop('state_change')
+        service_type = kwargs.pop("service_type")
+        name = kwargs.pop("name")
+        state_change = kwargs.pop("state_change")
 
         with registered_lock:
             is_local = any(item.name == name for item in registered)
@@ -89,7 +93,7 @@ def _start_zeroconf(close_event, services, services_lock, register_queue, addres
 
         change_handler_map = {
             ServiceStateChange.Added: _add_result,
-            ServiceStateChange.Removed: _remove_result
+            ServiceStateChange.Removed: _remove_result,
         }
 
         change_handler_map[state_change]()
@@ -97,18 +101,17 @@ def _start_zeroconf(close_event, services, services_lock, register_queue, addres
     def _register(task):
         """Registers a new WoT Servient service."""
 
-        servient = task['servient']
-        done = task['done']
-        instance_name = task['instance_name']
+        servient = task["servient"]
+        done = task["done"]
+        instance_name = task["instance_name"]
 
         try:
             if not servient.catalogue_port:
                 return
 
             info = build_servient_service_info(
-                servient,
-                address=address,
-                instance_name=instance_name)
+                servient, address=address, instance_name=instance_name
+            )
 
             with registered_lock:
                 registered.append(info)
@@ -120,15 +123,14 @@ def _start_zeroconf(close_event, services, services_lock, register_queue, addres
     def _unregister(task):
         """Unregisters a WoT Servient service."""
 
-        servient = task['servient']
-        done = task['done']
-        instance_name = task['instance_name']
+        servient = task["servient"]
+        done = task["done"]
+        instance_name = task["instance_name"]
 
         try:
             info = build_servient_service_info(
-                servient,
-                address=address,
-                instance_name=instance_name)
+                servient, address=address, instance_name=instance_name
+            )
 
             with registered_lock:
                 is_registered = any(val == info for val in registered)
@@ -153,7 +155,8 @@ def _start_zeroconf(close_event, services, services_lock, register_queue, addres
             browser = ServiceBrowser(
                 zeroconf,
                 DNSSDDiscoveryService.WOT_SERVICE_TYPE,
-                handlers=[_on_service_change])
+                handlers=[_on_service_change],
+            )
 
             while not close_event.is_set():
                 try:
@@ -161,10 +164,10 @@ def _start_zeroconf(close_event, services, services_lock, register_queue, addres
 
                     task_handler_map = {
                         TASK_REGISTER: _register,
-                        TASK_UNREGISTER: _unregister
+                        TASK_UNREGISTER: _unregister,
                     }
 
-                    task_handler_map[register_task['type']](register_task)
+                    task_handler_map[register_task["type"]](register_task)
                 except queue.Empty:
                     pass
 
@@ -194,8 +197,8 @@ class DNSSDDiscoveryService(object):
         self._zeroconf_loop_thread = None
         self._close_event = threading.Event()
         self._register_queue = None
-        self._lock = tornado.locks.Lock()
-        self._loop = tornado.ioloop.IOLoop.current()
+        self._lock = asyncio.Lock()
+        self._loop = asyncio.get_event_loop()
         self._services = None
         self._services_lock = threading.Lock()
 
@@ -205,11 +208,10 @@ class DNSSDDiscoveryService(object):
 
         return self._zeroconf_loop_thread is not None
 
-    @tornado.gen.coroutine
-    def start(self):
+    async def start(self):
         """Starts the DNS-SD thread on a loop executor."""
 
-        with (yield self._lock.acquire()):
+        async with self._lock:
             if self._zeroconf_loop_thread is not None:
                 return
 
@@ -223,82 +225,81 @@ class DNSSDDiscoveryService(object):
                 self._services,
                 self._services_lock,
                 self._register_queue,
-                self._address)
+                self._address,
+            )
 
             self._zeroconf_loop_thread = threading.Thread(
-                target=thread_target,
-                daemon=True)
+                target=thread_target, daemon=True
+            )
 
             self._zeroconf_loop_thread.start()
 
-    @tornado.gen.coroutine
-    def stop(self):
+    async def stop(self):
         """Signals the DNS-SD thread to stop and waits for the executor future to yield."""
 
-        with (yield self._lock.acquire()):
+        async with self._lock:
             if self._zeroconf_loop_thread is None:
                 return
 
             self._close_event.set()
 
             while self._zeroconf_loop_thread.is_alive():
-                yield tornado.gen.sleep(ITER_WAIT)
+                await asyncio.sleep(ITER_WAIT)
 
             self._zeroconf_loop_thread = None
             self._close_event.clear()
             self._register_queue = None
             self._services = None
 
-    @tornado.gen.coroutine
-    def _run_task(self, task):
-        """"""
-
-        with (yield self._lock.acquire()):
+    async def _run_task(self, task):
+        async with self._lock:
             if self._zeroconf_loop_thread is None:
                 raise ValueError("Stopped DNS-SD thread")
 
             done = threading.Event()
-            task.update({'done': done})
+            task.update({"done": done})
 
             self._register_queue.put(task)
 
             while not done.is_set():
-                yield tornado.gen.sleep(ITER_WAIT)
+                await asyncio.sleep(ITER_WAIT)
 
-    @tornado.gen.coroutine
-    def register(self, servient, instance_name=None):
+    async def register(self, servient, instance_name=None):
         """Takes a Servient and registers the TD catalogue
         service for discovery by other hosts in the same link."""
 
-        if instance_name and instance_name.endswith('.'):
+        if instance_name and instance_name.endswith("."):
             raise ValueError('Instance name ends with "."')
 
-        yield self._run_task({
-            'type': TASK_REGISTER,
-            'servient': servient,
-            'instance_name': instance_name
-        })
+        await self._run_task(
+            {
+                "type": TASK_REGISTER,
+                "servient": servient,
+                "instance_name": instance_name,
+            }
+        )
 
-    @tornado.gen.coroutine
-    def unregister(self, servient, instance_name=None):
+    async def unregister(self, servient, instance_name=None):
         """Takes a Servient and unregisters the TD catalogue service."""
 
-        if instance_name and instance_name.endswith('.'):
+        if instance_name and instance_name.endswith("."):
             raise ValueError('Instance name ends with "."')
 
-        yield self._run_task({
-            'type': TASK_UNREGISTER,
-            'servient': servient,
-            'instance_name': instance_name
-        })
+        await self._run_task(
+            {
+                "type": TASK_UNREGISTER,
+                "servient": servient,
+                "instance_name": instance_name,
+            }
+        )
 
-    @tornado.gen.coroutine
-    def find(self, min_results=None, timeout=5):
+    async def find(self, min_results=None, timeout=5):
         """Browses the link to discover WoT Servient services using mDNS.
         Returns a list of (ip_address, port).
-        If min_results is defined it will stop as soon as that number of results are found."""
+        If min_results is defined it will stop as soon as that number of results are found.
+        """
 
-        with (yield self._lock.acquire()):
+        async with self._lock:
             if self._zeroconf_loop_thread is None:
                 raise ValueError("Stopped DNS-SD thread")
 
@@ -311,9 +312,9 @@ class DNSSDDiscoveryService(object):
                         if len(self._services) >= min_results:
                             finished = True
 
-                yield tornado.gen.sleep(ITER_WAIT)
+                await asyncio.sleep(ITER_WAIT)
 
             with self._services_lock:
-                found = list(six.itervalues(self._services))
+                found = list(self._services.values())
 
-            raise tornado.gen.Return(found)
+            return found

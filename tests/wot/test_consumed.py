@@ -3,7 +3,6 @@
 
 import uuid
 
-import six
 import tornado.gen
 import tornado.ioloop
 from faker import Faker
@@ -25,7 +24,7 @@ def _test_property_change_events(exposed_thing, subscribe_func):
     @tornado.gen.coroutine
     def test_coroutine():
         td = ThingDescription.from_thing(exposed_thing.thing)
-        prop_name = next(six.iterkeys(td.properties))
+        prop_name = next(iter(td.properties.keys()))
 
         future_conn = Future()
         future_change = Future()
@@ -63,7 +62,7 @@ def _test_event_emission_events(exposed_thing, subscribe_func):
     @tornado.gen.coroutine
     def test_coroutine():
         td = ThingDescription.from_thing(exposed_thing.thing)
-        event_name = next(six.iterkeys(td.events))
+        event_name = next(iter(td.events.keys()))
 
         future_conn = Future()
         future_event = Future()
@@ -114,7 +113,7 @@ def test_read_property(consumed_exposed_pair):
 
     @tornado.gen.coroutine
     def test_coroutine():
-        prop_name = next(six.iterkeys(consumed_thing.td.properties))
+        prop_name = next(iter(consumed_thing.td.properties.keys()))
 
         result_exposed = yield exposed_thing.read_property(prop_name)
         result_consumed = yield consumed_thing.read_property(prop_name)
@@ -132,7 +131,7 @@ def test_write_property(consumed_exposed_pair):
 
     @tornado.gen.coroutine
     def test_coroutine():
-        prop_name = next(six.iterkeys(consumed_thing.td.properties))
+        prop_name = next(iter(consumed_thing.td.properties.keys()))
 
         val_01 = Faker().sentence()
         val_02 = Faker().sentence()
@@ -158,7 +157,7 @@ def test_invoke_action(consumed_exposed_pair):
 
     @tornado.gen.coroutine
     def test_coroutine():
-        action_name = next(six.iterkeys(consumed_thing.td.actions))
+        action_name = next(iter(consumed_thing.td.actions.keys()))
 
         input_value = Faker().pystr()
         result = yield consumed_thing.invoke_action(action_name, input_value)
@@ -203,7 +202,7 @@ def test_thing_property_get(consumed_exposed_pair):
 
     @tornado.gen.coroutine
     def test_coroutine():
-        prop_name = next(six.iterkeys(consumed_thing.td.properties))
+        prop_name = next(iter(consumed_thing.td.properties.keys()))
 
         result_exposed = yield exposed_thing.read_property(prop_name)
         result_consumed = yield consumed_thing.properties[prop_name].read()
@@ -221,7 +220,7 @@ def test_thing_property_set(consumed_exposed_pair):
 
     @tornado.gen.coroutine
     def test_coroutine():
-        prop_name = next(six.iterkeys(consumed_thing.td.properties))
+        prop_name = next(iter(consumed_thing.td.properties.keys()))
         updated_value = Faker().sentence()
         curr_value = yield exposed_thing.read_property(prop_name)
 
@@ -257,7 +256,7 @@ def test_thing_property_getters(consumed_exposed_pair):
 
     @tornado.gen.coroutine
     def test_coroutine():
-        prop_name = next(six.iterkeys(consumed_thing.td.properties))
+        prop_name = next(iter(consumed_thing.td.properties.keys()))
         thing_prop_con = consumed_thing.properties[prop_name]
         thing_prop_exp = exposed_thing.properties[prop_name]
 
@@ -278,7 +277,7 @@ def test_thing_action_run(consumed_exposed_pair):
 
     @tornado.gen.coroutine
     def test_coroutine():
-        action_name = next(six.iterkeys(consumed_thing.td.actions))
+        action_name = next(iter(consumed_thing.td.actions.keys()))
 
         input_value = Faker().pystr()
         result = yield consumed_thing.actions[action_name].invoke(input_value)
@@ -298,7 +297,7 @@ def test_thing_action_getters(consumed_exposed_pair):
 
     @tornado.gen.coroutine
     def test_coroutine():
-        action_name = next(six.iterkeys(consumed_thing.td.actions))
+        action_name = next(iter(consumed_thing.td.actions.keys()))
         thing_action_con = consumed_thing.actions[action_name]
         thing_action_exp = exposed_thing.actions[action_name]
 
@@ -332,7 +331,7 @@ def test_thing_event_getters(consumed_exposed_pair):
 
     @tornado.gen.coroutine
     def test_coroutine():
-        event_name = next(six.iterkeys(consumed_thing.td.events))
+        event_name = next(iter(consumed_thing.td.events.keys()))
         thing_event_con = consumed_thing.events[event_name]
         thing_event_exp = exposed_thing.events[event_name]
 
@@ -380,25 +379,19 @@ def test_consumed_client_protocols_preference():
 
     servient.add_server(ws_server)
 
-    client_server_map = {
-        HTTPClient: http_server,
-        WebsocketClient: ws_server
-    }
+    client_server_map = {HTTPClient: http_server, WebsocketClient: ws_server}
 
     wot = tornado.ioloop.IOLoop.current().run_sync(servient_start)
 
     prop_name = uuid.uuid4().hex
 
-    td_produce = ThingDescription({
-        "id": uuid.uuid4().urn,
-        "name": uuid.uuid4().hex,
-        "properties": {
-            prop_name: {
-                "observable": True,
-                "type": "string"
-            }
+    td_produce = ThingDescription(
+        {
+            "id": uuid.uuid4().urn,
+            "name": uuid.uuid4().hex,
+            "properties": {prop_name: {"observable": True, "type": "string"}},
         }
-    })
+    )
 
     exposed_thing = wot.produce(td_produce.to_str())
     exposed_thing.expose()
@@ -408,7 +401,7 @@ def test_consumed_client_protocols_preference():
     client_01 = servient.select_client(td_forms_all, prop_name)
     client_01_class = client_01.__class__
 
-    assert client_01_class in six.iterkeys(client_server_map)
+    assert client_01_class in client_server_map.keys()
 
     tornado.ioloop.IOLoop.current().run_sync(servient_shutdown)
     servient.remove_server(client_server_map[client_01_class].protocol)
@@ -420,6 +413,6 @@ def test_consumed_client_protocols_preference():
     client_02_class = client_02.__class__
 
     assert client_02_class != client_01_class
-    assert client_02_class in six.iterkeys(client_server_map)
+    assert client_02_class in client_server_map.keys()
 
     tornado.ioloop.IOLoop.current().run_sync(servient_shutdown)

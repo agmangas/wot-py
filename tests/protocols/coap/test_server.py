@@ -6,7 +6,6 @@ import json
 
 import aiocoap
 import pytest
-import six
 import tornado.concurrent
 import tornado.gen
 import tornado.ioloop
@@ -23,7 +22,9 @@ def _get_property_href(exp_thing, prop_name, server):
 
     prop = exp_thing.thing.properties[prop_name]
     prop_forms = server.build_forms("127.0.0.1", prop)
-    return next(item.href for item in prop_forms if InteractionVerbs.READ_PROPERTY == item.op)
+    return next(
+        item.href for item in prop_forms if InteractionVerbs.READ_PROPERTY == item.op
+    )
 
 
 def _get_property_observe_href(exp_thing, prop_name, server):
@@ -31,7 +32,9 @@ def _get_property_observe_href(exp_thing, prop_name, server):
 
     prop = exp_thing.thing.properties[prop_name]
     prop_forms = server.build_forms("127.0.0.1", prop)
-    return next(item.href for item in prop_forms if InteractionVerbs.OBSERVE_PROPERTY == item.op)
+    return next(
+        item.href for item in prop_forms if InteractionVerbs.OBSERVE_PROPERTY == item.op
+    )
 
 
 def _get_action_href(exp_thing, action_name, server):
@@ -39,7 +42,9 @@ def _get_action_href(exp_thing, action_name, server):
 
     action = exp_thing.thing.actions[action_name]
     action_forms = server.build_forms("127.0.0.1", action)
-    return next(item.href for item in action_forms if InteractionVerbs.INVOKE_ACTION == item.op)
+    return next(
+        item.href for item in action_forms if InteractionVerbs.INVOKE_ACTION == item.op
+    )
 
 
 def _get_event_href(exp_thing, event_name, server):
@@ -47,7 +52,9 @@ def _get_event_href(exp_thing, event_name, server):
 
     event = exp_thing.thing.events[event_name]
     event_forms = server.build_forms("127.0.0.1", event)
-    return next(item.href for item in event_forms if InteractionVerbs.SUBSCRIBE_EVENT == item.op)
+    return next(
+        item.href for item in event_forms if InteractionVerbs.SUBSCRIBE_EVENT == item.op
+    )
 
 
 @tornado.gen.coroutine
@@ -72,8 +79,8 @@ def test_start_stop():
             coap_client = yield aiocoap.Context.create_client_context()
             request_msg = aiocoap.Message(code=aiocoap.Code.GET, uri=ping_uri)
             response = yield tornado.gen.with_timeout(
-                datetime.timedelta(seconds=2),
-                coap_client.request(request_msg).response)
+                datetime.timedelta(seconds=2), coap_client.request(request_msg).response
+            )
         except Exception:
             raise tornado.gen.Return(False)
 
@@ -107,7 +114,7 @@ def test_property_read(coap_server):
     """Properties exposed in an CoAP server can be read with a CoAP GET request."""
 
     exposed_thing = next(coap_server.exposed_things)
-    prop_name = next(six.iterkeys(exposed_thing.thing.properties))
+    prop_name = next(iter(exposed_thing.thing.properties.keys()))
     href = _get_property_href(exposed_thing, prop_name, coap_server)
 
     @tornado.gen.coroutine
@@ -128,7 +135,7 @@ def test_property_write(coap_server):
     """Properties exposed in an CoAP server can be updated with a CoAP POST request."""
 
     exposed_thing = next(coap_server.exposed_things)
-    prop_name = next(six.iterkeys(exposed_thing.thing.properties))
+    prop_name = next(iter(exposed_thing.thing.properties.keys()))
     href = _get_property_href(exposed_thing, prop_name, coap_server)
 
     @tornado.gen.coroutine
@@ -151,7 +158,7 @@ def test_property_subscription(coap_server):
     """Properties exposed in an CoAP server can be observed for value updates."""
 
     exposed_thing = next(coap_server.exposed_things)
-    prop_name = next(six.iterkeys(exposed_thing.thing.properties))
+    prop_name = next(iter(exposed_thing.thing.properties.keys()))
     href = _get_property_observe_href(exposed_thing, prop_name, coap_server)
 
     future_values = [Faker().pyint() for _ in range(5)]
@@ -192,7 +199,7 @@ def _test_action_invoke(the_coap_server, input_value=None, invocation_sleep=0.05
     """Helper function to invoke an Action in the CoAP server."""
 
     exposed_thing = next(the_coap_server.exposed_things)
-    action_name = next(six.iterkeys(exposed_thing.thing.actions))
+    action_name = next(iter(exposed_thing.thing.actions.keys()))
     href = _get_action_href(exposed_thing, action_name, the_coap_server)
 
     coap_client = yield aiocoap.Context.create_client_context()
@@ -209,7 +216,9 @@ def _test_action_invoke(the_coap_server, input_value=None, invocation_sleep=0.05
     yield tornado.gen.sleep(invocation_sleep)
 
     obsv_payload = json.dumps({"id": invocation_id}).encode("utf-8")
-    obsv_msg = aiocoap.Message(code=aiocoap.Code.GET, payload=obsv_payload, uri=href, observe=0)
+    obsv_msg = aiocoap.Message(
+        code=aiocoap.Code.GET, payload=obsv_payload, uri=href, observe=0
+    )
     obsv_request = coap_client.request(obsv_msg)
     obsv_response = yield obsv_request.response
 
@@ -244,7 +253,9 @@ def test_action_clear_invocation(coap_server):
     def test_coroutine():
         invocation_sleep_secs = 0.1
         assert (invocation_sleep_secs * 1000) > coap_server.action_clear_ms
-        response = yield _test_action_invoke(coap_server, invocation_sleep=invocation_sleep_secs)
+        response = yield _test_action_invoke(
+            coap_server, invocation_sleep=invocation_sleep_secs
+        )
         assert not response.code.is_successful()
 
     run_test_coroutine(test_coroutine)
@@ -264,10 +275,11 @@ def test_action_invoke_parallel(coap_server):
         yield handler_futures[inp.get("future")]
         raise tornado.gen.Return(inp.get("number") * 3)
 
-    exposed_thing.add_action(action_name, ActionFragmentDict({
-        "input": {"type": "object"},
-        "output": {"type": "number"}
-    }), handler)
+    exposed_thing.add_action(
+        action_name,
+        ActionFragmentDict({"input": {"type": "object"}, "output": {"type": "number"}}),
+        handler,
+    )
 
     href = _get_action_href(exposed_thing, action_name, coap_server)
 
@@ -277,25 +289,24 @@ def test_action_invoke_parallel(coap_server):
         future_id = Faker().pystr()
         handler_futures[future_id] = tornado.concurrent.Future()
 
-        payload = json.dumps({"input": {
-            "number": input_num,
-            "future": future_id
-        }}).encode("utf-8")
+        payload = json.dumps(
+            {"input": {"number": input_num, "future": future_id}}
+        ).encode("utf-8")
 
         msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
         response = yield coap_client.request(msg).response
         assert response.code.is_successful()
         invocation_id = json.loads(response.payload).get("id")
 
-        raise tornado.gen.Return({
-            "number": input_num,
-            "future": future_id,
-            "id": invocation_id
-        })
+        raise tornado.gen.Return(
+            {"number": input_num, "future": future_id, "id": invocation_id}
+        )
 
     def build_observe_request(coap_client, invocation):
         payload = json.dumps({"id": invocation["id"]}).encode("utf-8")
-        msg = aiocoap.Message(code=aiocoap.Code.GET, payload=payload, uri=href, observe=0)
+        msg = aiocoap.Message(
+            code=aiocoap.Code.GET, payload=payload, uri=href, observe=0
+        )
         return coap_client.request(msg)
 
     @tornado.gen.coroutine
@@ -304,7 +315,7 @@ def test_action_invoke_parallel(coap_server):
 
         invocation_01, invocation_02 = yield [
             invoke_action(coap_client),
-            invoke_action(coap_client)
+            invoke_action(coap_client),
         ]
 
         def unblock_01():
@@ -365,13 +376,12 @@ def test_event_subscription(coap_server):
     """Event emissions can be observed in a CoAP server."""
 
     exposed_thing = next(coap_server.exposed_things)
-    event_name = next(six.iterkeys(exposed_thing.thing.events))
+    event_name = next(iter(exposed_thing.thing.events.keys()))
     href = _get_event_href(exposed_thing, event_name, coap_server)
 
-    emitted_values = [{
-        "num": Faker().pyint(),
-        "str": Faker().sentence()
-    } for _ in range(5)]
+    emitted_values = [
+        {"num": Faker().pyint(), "str": Faker().sentence()} for _ in range(5)
+    ]
 
     def emit_event():
         exposed_thing.emit_event(event_name, payload=emitted_values[0])
@@ -401,8 +411,10 @@ def test_event_subscription(coap_server):
 
             try:
                 emitted_idx = next(
-                    idx for idx, item in enumerate(emitted_values)
-                    if item["num"] == data["num"] and item["str"] == data["str"])
+                    idx
+                    for idx, item in enumerate(emitted_values)
+                    if item["num"] == data["num"] and item["str"] == data["str"]
+                )
 
                 emitted_values.pop(emitted_idx)
             except StopIteration:

@@ -3,11 +3,9 @@
 
 import time
 import uuid
-# noinspection PyCompatibility
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest
-import six
 import tornado.gen
 import tornado.ioloop
 from faker import Faker
@@ -17,13 +15,15 @@ from tornado.concurrent import Future
 from tests.utils import run_test_coroutine
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict
 from wotpy.wot.dictionaries.thing import ThingFragment
-from wotpy.wot.enums import TDChangeMethod, TDChangeType, DataType
+from wotpy.wot.enums import DataType, TDChangeMethod, TDChangeType
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 from wotpy.wot.thing import Thing
 
 
-def _test_td_change_events(exposed_thing, property_fragment, event_fragment, action_fragment, subscribe_func):
+def _test_td_change_events(
+    exposed_thing, property_fragment, event_fragment, action_fragment, subscribe_func
+):
     """Helper function to test subscriptions to TD changes."""
 
     @tornado.gen.coroutine
@@ -38,7 +38,7 @@ def _test_td_change_events(exposed_thing, property_fragment, event_fragment, act
             (TDChangeType.EVENT, TDChangeMethod.ADD): Future(),
             (TDChangeType.EVENT, TDChangeMethod.REMOVE): Future(),
             (TDChangeType.ACTION, TDChangeMethod.ADD): Future(),
-            (TDChangeType.ACTION, TDChangeMethod.REMOVE): Future()
+            (TDChangeType.ACTION, TDChangeMethod.REMOVE): Future(),
         }
 
         def on_next(ev):
@@ -54,23 +54,48 @@ def _test_td_change_events(exposed_thing, property_fragment, event_fragment, act
 
         exposed_thing.add_event(event_name, event_fragment)
 
-        assert complete_futures[(TDChangeType.EVENT, TDChangeMethod.ADD)].result() == event_name
+        assert (
+            complete_futures[(TDChangeType.EVENT, TDChangeMethod.ADD)].result()
+            == event_name
+        )
+
         assert not complete_futures[(TDChangeType.EVENT, TDChangeMethod.REMOVE)].done()
 
         exposed_thing.remove_event(name=event_name)
         exposed_thing.add_property(prop_name, property_fragment)
 
-        assert complete_futures[(TDChangeType.EVENT, TDChangeMethod.REMOVE)].result() == event_name
-        assert complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.ADD)].result() == prop_name
-        assert not complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.REMOVE)].done()
+        assert (
+            complete_futures[(TDChangeType.EVENT, TDChangeMethod.REMOVE)].result()
+            == event_name
+        )
+
+        assert (
+            complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.ADD)].result()
+            == prop_name
+        )
+
+        assert not complete_futures[
+            (TDChangeType.PROPERTY, TDChangeMethod.REMOVE)
+        ].done()
 
         exposed_thing.remove_property(name=prop_name)
         exposed_thing.add_action(action_name, action_fragment)
         exposed_thing.remove_action(name=action_name)
 
-        assert complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.REMOVE)].result() == prop_name
-        assert complete_futures[(TDChangeType.ACTION, TDChangeMethod.ADD)].result() == action_name
-        assert complete_futures[(TDChangeType.ACTION, TDChangeMethod.REMOVE)].result() == action_name
+        assert (
+            complete_futures[(TDChangeType.PROPERTY, TDChangeMethod.REMOVE)].result()
+            == prop_name
+        )
+
+        assert (
+            complete_futures[(TDChangeType.ACTION, TDChangeMethod.ADD)].result()
+            == action_name
+        )
+
+        assert (
+            complete_futures[(TDChangeType.ACTION, TDChangeMethod.REMOVE)].result()
+            == action_name
+        )
 
         subscription.dispose()
 
@@ -125,10 +150,7 @@ def test_write_property(exposed_thing, property_fragment):
 def test_write_non_writable_property(exposed_thing):
     """Attempts to write a non-writable property should return an error."""
 
-    prop_init_non_writable = PropertyFragmentDict({
-        "type": "string",
-        "readOnly": True
-    })
+    prop_init_non_writable = PropertyFragmentDict({"type": "string", "readOnly": True})
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -148,12 +170,16 @@ def test_invoke_action(exposed_thing, action_fragment):
 
     def upper_thread(parameters):
         input_value = parameters.get("input")
-        return thread_executor.submit(lambda x: time.sleep(0.1) or str(x).upper(), input_value)
+        return thread_executor.submit(
+            lambda x: time.sleep(0.1) or str(x).upper(), input_value
+        )
 
     def upper(parameters):
         loop = tornado.ioloop.IOLoop.current()
         input_value = parameters.get("input")
-        return loop.run_in_executor(None, lambda x: time.sleep(0.1) or str(x).upper(), input_value)
+        return loop.run_in_executor(
+            None, lambda x: time.sleep(0.1) or str(x).upper(), input_value
+        )
 
     @tornado.gen.coroutine
     def lower(parameters):
@@ -171,7 +197,7 @@ def test_invoke_action(exposed_thing, action_fragment):
         upper_thread: lambda x: x.upper(),
         upper: lambda x: x.upper(),
         lower: lambda x: x.lower(),
-        title: lambda x: x.title()
+        title: lambda x: x.title(),
     }
 
     @tornado.gen.coroutine
@@ -179,7 +205,7 @@ def test_invoke_action(exposed_thing, action_fragment):
         action_name = Faker().pystr()
         exposed_thing.add_action(action_name, action_fragment)
 
-        for handler, assert_func in six.iteritems(handlers_map):
+        for handler, assert_func in handlers_map.items():
             exposed_thing.set_action_handler(action_name, handler)
             action_arg = Faker().sentence(10)
             result = yield exposed_thing.invoke_action(action_name, action_arg)
@@ -247,10 +273,9 @@ def test_on_property_change(exposed_thing, property_fragment):
 def test_on_property_change_non_observable(exposed_thing):
     """Observe requests to non-observable properties are rejected."""
 
-    prop_init_non_observable = PropertyFragmentDict({
-        "type": "string",
-        "observable": False
-    })
+    prop_init_non_observable = PropertyFragmentDict(
+        {"type": "string", "observable": False}
+    )
 
     @tornado.gen.coroutine
     def test_coroutine():
@@ -307,13 +332,21 @@ def test_on_event(exposed_thing, event_fragment):
     subscription.dispose()
 
 
-def test_on_td_change(exposed_thing, property_fragment, event_fragment, action_fragment):
+def test_on_td_change(
+    exposed_thing, property_fragment, event_fragment, action_fragment
+):
     """Thing Description changes can be observed."""
 
     def subscribe_func(*args, **kwargs):
         return exposed_thing.on_td_change().subscribe(*args, **kwargs)
 
-    _test_td_change_events(exposed_thing, property_fragment, event_fragment, action_fragment, subscribe_func)
+    _test_td_change_events(
+        exposed_thing,
+        property_fragment,
+        event_fragment,
+        action_fragment,
+        subscribe_func,
+    )
 
 
 def test_thing_property_get(exposed_thing, property_fragment):
@@ -372,7 +405,7 @@ def test_thing_property_subscribe(exposed_thing, property_fragment):
         for val in values:
             yield exposed_thing.properties[prop_name].write(val)
 
-        yield [future for future in six.itervalues(values_futures)]
+        yield [future for future in values_futures.values()]
 
         subscription.dispose()
 
@@ -463,7 +496,7 @@ def test_thing_event_subscribe(exposed_thing, event_fragment):
         for val in values:
             yield exposed_thing.events[event_name].emit(val)
 
-        yield [future for future in six.itervalues(values_futures)]
+        yield [future for future in values_futures.values()]
 
         subscription.dispose()
 
@@ -537,7 +570,13 @@ def test_subscribe(exposed_thing, property_fragment, event_fragment, action_frag
     def subscribe_func(*args, **kwargs):
         return exposed_thing.subscribe(*args, **kwargs)
 
-    _test_td_change_events(exposed_thing, property_fragment, event_fragment, action_fragment, subscribe_func)
+    _test_td_change_events(
+        exposed_thing,
+        property_fragment,
+        event_fragment,
+        action_fragment,
+        subscribe_func,
+    )
 
 
 def test_thing_interaction_dict_behaviour(exposed_thing, property_fragment):
@@ -554,24 +593,26 @@ def test_thing_interaction_dict_behaviour(exposed_thing, property_fragment):
 def test_thing_fragment_getters_setters():
     """ThingFragment attributes can be get and set from the ExposedThing."""
 
-    thing_fragment = ThingFragment({
-        "id": uuid.uuid4().urn,
-        "title": Faker().pystr(),
-        "description": Faker().pystr(),
-        "properties": {
-            uuid.uuid4().hex: {
-                "description": Faker().pystr(),
-                "type": DataType.STRING
-            }
+    thing_fragment = ThingFragment(
+        {
+            "id": uuid.uuid4().urn,
+            "title": Faker().pystr(),
+            "description": Faker().pystr(),
+            "properties": {
+                uuid.uuid4().hex: {
+                    "description": Faker().pystr(),
+                    "type": DataType.STRING,
+                }
+            },
         }
-    })
+    )
 
     thing = Thing(thing_fragment=thing_fragment)
     exp_thing = ExposedThing(servient=Servient(), thing=thing)
 
     assert exp_thing.title == thing_fragment.title
     assert exp_thing.description == thing_fragment.description
-    assert list(exp_thing.properties) == list(six.iterkeys(thing_fragment.properties))
+    assert list(exp_thing.properties) == list(thing_fragment.properties.keys())
 
     title_original = thing_fragment.title
     title_updated = Faker().pystr()
@@ -615,7 +656,9 @@ def _test_equivalent_interaction_names(base_name, transform_name):
     prop_name_transform = transform_name(prop_name)
 
     prop_default_value = Faker().pybool()
-    exp_thing.add_property(prop_name, {"type": DataType.BOOLEAN}, value=prop_default_value)
+    exp_thing.add_property(
+        prop_name, {"type": DataType.BOOLEAN}, value=prop_default_value
+    )
 
     with pytest.raises(ValueError):
         exp_thing.add_property(prop_name_transform, {"type": DataType.BOOLEAN})
@@ -623,7 +666,9 @@ def _test_equivalent_interaction_names(base_name, transform_name):
     @tornado.gen.coroutine
     def assert_prop_read():
         assert (yield exp_thing.properties[prop_name].read()) is prop_default_value
-        assert (yield exp_thing.properties[prop_name_transform].read()) is prop_default_value
+        assert (
+            yield exp_thing.properties[prop_name_transform].read()
+        ) is prop_default_value
 
     tornado.ioloop.IOLoop.current().run_sync(assert_prop_read)
 

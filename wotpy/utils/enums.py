@@ -5,8 +5,6 @@
 Utilities related to enumerations.
 """
 
-import six
-
 
 class EnumListMixin(object):
     """Mixin that provides methods to list enumerated values."""

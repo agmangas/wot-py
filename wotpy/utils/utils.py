@@ -9,7 +9,6 @@ import json
 import socket
 from functools import wraps
 
-import six
 import tornado.gen
 
 
@@ -63,9 +62,9 @@ def to_json_obj(obj):
         pass
 
     try:
-        return {key: to_json_obj(val) for key, val in six.iteritems(vars(obj))}
+        return {key: to_json_obj(val) for key, val in vars(obj).items()}
     except TypeError:
-        raise ValueError("Object {} is not JSON serializable".format(obj))
+        raise ValueError("Object {} is not JSON serializable".format(obj)) from None
 
 
 def get_main_ipv4_address():
@@ -82,7 +81,7 @@ def get_main_ipv4_address():
             addr = sock.getsockname()[0]
             sock.close()
             break
-        except:
+        except Exception:
             addr = "127.0.0.1"
         finally:
             sock.close()

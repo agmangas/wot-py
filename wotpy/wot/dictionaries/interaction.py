@@ -5,8 +5,6 @@
 Wrapper classes for dictionaries for interaction initialization that are defined in the Scripting API.
 """
 
-import six
-
 from wotpy.wot.dictionaries.base import WotBaseDict
 from wotpy.wot.dictionaries.link import FormDict
 from wotpy.wot.dictionaries.schema import DataSchemaDict
@@ -18,14 +16,7 @@ class InteractionFragmentDict(WotBaseDict):
     (Properties, Actions and Events)."""
 
     class Meta:
-        fields = {
-            "forms",
-            "title",
-            "uriVariables",
-            "description",
-            "security",
-            "scopes"
-        }
+        fields = {"forms", "title", "uriVariables", "description", "security", "scopes"}
 
     @property
     def forms(self):
@@ -43,7 +34,7 @@ class InteractionFragmentDict(WotBaseDict):
 
         return {
             key: DataSchemaDict.build(val)
-            for key, val in six.iteritems(self._init.get("uriVariables"))
+            for key, val in self._init.get("uriVariables").items()
         }
 
     @property
@@ -62,9 +53,7 @@ class PropertyFragmentDict(InteractionFragmentDict):
     """A dictionary wrapper class that contains data to initialize a Property."""
 
     class Meta:
-        fields = InteractionFragmentDict.Meta.fields.union({
-            "observable"
-        })
+        fields = InteractionFragmentDict.Meta.fields.union({"observable"})
 
     def __init__(self, *args, **kwargs):
         super(PropertyFragmentDict, self).__init__(*args, **kwargs)
@@ -104,17 +93,11 @@ class ActionFragmentDict(InteractionFragmentDict):
     """A dictionary wrapper class that contains data to initialize an Action."""
 
     class Meta:
-        fields = InteractionFragmentDict.Meta.fields.union({
-            "input",
-            "output",
-            "safe",
-            "idempotent"
-        })
+        fields = InteractionFragmentDict.Meta.fields.union(
+            {"input", "output", "safe", "idempotent"}
+        )
 
-        defaults = {
-            "safe": False,
-            "idempotent": False
-        }
+        defaults = {"safe": False, "idempotent": False}
 
     @property
     def input(self):
@@ -137,11 +120,9 @@ class EventFragmentDict(InteractionFragmentDict):
     """A dictionary wrapper class that contains data to initialize an Event."""
 
     class Meta:
-        fields = InteractionFragmentDict.Meta.fields.union({
-            "subscription",
-            "data",
-            "cancellation"
-        })
+        fields = InteractionFragmentDict.Meta.fields.union(
+            {"subscription", "data", "cancellation"}
+        )
 
     @property
     def subscription(self):

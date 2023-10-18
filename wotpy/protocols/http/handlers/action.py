@@ -10,19 +10,15 @@ import pprint
 import time
 import uuid
 
-import six
 import tornado.gen
-from tornado.web import HTTPError
-from tornado.web import RequestHandler
+from tornado.web import HTTPError, RequestHandler
 
 import wotpy.protocols.http.handlers.utils as handler_utils
 
 
-# noinspection PyAbstractClass,PyAttributeOutsideInit
 class ActionInvokeHandler(RequestHandler):
     """Handler for Action invocation requests."""
 
-    # noinspection PyMethodOverriding
     def initialize(self, http_server):
         self._server = http_server
 
@@ -38,11 +34,9 @@ class ActionInvokeHandler(RequestHandler):
         self.write({"invocation": "/invocation/{}".format(invocation_id)})
 
 
-# noinspection PyAbstractClass,PyAttributeOutsideInit
 class PendingInvocationHandler(RequestHandler):
     """Handler to check the status of pending action invocations."""
 
-    # noinspection PyMethodOverriding
     def initialize(self, http_server):
         self._server = http_server
         self._logr = logging.getLogger(__name__)
@@ -54,19 +48,25 @@ class PendingInvocationHandler(RequestHandler):
         now = time.time()
 
         expired_invocations = [
-            inv_id for inv_id, tstamp in six.iteritems(self._server.invocation_check_times)
+            inv_id
+            for inv_id, tstamp in self._server.invocation_check_times.items()
             if (now - tstamp) > self._server.action_ttl
         ]
 
         if len(expired_invocations):
-            self._logr.debug("Expired invocations: {}".format(pprint.pformat(expired_invocations)))
+            self._logr.debug(
+                "Expired invocations: {}".format(pprint.pformat(expired_invocations))
+            )
 
         for invocation_id in expired_invocations:
             self._server.invocation_check_times.pop(invocation_id)
             fut_result = self._server.pending_actions.get(invocation_id, None)
 
             if fut_result and fut_result.done():
-                self._logr.debug("Removing completed invocation Future: {}".format(invocation_id))
+                self._logr.debug(
+                    "Removing completed invocation Future: {}".format(invocation_id)
+                )
+
                 self._server.pending_actions.pop(invocation_id, None)
 
     @tornado.gen.coroutine

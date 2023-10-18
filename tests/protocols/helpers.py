@@ -4,7 +4,6 @@
 import random
 import uuid
 
-import six
 import tornado.concurrent
 import tornado.gen
 import tornado.ioloop
@@ -12,7 +11,11 @@ from faker import Faker
 from rx.concurrency import IOLoopScheduler
 
 from tests.utils import run_test_coroutine
-from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, EventFragmentDict, ActionFragmentDict
+from wotpy.wot.dictionaries.interaction import (
+    ActionFragmentDict,
+    EventFragmentDict,
+    PropertyFragmentDict,
+)
 from wotpy.wot.td import ThingDescription
 
 
@@ -23,10 +26,11 @@ def client_test_on_property_change(servient, protocol_client_cls):
 
     prop_name = uuid.uuid4().hex
 
-    exposed_thing.add_property(prop_name, PropertyFragmentDict({
-        "type": "string",
-        "observable": True
-    }), value=Faker().sentence())
+    exposed_thing.add_property(
+        prop_name,
+        PropertyFragmentDict({"type": "string", "observable": True}),
+        value=Faker().sentence(),
+    )
 
     servient.refresh_forms()
 
@@ -42,7 +46,9 @@ def client_test_on_property_change(servient, protocol_client_cls):
         @tornado.gen.coroutine
         def write_next():
             try:
-                next_value = next(val for val, fut in six.iteritems(values_observed) if not fut.done())
+                next_value = next(
+                    val for val, fut in values_observed.items() if not fut.done()
+                )
                 yield exposed_thing.properties[prop_name].write(next_value)
             except StopIteration:
                 pass
@@ -74,9 +80,7 @@ def client_test_on_event(servient, protocol_client_cls):
 
     event_name = uuid.uuid4().hex
 
-    exposed_thing.add_event(event_name, EventFragmentDict({
-        "type": "number"
-    }))
+    exposed_thing.add_event(event_name, EventFragmentDict({"type": "number"}))
 
     servient.refresh_forms()
 
@@ -91,7 +95,9 @@ def client_test_on_event(servient, protocol_client_cls):
 
         @tornado.gen.coroutine
         def emit_next():
-            next_value = next(val for val, fut in six.iteritems(future_payloads) if not fut.done())
+            next_value = next(
+                val for val, fut in future_payloads.items() if not fut.done()
+            )
             exposed_thing.events[event_name].emit(next_value)
 
         def on_next(ev):
@@ -120,10 +126,11 @@ def client_test_read_property(servient, protocol_client_cls, timeout=None):
 
     prop_name = uuid.uuid4().hex
 
-    exposed_thing.add_property(prop_name, PropertyFragmentDict({
-        "type": "string",
-        "observable": True
-    }), value=Faker().sentence())
+    exposed_thing.add_property(
+        prop_name,
+        PropertyFragmentDict({"type": "string", "observable": True}),
+        value=Faker().sentence(),
+    )
 
     servient.refresh_forms()
 
@@ -134,13 +141,17 @@ def client_test_read_property(servient, protocol_client_cls, timeout=None):
         protocol_client = protocol_client_cls()
         prop_value = Faker().sentence()
 
-        curr_prop_value = yield protocol_client.read_property(td, prop_name, timeout=timeout)
+        curr_prop_value = yield protocol_client.read_property(
+            td, prop_name, timeout=timeout
+        )
 
         assert curr_prop_value != prop_value
 
         yield exposed_thing.properties[prop_name].write(prop_value)
 
-        curr_prop_value = yield protocol_client.read_property(td, prop_name, timeout=timeout)
+        curr_prop_value = yield protocol_client.read_property(
+            td, prop_name, timeout=timeout
+        )
 
         assert curr_prop_value == prop_value
 
@@ -154,10 +165,11 @@ def client_test_write_property(servient, protocol_client_cls, timeout=None):
 
     prop_name = uuid.uuid4().hex
 
-    exposed_thing.add_property(prop_name, PropertyFragmentDict({
-        "type": "string",
-        "observable": True
-    }), value=Faker().sentence())
+    exposed_thing.add_property(
+        prop_name,
+        PropertyFragmentDict({"type": "string", "observable": True}),
+        value=Faker().sentence(),
+    )
 
     servient.refresh_forms()
 
@@ -192,10 +204,11 @@ def client_test_invoke_action(servient, protocol_client_cls, timeout=None):
         yield tornado.gen.sleep(random.random() * 0.1)
         raise tornado.gen.Return("{:f}".format(input_value))
 
-    exposed_thing.add_action(action_name, ActionFragmentDict({
-        "input": {"type": "number"},
-        "output": {"type": "string"}
-    }), action_handler)
+    exposed_thing.add_action(
+        action_name,
+        ActionFragmentDict({"input": {"type": "number"}, "output": {"type": "string"}}),
+        action_handler,
+    )
 
     servient.refresh_forms()
 
@@ -207,7 +220,9 @@ def client_test_invoke_action(servient, protocol_client_cls, timeout=None):
 
         input_value = Faker().pyint()
 
-        result = yield protocol_client.invoke_action(td, action_name, input_value, timeout=timeout)
+        result = yield protocol_client.invoke_action(
+            td, action_name, input_value, timeout=timeout
+        )
         result_expected = yield action_handler({"input": input_value})
 
         assert result == result_expected
@@ -228,10 +243,11 @@ def client_test_invoke_action_error(servient, protocol_client_cls):
     def action_handler(parameters):
         raise ValueError(err_message)
 
-    exposed_thing.add_action(action_name, ActionFragmentDict({
-        "input": {"type": "number"},
-        "output": {"type": "string"}
-    }), action_handler)
+    exposed_thing.add_action(
+        action_name,
+        ActionFragmentDict({"input": {"type": "number"}, "output": {"type": "string"}}),
+        action_handler,
+    )
 
     servient.refresh_forms()
 
@@ -258,10 +274,11 @@ def client_test_on_property_change_error(servient, protocol_client_cls):
 
     prop_name = uuid.uuid4().hex
 
-    exposed_thing.add_property(prop_name, PropertyFragmentDict({
-        "type": "string",
-        "observable": True
-    }), value=Faker().sentence())
+    exposed_thing.add_property(
+        prop_name,
+        PropertyFragmentDict({"type": "string", "observable": True}),
+        value=Faker().sentence(),
+    )
 
     servient.refresh_forms()
 
@@ -284,12 +301,11 @@ def client_test_on_property_change_error(servient, protocol_client_cls):
 
         observable = protocol_client.on_property_change(td, prop_name)
 
-        subscribe_kwargs = {
-            "on_next": on_next,
-            "on_error": on_error
-        }
+        subscribe_kwargs = {"on_next": on_next, "on_error": on_error}
 
-        subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(**subscribe_kwargs)
+        subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(
+            **subscribe_kwargs
+        )
 
         observe_err = yield future_err
 

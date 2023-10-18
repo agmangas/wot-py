@@ -12,15 +12,7 @@ from wotpy.wot.enums import InteractionTypes
 REGEX_SAFE_NAME = r"^[a-zA-Z0-9_-]+$"
 REGEX_ANY_URI = r"^((\w+:(\/?\/?)[^\s]+)|((..\/)+)[^\s]*)$"
 
-DATA_TYPES_ENUM = [
-    "array",
-    "boolean",
-    "number",
-    "integer",
-    "object",
-    "string",
-    "null"
-]
+DATA_TYPES_ENUM = ["array", "boolean", "number", "integer", "object", "string", "null"]
 
 SCHEMA_DATA_SCHEMA = {
     "$schema": "http://json-schema.org/schema#",
@@ -29,22 +21,14 @@ SCHEMA_DATA_SCHEMA = {
     "properties": {
         "description": {"type": "string"},
         "title": {"type": "string"},
-        "type": {
-            "type": "string",
-            "enum": DATA_TYPES_ENUM
-        },
+        "type": {"type": "string", "enum": DATA_TYPES_ENUM},
         "const": {},
         "unit": {"type": "string"},
-        "enum": {
-            "type": "array",
-            "items": {}
-        },
+        "enum": {"type": "array", "items": {}},
         "readOnly": {"type": "boolean"},
-        "writeOnly": {"type": "boolean"}
+        "writeOnly": {"type": "boolean"},
     },
-    "required": [
-        "type"
-    ]
+    "required": ["type"],
 }
 
 SCHEMA_SECURITY_SCHEME = {
@@ -54,11 +38,9 @@ SCHEMA_SECURITY_SCHEME = {
     "properties": {
         "scheme": {"type": "string"},
         "description": {"type": "string"},
-        "proxyUrl": {"type": "string"}
+        "proxyUrl": {"type": "string"},
     },
-    "required": [
-        "scheme"
-    ]
+    "required": ["scheme"],
 }
 
 SCHEMA_LINK = {
@@ -66,20 +48,12 @@ SCHEMA_LINK = {
     "id": "http://fundacionctic.org/schemas/link.json",
     "type": "object",
     "properties": {
-        "href": {
-            "type": "string",
-            "pattern": REGEX_ANY_URI
-        },
+        "href": {"type": "string", "pattern": REGEX_ANY_URI},
         "type": {"type": "string"},
         "rel": {"type": "string"},
-        "anchor": {
-            "type": "string",
-            "pattern": REGEX_ANY_URI
-        },
+        "anchor": {"type": "string", "pattern": REGEX_ANY_URI},
     },
-    "required": [
-        "href"
-    ]
+    "required": ["href"],
 }
 
 SCHEMA_FORM = {
@@ -88,32 +62,18 @@ SCHEMA_FORM = {
     "type": "object",
     "properties": {
         "href": {"type": "string"},
-        "contentType": {
-            "type": "string",
-            "default": "application/json"
+        "contentType": {"type": "string", "default": "application/json"},
+        "op": {
+            "oneOf": [
+                {"type": "string"},
+                {"type": "array", "items": {"type": "string"}},
+            ]
         },
-        "op": { "oneOf": [
-            {
-                "type": "string"
-            },
-            {
-                "type": "array",
-                "items": {"type": "string"}
-            }
-            ]},
         "subprotocol": {"type": "string"},
-        "security": {
-            "type": "array",
-            "items": SCHEMA_SECURITY_SCHEME
-        },
-        "scopes": {
-            "type": "array",
-            "items": {"type": "string"}
-        }
+        "security": {"type": "array", "items": SCHEMA_SECURITY_SCHEME},
+        "scopes": {"type": "array", "items": {"type": "string"}},
     },
-    "required": [
-        "href"
-    ]
+    "required": ["href"],
 }
 
 SCHEMA_INTERACTION_PATTERN = {
@@ -121,26 +81,17 @@ SCHEMA_INTERACTION_PATTERN = {
     "id": "http://fundacionctic.org/schemas/interaction-pattern.json",
     "type": "object",
     "properties": {
-        "forms": {
-            "type": "array",
-            "items": SCHEMA_FORM
-        },
+        "forms": {"type": "array", "items": SCHEMA_FORM},
         "title": {"type": "string"},
         "uriVariables": {
             "type": "object",
             "patternProperties": {REGEX_SAFE_NAME: SCHEMA_DATA_SCHEMA},
-            "additionalProperties": False
+            "additionalProperties": False,
         },
         "description": {"type": "string"},
-        "security": {
-            "type": "array",
-            "items": SCHEMA_SECURITY_SCHEME
-        },
-        "scopes": {
-            "type": "array",
-            "items": {"type": "string"}
-        }
-    }
+        "security": {"type": "array", "items": SCHEMA_SECURITY_SCHEME},
+        "scopes": {"type": "array", "items": {"type": "string"}},
+    },
 }
 
 SCHEMA_PROPERTY = {
@@ -151,14 +102,9 @@ SCHEMA_PROPERTY = {
         SCHEMA_DATA_SCHEMA,
         {
             "type": "object",
-            "properties": {
-                "observable": {
-                    "type": "boolean",
-                    "default": False
-                }
-            }
-        }
-    ]
+            "properties": {"observable": {"type": "boolean", "default": False}},
+        },
+    ],
 }
 
 SCHEMA_EVENT = {
@@ -171,10 +117,10 @@ SCHEMA_EVENT = {
             "properties": {
                 "subscription": SCHEMA_DATA_SCHEMA,
                 "data": SCHEMA_DATA_SCHEMA,
-                "cancellation": SCHEMA_DATA_SCHEMA
-            }
-        }
-    ]
+                "cancellation": SCHEMA_DATA_SCHEMA,
+            },
+        },
+    ],
 }
 
 SCHEMA_ACTION = {
@@ -187,29 +133,19 @@ SCHEMA_ACTION = {
             "properties": {
                 "input": SCHEMA_DATA_SCHEMA,
                 "output": SCHEMA_DATA_SCHEMA,
-                "safe": {
-                    "type": "boolean",
-                    "default": False
-                },
-                "idempotent": {
-                    "type": "boolean",
-                    "default": False
-                }
-            }
-        }
-    ]
+                "safe": {"type": "boolean", "default": False},
+                "idempotent": {"type": "boolean", "default": False},
+            },
+        },
+    ],
 }
 
 SCHEMA_VERSIONING = {
     "$schema": "http://json-schema.org/schema#",
     "id": "http://fundacionctic.org/schemas/versioning.json",
     "type": "object",
-    "properties": {
-        "instance": {"type": "string"}
-    },
-    "required": [
-        "instance"
-    ]
+    "properties": {"instance": {"type": "string"}},
+    "required": ["instance"],
 }
 
 SCHEMA_THING = {
@@ -217,55 +153,38 @@ SCHEMA_THING = {
     "id": "http://fundacionctic.org/schemas/thing.json",
     "type": "object",
     "properties": {
-        "id": {
-            "type": "string",
-            "pattern": REGEX_ANY_URI
-        },
+        "id": {"type": "string", "pattern": REGEX_ANY_URI},
         "version": SCHEMA_VERSIONING,
         "title": {"type": "string"},
         "description": {"type": "string"},
         "support": {"type": "string"},
         "created": {"type": "string"},
         "lastModified": {"type": "string"},
-        "base": {
-            "type": "string",
-            "pattern": REGEX_ANY_URI
-        },
+        "base": {"type": "string", "pattern": REGEX_ANY_URI},
         "properties": {
             "type": "object",
             "patternProperties": {REGEX_SAFE_NAME: SCHEMA_PROPERTY},
-            "additionalProperties": False
+            "additionalProperties": False,
         },
         "actions": {
             "type": "object",
             "patternProperties": {REGEX_SAFE_NAME: SCHEMA_ACTION},
-            "additionalProperties": False
+            "additionalProperties": False,
         },
         "events": {
             "type": "object",
             "patternProperties": {REGEX_SAFE_NAME: SCHEMA_EVENT},
-            "additionalProperties": False
+            "additionalProperties": False,
         },
-        "links": {
-            "type": "array",
-            "items": SCHEMA_LINK
-        },
-        "security": {
-            "type": "array",
-            "items": {"type": "string"}
-        },
+        "links": {"type": "array", "items": SCHEMA_LINK},
+        "security": {"type": "array", "items": {"type": "string"}},
         "securityDefinitions": {
             "type": "object",
             "patternProperties": {REGEX_SAFE_NAME: SCHEMA_SECURITY_SCHEME},
-            "additionalProperties": False
-        }
+            "additionalProperties": False,
+        },
     },
-    "required": [
-        "id",
-        "title",
-        "security",
-        "securityDefinitions"
-    ]
+    "required": ["id", "title", "security", "securityDefinitions"],
 }
 
 
@@ -276,10 +195,11 @@ def interaction_schema_for_type(interaction_type):
     type_schema_dict = {
         InteractionTypes.PROPERTY: SCHEMA_PROPERTY,
         InteractionTypes.ACTION: SCHEMA_ACTION,
-        InteractionTypes.EVENT: SCHEMA_EVENT
+        InteractionTypes.EVENT: SCHEMA_EVENT,
     }
 
-    assert interaction_type in type_schema_dict
+    if interaction_type not in type_schema_dict:
+        raise ValueError("Invalid interaction type: {}".format(interaction_type))
 
     return type_schema_dict[interaction_type]
 

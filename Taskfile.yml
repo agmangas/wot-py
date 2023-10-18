@@ -5,9 +5,12 @@ vars:
   TEST_BROKER_NAME: wotpy_test_broker
   TEST_BROKER_MAPPED_PORT: "{{default 1883 .TEST_BROKER_MAPPED_PORT}}"
   VENV_PATH: "{{.ROOT_DIR}}/.venv"
+  MAIN_IP_ADDRESS:
+    sh: ip route get 1.2.3.4 | awk '{print $7}'
+  WOTPY_TESTS_MQTT_BROKER_URL: mqtt://{{.MAIN_IP_ADDRESS}}:{{.TEST_BROKER_MAPPED_PORT}}
 
 env:
-  WOTPY_TESTS_MQTT_BROKER_URL: mqtt://localhost:{{.TEST_BROKER_MAPPED_PORT}}
+  WOTPY_TESTS_MQTT_BROKER_URL: "{{.WOTPY_TESTS_MQTT_BROKER_URL}}"
 
 tasks:
   clean:
@@ -38,6 +41,8 @@ tasks:
       - test -d {{.VENV_PATH}}
 
   docker-tests:
+    deps:
+      - test-broker
     desc: Run the tests in a Docker container
     vars:
       PYTEST_ARGS_DEFAULT: -v
@@ -54,7 +59,7 @@ tasks:
   docker-tests-all:
     desc: Run the tests in a Docker container for all Python versions
     cmds:
-      - for: ["3.7", "3.8", "3.9", "3.10"]
+      - for: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
         task: docker-tests
         vars:
           PYTHON_TAG: "{{.ITEM}}"

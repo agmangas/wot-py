@@ -14,10 +14,5 @@ class VersioningDict(WotBaseDict):
     (term definitions outside of the TD namespace) can be extended here."""
 
     class Meta:
-        fields = {
-            "instance"
-        }
-
-        required = {
-            "instance"
-        }
+        fields = {"instance"}
+        required = {"instance"}

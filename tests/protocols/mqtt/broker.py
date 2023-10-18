@@ -6,7 +6,7 @@ import os
 
 import tornado.gen
 import tornado.ioloop
-from hbmqtt.client import MQTTClient, ConnectException
+from hbmqtt.client import ConnectException, MQTTClient
 
 from wotpy.protocols.mqtt.enums import MQTTCodesACK
 
@@ -35,11 +35,13 @@ def is_test_broker_online():
             hbmqtt_client = MQTTClient()
             ack_con = yield hbmqtt_client.connect(broker_url)
             if ack_con != MQTTCodesACK.CON_OK:
-                logging.warning("Error ACK on MQTT broker connection: {}".format(ack_con))
+                logging.warning(
+                    "Error ACK on MQTT broker connection: {}".format(ack_con)
+                )
                 raise tornado.gen.Return(False)
         except ConnectException as ex:
             logging.warning("MQTT broker connection error: {}".format(ex))
-            raise tornado.gen.Return(False)
+            raise tornado.gen.Return(False) from ex
 
         raise tornado.gen.Return(True)
 
@@ -48,6 +50,7 @@ def is_test_broker_online():
     if conn_ok is False:
         logging.warning(
             "Couldn't connect to the test MQTT broker. "
-            "Please check the {} variable".format(ENV_BROKER_URL))
+            "Please check the {} variable".format(ENV_BROKER_URL)
+        )
 
     return conn_ok

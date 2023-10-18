@@ -5,21 +5,17 @@
 Class that represents a WoT servient.
 """
 
+import asyncio
 import functools
 import re
 import socket
 
-import six
-import tornado.concurrent
-import tornado.gen
-import tornado.ioloop
-import tornado.locks
 import tornado.web
+
 from wotpy.protocols.enums import Protocols
 from wotpy.protocols.http.client import HTTPClient
 from wotpy.protocols.ws.client import WebsocketClient
-from wotpy.support import (is_coap_supported, is_dnssd_supported,
-                           is_mqtt_supported)
+from wotpy.support import is_coap_supported, is_dnssd_supported, is_mqtt_supported
 from wotpy.utils.utils import get_main_ipv4_address
 from wotpy.wot.enums import InteractionTypes
 from wotpy.wot.exposed.thing_set import ExposedThingSet
@@ -34,8 +30,7 @@ class TDHandler(tornado.web.RequestHandler):
         self.servient = servient
 
     def get(self, thing_url_name):
-        exp_thing = self.servient.exposed_thing_set.find_by_thing_id(
-            thing_url_name)
+        exp_thing = self.servient.exposed_thing_set.find_by_thing_id(thing_url_name)
 
         td_doc = ThingDescription.from_thing(exp_thing.thing).to_dict()
         base_url = self.servient.get_thing_base_url(exp_thing)
@@ -61,8 +56,7 @@ class TDCatalogueHandler(tornado.web.RequestHandler):
 
             if self.get_argument("expanded", False):
                 val = ThingDescription.from_thing(exp_thing.thing).to_dict()
-                val.update(
-                    {"base": self.servient.get_thing_base_url(exp_thing)})
+                val.update({"base": self.servient.get_thing_base_url(exp_thing)})
             else:
                 val = "/{}".format(exp_thing.thing.url_name)
 
@@ -88,7 +82,8 @@ def _stopped_servient_only(func):
 
         if servient.is_running:
             raise ServientStateException(
-                "Attempted to modify the Servient while it was running")
+                "Attempted to modify the Servient while it was running"
+            )
 
         return func(*args, **kwargs)
 
@@ -101,7 +96,8 @@ _REGEX_ARPA = r".*\.(ip6|in-addr)\.arpa$"
 def _get_hostname_fallback():
     """Tries to guess the hostname of the current host that should be used on TD Forms.
     Two strategies are used for this: First, the socket.getfqdn() method. If the returned
-    value is not a FQDN then we try to get the IPv4 address of the main network interface."""
+    value is not a FQDN then we try to get the IPv4 address of the main network interface.
+    """
 
     fqdn = socket.getfqdn()
     valid_fqdn = fqdn and not re.search(_REGEX_ARPA, fqdn)
@@ -117,9 +113,15 @@ class Servient(object):
     send requests and interact with IoT devices exposed by other WoT servients
     or servers using the capabilities of a Web client such as Web browser."""
 
-    def __init__(self, hostname=None, catalogue_port=9090,
-                 clients=None, clients_config=None,
-                 dnssd_enabled=False, dnssd_instance_name=None):
+    def __init__(
+        self,
+        hostname=None,
+        catalogue_port=9090,
+        clients=None,
+        clients_config=None,
+        dnssd_enabled=False,
+        dnssd_instance_name=None,
+    ):
         self._hostname = hostname if hostname is not None else _get_hostname_fallback()
 
         if not isinstance(self._hostname, str):
@@ -134,9 +136,13 @@ class Servient(object):
         self._catalogue_port = catalogue_port
         self._catalogue_server = None
         self._exposed_thing_set = ExposedThingSet()
-        self._servient_lock = tornado.locks.Lock()
+        self._servient_lock = asyncio.Lock()
         self._is_running = False
-        self._dnssd_enabled = dnssd_enabled if dnssd_enabled and is_dnssd_supported() else False
+
+        self._dnssd_enabled = (
+            dnssd_enabled if dnssd_enabled and is_dnssd_supported() else False
+        )
+
         self._dnssd_instance_name = dnssd_instance_name
         self._dnssd = None
         self._enabled_exposed_thing_ids = set()
@@ -154,48 +160,48 @@ class Servient(object):
                 Protocols.HTTP,
                 Protocols.COAP,
                 Protocols.WEBSOCKETS,
-                Protocols.MQTT
+                Protocols.MQTT,
             ],
             InteractionTypes.ACTION: [
                 Protocols.WEBSOCKETS,
                 Protocols.MQTT,
                 Protocols.COAP,
-                Protocols.HTTP
+                Protocols.HTTP,
             ],
             InteractionTypes.EVENT: [
                 Protocols.WEBSOCKETS,
                 Protocols.MQTT,
                 Protocols.COAP,
-                Protocols.HTTP
-            ]
+                Protocols.HTTP,
+            ],
         }
 
         supported_protocols = [
-            client.protocol for client in clients
+            client.protocol
+            for client in clients
             if client.is_supported_interaction(td, name)
         ]
 
         intrct_names = {
-            InteractionTypes.PROPERTY: six.iterkeys(td.properties),
-            InteractionTypes.ACTION: six.iterkeys(td.actions),
-            InteractionTypes.EVENT: six.iterkeys(td.events)
+            InteractionTypes.PROPERTY: td.properties.keys(),
+            InteractionTypes.ACTION: td.actions.keys(),
+            InteractionTypes.EVENT: td.events.keys(),
         }
 
         try:
-            intrct_type = next(key for key, names in six.iteritems(
-                intrct_names) if name in names)
+            intrct_type = next(
+                key for key, names in intrct_names.items() if name in names
+            )
         except StopIteration:
-            raise ValueError("Unknown interaction: {}".format(name))
+            raise ValueError("Unknown interaction: {}".format(name)) from None
 
         protocol_prefs = protocol_preference_map[intrct_type]
-        protocol_choices = set(protocol_prefs).intersection(
-            set(supported_protocols))
+        protocol_choices = set(protocol_prefs).intersection(set(supported_protocols))
 
         if not len(protocol_choices):
             return list(clients)[0]
 
-        protocol = next(
-            proto for proto in protocol_prefs if proto in protocol_choices)
+        protocol = next(proto for proto in protocol_prefs if proto in protocol_choices)
 
         return next(client for client in clients if client.protocol == protocol)
 
@@ -270,8 +276,7 @@ class Servient(object):
 
         return self._dnssd_instance_name
 
-    @tornado.gen.coroutine
-    def _start_dnssd(self):
+    async def _start_dnssd(self):
         """Starts the DNS-SD service and registers the servient."""
 
         if self._dnssd or not self._dnssd_enabled:
@@ -281,18 +286,16 @@ class Servient(object):
 
         self._dnssd = DNSSDDiscoveryService()
 
-        yield self._dnssd.start()
-        yield self._dnssd.register(self, instance_name=self._dnssd_instance_name)
+        await self._dnssd.start()
+        await self._dnssd.register(self, instance_name=self._dnssd_instance_name)
 
-    @tornado.gen.coroutine
-    def _stop_dnssd(self):
+    async def _stop_dnssd(self):
         """Unregisters the servient and stops the DNS-SD service."""
 
         if not self._dnssd:
             return
 
-        yield self._dnssd.stop()
-
+        await self._dnssd.stop()
         self._dnssd = None
 
     def _build_default_clients(self):
@@ -302,29 +305,39 @@ class Servient(object):
 
         conf = self._clients_config if self._clients_config else {}
 
-        self._clients.update({
-            Protocols.WEBSOCKETS: WebsocketClient(**conf.get(Protocols.WEBSOCKETS, {})),
-            Protocols.HTTP: HTTPClient(**conf.get(Protocols.HTTP, {}))
-        })
+        self._clients.update(
+            {
+                Protocols.WEBSOCKETS: WebsocketClient(
+                    **conf.get(Protocols.WEBSOCKETS, {})
+                ),
+                Protocols.HTTP: HTTPClient(**conf.get(Protocols.HTTP, {})),
+            }
+        )
 
         if is_coap_supported():
             from wotpy.protocols.coap.client import CoAPClient
+
             self._clients.update(
-                {Protocols.COAP: CoAPClient(**conf.get(Protocols.COAP, {}))})
+                {Protocols.COAP: CoAPClient(**conf.get(Protocols.COAP, {}))}
+            )
 
         if is_mqtt_supported():
             from wotpy.protocols.mqtt.client import MQTTClient
+
             self._clients.update(
-                {Protocols.MQTT: MQTTClient(**conf.get(Protocols.MQTT, {}))})
+                {Protocols.MQTT: MQTTClient(**conf.get(Protocols.MQTT, {}))}
+            )
 
     def _build_td_catalogue_app(self):
         """Returns a Tornado app that provides one endpoint to retrieve the
         entire catalogue of thing descriptions contained in this servient."""
 
-        return tornado.web.Application([
-            (r"/", TDCatalogueHandler, dict(servient=self)),
-            (r"/(?P<thing_url_name>[^\/]+)", TDHandler, dict(servient=self))
-        ])
+        return tornado.web.Application(
+            [
+                (r"/", TDCatalogueHandler, dict(servient=self)),
+                (r"/(?P<thing_url_name>[^\/]+)", TDHandler, dict(servient=self)),
+            ]
+        )
 
     def _start_catalogue(self):
         """Starts the TD catalogue server if enabled."""
@@ -355,13 +368,15 @@ class Servient(object):
         """Removes all interaction forms linked to this
         server protocol for the given ExposedThing."""
 
-        assert self._exposed_thing_set.contains(exposed_thing)
-        assert protocol in self._servers
+        if not self._exposed_thing_set.contains(exposed_thing):
+            raise ValueError("Unknown ExposedThing")
+
+        if protocol not in self._servers:
+            raise ValueError("Unknown protocol")
 
         for interaction in exposed_thing.thing.interactions:
             forms_to_remove = [
-                form for form in interaction.forms
-                if form.protocol == protocol
+                form for form in interaction.forms if form.protocol == protocol
             ]
 
             for form in forms_to_remove:
@@ -370,20 +385,25 @@ class Servient(object):
     def _server_has_exposed_thing(self, server, exposed_thing):
         """Returns True if the given server contains the ExposedThing."""
 
-        assert server in self._servers.values()
-        assert self._exposed_thing_set.contains(exposed_thing)
+        if server not in self._servers.values():
+            raise ValueError("Unknown server")
+
+        if not self._exposed_thing_set.contains(exposed_thing):
+            raise ValueError("Unknown ExposedThing")
 
         return server.exposed_thing_set.contains(exposed_thing)
 
     def _add_interaction_forms(self, server, exposed_thing):
         """Builds and adds to the ExposedThing the Links related to the given server."""
 
-        assert server in self._servers.values()
-        assert self._exposed_thing_set.contains(exposed_thing)
+        if server not in self._servers.values():
+            raise ValueError("Unknown server")
+
+        if not self._exposed_thing_set.contains(exposed_thing):
+            raise ValueError("Unknown ExposedThing")
 
         for interaction in exposed_thing.thing.interactions:
-            forms = server.build_forms(
-                hostname=self._hostname, interaction=interaction)
+            forms = server.build_forms(hostname=self._hostname, interaction=interaction)
 
             for form in forms:
                 interaction.add_form(form)
@@ -391,7 +411,8 @@ class Servient(object):
     def _regenerate_server_forms(self, server):
         """Cleans and regenerates Forms for the given server in all ExposedThings."""
 
-        assert server in self._servers.values()
+        if server not in self._servers.values():
+            raise ValueError("Unknown server")
 
         for exp_thing in self._exposed_thing_set.exposed_things:
             self._clean_protocol_forms(exp_thing, server.protocol)
@@ -411,8 +432,12 @@ class Servient(object):
         if not len(self.servers):
             return None
 
-        protocol_default = sorted(six.iterkeys(self.servers))[0]
-        protocol = Protocols.HTTP if Protocols.HTTP in self.servers else protocol_default
+        protocol_default = sorted(self.servers.keys())[0]
+
+        protocol = (
+            Protocols.HTTP if Protocols.HTTP in self.servers else protocol_default
+        )
+
         server = self.servers[protocol]
 
         return server.build_base_url(hostname=self.hostname, thing=exposed_thing.thing)
@@ -475,8 +500,7 @@ class Servient(object):
         exposed_thing = self.get_exposed_thing(thing_id)
 
         if exposed_thing.id not in self._enabled_exposed_thing_ids:
-            raise ValueError(
-                "ExposedThing {} is already disabled".format(thing_id))
+            raise ValueError("ExposedThing {} is already disabled".format(thing_id))
 
         for server in self._servers.values():
             server.remove_exposed_thing(exposed_thing.id)
@@ -515,25 +539,23 @@ class Servient(object):
 
         self._catalogue_port = None
 
-    @tornado.gen.coroutine
-    def start(self):
+    async def start(self):
         """Starts the servers and returns an instance of the WoT object."""
 
-        with (yield self._servient_lock.acquire()):
+        async with self._servient_lock:
             self.refresh_forms()
-            yield [server.start() for server in six.itervalues(self._servers)]
+            await asyncio.gather(*[server.start() for server in self._servers.values()])
             self._start_catalogue()
-            yield self._start_dnssd()
+            await self._start_dnssd()
             self._is_running = True
 
-            raise tornado.gen.Return(WoT(servient=self))
+            return WoT(servient=self)
 
-    @tornado.gen.coroutine
-    def shutdown(self):
+    async def shutdown(self):
         """Stops the server configured under this servient."""
 
-        with (yield self._servient_lock.acquire()):
-            yield [server.stop() for server in six.itervalues(self._servers)]
+        async with self._servient_lock:
+            await asyncio.gather(*[server.stop() for server in self._servers.values()])
             self._stop_catalogue()
-            yield self._stop_dnssd()
+            await self._stop_dnssd()
             self._is_running = False

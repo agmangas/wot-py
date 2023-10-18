@@ -5,9 +5,7 @@
 Utility functions for CoAP resources.
 """
 
-import six
-
-from six.moves.urllib import parse
+import urllib.parse as parse
 
 
 def parse_request_opt_query(request):
@@ -15,4 +13,4 @@ def parse_request_opt_query(request):
     the parsed URI query parameters."""
 
     parsed_dict = parse.parse_qs("&".join(request.opt.uri_query))
-    return {key: val[0] for key, val in six.iteritems(parsed_dict) if len(val)}
+    return {key: val[0] for key, val in parsed_dict.items() if len(val)}

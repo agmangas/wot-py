@@ -14,21 +14,39 @@ FEATURE_MQTT = "MQTT"
 
 FEATURE_REQUISITES = {
     FEATURE_DNSSD: {
-        "max_version": (3, 10, 0),
-        "min_version": (3, 4, 0),
+        "max_version_exclusive": (3, 13),
+        "min_version_inclusive": (3, 7),
         "platforms": ["Linux", "Darwin"],
     },
     FEATURE_COAP: {
-        "max_version": (3, 10, 0),
-        "min_version": (3, 4, 0),
+        "max_version_exclusive": (3, 13),
+        "min_version_inclusive": (3, 7),
         "platforms": ["Linux"],
     },
     FEATURE_MQTT: {
-        "max_version": (3, 7, 0),
-        "min_version": (3, 4, 0),
+        "max_version_exclusive": (3, 9),
+        "min_version_inclusive": (3, 7),
         "platforms": ["Linux", "Darwin"],
     },
 }
+
+
+def _is_version_gte(version_a, version_b):
+    """Returns True if version_a is greater or equal than version_b."""
+
+    if version_a[0] > version_b[0]:
+        return True
+
+    if version_a[0] < version_b[0]:
+        return False
+
+    if version_a[1] > version_b[1]:
+        return True
+
+    if version_a[1] < version_b[1]:
+        return False
+
+    return True
 
 
 def is_supported(feature):
@@ -39,14 +57,16 @@ def is_supported(feature):
     if not reqs:
         raise ValueError("Unknown feature: {}".format(feature))
 
-    min_version = reqs.get("min_version")
+    vinfo = sys.version_info
 
-    if min_version and sys.version_info < min_version:
+    min_version = reqs.get("min_version_inclusive")
+
+    if min_version and not _is_version_gte((vinfo.major, vinfo.minor), min_version):
         return False
 
-    max_version = reqs.get("max_version")
+    max_version = reqs.get("max_version_exclusive")
 
-    if max_version and sys.version_info > max_version:
+    if max_version and _is_version_gte((vinfo.major, vinfo.minor), max_version):
         return False
 
     platforms = reqs.get("platforms")

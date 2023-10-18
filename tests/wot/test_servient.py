@@ -6,7 +6,6 @@ import random
 import uuid
 
 import pytest
-import six
 import tornado.gen
 import tornado.httpclient
 import tornado.ioloop
@@ -30,17 +29,12 @@ TD_DICT_01 = {
         "status": {
             "description": "Shows the current status of the lamp",
             "type": "string",
-            "forms": [{
-                "href": "coaps://mylamp.example.com:5683/status"
-            }]
+            "forms": [{"href": "coaps://mylamp.example.com:5683/status"}],
         }
-    }
+    },
 }
 
-TD_DICT_02 = {
-    "id": uuid.uuid4().urn,
-    "title": Faker().sentence()
-}
+TD_DICT_02 = {"id": uuid.uuid4().urn, "title": Faker().sentence()}
 
 
 @tornado.gen.coroutine
@@ -135,15 +129,9 @@ def test_servient_start_stop():
         "id": thing_id,
         "title": Faker().sentence(),
         "properties": {
-            name_prop_string: {
-                "observable": True,
-                "type": "string"
-            },
-            name_prop_boolean: {
-                "observable": True,
-                "type": "boolean"
-            }
-        }
+            name_prop_string: {"observable": True, "type": "string"},
+            name_prop_boolean: {"observable": True, "type": "boolean"},
+        },
     }
 
     td_str = json.dumps(td_doc)
@@ -202,19 +190,19 @@ def test_duplicated_thing_names(servient):
     description_01 = {
         "@context": [WOT_TD_CONTEXT_URL],
         "id": uuid.uuid4().urn,
-        "title": Faker().sentence()
+        "title": Faker().sentence(),
     }
 
     description_02 = {
         "@context": [WOT_TD_CONTEXT_URL],
         "id": uuid.uuid4().urn,
-        "title": Faker().sentence()
+        "title": Faker().sentence(),
     }
 
     description_03 = {
         "@context": [WOT_TD_CONTEXT_URL],
         "id": description_01.get("id"),
-        "title": Faker().sentence()
+        "title": Faker().sentence(),
     }
 
     description_01_str = json.dumps(description_01)
@@ -258,7 +246,7 @@ def test_clients_subset():
     servient_01 = Servient()
     servient_02 = Servient(clients=[ws_client])
     td = ThingDescription(TD_DICT_01)
-    prop_name = next(six.iterkeys(TD_DICT_01["properties"]))
+    prop_name = next(iter(TD_DICT_01["properties"].keys()))
 
     assert servient_01.select_client(td, prop_name) is not ws_client
     assert servient_02.select_client(td, prop_name) is ws_client
@@ -268,6 +256,8 @@ def test_clients_config():
     """Custom configuration arguments can be passed to the Servient default protocol clients."""
 
     connect_timeout = random.random()
-    servient = Servient(clients_config={Protocols.HTTP: {"connect_timeout": connect_timeout}})
+    servient = Servient(
+        clients_config={Protocols.HTTP: {"connect_timeout": connect_timeout}}
+    )
 
     assert servient.clients[Protocols.HTTP].connect_timeout == connect_timeout

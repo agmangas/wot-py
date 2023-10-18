@@ -5,25 +5,27 @@ import asyncio
 import random
 
 import pytest
-import six
 import tornado.gen
 from faker import Faker
 from mock import MagicMock, patch
 
-from tests.protocols.helpers import \
-    client_test_on_property_change, \
-    client_test_on_event, \
-    client_test_read_property, \
-    client_test_write_property, \
-    client_test_invoke_action, \
-    client_test_invoke_action_error
-from tests.protocols.mqtt.broker import is_test_broker_online, BROKER_SKIP_REASON
-from tests.utils import run_test_coroutine, DEFAULT_TIMEOUT_SECS
+from tests.protocols.helpers import (
+    client_test_invoke_action,
+    client_test_invoke_action_error,
+    client_test_on_event,
+    client_test_on_property_change,
+    client_test_read_property,
+    client_test_write_property,
+)
+from tests.protocols.mqtt.broker import BROKER_SKIP_REASON, is_test_broker_online
+from tests.utils import DEFAULT_TIMEOUT_SECS, run_test_coroutine
 from wotpy.protocols.exceptions import ClientRequestTimeout
 from wotpy.protocols.mqtt.client import MQTTClient
 from wotpy.wot.td import ThingDescription
 
-pytestmark = pytest.mark.skipif(is_test_broker_online() is False, reason=BROKER_SKIP_REASON)
+pytestmark = pytest.mark.skipif(
+    is_test_broker_online() is False, reason=BROKER_SKIP_REASON
+)
 
 
 def test_read_property(mqtt_servient):
@@ -121,7 +123,7 @@ def test_timeout_invoke_action(mqtt_servient):
     """Timeouts can be defined on Action invocations."""
 
     exposed_thing = next(mqtt_servient.exposed_things)
-    action_name = next(six.iterkeys(exposed_thing.actions))
+    action_name = next(iter(exposed_thing.actions.keys()))
     td = ThingDescription.from_thing(exposed_thing.thing)
     mqtt_mock = _build_hbmqtt_mock(_effect_raise_timeout)
 
@@ -129,11 +131,15 @@ def test_timeout_invoke_action(mqtt_servient):
 
     @tornado.gen.coroutine
     def test_coroutine():
-        with patch('wotpy.protocols.mqtt.client.hbmqtt.client.MQTTClient', new=mqtt_mock):
+        with patch(
+            "wotpy.protocols.mqtt.client.hbmqtt.client.MQTTClient", new=mqtt_mock
+        ):
             mqtt_client = MQTTClient()
 
             with pytest.raises(ClientRequestTimeout):
-                yield mqtt_client.invoke_action(td, action_name, Faker().pystr(), timeout=timeout)
+                yield mqtt_client.invoke_action(
+                    td, action_name, Faker().pystr(), timeout=timeout
+                )
 
     run_test_coroutine(test_coroutine)
 
@@ -142,7 +148,7 @@ def test_timeout_read_property(mqtt_servient):
     """Timeouts can be defined on Property reads."""
 
     exposed_thing = next(mqtt_servient.exposed_things)
-    prop_name = next(six.iterkeys(exposed_thing.properties))
+    prop_name = next(iter(exposed_thing.properties.keys()))
     td = ThingDescription.from_thing(exposed_thing.thing)
     mqtt_mock = _build_hbmqtt_mock(_effect_raise_timeout)
 
@@ -150,7 +156,9 @@ def test_timeout_read_property(mqtt_servient):
 
     @tornado.gen.coroutine
     def test_coroutine():
-        with patch('wotpy.protocols.mqtt.client.hbmqtt.client.MQTTClient', new=mqtt_mock):
+        with patch(
+            "wotpy.protocols.mqtt.client.hbmqtt.client.MQTTClient", new=mqtt_mock
+        ):
             mqtt_client = MQTTClient()
 
             with pytest.raises(ClientRequestTimeout):
@@ -163,7 +171,7 @@ def test_timeout_write_property(mqtt_servient):
     """Timeouts can be defined on Property writes."""
 
     exposed_thing = next(mqtt_servient.exposed_things)
-    prop_name = next(six.iterkeys(exposed_thing.properties))
+    prop_name = next(iter(exposed_thing.properties.keys()))
     td = ThingDescription.from_thing(exposed_thing.thing)
     mqtt_mock = _build_hbmqtt_mock(_effect_raise_timeout)
 
@@ -171,11 +179,15 @@ def test_timeout_write_property(mqtt_servient):
 
     @tornado.gen.coroutine
     def test_coroutine():
-        with patch('wotpy.protocols.mqtt.client.hbmqtt.client.MQTTClient', new=mqtt_mock):
+        with patch(
+            "wotpy.protocols.mqtt.client.hbmqtt.client.MQTTClient", new=mqtt_mock
+        ):
             mqtt_client = MQTTClient()
 
             with pytest.raises(ClientRequestTimeout):
-                yield mqtt_client.write_property(td, prop_name, Faker().pystr(), timeout=timeout)
+                yield mqtt_client.write_property(
+                    td, prop_name, Faker().pystr(), timeout=timeout
+                )
 
     run_test_coroutine(test_coroutine)
 
@@ -184,7 +196,7 @@ def test_stop_timeout(mqtt_servient):
     """Attempting to stop an unresponsive connection does not result in an indefinite wait."""
 
     exposed_thing = next(mqtt_servient.exposed_things)
-    prop_name = next(six.iterkeys(exposed_thing.properties))
+    prop_name = next(iter(exposed_thing.properties.keys()))
     td = ThingDescription.from_thing(exposed_thing.thing)
 
     timeout = random.random()
@@ -195,7 +207,9 @@ def test_stop_timeout(mqtt_servient):
 
     @tornado.gen.coroutine
     def test_coroutine():
-        with patch('wotpy.protocols.mqtt.client.hbmqtt.client.MQTTClient', new=mqtt_mock):
+        with patch(
+            "wotpy.protocols.mqtt.client.hbmqtt.client.MQTTClient", new=mqtt_mock
+        ):
             mqtt_client = MQTTClient(stop_loop_timeout_secs=timeout)
 
             with pytest.raises(ClientRequestTimeout):

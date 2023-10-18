@@ -5,10 +5,9 @@
 Classes that represent Interaction instances accessed on a ConsumedThing.
 """
 
-import six
-import tornado.gen
+from collections import UserDict
+
 from rx.concurrency import IOLoopScheduler
-from six.moves import UserDict
 from slugify import slugify
 
 
@@ -24,7 +23,14 @@ class ConsumedThingInteractionDict(UserDict):
         """Takes a case-insensitive URL-safe interaction name and returns
         the actual name in the interaction dict."""
 
-        return next((key for key in six.iterkeys(self.interaction_dict) if slugify(key) == slugify(name)), None)
+        return next(
+            (
+                key
+                for key in self.interaction_dict.keys()
+                if slugify(key) == slugify(name)
+            ),
+            None,
+        )
 
     def __getitem__(self, name):
         """Lazily build and return an object that implements the Interaction interface."""
@@ -43,7 +49,7 @@ class ConsumedThingInteractionDict(UserDict):
         return self._find_normalized_name(item) is not None
 
     def __iter__(self):
-        return six.iterkeys(self.interaction_dict)
+        return iter(self.interaction_dict.keys())
 
     @property
     def interaction_dict(self):
@@ -107,7 +113,9 @@ class ConsumedThingProperty(object):
         self._name = name
 
     def __str__(self):
-        return "<{}> ({}::{})".format(self.__class__.__name__, self._consumed_thing.id, self._name)
+        return "<{}> ({}::{})".format(
+            self.__class__.__name__, self._consumed_thing.id, self._name
+        )
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
@@ -115,29 +123,25 @@ class ConsumedThingProperty(object):
 
         return getattr(self._consumed_thing.td.properties[self._name], name)
 
-    @tornado.gen.coroutine
-    def read(self, timeout=None, client_kwargs=None):
+    async def read(self, timeout=None, client_kwargs=None):
         """The read() method will fetch the value of the Property.
         A coroutine that yields the value or raises an error."""
 
-        value = yield self._consumed_thing.read_property(
-            self._name,
-            timeout=timeout,
-            client_kwargs=client_kwargs)
+        value = await self._consumed_thing.read_property(
+            self._name, timeout=timeout, client_kwargs=client_kwargs
+        )
 
-        raise tornado.gen.Return(value)
+        return value
 
-    @tornado.gen.coroutine
-    def write(self, value, timeout=None, client_kwargs=None):
+    async def write(self, value, timeout=None, client_kwargs=None):
         """The write() method will attempt to set the value of the
         Property specified in the value argument whose type SHOULD
         match the one specified by the type property.
         A coroutine that yields on success or raises an error."""
 
-        yield self._consumed_thing.write_property(
-            self._name, value,
-            timeout=timeout,
-            client_kwargs=client_kwargs)
+        await self._consumed_thing.write_property(
+            self._name, value, timeout=timeout, client_kwargs=client_kwargs
+        )
 
     def subscribe(self, *args, **kwargs):
         """Subscribe to an stream of events emitted when the property value changes."""
@@ -145,8 +149,8 @@ class ConsumedThingProperty(object):
         client_kwargs = kwargs.pop("client_kwargs", None)
 
         observable = self._consumed_thing.on_property_change(
-            self._name,
-            client_kwargs=client_kwargs)
+            self._name, client_kwargs=client_kwargs
+        )
 
         return observable.subscribe_on(IOLoopScheduler()).subscribe(*args, **kwargs)
 
@@ -159,7 +163,9 @@ class ConsumedThingAction(object):
         self._name = name
 
     def __str__(self):
-        return "<{}> ({}::{})".format(self.__class__.__name__, self._consumed_thing.id, self._name)
+        return "<{}> ({}::{})".format(
+            self.__class__.__name__, self._consumed_thing.id, self._name
+        )
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
@@ -167,8 +173,7 @@ class ConsumedThingAction(object):
 
         return getattr(self._consumed_thing.td.actions[self._name], name)
 
-    @tornado.gen.coroutine
-    def invoke(self, *args, **kwargs):
+    async def invoke(self, *args, **kwargs):
         """The invoke() method when invoked, starts the Action interaction
         with the input value provided by the inputValue argument."""
 
@@ -176,12 +181,11 @@ class ConsumedThingAction(object):
         client_kwargs = kwargs.pop("client_kwargs", None)
         timeout = kwargs.pop("timeout", None)
 
-        result = yield self._consumed_thing.invoke_action(
-            self._name, input_value,
-            timeout=timeout,
-            client_kwargs=client_kwargs)
+        result = await self._consumed_thing.invoke_action(
+            self._name, input_value, timeout=timeout, client_kwargs=client_kwargs
+        )
 
-        raise tornado.gen.Return(result)
+        return result
 
 
 class ConsumedThingEvent(object):
@@ -192,7 +196,9 @@ class ConsumedThingEvent(object):
         self._name = name
 
     def __str__(self):
-        return "<{}> ({}::{})".format(self.__class__.__name__, self._consumed_thing.id, self._name)
+        return "<{}> ({}::{})".format(
+            self.__class__.__name__, self._consumed_thing.id, self._name
+        )
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
@@ -206,7 +212,7 @@ class ConsumedThingEvent(object):
         client_kwargs = kwargs.pop("client_kwargs", None)
 
         observable = self._consumed_thing.on_event(
-            self._name,
-            client_kwargs=client_kwargs)
+            self._name, client_kwargs=client_kwargs
+        )
 
         return observable.subscribe_on(IOLoopScheduler()).subscribe(*args, **kwargs)

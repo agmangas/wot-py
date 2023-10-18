@@ -5,7 +5,7 @@
 Wrapper classes for link dictionaries defined in the Scripting API.
 """
 
-from six.moves import urllib
+import urllib.parse
 
 from wotpy.wot.dictionaries.base import WotBaseDict
 from wotpy.wot.dictionaries.security import SecuritySchemeDict
@@ -15,16 +15,8 @@ class LinkDict(WotBaseDict):
     """A Web link, as specified by IETF RFC 8288."""
 
     class Meta:
-        fields = {
-            "href",
-            "type",
-            "rel",
-            "anchor"
-        }
-
-        required = {
-            "href"
-        }
+        fields = {"href", "type", "rel", "anchor"}
+        required = {"href"}
 
 
 class FormDict(LinkDict):
@@ -32,22 +24,12 @@ class FormDict(LinkDict):
     by a client application. An interaction might have more than one form."""
 
     class Meta:
-        fields = LinkDict.Meta.fields.union({
-            "href",
-            "contentType",
-            "op",
-            "subprotocol",
-            "security",
-            "scopes"
-        })
+        fields = LinkDict.Meta.fields.union(
+            {"href", "contentType", "op", "subprotocol", "security", "scopes"}
+        )
 
-        required = LinkDict.Meta.required.union({
-            "href"
-        })
-
-        defaults = {
-            "contentType": "application/json"
-        }
+        required = LinkDict.Meta.required.union({"href"})
+        defaults = {"contentType": "application/json"}
 
     @property
     def security(self):
@@ -62,7 +44,8 @@ class FormDict(LinkDict):
 
     def resolve_uri(self, base=None):
         """Resolves and returns the Link URI.
-        When the href does not contain a full URL the base URI is joined with said href."""
+        When the href does not contain a full URL the base URI is joined with said href.
+        """
 
         href_parsed = urllib.parse.urlparse(self.href)
 
