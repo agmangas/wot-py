@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import asyncio
 import random
 import uuid
 
+import pytest
 import tornado.concurrent
 import tornado.gen
 import tornado.ioloop
@@ -191,18 +193,18 @@ def client_test_write_property(servient, protocol_client_cls, timeout=None):
     run_test_coroutine(test_coroutine)
 
 
-def client_test_invoke_action(servient, protocol_client_cls, timeout=None):
+@pytest.mark.asyncio
+async def client_test_invoke_action(servient, protocol_client_cls, timeout=None):
     """Helper function to test Action invocations on bindings clients."""
 
     exposed_thing = next(servient.exposed_things)
 
     action_name = uuid.uuid4().hex
 
-    @tornado.gen.coroutine
-    def action_handler(parameters):
+    async def action_handler(parameters):
         input_value = parameters.get("input")
-        yield tornado.gen.sleep(random.random() * 0.1)
-        raise tornado.gen.Return("{:f}".format(input_value))
+        await asyncio.sleep(random.random() * 0.1)
+        return "{:f}".format(input_value)
 
     exposed_thing.add_action(
         action_name,
@@ -214,20 +216,17 @@ def client_test_invoke_action(servient, protocol_client_cls, timeout=None):
 
     td = ThingDescription.from_thing(exposed_thing.thing)
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        protocol_client = protocol_client_cls()
+    protocol_client = protocol_client_cls()
 
-        input_value = Faker().pyint()
+    input_value = Faker().pyint()
 
-        result = yield protocol_client.invoke_action(
-            td, action_name, input_value, timeout=timeout
-        )
-        result_expected = yield action_handler({"input": input_value})
+    result = await protocol_client.invoke_action(
+        td, action_name, input_value, timeout=timeout
+    )
 
-        assert result == result_expected
+    result_expected = yield action_handler({"input": input_value})
 
-    run_test_coroutine(test_coroutine)
+    assert result == result_expected
 
 
 def client_test_invoke_action_error(servient, protocol_client_cls):

@@ -12,6 +12,7 @@ import json
 import logging
 import pprint
 import time
+import urllib.parse as parse
 import uuid
 
 import hbmqtt.client
@@ -21,20 +22,21 @@ import tornado.ioloop
 import tornado.locks
 from hbmqtt.mqtt.constants import QOS_0, QOS_1, QOS_2
 from rx import Observable
-from six.moves.urllib import parse
 
 from wotpy.protocols.client import BaseProtocolClient
 from wotpy.protocols.enums import InteractionVerbs, Protocols
-from wotpy.protocols.exceptions import (ClientRequestTimeout,
-                                        FormNotFoundException)
+from wotpy.protocols.exceptions import ClientRequestTimeout, FormNotFoundException
 from wotpy.protocols.mqtt.enums import MQTTSchemes
 from wotpy.protocols.mqtt.handlers.action import ActionMQTTHandler
 from wotpy.protocols.mqtt.handlers.property import PropertyMQTTHandler
 from wotpy.protocols.refs import ConnRefCounter
 from wotpy.protocols.utils import is_scheme_form
 from wotpy.utils.utils import handle_observer_finalization
-from wotpy.wot.events import (EmittedEvent, PropertyChangeEmittedEvent,
-                              PropertyChangeEventInit)
+from wotpy.wot.events import (
+    EmittedEvent,
+    PropertyChangeEmittedEvent,
+    PropertyChangeEventInit,
+)
 
 
 class MQTTClient(BaseProtocolClient):
@@ -52,17 +54,17 @@ class MQTTClient(BaseProtocolClient):
     # disconnections from broker on high throughput scenarios:
     # https://github.com/beerfactory/hbmqtt/issues/119#issuecomment-430398094
 
-    DEFAULT_CLIENT_CONFIG = {
-        "keep_alive": 90
-    }
+    DEFAULT_CLIENT_CONFIG = {"keep_alive": 90}
 
-    def __init__(self,
-                 deliver_timeout_secs=DEFAULT_DELIVER_TIMEOUT_SECS,
-                 msg_wait_timeout_secs=DEFAULT_MSG_WAIT_TIMEOUT_SECS,
-                 msg_ttl_secs=DEFAULT_MSG_TTL_SECS,
-                 timeout_default=None,
-                 hbmqtt_config=None,
-                 stop_loop_timeout_secs=DEFAULT_STOP_LOOP_TIMEOUT_SECS):
+    def __init__(
+        self,
+        deliver_timeout_secs=DEFAULT_DELIVER_TIMEOUT_SECS,
+        msg_wait_timeout_secs=DEFAULT_MSG_WAIT_TIMEOUT_SECS,
+        msg_ttl_secs=DEFAULT_MSG_TTL_SECS,
+        timeout_default=None,
+        hbmqtt_config=None,
+        stop_loop_timeout_secs=DEFAULT_STOP_LOOP_TIMEOUT_SECS,
+    ):
         self._deliver_timeout_secs = deliver_timeout_secs
         self._msg_wait_timeout_secs = msg_wait_timeout_secs
         self._msg_ttl_secs = msg_ttl_secs
@@ -104,11 +106,13 @@ class MQTTClient(BaseProtocolClient):
         if msg.topic not in self._messages[broker_url]:
             self._messages[broker_url][msg.topic] = []
 
-        self._messages[broker_url][msg.topic].append({
-            "id": uuid.uuid4().hex,
-            "data": json.loads(msg.data.decode()),
-            "time": time.time()
-        })
+        self._messages[broker_url][msg.topic].append(
+            {
+                "id": uuid.uuid4().hex,
+                "data": json.loads(msg.data.decode()),
+                "time": time.time(),
+            }
+        )
 
         self._msg_conditions[broker_url][msg.topic].notify_all()
         self._clean_messages(broker_url)
@@ -128,10 +132,15 @@ class MQTTClient(BaseProtocolClient):
         if not len(topics):
             return
 
-        self._logr.info("Resubscribing MQTT client on {} to topics:\n{}".format(
-            broker_url, pprint.pformat(topics)))
+        self._logr.info(
+            "Resubscribing MQTT client on {} to topics:\n{}".format(
+                broker_url, pprint.pformat(topics)
+            )
+        )
 
-        yield self._clients[broker_url].subscribe([(topic, qos) for topic, qos in topics])
+        yield self._clients[broker_url].subscribe(
+            [(topic, qos) for topic, qos in topics]
+        )
 
     def _build_deliver(self, broker_url, stop_event):
         """Factory for functions to get messages delivered by the broker into the messages queue."""
@@ -141,13 +150,15 @@ class MQTTClient(BaseProtocolClient):
             """Sleeps for a while and tries to reconnect and resubscribe afterwards."""
 
             try:
-                self._logr.debug("Sleeping for {} s".format(
-                    self.SLEEP_SECS_DELIVER_ERR))
+                self._logr.debug(
+                    "Sleeping for {} s".format(self.SLEEP_SECS_DELIVER_ERR)
+                )
                 yield tornado.gen.sleep(self.SLEEP_SECS_DELIVER_ERR)
                 yield self._reconnect_client(broker_url)
             except Exception as ex_reconn:
-                self._logr.warning("Error reconnecting: {}".format(
-                    ex_reconn), exc_info=True)
+                self._logr.warning(
+                    "Error reconnecting: {}".format(ex_reconn), exc_info=True
+                )
 
         @tornado.gen.coroutine
         def deliver():
@@ -155,18 +166,17 @@ class MQTTClient(BaseProtocolClient):
 
             assert broker_url in self._clients
 
-            self._logr.debug(
-                "Entering message delivery loop: {}".format(broker_url))
+            self._logr.debug("Entering message delivery loop: {}".format(broker_url))
 
             while not stop_event.is_set():
                 try:
                     msg = yield self._clients[broker_url].deliver_message(
-                        timeout=self._deliver_timeout_secs)
+                        timeout=self._deliver_timeout_secs
+                    )
                 except asyncio.TimeoutError:
                     continue
                 except Exception as ex:
-                    self._logr.warning(
-                        "Error delivering message: {}".format(ex))
+                    self._logr.warning("Error delivering message: {}".format(ex))
                     yield reconnect()
                     continue
 
@@ -174,11 +184,10 @@ class MQTTClient(BaseProtocolClient):
                     self._new_message(broker_url, msg)
                 except Exception as ex:
                     self._logr.warning(
-                        "Error processing message: {}".format(ex),
-                        exc_info=True)
+                        "Error processing message: {}".format(ex), exc_info=True
+                    )
 
-            self._logr.debug(
-                "Exiting message delivery loop: {}".format(broker_url))
+            self._logr.debug("Exiting message delivery loop: {}".format(broker_url))
 
             stop_event.clear()
 
@@ -188,7 +197,9 @@ class MQTTClient(BaseProtocolClient):
     def _start_deliver_loop(self, broker_url):
         """Starts the message delivery loop in the background."""
 
-        assert broker_url not in self._deliver_stop_events, "Stop event is already defined"
+        assert (
+            broker_url not in self._deliver_stop_events
+        ), "Stop event is already defined"
 
         stop_event = tornado.locks.Event()
         self._deliver_stop_events[broker_url] = stop_event
@@ -201,8 +212,9 @@ class MQTTClient(BaseProtocolClient):
 
         assert broker_url in self._deliver_stop_events, "Unknown broker"
 
-        assert not self._deliver_stop_events[broker_url].is_set(), \
-            "Stop event is already set"
+        assert not self._deliver_stop_events[
+            broker_url
+        ].is_set(), "Stop event is already set"
 
         self._deliver_stop_events[broker_url].set()
 
@@ -215,8 +227,7 @@ class MQTTClient(BaseProtocolClient):
                 return
 
             if (time.time() - now) > self._stop_loop_timeout_secs:
-                raise asyncio.TimeoutError(
-                    "Timeout waiting for message delivery loop")
+                raise asyncio.TimeoutError("Timeout waiting for message delivery loop")
 
         while self._deliver_stop_events[broker_url].is_set():
             raise_timeout()
@@ -236,8 +247,11 @@ class MQTTClient(BaseProtocolClient):
 
             config = self._build_client_config()
 
-            self._logr.debug("Connecting MQTT client to {} with config: {}".format(
-                broker_url, pprint.pformat(config)))
+            self._logr.debug(
+                "Connecting MQTT client to {} with config: {}".format(
+                    broker_url, pprint.pformat(config)
+                )
+            )
 
             self._clients[broker_url] = hbmqtt.client.MQTTClient(config=config)
 
@@ -248,7 +262,8 @@ class MQTTClient(BaseProtocolClient):
     @tornado.gen.coroutine
     def _disconnect_client(self, broker_url, ref_id):
         """Decreases the reference counter for the client on the given broker and cleans
-        all resources when the client does not have any more references pointing to it."""
+        all resources when the client does not have any more references pointing to it.
+        """
 
         with (yield self._lock_client.acquire()):
             self._ref_counter.decrease(broker_url, ref_id)
@@ -258,21 +273,19 @@ class MQTTClient(BaseProtocolClient):
 
             try:
                 self._logr.debug(
-                    "Stopping message delivery loop: {}".format(broker_url))
+                    "Stopping message delivery loop: {}".format(broker_url)
+                )
                 yield self._stop_deliver_loop(broker_url)
             except Exception as ex:
                 self._logr.warning(
-                    "Error stopping deliver loop: {}".format(ex),
-                    exc_info=True)
+                    "Error stopping deliver loop: {}".format(ex), exc_info=True
+                )
 
             try:
-                self._logr.debug(
-                    "Disconnecting MQTT client: {}".format(broker_url))
+                self._logr.debug("Disconnecting MQTT client: {}".format(broker_url))
                 yield self._clients[broker_url].disconnect()
             except Exception as ex:
-                self._logr.warning(
-                    "Error disconnecting: {}".format(ex),
-                    exc_info=True)
+                self._logr.warning("Error disconnecting: {}".format(ex), exc_info=True)
 
             self._clients.pop(broker_url, None)
             self._messages.pop(broker_url, None)
@@ -291,8 +304,7 @@ class MQTTClient(BaseProtocolClient):
                 self._msg_conditions[broker_url] = {}
 
             if topic not in self._msg_conditions[broker_url]:
-                self._msg_conditions[broker_url][topic] = \
-                    tornado.locks.Condition()
+                self._msg_conditions[broker_url][topic] = tornado.locks.Condition()
 
             if broker_url not in self._topics:
                 self._topics[broker_url] = set()
@@ -338,15 +350,20 @@ class MQTTClient(BaseProtocolClient):
 
         self._messages[broker_url] = {
             topic: [
-                msg for msg in self._messages[broker_url][topic]
+                msg
+                for msg in self._messages[broker_url][topic]
                 if (now - msg["time"]) < self._msg_ttl_secs
-            ] for topic in self._messages[broker_url]
+            ]
+            for topic in self._messages[broker_url]
         }
 
     def _next_match(self, broker_url, topic, func):
         """Returns the first message match in the internal messages queue or None."""
 
-        return next((item for item in self._topic_messages(broker_url, topic) if func(item)), None)
+        return next(
+            (item for item in self._topic_messages(broker_url, topic) if func(item)),
+            None,
+        )
 
     @tornado.gen.coroutine
     def _wait_on_message(self, broker_url, topic):
@@ -369,10 +386,14 @@ class MQTTClient(BaseProtocolClient):
             except TypeError:
                 return False
 
-        return next((
-            form.href for form in forms
-            if is_scheme_form(form, td.base, MQTTSchemes.MQTT) and is_op_form(form)
-        ), None)
+        return next(
+            (
+                form.href
+                for form in forms
+                if is_scheme_form(form, td.base, MQTTSchemes.MQTT) and is_op_form(form)
+            ),
+            None,
+        )
 
     @classmethod
     def _parse_href(cls, href):
@@ -384,7 +405,7 @@ class MQTTClient(BaseProtocolClient):
 
         return {
             "broker_url": "{}://{}".format(parsed_href.scheme, parsed_href.netloc),
-            "topic": parsed_href.path.lstrip("/").rstrip("/")
+            "topic": parsed_href.path.lstrip("/").rstrip("/"),
         }
 
     @property
@@ -401,15 +422,21 @@ class MQTTClient(BaseProtocolClient):
         forms = td.get_forms(name)
 
         forms_mqtt = [
-            form for form in forms
-            if is_scheme_form(form, td.base, MQTTSchemes.list())
+            form for form in forms if is_scheme_form(form, td.base, MQTTSchemes.list())
         ]
 
         return len(forms_mqtt) > 0
 
     @tornado.gen.coroutine
-    def invoke_action(self, td, name, input_value, timeout=None,
-                      qos_publish=QOS_2, qos_subscribe=QOS_1):
+    def invoke_action(
+        self,
+        td,
+        name,
+        input_value,
+        timeout=None,
+        qos_publish=QOS_2,
+        qos_subscribe=QOS_1,
+    ):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
 
@@ -431,10 +458,7 @@ class MQTTClient(BaseProtocolClient):
             yield self._init_client(broker_url, ref_id)
             yield self._subscribe(broker_url, topic_result, qos_subscribe)
 
-            input_data = {
-                "id": uuid.uuid4().hex,
-                "input": input_value
-            }
+            input_data = {"id": uuid.uuid4().hex, "input": input_value}
 
             input_payload = json.dumps(input_data).encode()
 
@@ -443,17 +467,19 @@ class MQTTClient(BaseProtocolClient):
             ini = time.time()
 
             while True:
-                self._logr.debug(
-                    "Checking invocation topic: {}".format(topic_result))
+                self._logr.debug("Checking invocation topic: {}".format(topic_result))
 
                 if timeout and (time.time() - ini) > timeout:
                     self._logr.warning(
-                        "Timeout invoking Action: {}".format(topic_result))
+                        "Timeout invoking Action: {}".format(topic_result)
+                    )
                     raise ClientRequestTimeout
 
                 msg_match = self._next_match(
-                    broker_url, topic_result,
-                    lambda item: item[1].get("id") == input_data.get("id"))
+                    broker_url,
+                    topic_result,
+                    lambda item: item[1].get("id") == input_data.get("id"),
+                )
 
                 if not msg_match:
                     yield self._wait_on_message(broker_url, topic_result)
@@ -469,8 +495,16 @@ class MQTTClient(BaseProtocolClient):
             yield self._disconnect_client(broker_url, ref_id)
 
     @tornado.gen.coroutine
-    def write_property(self, td, name, value, timeout=None,
-                       qos_publish=QOS_2, qos_subscribe=QOS_1, wait_ack=True):
+    def write_property(
+        self,
+        td,
+        name,
+        value,
+        timeout=None,
+        qos_publish=QOS_2,
+        qos_subscribe=QOS_1,
+        wait_ack=True,
+    ):
         """Updates the value of a Property on a remote Thing.
         Due to the MQTT binding design this coroutine yields as soon as the write message has
         been published and will not wait for a custom write handler that yields to another coroutine
@@ -480,8 +514,8 @@ class MQTTClient(BaseProtocolClient):
         ref_id = uuid.uuid4().hex
 
         href_write = self._pick_mqtt_href(
-            td, td.get_property_forms(name),
-            op=InteractionVerbs.WRITE_PROPERTY)
+            td, td.get_property_forms(name), op=InteractionVerbs.WRITE_PROPERTY
+        )
 
         if href_write is None:
             raise FormNotFoundException()
@@ -496,11 +530,7 @@ class MQTTClient(BaseProtocolClient):
             yield self._init_client(broker_url, ref_id)
             yield self._subscribe(broker_url, topic_ack, qos_subscribe)
 
-            write_data = {
-                "action": "write",
-                "value": value,
-                "ack": uuid.uuid4().hex
-            }
+            write_data = {"action": "write", "value": value, "ack": uuid.uuid4().hex}
 
             write_payload = json.dumps(write_data).encode()
 
@@ -512,17 +542,17 @@ class MQTTClient(BaseProtocolClient):
             ini = time.time()
 
             while True:
-                self._logr.debug(
-                    "Checking write ACK topic: {}".format(topic_ack))
+                self._logr.debug("Checking write ACK topic: {}".format(topic_ack))
 
                 if timeout and (time.time() - ini) > timeout:
-                    self._logr.warning(
-                        "Timeout writing Property: {}".format(topic_ack))
+                    self._logr.warning("Timeout writing Property: {}".format(topic_ack))
                     raise ClientRequestTimeout
 
                 msg_match = self._next_match(
-                    broker_url, topic_ack,
-                    lambda item: item[1].get("ack") == write_data.get("ack"))
+                    broker_url,
+                    topic_ack,
+                    lambda item: item[1].get("ack") == write_data.get("ack"),
+                )
 
                 if msg_match:
                     break
@@ -532,8 +562,9 @@ class MQTTClient(BaseProtocolClient):
             yield self._disconnect_client(broker_url, ref_id)
 
     @tornado.gen.coroutine
-    def read_property(self, td, name, timeout=None,
-                      qos_publish=QOS_1, qos_subscribe=QOS_1):
+    def read_property(
+        self, td, name, timeout=None, qos_publish=QOS_1, qos_subscribe=QOS_1
+    ):
         """Reads the value of a Property on a remote Thing.
         Returns a Future."""
 
@@ -542,13 +573,11 @@ class MQTTClient(BaseProtocolClient):
 
         forms = td.get_property_forms(name)
 
-        href_read = self._pick_mqtt_href(
-            td, forms,
-            op=InteractionVerbs.READ_PROPERTY)
+        href_read = self._pick_mqtt_href(td, forms, op=InteractionVerbs.READ_PROPERTY)
 
         href_obsv = self._pick_mqtt_href(
-            td, forms,
-            op=InteractionVerbs.OBSERVE_PROPERTY)
+            td, forms, op=InteractionVerbs.OBSERVE_PROPERTY
+        )
 
         if href_read is None or href_obsv is None:
             raise FormNotFoundException()
@@ -564,7 +593,9 @@ class MQTTClient(BaseProtocolClient):
 
         try:
             yield self._init_client(broker_read, ref_id)
-            broker_obsv != broker_read and (yield self._init_client(broker_obsv, ref_id))
+            broker_obsv != broker_read and (
+                yield self._init_client(broker_obsv, ref_id)
+            )
 
             yield self._subscribe(broker_obsv, topic_obsv, qos_subscribe)
 
@@ -577,16 +608,18 @@ class MQTTClient(BaseProtocolClient):
 
             while True:
                 self._logr.debug(
-                    "Checking property update topic: {}".format(topic_obsv))
+                    "Checking property update topic: {}".format(topic_obsv)
+                )
 
                 if timeout and (time.time() - ini) > timeout:
                     self._logr.warning(
-                        "Timeout reading Property: {}".format(topic_obsv))
+                        "Timeout reading Property: {}".format(topic_obsv)
+                    )
                     raise ClientRequestTimeout
 
                 msg_match = self._next_match(
-                    broker_obsv, topic_obsv,
-                    lambda item: item[2] >= read_time)
+                    broker_obsv, topic_obsv, lambda item: item[2] >= read_time
+                )
 
                 if not msg_match:
                     yield self._wait_on_message(broker_obsv, topic_obsv)
@@ -597,7 +630,9 @@ class MQTTClient(BaseProtocolClient):
                 raise tornado.gen.Return(msg_data.get("value"))
         finally:
             yield self._disconnect_client(broker_read, ref_id)
-            broker_obsv != broker_read and (yield self._disconnect_client(broker_obsv, ref_id))
+            broker_obsv != broker_read and (
+                yield self._disconnect_client(broker_obsv, ref_id)
+            )
 
     def _build_subscribe(self, broker_url, topic, next_item_builder, qos):
         """Builds the subscribe function that should be passed when
@@ -615,15 +650,20 @@ class MQTTClient(BaseProtocolClient):
             @handle_observer_finalization(observer)
             @tornado.gen.coroutine
             def callback():
-                self._logr.debug("Subscribing on <{}> to {} with config: {}".format(
-                    broker_url, topic, config))
+                self._logr.debug(
+                    "Subscribing on <{}> to {} with config: {}".format(
+                        broker_url, topic, config
+                    )
+                )
 
                 yield client.connect(broker_url)
                 yield client.subscribe([(topic, qos)])
 
                 while state["active"]:
                     try:
-                        msg = yield client.deliver_message(timeout=self._deliver_timeout_secs)
+                        msg = yield client.deliver_message(
+                            timeout=self._deliver_timeout_secs
+                        )
                     except asyncio.TimeoutError:
                         continue
 
@@ -633,7 +673,8 @@ class MQTTClient(BaseProtocolClient):
                         observer.on_next(next_item)
                     except Exception as ex:
                         self._logr.warning(
-                            "Subscription message error: {}".format(ex), exc_info=True)
+                            "Subscription message error: {}".format(ex), exc_info=True
+                        )
 
             def unsubscribe():
                 """Disconnects from the MQTT broker and stops the message delivering loop."""
@@ -644,7 +685,8 @@ class MQTTClient(BaseProtocolClient):
                         yield client.disconnect()
                     except Exception as ex:
                         self._logr.warning(
-                            "Subscription disconnection error: {}".format(ex))
+                            "Subscription disconnection error: {}".format(ex)
+                        )
 
                 tornado.ioloop.IOLoop.current().add_callback(disconnect)
 
@@ -662,9 +704,7 @@ class MQTTClient(BaseProtocolClient):
 
         forms = td.get_property_forms(name)
 
-        href = self._pick_mqtt_href(
-            td, forms,
-            op=InteractionVerbs.OBSERVE_PROPERTY)
+        href = self._pick_mqtt_href(td, forms, op=InteractionVerbs.OBSERVE_PROPERTY)
 
         if href is None:
             raise FormNotFoundException()
@@ -683,7 +723,8 @@ class MQTTClient(BaseProtocolClient):
             broker_url=broker_url,
             topic=topic,
             next_item_builder=next_item_builder,
-            qos=qos)
+            qos=qos,
+        )
 
         # noinspection PyUnresolvedReferences
         return Observable.create(subscribe)
@@ -694,9 +735,7 @@ class MQTTClient(BaseProtocolClient):
 
         forms = td.get_event_forms(name)
 
-        href = self._pick_mqtt_href(
-            td, forms,
-            op=InteractionVerbs.SUBSCRIBE_EVENT)
+        href = self._pick_mqtt_href(td, forms, op=InteractionVerbs.SUBSCRIBE_EVENT)
 
         if href is None:
             raise FormNotFoundException()
@@ -713,7 +752,8 @@ class MQTTClient(BaseProtocolClient):
             broker_url=broker_url,
             topic=topic,
             next_item_builder=next_item_builder,
-            qos=qos)
+            qos=qos,
+        )
 
         # noinspection PyUnresolvedReferences
         return Observable.create(subscribe)

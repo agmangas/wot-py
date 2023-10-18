@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import asyncio
 import datetime
 import json
 
@@ -245,20 +246,19 @@ def test_action_invoke(coap_server):
     run_test_coroutine(test_coroutine)
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize("coap_server", [{"action_clear_ms": 5}], indirect=True)
-def test_action_clear_invocation(coap_server):
+async def test_action_clear_invocation(coap_server):
     """Completed Action invocations are removed from the CoAP server after a while."""
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        invocation_sleep_secs = 0.1
-        assert (invocation_sleep_secs * 1000) > coap_server.action_clear_ms
-        response = yield _test_action_invoke(
-            coap_server, invocation_sleep=invocation_sleep_secs
-        )
-        assert not response.code.is_successful()
+    invocation_sleep_secs = 0.1
+    assert (invocation_sleep_secs * 1000) > coap_server.action_clear_ms
 
-    run_test_coroutine(test_coroutine)
+    response = await _test_action_invoke(
+        coap_server, invocation_sleep=invocation_sleep_secs
+    )
+
+    assert not response.code.is_successful()
 
 
 def test_action_invoke_parallel(coap_server):

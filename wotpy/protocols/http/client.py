@@ -8,22 +8,26 @@ Classes that contain the client logic for the HTTP protocol.
 import json
 import logging
 import time
+import urllib.parse as parse
 
 import tornado.concurrent
 import tornado.gen
 import tornado.httpclient
 import tornado.ioloop
 from rx import Observable
-from six.moves.urllib import parse
 from tornado.simple_httpclient import HTTPTimeoutError
 
 from wotpy.protocols.client import BaseProtocolClient
-from wotpy.protocols.enums import Protocols, InteractionVerbs
-from wotpy.protocols.exceptions import FormNotFoundException, ClientRequestTimeout
+from wotpy.protocols.enums import InteractionVerbs, Protocols
+from wotpy.protocols.exceptions import ClientRequestTimeout, FormNotFoundException
 from wotpy.protocols.http.enums import HTTPSchemes
 from wotpy.protocols.utils import is_scheme_form
 from wotpy.utils.utils import handle_observer_finalization
-from wotpy.wot.events import EmittedEvent, PropertyChangeEmittedEvent, PropertyChangeEventInit
+from wotpy.wot.events import (
+    EmittedEvent,
+    PropertyChangeEmittedEvent,
+    PropertyChangeEventInit,
+)
 
 
 class HTTPClient(BaseProtocolClient):
@@ -33,7 +37,9 @@ class HTTPClient(BaseProtocolClient):
     DEFAULT_CON_TIMEOUT = 60
     DEFAULT_REQ_TIMEOUT = 60
 
-    def __init__(self, connect_timeout=DEFAULT_CON_TIMEOUT, request_timeout=DEFAULT_REQ_TIMEOUT):
+    def __init__(
+        self, connect_timeout=DEFAULT_CON_TIMEOUT, request_timeout=DEFAULT_REQ_TIMEOUT
+    ):
         self._connect_timeout = connect_timeout
         self._request_timeout = request_timeout
         self._logr = logging.getLogger(__name__)
@@ -52,8 +58,10 @@ class HTTPClient(BaseProtocolClient):
         def find_href(scheme):
             try:
                 return next(
-                    form.href for form in forms
-                    if is_scheme_form(form, td.base, scheme) and is_op_form(form))
+                    form.href
+                    for form in forms
+                    if is_scheme_form(form, td.base, scheme) and is_op_form(form)
+                )
             except StopIteration:
                 return None
 
@@ -87,8 +95,7 @@ class HTTPClient(BaseProtocolClient):
         forms = td.get_forms(name)
 
         forms_http = [
-            form for form in forms
-            if is_scheme_form(form, td.base, HTTPSchemes.list())
+            form for form in forms if is_scheme_form(form, td.base, HTTPSchemes.list())
         ]
 
         return len(forms_http) > 0
@@ -113,11 +120,13 @@ class HTTPClient(BaseProtocolClient):
 
         try:
             http_request = tornado.httpclient.HTTPRequest(
-                href, method="POST",
+                href,
+                method="POST",
                 body=body,
                 headers=self.JSON_HEADERS,
                 connect_timeout=con_timeout,
-                request_timeout=req_timeout)
+                request_timeout=req_timeout,
+            )
         except HTTPTimeoutError:
             raise ClientRequestTimeout
 
@@ -129,21 +138,24 @@ class HTTPClient(BaseProtocolClient):
             parsed = parse.urlparse(href)
 
             invoc_href = "{}://{}/{}".format(
-                parsed.scheme,
-                parsed.netloc,
-                invocation_url.lstrip("/"))
+                parsed.scheme, parsed.netloc, invocation_url.lstrip("/")
+            )
 
             invoc_http_req = tornado.httpclient.HTTPRequest(
-                invoc_href, method="GET",
+                invoc_href,
+                method="GET",
                 connect_timeout=con_timeout,
-                request_timeout=req_timeout)
+                request_timeout=req_timeout,
+            )
 
             self._logr.debug("Checking invocation: {}".format(invocation_url))
 
             try:
                 invoc_res = yield http_client.fetch(invoc_http_req)
             except HTTPTimeoutError:
-                self._logr.debug("Timeout checking invocation: {}".format(invocation_url))
+                self._logr.debug(
+                    "Timeout checking invocation: {}".format(invocation_url)
+                )
                 raise tornado.gen.Return((False, None))
 
             status = json.loads(invoc_res.body)
@@ -154,7 +166,9 @@ class HTTPClient(BaseProtocolClient):
             if status.get("error") is not None:
                 raise tornado.gen.Return((True, Exception(status.get("error"))))
             else:
-                raise tornado.gen.Return((True, tornado.gen.Return(status.get("result"))))
+                raise tornado.gen.Return(
+                    (True, tornado.gen.Return(status.get("result")))
+                )
 
         while True:
             done, result = yield check_invocation()
@@ -182,10 +196,13 @@ class HTTPClient(BaseProtocolClient):
 
         try:
             http_request = tornado.httpclient.HTTPRequest(
-                href, method="PUT", body=body,
+                href,
+                method="PUT",
+                body=body,
                 headers=self.JSON_HEADERS,
                 connect_timeout=con_timeout,
-                request_timeout=req_timeout)
+                request_timeout=req_timeout,
+            )
         except HTTPTimeoutError:
             raise ClientRequestTimeout
 
@@ -208,9 +225,11 @@ class HTTPClient(BaseProtocolClient):
 
         try:
             http_request = tornado.httpclient.HTTPRequest(
-                href, method="GET",
+                href,
+                method="GET",
                 connect_timeout=con_timeout,
-                request_timeout=req_timeout)
+                request_timeout=req_timeout,
+            )
         except HTTPTimeoutError:
             raise ClientRequestTimeout
 
@@ -262,7 +281,9 @@ class HTTPClient(BaseProtocolClient):
         """Subscribes to property changes on a remote Thing.
         Returns an Observable"""
 
-        href = self.pick_http_href(td, td.get_property_forms(name), op=InteractionVerbs.OBSERVE_PROPERTY)
+        href = self.pick_http_href(
+            td, td.get_property_forms(name), op=InteractionVerbs.OBSERVE_PROPERTY
+        )
 
         if href is None:
             raise FormNotFoundException()

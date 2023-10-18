@@ -5,7 +5,7 @@
 Utility functions used by client and server implementations.
 """
 
-from six.moves import urllib
+import urllib.parse
 
 
 def is_scheme_form(form, base, scheme):

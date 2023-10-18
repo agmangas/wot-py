@@ -9,6 +9,7 @@ import asyncio
 import json
 import logging
 import time
+from urllib.parse import urlparse
 
 import aiocoap
 import tornado.concurrent
@@ -16,18 +17,24 @@ import tornado.gen
 import tornado.ioloop
 import tornado.locks
 from rx import Observable
-from six.moves.urllib_parse import urlparse
 
 from wotpy.protocols.client import BaseProtocolClient
 from wotpy.protocols.coap.enums import CoAPSchemes
-from wotpy.protocols.enums import Protocols, InteractionVerbs
-from wotpy.protocols.exceptions import FormNotFoundException, ProtocolClientException, ClientRequestTimeout
+from wotpy.protocols.enums import InteractionVerbs, Protocols
+from wotpy.protocols.exceptions import (
+    ClientRequestTimeout,
+    FormNotFoundException,
+    ProtocolClientException,
+)
 from wotpy.protocols.utils import is_scheme_form
 from wotpy.utils.utils import handle_observer_finalization
-from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent, EmittedEvent
+from wotpy.wot.events import (
+    EmittedEvent,
+    PropertyChangeEmittedEvent,
+    PropertyChangeEventInit,
+)
 
 
-# noinspection PyCompatibility
 class CoAPClient(BaseProtocolClient):
     """Implementation of the protocol client interface for the CoAP protocol."""
 
@@ -50,8 +57,10 @@ class CoAPClient(BaseProtocolClient):
         def find_href(scheme):
             try:
                 return next(
-                    form.href for form in forms
-                    if is_scheme_form(form, td.base, scheme) and is_op_form(form))
+                    form.href
+                    for form in forms
+                    if is_scheme_form(form, td.base, scheme) and is_op_form(form)
+                )
             except StopIteration:
                 return None
 
@@ -75,18 +84,15 @@ class CoAPClient(BaseProtocolClient):
 
             query = urlparse(href).query
 
-            state = {
-                "active": True,
-                "request": None,
-                "pending": None
-            }
+            state = {"active": True, "request": None, "pending": None}
 
             @handle_observer_finalization(observer)
-            @tornado.gen.coroutine
-            def callback():
-                self._logr.debug("Creating CoAP client for observation: {}".format(query))
+            async def callback():
+                self._logr.debug(
+                    "Creating CoAP client for observation: {}".format(query)
+                )
 
-                coap_client = yield aiocoap.Context.create_client_context()
+                coap_client = await aiocoap.Context.create_client_context()
 
                 try:
                     msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href, observe=0)
@@ -96,25 +102,30 @@ class CoAPClient(BaseProtocolClient):
 
                     future_first_resp = state["request"].response
                     state["pending"] = future_first_resp
-                    first_resp = yield future_first_resp
+                    first_resp = await asyncio.wrap_future(future_first_resp)
                     state["pending"] = None
                     self._assert_success(first_resp)
                     next_item = next_item_builder(first_resp.payload)
                     next_item is not None and observer.on_next(next_item)
 
                     while state["active"]:
-                        next_obsv_gen = state["request"].observation.__aiter__().__anext__()
+                        next_obsv_gen = (
+                            state["request"].observation.__aiter__().__anext__()
+                        )
+
                         future_resp = tornado.gen.convert_yielded(next_obsv_gen)
                         state["pending"] = future_resp
-                        resp = yield future_resp
+                        resp = await future_resp
                         state["pending"] = None
                         self._assert_success(resp)
                         next_item = next_item_builder(resp.payload)
                         next_item is not None and observer.on_next(next_item)
 
-                    self._logr.debug("Terminated subscription callback for: {}".format(query))
+                    self._logr.debug(
+                        "Terminated subscription callback for: {}".format(query)
+                    )
                 finally:
-                    yield coap_client.shutdown()
+                    await coap_client.shutdown()
 
             def unsubscribe():
                 self._logr.debug("Unsubscribing from: {}".format(query))
@@ -126,10 +137,12 @@ class CoAPClient(BaseProtocolClient):
                     state["request"].observation.cancel()
 
                 if state["pending"]:
-                    self._logr.debug("Cancelling pending request: {}".format(state["pending"]))
+                    self._logr.debug(
+                        "Cancelling pending request: {}".format(state["pending"])
+                    )
                     state["pending"].cancel()
 
-            tornado.ioloop.IOLoop.current().add_callback(callback)
+            asyncio.get_event_loop().call_soon(callback)
 
             return unsubscribe
 
@@ -149,8 +162,7 @@ class CoAPClient(BaseProtocolClient):
         forms = td.get_forms(name)
 
         forms_coap = [
-            form for form in forms
-            if is_scheme_form(form, td.base, CoAPSchemes.list())
+            form for form in forms if is_scheme_form(form, td.base, CoAPSchemes.list())
         ]
 
         return len(forms_coap) > 0
@@ -164,8 +176,8 @@ class CoAPClient(BaseProtocolClient):
 
         try:
             response = await asyncio.wait_for(request.response, timeout=timeout)
-        except asyncio.TimeoutError:
-            raise ClientRequestTimeout
+        except asyncio.TimeoutError as ex:
+            raise ClientRequestTimeout from ex
 
         self._assert_success(response)
 
@@ -177,13 +189,15 @@ class CoAPClient(BaseProtocolClient):
         """Starts observing an existing action invocation by sending a GET request."""
 
         payload = json.dumps({"id": invocation_id}).encode("utf-8")
-        msg = aiocoap.Message(code=aiocoap.Code.GET, payload=payload, uri=href, observe=0)
+        msg = aiocoap.Message(
+            code=aiocoap.Code.GET, payload=payload, uri=href, observe=0
+        )
         request = coap_client.request(msg)
 
         try:
             response = await asyncio.wait_for(request.response, timeout=timeout)
-        except asyncio.TimeoutError:
-            raise ClientRequestTimeout
+        except asyncio.TimeoutError as ex:
+            raise ClientRequestTimeout from ex
 
         self._assert_success(response)
 
@@ -194,10 +208,10 @@ class CoAPClient(BaseProtocolClient):
 
         try:
             response = await asyncio.wait_for(
-                request.observation.__aiter__().__anext__(),
-                timeout=timeout)
-        except asyncio.TimeoutError:
-            raise ClientRequestTimeout
+                request.observation.__aiter__().__anext__(), timeout=timeout
+            )
+        except asyncio.TimeoutError as ex:
+            raise ClientRequestTimeout from ex
 
         self._assert_success(response)
 
@@ -207,8 +221,8 @@ class CoAPClient(BaseProtocolClient):
         """Invokes an Action on a remote Thing."""
 
         href = self._pick_coap_href(
-            td, td.get_action_forms(name),
-            op=InteractionVerbs.INVOKE_ACTION)
+            td, td.get_action_forms(name), op=InteractionVerbs.INVOKE_ACTION
+        )
 
         if href is None:
             raise FormNotFoundException()
@@ -217,10 +231,12 @@ class CoAPClient(BaseProtocolClient):
 
         try:
             invocation_id = await self._invocation_create(
-                coap_client, href, input_value, timeout=timeout)
+                coap_client, href, input_value, timeout=timeout
+            )
 
             request_obsv, response_obsv = await self._invocation_observe(
-                coap_client, href, invocation_id, timeout=timeout)
+                coap_client, href, invocation_id, timeout=timeout
+            )
 
             invocation_status = json.loads(response_obsv.payload)
 
@@ -230,7 +246,9 @@ class CoAPClient(BaseProtocolClient):
                 if timeout and (time.time() - now) > timeout:
                     raise ClientRequestTimeout
 
-                response_obsv = await self._invocation_next(request_obsv, timeout=timeout)
+                response_obsv = await self._invocation_next(
+                    request_obsv, timeout=timeout
+                )
                 invocation_status = json.loads(response_obsv.payload)
 
             if not request_obsv.observation.cancelled:
@@ -247,8 +265,8 @@ class CoAPClient(BaseProtocolClient):
         """Updates the value of a Property on a remote Thing."""
 
         href = self._pick_coap_href(
-            td, td.get_property_forms(name),
-            op=InteractionVerbs.WRITE_PROPERTY)
+            td, td.get_property_forms(name), op=InteractionVerbs.WRITE_PROPERTY
+        )
 
         if href is None:
             raise FormNotFoundException()
@@ -262,8 +280,8 @@ class CoAPClient(BaseProtocolClient):
 
             try:
                 response = await asyncio.wait_for(request.response, timeout=timeout)
-            except asyncio.TimeoutError:
-                raise ClientRequestTimeout
+            except asyncio.TimeoutError as ex:
+                raise ClientRequestTimeout from ex
 
             self._assert_success(response)
         finally:
@@ -273,8 +291,8 @@ class CoAPClient(BaseProtocolClient):
         """Reads the value of a Property on a remote Thing."""
 
         href = self._pick_coap_href(
-            td, td.get_property_forms(name),
-            op=InteractionVerbs.READ_PROPERTY)
+            td, td.get_property_forms(name), op=InteractionVerbs.READ_PROPERTY
+        )
 
         if href is None:
             raise FormNotFoundException()
@@ -287,8 +305,8 @@ class CoAPClient(BaseProtocolClient):
 
             try:
                 response = await asyncio.wait_for(request.response, timeout=timeout)
-            except asyncio.TimeoutError:
-                raise ClientRequestTimeout
+            except asyncio.TimeoutError as ex:
+                raise ClientRequestTimeout from ex
 
             self._assert_success(response)
 
@@ -303,8 +321,8 @@ class CoAPClient(BaseProtocolClient):
         Returns an Observable"""
 
         href = self._pick_coap_href(
-            td, td.get_property_forms(name),
-            op=InteractionVerbs.OBSERVE_PROPERTY)
+            td, td.get_property_forms(name), op=InteractionVerbs.OBSERVE_PROPERTY
+        )
 
         if href is None:
             raise FormNotFoundException()
@@ -316,7 +334,6 @@ class CoAPClient(BaseProtocolClient):
 
         subscribe = self._build_subscribe(href, next_item_builder)
 
-        # noinspection PyUnresolvedReferences
         return Observable.create(subscribe)
 
     def on_event(self, td, name):
@@ -324,8 +341,8 @@ class CoAPClient(BaseProtocolClient):
         Returns an Observable."""
 
         href = self._pick_coap_href(
-            td, td.get_event_forms(name),
-            op=InteractionVerbs.SUBSCRIBE_EVENT)
+            td, td.get_event_forms(name), op=InteractionVerbs.SUBSCRIBE_EVENT
+        )
 
         if href is None:
             raise FormNotFoundException()
@@ -339,7 +356,6 @@ class CoAPClient(BaseProtocolClient):
 
         subscribe = self._build_subscribe(href, next_item_builder)
 
-        # noinspection PyUnresolvedReferences
         return Observable.create(subscribe)
 
     def on_td_change(self, url):
