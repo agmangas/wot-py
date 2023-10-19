@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import asyncio
 import random
 import uuid
 
 import pytest
 import tornado.concurrent
 import tornado.gen
-import tornado.ioloop
-import tornado.locks
 import tornado.websocket
 from mock import patch
 from rx.concurrency import IOLoopScheduler
@@ -149,13 +148,11 @@ def test_on_property_change_error(websocket_servient):
     client_test_on_property_change_error(websocket_servient, WebsocketClient)
 
 
-# noinspection PyUnusedLocal
 def _condition_coro(*args, **kwargs):
     """Coroutine mock side effect that returns a Condition that is never notified."""
 
-    @tornado.gen.coroutine
-    def _coro():
-        raise tornado.gen.Return(tornado.locks.Condition())
+    async def _coro():
+        return asyncio.Condition()
 
     return _coro()
 
@@ -163,7 +160,6 @@ def _condition_coro(*args, **kwargs):
 def test_timeout_read_property(websocket_servient):
     """Timeouts can be defined on Property reads."""
 
-    # noinspection PyUnresolvedReferences
     with patch.object(WebsocketClient, "_send_message", _condition_coro):
         with pytest.raises(ClientRequestTimeout):
             client_test_read_property(
@@ -174,7 +170,6 @@ def test_timeout_read_property(websocket_servient):
 def test_timeout_write_property(websocket_servient):
     """Timeouts can be defined on Property writes."""
 
-    # noinspection PyUnresolvedReferences
     with patch.object(WebsocketClient, "_send_message", _condition_coro):
         with pytest.raises(ClientRequestTimeout):
             client_test_write_property(
@@ -182,13 +177,12 @@ def test_timeout_write_property(websocket_servient):
             )
 
 
-@pytest.mark.skip(reason="ToDo: Check why this is failing after the refactor")
-def test_timeout_invoke_action(websocket_servient):
+@pytest.mark.asyncio
+async def test_timeout_invoke_action(websocket_servient):
     """Timeouts can be defined on Action invocations."""
 
-    # noinspection PyUnresolvedReferences
     with patch.object(WebsocketClient, "_send_message", _condition_coro):
         with pytest.raises(ClientRequestTimeout):
-            client_test_invoke_action(
+            await client_test_invoke_action(
                 websocket_servient, WebsocketClient, timeout=random.random()
             )

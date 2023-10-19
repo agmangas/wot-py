@@ -5,7 +5,6 @@
 Class that implements the WebSockets server.
 """
 
-import tornado.gen
 from tornado import web
 from tornado.httpserver import HTTPServer
 
@@ -57,11 +56,9 @@ class WebsocketServer(BaseProtocolServer):
     def _build_app(self):
         """Builds and returns the Tornado application for the WebSockets server."""
 
-        return web.Application([(
-            r"/(?P<name>[^\/]+)",
-            WebsocketHandler,
-            {"websocket_server": self}
-        )])
+        return web.Application(
+            [(r"/(?P<name>[^\/]+)", WebsocketHandler, {"websocket_server": self})]
+        )
 
     def build_forms(self, hostname, interaction):
         """Builds and returns a list with all Form that are
@@ -79,7 +76,8 @@ class WebsocketServer(BaseProtocolServer):
                 interaction=interaction,
                 protocol=self.protocol,
                 href=base_url,
-                content_type=MediaTypes.JSON)
+                content_type=MediaTypes.JSON,
+            )
         ]
 
     def build_base_url(self, hostname, thing):
@@ -92,15 +90,13 @@ class WebsocketServer(BaseProtocolServer):
 
         return "{}://{}:{}/{}".format(self.scheme, hostname, self.port, thing.url_name)
 
-    @tornado.gen.coroutine
-    def start(self):
+    async def start(self):
         """Starts the WebSockets server."""
 
         self._server = HTTPServer(self.app, ssl_options=self._ssl_context)
         self._server.listen(self.port)
 
-    @tornado.gen.coroutine
-    def stop(self):
+    async def stop(self):
         """Stops the WebSockets server."""
 
         if not self._server:

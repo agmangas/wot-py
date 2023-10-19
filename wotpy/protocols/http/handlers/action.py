@@ -10,7 +10,6 @@ import pprint
 import time
 import uuid
 
-import tornado.gen
 from tornado.web import HTTPError, RequestHandler
 
 import wotpy.protocols.http.handlers.utils as handler_utils
@@ -22,8 +21,7 @@ class ActionInvokeHandler(RequestHandler):
     def initialize(self, http_server):
         self._server = http_server
 
-    @tornado.gen.coroutine
-    def post(self, thing_name, name):
+    async def post(self, thing_name, name):
         """Invokes the action and returns the invocation result."""
 
         exposed_thing = handler_utils.get_exposed_thing(self._server, thing_name)
@@ -69,15 +67,14 @@ class PendingInvocationHandler(RequestHandler):
 
                 self._server.pending_actions.pop(invocation_id, None)
 
-    @tornado.gen.coroutine
-    def get(self, invocation_id):
+    async def get(self, invocation_id):
         """Checks and returns the status of the Future that represents an action invocation."""
 
         if invocation_id not in self._server.pending_actions:
             raise HTTPError(log_message="Unknown invocation: {}".format(invocation_id))
 
         try:
-            result = yield self._server.pending_actions[invocation_id]
+            result = await self._server.pending_actions[invocation_id]
             self.write({"done": True, "result": result})
         except Exception as ex:
             self.write({"done": True, "error": str(ex)})

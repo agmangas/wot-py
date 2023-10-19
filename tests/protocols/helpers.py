@@ -224,7 +224,7 @@ async def client_test_invoke_action(servient, protocol_client_cls, timeout=None)
         td, action_name, input_value, timeout=timeout
     )
 
-    result_expected = yield action_handler({"input": input_value})
+    result_expected = await action_handler({"input": input_value})
 
     assert result == result_expected
 

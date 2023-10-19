@@ -5,15 +5,13 @@
 Classes that contain the client logic for the HTTP protocol.
 """
 
+import asyncio
 import json
 import logging
 import time
 import urllib.parse as parse
 
-import tornado.concurrent
-import tornado.gen
 import tornado.httpclient
-import tornado.ioloop
 from rx import Observable
 from tornado.simple_httpclient import HTTPTimeoutError
 
@@ -100,8 +98,7 @@ class HTTPClient(BaseProtocolClient):
 
         return len(forms_http) > 0
 
-    @tornado.gen.coroutine
-    def invoke_action(self, td, name, input_value, timeout=None):
+    async def invoke_action(self, td, name, input_value, timeout=None):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
 
@@ -127,14 +124,13 @@ class HTTPClient(BaseProtocolClient):
                 connect_timeout=con_timeout,
                 request_timeout=req_timeout,
             )
-        except HTTPTimeoutError:
-            raise ClientRequestTimeout
+        except HTTPTimeoutError as ex:
+            raise ClientRequestTimeout from ex
 
-        response = yield http_client.fetch(http_request)
+        response = await http_client.fetch(http_request)
         invocation_url = json.loads(response.body).get("invocation")
 
-        @tornado.gen.coroutine
-        def check_invocation():
+        async def check_invocation():
             parsed = parse.urlparse(href)
 
             invoc_href = "{}://{}/{}".format(
@@ -151,35 +147,34 @@ class HTTPClient(BaseProtocolClient):
             self._logr.debug("Checking invocation: {}".format(invocation_url))
 
             try:
-                invoc_res = yield http_client.fetch(invoc_http_req)
+                invoc_res = await http_client.fetch(invoc_http_req)
             except HTTPTimeoutError:
                 self._logr.debug(
                     "Timeout checking invocation: {}".format(invocation_url)
                 )
-                raise tornado.gen.Return((False, None))
+                return (False, None)
 
             status = json.loads(invoc_res.body)
 
             if status.get("done") is False:
-                raise tornado.gen.Return((False, None))
+                return (False, None)
 
             if status.get("error") is not None:
-                raise tornado.gen.Return((True, Exception(status.get("error"))))
+                return (True, Exception(status.get("error")))
             else:
-                raise tornado.gen.Return(
-                    (True, tornado.gen.Return(status.get("result")))
-                )
+                return (True, status.get("result"))
 
         while True:
-            done, result = yield check_invocation()
+            done, result = await check_invocation()
 
-            if done:
+            if done and isinstance(result, Exception):
                 raise result
+            elif done:
+                return result
             elif timeout and (time.time() - now) > timeout:
                 raise ClientRequestTimeout
 
-    @tornado.gen.coroutine
-    def write_property(self, td, name, value, timeout=None):
+    async def write_property(self, td, name, value, timeout=None):
         """Updates the value of a Property on a remote Thing.
         Returns a Future."""
 
@@ -203,13 +198,12 @@ class HTTPClient(BaseProtocolClient):
                 connect_timeout=con_timeout,
                 request_timeout=req_timeout,
             )
-        except HTTPTimeoutError:
-            raise ClientRequestTimeout
+        except HTTPTimeoutError as ex:
+            raise ClientRequestTimeout from ex
 
-        yield http_client.fetch(http_request)
+        await http_client.fetch(http_request)
 
-    @tornado.gen.coroutine
-    def read_property(self, td, name, timeout=None):
+    async def read_property(self, td, name, timeout=None):
         """Reads the value of a Property on a remote Thing.
         Returns a Future."""
 
@@ -230,14 +224,14 @@ class HTTPClient(BaseProtocolClient):
                 connect_timeout=con_timeout,
                 request_timeout=req_timeout,
             )
-        except HTTPTimeoutError:
-            raise ClientRequestTimeout
+        except HTTPTimeoutError as ex:
+            raise ClientRequestTimeout from ex
 
-        response = yield http_client.fetch(http_request)
+        response = await http_client.fetch(http_request)
         result = json.loads(response.body)
         result = result.get("value", result)
 
-        raise tornado.gen.Return(result)
+        return result
 
     def on_event(self, td, name):
         """Subscribes to an event on a remote Thing.
@@ -254,14 +248,13 @@ class HTTPClient(BaseProtocolClient):
             state = {"active": True}
 
             @handle_observer_finalization(observer)
-            @tornado.gen.coroutine
-            def callback():
+            async def callback():
                 http_client = tornado.httpclient.AsyncHTTPClient()
                 http_request = tornado.httpclient.HTTPRequest(href, method="GET")
 
                 while state["active"]:
                     try:
-                        response = yield http_client.fetch(http_request)
+                        response = await http_client.fetch(http_request)
                         payload = json.loads(response.body).get("payload")
                         observer.on_next(EmittedEvent(init=payload, name=name))
                     except HTTPTimeoutError:
@@ -270,11 +263,10 @@ class HTTPClient(BaseProtocolClient):
             def unsubscribe():
                 state["active"] = False
 
-            tornado.ioloop.IOLoop.current().add_callback(callback)
+            asyncio.get_event_loop().call_soon(callback)
 
             return unsubscribe
 
-        # noinspection PyUnresolvedReferences
         return Observable.create(subscribe)
 
     def on_property_change(self, td, name):
@@ -294,14 +286,13 @@ class HTTPClient(BaseProtocolClient):
             state = {"active": True}
 
             @handle_observer_finalization(observer)
-            @tornado.gen.coroutine
-            def callback():
+            async def callback():
                 http_client = tornado.httpclient.AsyncHTTPClient()
                 http_request = tornado.httpclient.HTTPRequest(href, method="GET")
 
                 while state["active"]:
                     try:
-                        response = yield http_client.fetch(http_request)
+                        response = await http_client.fetch(http_request)
                         value = json.loads(response.body)
                         value = value.get("value", value)
                         init = PropertyChangeEventInit(name=name, value=value)
@@ -312,11 +303,10 @@ class HTTPClient(BaseProtocolClient):
             def unsubscribe():
                 state["active"] = False
 
-            tornado.ioloop.IOLoop.current().add_callback(callback)
+            asyncio.get_event_loop().call_soon(callback)
 
             return unsubscribe
 
-        # noinspection PyUnresolvedReferences
         return Observable.create(subscribe)
 
     def on_td_change(self, url):

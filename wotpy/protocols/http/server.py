@@ -5,16 +5,21 @@
 Class that implements the HTTP server.
 """
 
-import tornado.gen
 import tornado.httpserver
 import tornado.web
 
 from wotpy.codecs.enums import MediaTypes
-from wotpy.protocols.enums import Protocols, InteractionVerbs
+from wotpy.protocols.enums import InteractionVerbs, Protocols
 from wotpy.protocols.http.enums import HTTPSchemes
-from wotpy.protocols.http.handlers.action import ActionInvokeHandler, PendingInvocationHandler
+from wotpy.protocols.http.handlers.action import (
+    ActionInvokeHandler,
+    PendingInvocationHandler,
+)
 from wotpy.protocols.http.handlers.event import EventObserverHandler
-from wotpy.protocols.http.handlers.property import PropertyObserverHandler, PropertyReadWriteHandler
+from wotpy.protocols.http.handlers.property import (
+    PropertyObserverHandler,
+    PropertyReadWriteHandler,
+)
 from wotpy.protocols.server import BaseProtocolServer
 from wotpy.wot.enums import InteractionTypes
 from wotpy.wot.form import Form
@@ -80,41 +85,54 @@ class HTTPServer(BaseProtocolServer):
     def _build_app(self):
         """Builds and returns the Tornado application for the WebSockets server."""
 
-        return tornado.web.Application([(
-            r"/(?P<thing_name>[^\/]+)/property/(?P<name>[^\/]+)",
-            PropertyReadWriteHandler,
-            {"http_server": self}
-        ), (
-            r"/(?P<thing_name>[^\/]+)/property/(?P<name>[^\/]+)/subscription",
-            PropertyObserverHandler,
-            {"http_server": self}
-        ), (
-            r"/(?P<thing_name>[^\/]+)/action/(?P<name>[^\/]+)",
-            ActionInvokeHandler,
-            {"http_server": self}
-        ), (
-            r"/invocation/(?P<invocation_id>[^\/]+)",
-            PendingInvocationHandler,
-            {"http_server": self}
-        ), (
-            r"/(?P<thing_name>[^\/]+)/event/(?P<name>[^\/]+)/subscription",
-            EventObserverHandler,
-            {"http_server": self}
-        )])
+        return tornado.web.Application(
+            [
+                (
+                    r"/(?P<thing_name>[^\/]+)/property/(?P<name>[^\/]+)",
+                    PropertyReadWriteHandler,
+                    {"http_server": self},
+                ),
+                (
+                    r"/(?P<thing_name>[^\/]+)/property/(?P<name>[^\/]+)/subscription",
+                    PropertyObserverHandler,
+                    {"http_server": self},
+                ),
+                (
+                    r"/(?P<thing_name>[^\/]+)/action/(?P<name>[^\/]+)",
+                    ActionInvokeHandler,
+                    {"http_server": self},
+                ),
+                (
+                    r"/invocation/(?P<invocation_id>[^\/]+)",
+                    PendingInvocationHandler,
+                    {"http_server": self},
+                ),
+                (
+                    r"/(?P<thing_name>[^\/]+)/event/(?P<name>[^\/]+)/subscription",
+                    EventObserverHandler,
+                    {"http_server": self},
+                ),
+            ]
+        )
 
     def _build_forms_property(self, proprty, hostname):
         """Builds and returns the HTTP Form instances for the given Property interaction."""
 
         href_read_write = "{}://{}:{}/{}/property/{}".format(
-            self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
-            proprty.thing.url_name, proprty.url_name)
+            self.scheme,
+            hostname.rstrip("/").lstrip("/"),
+            self.port,
+            proprty.thing.url_name,
+            proprty.url_name,
+        )
 
         form_read_write = Form(
             interaction=proprty,
             protocol=self.protocol,
             href=href_read_write,
             content_type=MediaTypes.JSON,
-            op=[InteractionVerbs.READ_PROPERTY, InteractionVerbs.WRITE_PROPERTY])
+            op=[InteractionVerbs.READ_PROPERTY, InteractionVerbs.WRITE_PROPERTY],
+        )
 
         href_observe = "{}/subscription".format(href_read_write)
 
@@ -123,7 +141,8 @@ class HTTPServer(BaseProtocolServer):
             protocol=self.protocol,
             href=href_observe,
             content_type=MediaTypes.JSON,
-            op=[InteractionVerbs.OBSERVE_PROPERTY])
+            op=[InteractionVerbs.OBSERVE_PROPERTY],
+        )
 
         return [form_read_write, form_observe]
 
@@ -131,15 +150,20 @@ class HTTPServer(BaseProtocolServer):
         """Builds and returns the HTTP Form instances for the given Action interaction."""
 
         href_invoke = "{}://{}:{}/{}/action/{}".format(
-            self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
-            action.thing.url_name, action.url_name)
+            self.scheme,
+            hostname.rstrip("/").lstrip("/"),
+            self.port,
+            action.thing.url_name,
+            action.url_name,
+        )
 
         form_invoke = Form(
             interaction=action,
             protocol=self.protocol,
             href=href_invoke,
             content_type=MediaTypes.JSON,
-            op=[InteractionVerbs.INVOKE_ACTION])
+            op=[InteractionVerbs.INVOKE_ACTION],
+        )
 
         return [form_invoke]
 
@@ -147,15 +171,20 @@ class HTTPServer(BaseProtocolServer):
         """Builds and returns the HTTP Form instances for the given Event interaction."""
 
         href_observe = "{}://{}:{}/{}/event/{}/subscription".format(
-            self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
-            event.thing.url_name, event.url_name)
+            self.scheme,
+            hostname.rstrip("/").lstrip("/"),
+            self.port,
+            event.thing.url_name,
+            event.url_name,
+        )
 
         form_observe = Form(
             interaction=event,
             protocol=self.protocol,
             href=href_observe,
             content_type=MediaTypes.JSON,
-            op=[InteractionVerbs.SUBSCRIBE_EVENT])
+            op=[InteractionVerbs.SUBSCRIBE_EVENT],
+        )
 
         return [form_observe]
 
@@ -166,7 +195,7 @@ class HTTPServer(BaseProtocolServer):
         intrct_type_map = {
             InteractionTypes.PROPERTY: self._build_forms_property,
             InteractionTypes.ACTION: self._build_forms_action,
-            InteractionTypes.EVENT: self._build_forms_event
+            InteractionTypes.EVENT: self._build_forms_event,
         }
 
         if interaction.interaction_type not in intrct_type_map:
@@ -181,18 +210,19 @@ class HTTPServer(BaseProtocolServer):
             raise ValueError("Unknown Thing")
 
         return "{}://{}:{}/{}".format(
-            self.scheme, hostname.rstrip("/").lstrip("/"),
-            self.port, thing.url_name)
+            self.scheme, hostname.rstrip("/").lstrip("/"), self.port, thing.url_name
+        )
 
-    @tornado.gen.coroutine
-    def start(self):
+    async def start(self):
         """Starts the HTTP server."""
 
-        self._server = tornado.httpserver.HTTPServer(self.app, ssl_options=self._ssl_context)
+        self._server = tornado.httpserver.HTTPServer(
+            self.app, ssl_options=self._ssl_context
+        )
+
         self._server.listen(self.port)
 
-    @tornado.gen.coroutine
-    def stop(self):
+    async def stop(self):
         """Stops the HTTP server."""
 
         if not self._server:
