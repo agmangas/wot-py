@@ -11,7 +11,11 @@ from faker import Faker
 
 from tests.utils import find_free_port
 from wotpy.support import is_coap_supported
-from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, EventFragmentDict, ActionFragmentDict
+from wotpy.wot.dictionaries.interaction import (
+    ActionFragmentDict,
+    EventFragmentDict,
+    PropertyFragmentDict,
+)
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 from wotpy.wot.td import ThingDescription
@@ -32,19 +36,19 @@ def coap_server(request):
 
     exposed_thing = ExposedThing(servient=Servient(), thing=Thing(id=uuid.uuid4().urn))
 
-    exposed_thing.add_property(uuid.uuid4().hex, PropertyFragmentDict({
-        "type": "number",
-        "observable": True
-    }), value=Faker().pyint())
+    exposed_thing.add_property(
+        uuid.uuid4().hex,
+        PropertyFragmentDict({"type": "number", "observable": True}),
+        value=Faker().pyint(),
+    )
 
-    exposed_thing.add_property(uuid.uuid4().hex, PropertyFragmentDict({
-        "type": "string",
-        "observable": True
-    }), value=Faker().pyint())
+    exposed_thing.add_property(
+        uuid.uuid4().hex,
+        PropertyFragmentDict({"type": "string", "observable": True}),
+        value=Faker().pyint(),
+    )
 
-    exposed_thing.add_event(uuid.uuid4().hex, EventFragmentDict({
-        "type": "object"
-    }))
+    exposed_thing.add_event(uuid.uuid4().hex, EventFragmentDict({"type": "object"}))
 
     action_name = uuid.uuid4().hex
 
@@ -53,10 +57,11 @@ def coap_server(request):
         input_value = parameters.get("input")
         raise tornado.gen.Return(input_value * 3)
 
-    exposed_thing.add_action(action_name, ActionFragmentDict({
-        "input": {"type": "number"},
-        "output": {"type": "number"}
-    }), triple)
+    exposed_thing.add_action(
+        action_name,
+        ActionFragmentDict({"input": {"type": "number"}, "output": {"type": "number"}}),
+        triple,
+    )
 
     port = find_free_port()
 
@@ -104,27 +109,14 @@ def coap_servient():
     td_dict = {
         "id": uuid.uuid4().urn,
         "title": uuid.uuid4().hex,
-        "properties": {
-            property_name_01: {
-                "observable": True,
-                "type": "string"
-            }
-        },
+        "properties": {property_name_01: {"observable": True, "type": "string"}},
         "actions": {
             action_name_01: {
-                "input": {
-                    "type": "number"
-                },
-                "output": {
-                    "type": "number"
-                },
+                "input": {"type": "number"},
+                "output": {"type": "number"},
             }
         },
-        "events": {
-            event_name_01: {
-                "type": "string"
-            }
-        },
+        "events": {event_name_01: {"type": "string"}},
     }
 
     td = ThingDescription(td_dict)

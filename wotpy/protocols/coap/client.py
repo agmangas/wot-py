@@ -12,10 +12,6 @@ import time
 from urllib.parse import urlparse
 
 import aiocoap
-import tornado.concurrent
-import tornado.gen
-import tornado.ioloop
-import tornado.locks
 from rx import Observable
 
 from wotpy.protocols.client import BaseProtocolClient
@@ -41,7 +37,6 @@ class CoAPClient(BaseProtocolClient):
     def __init__(self):
         self._logr = logging.getLogger(__name__)
         self._coap_client = None
-        self._client_lock = tornado.locks.Lock()
         super(CoAPClient, self).__init__()
 
     @classmethod
@@ -84,7 +79,10 @@ class CoAPClient(BaseProtocolClient):
 
             query = urlparse(href).query
 
-            state = {"active": True, "request": None, "pending": None}
+            state = {
+                "unsubscribe_event": asyncio.Event(),
+                "request": None,
+            }
 
             @handle_observer_finalization(observer)
             async def callback():
@@ -97,29 +95,27 @@ class CoAPClient(BaseProtocolClient):
                 try:
                     msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href, observe=0)
                     state["request"] = coap_client.request(msg)
-
                     self._logr.debug("Sending observation request: {}".format(msg))
+                    await state["request"].response
 
-                    future_first_resp = state["request"].response
-                    state["pending"] = future_first_resp
-                    first_resp = await asyncio.wrap_future(future_first_resp)
-                    state["pending"] = None
-                    self._assert_success(first_resp)
-                    next_item = next_item_builder(first_resp.payload)
-                    next_item is not None and observer.on_next(next_item)
+                    def obs_cb(msg):
+                        self._logr.debug("Observation message: {}".format(msg))
+                        self._assert_success(msg)
+                        next_item = next_item_builder(msg.payload)
+                        next_item is not None and observer.on_next(next_item)
 
-                    while state["active"]:
-                        next_obsv_gen = (
-                            state["request"].observation.__aiter__().__anext__()
+                    state["request"].observation.register_callback(obs_cb)
+
+                    def obs_cb_err(err):
+                        self._logr.warning(
+                            "Observation error ({}): {}".format(err.__class__, err)
                         )
 
-                        future_resp = tornado.gen.convert_yielded(next_obsv_gen)
-                        state["pending"] = future_resp
-                        resp = await future_resp
-                        state["pending"] = None
-                        self._assert_success(resp)
-                        next_item = next_item_builder(resp.payload)
-                        next_item is not None and observer.on_next(next_item)
+                        state["unsubscribe_event"].set()
+
+                    state["request"].observation.register_errback(obs_cb_err)
+
+                    await state["unsubscribe_event"].wait()
 
                     self._logr.debug(
                         "Terminated subscription callback for: {}".format(query)
@@ -130,17 +126,11 @@ class CoAPClient(BaseProtocolClient):
             def unsubscribe():
                 self._logr.debug("Unsubscribing from: {}".format(query))
 
-                state["active"] = False
+                state["unsubscribe_event"].set()
 
                 if state["request"] and not state["request"].observation.cancelled:
                     self._logr.debug("Cancelling observation on: {}".format(query))
                     state["request"].observation.cancel()
-
-                if state["pending"]:
-                    self._logr.debug(
-                        "Cancelling pending request: {}".format(state["pending"])
-                    )
-                    state["pending"].cancel()
 
             asyncio.get_event_loop().call_soon(callback)
 

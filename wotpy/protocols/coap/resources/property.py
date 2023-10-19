@@ -11,23 +11,21 @@ import logging
 import aiocoap
 import aiocoap.error
 import aiocoap.resource
-import tornado.gen
 
 from wotpy.protocols.coap.resources.utils import parse_request_opt_query
 
 JSON_CONTENT_FORMAT = 50
 
 
-@tornado.gen.coroutine
-def _build_property_value_response(thing_property):
+async def _build_property_value_response(thing_property):
     """Reads the current property value and builds
     the CoAP response containing said value."""
 
-    value = yield thing_property.read()
+    value = await thing_property.read()
     payload = json.dumps({"value": value}).encode("utf-8")
     response = aiocoap.Message(code=aiocoap.Code.CONTENT, payload=payload)
     response.opt.content_format = JSON_CONTENT_FORMAT
-    raise tornado.gen.Return(response)
+    return response
 
 
 def get_thing_property(server, request):
@@ -48,13 +46,15 @@ def get_thing_property(server, request):
 
     try:
         return next(
-            exposed_thing.properties[key] for key in exposed_thing.properties
-            if exposed_thing.properties[key].url_name == url_name_prop)
+            exposed_thing.properties[key]
+            for key in exposed_thing.properties
+            if exposed_thing.properties[key].url_name == url_name_prop
+        )
     except StopIteration:
-        raise aiocoap.error.NotFound("Property not found")
+        raise aiocoap.error.NotFound("Property not found") from None
 
 
-class PropertyResource(aiocoap.resource.Resource):
+class PropertyResource(aiocoap.resource.ObservableResource):
     """CoAP resource that implements the Property read, write and observe verbs."""
 
     def __init__(self, server):
@@ -62,8 +62,7 @@ class PropertyResource(aiocoap.resource.Resource):
         self._server = server
         self._logr = logging.getLogger(__name__)
 
-    @tornado.gen.coroutine
-    def add_observation(self, request, server_observation):
+    async def add_observation(self, request, server_observation):
         """Method that decides whether to add a new observer.
         A new observer is added for each GET request."""
 
@@ -75,12 +74,13 @@ class PropertyResource(aiocoap.resource.Resource):
         except aiocoap.error.Error:
             return
 
-        # noinspection PyUnusedLocal
         def on_next(item):
             server_observation.trigger()
 
         def on_error(err):
-            self._logr.warning("Error on subscription to {}: {}".format(thing_property, err))
+            self._logr.warning(
+                "Error on subscription to {}: {}".format(thing_property, err)
+            )
 
         subscription = thing_property.subscribe(on_next=on_next, on_error=on_error)
 
@@ -90,16 +90,14 @@ class PropertyResource(aiocoap.resource.Resource):
 
         server_observation.accept(cancellation_cb)
 
-    @tornado.gen.coroutine
-    def render_get(self, request):
+    async def render_get(self, request):
         """Returns a CoAP response with the current property value."""
 
         thing_property = get_thing_property(self._server, request)
-        response = yield _build_property_value_response(thing_property)
-        raise tornado.gen.Return(response)
+        response = await _build_property_value_response(thing_property)
+        return response
 
-    @tornado.gen.coroutine
-    def render_put(self, request):
+    async def render_put(self, request):
         """Updates the property with the value retrieved from the CoAP request payload."""
 
         thing_property = get_thing_property(self._server, request)
@@ -108,7 +106,7 @@ class PropertyResource(aiocoap.resource.Resource):
         if "value" not in request_payload:
             raise aiocoap.error.BadRequest()
 
-        yield thing_property.write(request_payload.get("value"))
+        await thing_property.write(request_payload.get("value"))
         response = aiocoap.Message(code=aiocoap.Code.CHANGED)
 
-        raise tornado.gen.Return(response)
+        return response

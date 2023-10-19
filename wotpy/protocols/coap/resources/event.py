@@ -12,7 +12,6 @@ import time
 import aiocoap
 import aiocoap.error
 import aiocoap.resource
-import tornado.gen
 
 from wotpy.protocols.coap.resources.utils import parse_request_opt_query
 
@@ -37,10 +36,12 @@ def get_thing_event(server, request):
 
     try:
         return next(
-            exposed_thing.events[key] for key in exposed_thing.events
-            if exposed_thing.events[key].url_name == url_name_event)
+            exposed_thing.events[key]
+            for key in exposed_thing.events
+            if exposed_thing.events[key].url_name == url_name_event
+        )
     except StopIteration:
-        raise aiocoap.error.NotFound("Event not found")
+        raise aiocoap.error.NotFound("Event not found") from None
 
 
 class EventResource(aiocoap.resource.ObservableResource):
@@ -59,8 +60,7 @@ class EventResource(aiocoap.resource.ObservableResource):
 
         return thing_event.thing.url_name, thing_event.url_name
 
-    @tornado.gen.coroutine
-    def add_observation(self, request, server_observation):
+    async def add_observation(self, request, server_observation):
         """Method that decides whether to add a new observer.
         A new observer is added for each GET request."""
 
@@ -76,14 +76,16 @@ class EventResource(aiocoap.resource.ObservableResource):
             event_item = {
                 "name": item.name,
                 "data": item.data,
-                "time": int(time.time() * 1000)
+                "time": int(time.time() * 1000),
             }
 
             self._last_events[self._event_key(thing_event)] = event_item
             server_observation.trigger()
 
         def on_error(err):
-            self._logr.warning("Error on subscription to {}: {}".format(thing_event, err))
+            self._logr.warning(
+                "Error on subscription to {}: {}".format(thing_event, err)
+            )
 
         subscription = thing_event.subscribe(on_next=on_next, on_error=on_error)
 
@@ -93,8 +95,7 @@ class EventResource(aiocoap.resource.ObservableResource):
 
         server_observation.accept(cancellation_cb)
 
-    @tornado.gen.coroutine
-    def render_get(self, request):
+    async def render_get(self, request):
         """Returns a CoAP response with the last observed event emission."""
 
         thing_event = get_thing_event(self._server, request)
@@ -103,4 +104,4 @@ class EventResource(aiocoap.resource.ObservableResource):
         response = aiocoap.Message(code=aiocoap.Code.CONTENT, payload=payload)
         response.opt.content_format = JSON_CONTENT_FORMAT
 
-        raise tornado.gen.Return(response)
+        return response
