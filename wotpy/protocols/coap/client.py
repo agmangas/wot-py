@@ -132,7 +132,7 @@ class CoAPClient(BaseProtocolClient):
                     self._logr.debug("Cancelling observation on: {}".format(query))
                     state["request"].observation.cancel()
 
-            asyncio.get_event_loop().call_soon(callback)
+            asyncio.create_task(callback())
 
             return unsubscribe
 

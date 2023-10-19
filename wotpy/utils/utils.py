@@ -95,10 +95,9 @@ def handle_observer_finalization(observer):
 
     def deco(coro):
         @wraps(coro)
-        @tornado.gen.coroutine
-        def wrapper(*args, **kwargs):
+        async def wrapper(*args, **kwargs):
             try:
-                yield coro(*args, **kwargs)
+                await coro(*args, **kwargs)
                 observer.on_completed()
             except Exception as ex:
                 observer.on_error(ex)

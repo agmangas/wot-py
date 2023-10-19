@@ -263,7 +263,7 @@ class HTTPClient(BaseProtocolClient):
             def unsubscribe():
                 state["active"] = False
 
-            asyncio.get_event_loop().call_soon(callback)
+            asyncio.create_task(callback())
 
             return unsubscribe
 
@@ -303,7 +303,7 @@ class HTTPClient(BaseProtocolClient):
             def unsubscribe():
                 state["active"] = False
 
-            asyncio.get_event_loop().call_soon(callback)
+            asyncio.create_task(callback())
 
             return unsubscribe
 

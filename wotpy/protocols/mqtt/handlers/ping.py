@@ -5,16 +5,13 @@
 MQTT handler for PING requests published on the MQTT broker.
 """
 
-import tornado.gen
-from hbmqtt.mqtt.constants import QOS_1
-
 from wotpy.protocols.mqtt.handlers.base import BaseMQTTHandler
 
 
 class PingMQTTHandler(BaseMQTTHandler):
     """MQTT handler for PING requests published on the MQTT broker."""
 
-    def __init__(self, mqtt_server, qos=QOS_1):
+    def __init__(self, mqtt_server, qos=1):
         super(PingMQTTHandler, self).__init__(mqtt_server)
         self._qos = qos
 
@@ -36,13 +33,10 @@ class PingMQTTHandler(BaseMQTTHandler):
 
         return [(self.topic_ping, self._qos)]
 
-    @tornado.gen.coroutine
-    def handle_message(self, msg):
+    async def handle_message(self, msg):
         """Publishes a message in the PONG topic with the
         same payload as the one received in the PING topic."""
 
-        yield self.queue.put({
-            "topic": self.topic_pong,
-            "data": msg.data,
-            "qos": self._qos
-        })
+        await self.queue.put(
+            {"topic": self.topic_pong, "data": msg.payload, "qos": self._qos}
+        )

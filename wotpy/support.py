@@ -24,8 +24,8 @@ FEATURE_REQUISITES = {
         "platforms": ["Linux"],
     },
     FEATURE_MQTT: {
-        "max_version_exclusive": (3, 9),
-        "min_version_inclusive": (3, 7),
+        "max_version_exclusive": (3, 13),
+        "min_version_inclusive": (3, 8),
         "platforms": ["Linux", "Darwin"],
     },
 }

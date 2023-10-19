@@ -1,34 +1,40 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import asyncio
 import json
+import logging
+import random
 import time
 import uuid
 from asyncio import TimeoutError
-import random
 
+import aiomqtt
 import pytest
 import tornado.concurrent
 import tornado.gen
 import tornado.ioloop
 from faker import Faker
 from hbmqtt.client import MQTTClient
-from hbmqtt.mqtt.constants import QOS_2, QOS_0
+from hbmqtt.mqtt.constants import QOS_0, QOS_2
 
 from tests.protocols.mqtt.broker import (
-    is_test_broker_online,
     BROKER_SKIP_REASON,
     get_test_broker_url,
+    is_test_broker_online,
 )
 from tests.utils import run_test_coroutine
 from wotpy.protocols.enums import InteractionVerbs
 from wotpy.protocols.mqtt.handlers.action import ActionMQTTHandler
 from wotpy.protocols.mqtt.server import MQTTServer
-from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict
+from wotpy.protocols.mqtt.utils import MQTTBrokerURL
+from wotpy.wot.dictionaries.interaction import ActionFragmentDict, PropertyFragmentDict
 
 pytestmark = pytest.mark.skipif(
     is_test_broker_online() is False, reason=BROKER_SKIP_REASON
 )
+
+_logger = logging.getLogger(__name__)
 
 
 def build_topic(server, interaction, interaction_verb):
@@ -52,63 +58,77 @@ def connect_broker(topics):
     raise tornado.gen.Return(hbmqtt_client)
 
 
-@tornado.gen.coroutine
-def _ping(mqtt_server, timeout=None):
+async def _ping(mqtt_server, timeout=None):
     """Returns True if the given MQTT server has answered to a PING request."""
 
     broker_url = get_test_broker_url()
+    mqtt_broker_url = MQTTBrokerURL.from_url(broker_url)
+
+    client_config = {
+        "hostname": mqtt_broker_url.host,
+        "port": mqtt_broker_url.port,
+        "username": mqtt_broker_url.username,
+        "password": mqtt_broker_url.password,
+    }
 
     topic_ping = "{}/ping".format(mqtt_server.servient_id)
     topic_pong = "{}/pong".format(mqtt_server.servient_id)
 
+    bytes_payload = bytes(uuid.uuid4().hex, "utf8")
+
     try:
-        hbmqtt_client = MQTTClient()
-        yield hbmqtt_client.connect(broker_url)
-        yield hbmqtt_client.subscribe([(topic_pong, QOS_2)])
-        bytes_payload = bytes(uuid.uuid4().hex, "utf8")
-        yield hbmqtt_client.publish(topic_ping, bytes_payload, qos=QOS_2)
-        message = yield hbmqtt_client.deliver_message(timeout=timeout)
-        assert message.data == bytes_payload
-        yield hbmqtt_client.disconnect()
-    except TimeoutError:
-        raise tornado.gen.Return(False)
+        async with aiomqtt.Client(**client_config) as client:
+            await client.subscribe(topic=topic_pong, qos=2)
 
-    raise tornado.gen.Return(True)
+            async def read_messages():
+                async with client.messages() as messages:
+                    async for message in messages:
+                        assert message.payload == bytes_payload
+                        break
+
+            _logger.debug("Sending PING message: %s", bytes_payload)
+            await client.publish(topic_ping, payload=bytes_payload, qos=2)
+            await asyncio.wait_for(read_messages(), timeout=timeout)
+
+        return True
+    except Exception:
+        _logger.warning("Ping error", exc_info=True)
+        return False
 
 
-DEFAULT_PING_TIMEOUT = 1.0
+DEFAULT_PING_TIMEOUT = 2.0
 
 
-def test_start_stop():
+@pytest.mark.asyncio
+async def test_start_stop():
     """The MQTT server may be started and stopped."""
 
     mqtt_server = MQTTServer(broker_url=get_test_broker_url())
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        assert not (yield _ping(mqtt_server, timeout=DEFAULT_PING_TIMEOUT))
+    assert not await _ping(mqtt_server, timeout=DEFAULT_PING_TIMEOUT)
 
-        yield mqtt_server.start()
+    await mqtt_server.start()
 
-        assert (yield _ping(mqtt_server))
-        assert (yield _ping(mqtt_server))
+    assert await _ping(mqtt_server)
+    assert await _ping(mqtt_server)
 
-        yield mqtt_server.stop()
-        yield mqtt_server.start()
-        yield mqtt_server.stop()
+    await mqtt_server.stop()
+    await mqtt_server.start()
+    await mqtt_server.stop()
 
-        assert not (yield _ping(mqtt_server, timeout=DEFAULT_PING_TIMEOUT))
+    assert not await _ping(mqtt_server, timeout=DEFAULT_PING_TIMEOUT)
 
-        yield mqtt_server.stop()
-        yield mqtt_server.start()
-        yield mqtt_server.start()
+    await mqtt_server.stop()
+    await mqtt_server.start()
+    await mqtt_server.start()
 
-        assert (yield _ping(mqtt_server))
+    assert await _ping(mqtt_server)
 
-    run_test_coroutine(test_coroutine)
+    await mqtt_server.stop()
 
 
-def test_servient_id():
+@pytest.mark.asyncio
+async def test_servient_id():
     """An MQTT server may be identified by a unique Servient ID to avoid topic collisions."""
 
     broker_url = get_test_broker_url()
@@ -120,21 +140,18 @@ def test_servient_id():
     assert (
         mqtt_srv_01.servient_id and mqtt_srv_02.servient_id and mqtt_srv_03.servient_id
     )
+
     assert mqtt_srv_01.servient_id == mqtt_srv_02.servient_id
     assert mqtt_srv_01.servient_id != mqtt_srv_03.servient_id
 
-    @tornado.gen.coroutine
-    def assert_ping_loop(srv, num_iters=10):
+    async def assert_ping_loop(srv, num_iters=10):
         for _ in range(num_iters):
-            assert (yield _ping(srv, timeout=DEFAULT_PING_TIMEOUT))
-            yield tornado.gen.sleep(random.uniform(0.1, 0.3))
+            assert await _ping(srv, timeout=DEFAULT_PING_TIMEOUT)
+            await asyncio.sleep(random.uniform(0.1, 0.3))
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        yield [mqtt_srv_01.start(), mqtt_srv_03.start()]
-        yield [assert_ping_loop(mqtt_srv_01), assert_ping_loop(mqtt_srv_03)]
-
-    run_test_coroutine(test_coroutine)
+    await asyncio.gather(mqtt_srv_01.start(), mqtt_srv_03.start())
+    await asyncio.gather(assert_ping_loop(mqtt_srv_01), assert_ping_loop(mqtt_srv_03))
+    await asyncio.gather(mqtt_srv_01.stop(), mqtt_srv_03.stop())
 
 
 def test_property_read(mqtt_server):

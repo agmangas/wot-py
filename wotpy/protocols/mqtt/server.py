@@ -5,13 +5,12 @@
 Class that implements the MQTT server (broker).
 """
 
-import tornado.gen
-import tornado.ioloop
-import tornado.locks
+import asyncio
+
 from slugify import slugify
 
 from wotpy.codecs.enums import MediaTypes
-from wotpy.protocols.enums import Protocols, InteractionVerbs
+from wotpy.protocols.enums import InteractionVerbs, Protocols
 from wotpy.protocols.mqtt.handlers.action import ActionMQTTHandler
 from wotpy.protocols.mqtt.handlers.event import EventMQTTHandler
 from wotpy.protocols.mqtt.handlers.ping import PingMQTTHandler
@@ -25,12 +24,18 @@ from wotpy.wot.form import Form
 class MQTTServer(BaseProtocolServer):
     """MQTT binding server implementation."""
 
-    DEFAULT_SERVIENT_ID = 'wotpy'
+    DEFAULT_SERVIENT_ID = "wotpy"
 
-    def __init__(self, broker_url, property_callback_ms=None, event_callback_ms=None, servient_id=None):
+    def __init__(
+        self,
+        broker_url,
+        property_callback_ms=None,
+        event_callback_ms=None,
+        servient_id=None,
+    ):
         super(MQTTServer, self).__init__(port=None)
         self._broker_url = broker_url
-        self._server_lock = tornado.locks.Lock()
+        self._server_lock = asyncio.Lock()
         self._servient_id = servient_id
 
         def build_runner(handler):
@@ -38,8 +43,12 @@ class MQTTServer(BaseProtocolServer):
 
         self._handler_runners = [
             build_runner(PingMQTTHandler(mqtt_server=self)),
-            build_runner(PropertyMQTTHandler(mqtt_server=self, callback_ms=property_callback_ms)),
-            build_runner(EventMQTTHandler(mqtt_server=self, callback_ms=event_callback_ms)),
+            build_runner(
+                PropertyMQTTHandler(mqtt_server=self, callback_ms=property_callback_ms)
+            ),
+            build_runner(
+                EventMQTTHandler(mqtt_server=self, callback_ms=event_callback_ms)
+            ),
             build_runner(ActionMQTTHandler(mqtt_server=self)),
         ]
 
@@ -48,7 +57,11 @@ class MQTTServer(BaseProtocolServer):
         """Servient ID that is used to avoid topic collisions
         øwhen multiple Servients are connected to the same broker."""
 
-        return slugify(self._servient_id) if self._servient_id else self.DEFAULT_SERVIENT_ID
+        return (
+            slugify(self._servient_id)
+            if self._servient_id
+            else self.DEFAULT_SERVIENT_ID
+        )
 
     @property
     def protocol(self):
@@ -64,34 +77,39 @@ class MQTTServer(BaseProtocolServer):
             self._broker_url.rstrip("/"),
             self.servient_id,
             proprty.thing.url_name,
-            proprty.url_name)
+            proprty.url_name,
+        )
 
         form_read = Form(
             interaction=proprty,
             protocol=self.protocol,
             href=href_rw,
             content_type=MediaTypes.JSON,
-            op=InteractionVerbs.READ_PROPERTY)
+            op=InteractionVerbs.READ_PROPERTY,
+        )
 
         form_write = Form(
             interaction=proprty,
             protocol=self.protocol,
             href=href_rw,
             content_type=MediaTypes.JSON,
-            op=InteractionVerbs.WRITE_PROPERTY)
+            op=InteractionVerbs.WRITE_PROPERTY,
+        )
 
         href_observe = "{}/{}/property/updates/{}/{}".format(
             self._broker_url.rstrip("/"),
             self.servient_id,
             proprty.thing.url_name,
-            proprty.url_name)
+            proprty.url_name,
+        )
 
         form_observe = Form(
             interaction=proprty,
             protocol=self.protocol,
             href=href_observe,
             content_type=MediaTypes.JSON,
-            op=InteractionVerbs.OBSERVE_PROPERTY)
+            op=InteractionVerbs.OBSERVE_PROPERTY,
+        )
 
         return [form_read, form_write, form_observe]
 
@@ -102,14 +120,16 @@ class MQTTServer(BaseProtocolServer):
             self._broker_url.rstrip("/"),
             self.servient_id,
             action.thing.url_name,
-            action.url_name)
+            action.url_name,
+        )
 
         form = Form(
             interaction=action,
             protocol=self.protocol,
             href=href,
             content_type=MediaTypes.JSON,
-            op=InteractionVerbs.INVOKE_ACTION)
+            op=InteractionVerbs.INVOKE_ACTION,
+        )
 
         return [form]
 
@@ -120,14 +140,16 @@ class MQTTServer(BaseProtocolServer):
             self._broker_url.rstrip("/"),
             self.servient_id,
             event.thing.url_name,
-            event.url_name)
+            event.url_name,
+        )
 
         form = Form(
             interaction=event,
             protocol=self.protocol,
             href=href,
             content_type=MediaTypes.JSON,
-            op=InteractionVerbs.SUBSCRIBE_EVENT)
+            op=InteractionVerbs.SUBSCRIBE_EVENT,
+        )
 
         return [form]
 
@@ -138,7 +160,7 @@ class MQTTServer(BaseProtocolServer):
         intrct_type_map = {
             InteractionTypes.PROPERTY: self._build_forms_property,
             InteractionTypes.ACTION: self._build_forms_action,
-            InteractionTypes.EVENT: self._build_forms_event
+            InteractionTypes.EVENT: self._build_forms_event,
         }
 
         if interaction.interaction_type not in intrct_type_map:
@@ -151,17 +173,15 @@ class MQTTServer(BaseProtocolServer):
 
         return self._broker_url
 
-    @tornado.gen.coroutine
-    def start(self):
+    async def start(self):
         """Starts the MQTT broker and all the MQTT clients
         that handle the WoT clients requests."""
 
-        with (yield self._server_lock.acquire()):
-            yield [runner.start() for runner in self._handler_runners]
+        async with self._server_lock:
+            await asyncio.gather(*[runner.start() for runner in self._handler_runners])
 
-    @tornado.gen.coroutine
-    def stop(self):
+    async def stop(self):
         """Stops the MQTT broker and the MQTT clients."""
 
-        with (yield self._server_lock.acquire()):
-            yield [runner.stop() for runner in self._handler_runners]
+        async with self._server_lock:
+            await asyncio.gather(*[runner.stop() for runner in self._handler_runners])

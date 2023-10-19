@@ -79,3 +79,17 @@ tasks:
     cmds:
       - source {{.VENV_PATH}}/bin/activate
       - "{{.ROOT_DIR}}/version.sh {{.VERSION_PART}}"
+
+  start-devcontainer:
+    desc: Open a shell in a development container
+    deps:
+      - test-broker
+    vars:
+      PYTHON_TAG: "{{default 3.8 .PYTHON_TAG}}"
+    cmds:
+      - >
+        docker run --rm -it
+        -v {{.ROOT_DIR}}:/workspace
+        -e WOTPY_TESTS_MQTT_BROKER_URL={{.WOTPY_TESTS_MQTT_BROKER_URL}}
+        python:{{.PYTHON_TAG}}
+        /bin/bash -c "cd /workspace && pip install -U -e .[tests] && bash"

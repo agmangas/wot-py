@@ -4,7 +4,8 @@ try:
     import coloredlogs
 
     coloredlogs.install(level=logging.DEBUG)
-    logging.getLogger("faker").level = logging.WARNING
-    logging.getLogger("hbmqtt").level = logging.INFO
+
+    for logger_name in ["hbmqtt", "faker", "transitions.core"]:
+        logging.getLogger(logger_name).setLevel(logging.WARNING)
 except ImportError:
     pass

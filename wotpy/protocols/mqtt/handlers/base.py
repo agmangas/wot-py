@@ -5,9 +5,7 @@
 Base class for all MQTT handlers.
 """
 
-import tornado.gen
-
-from tornado.queues import Queue
+from asyncio import Queue
 
 
 class BaseMQTTHandler(object):
@@ -43,21 +41,18 @@ class BaseMQTTHandler(object):
 
         return self._queue
 
-    @tornado.gen.coroutine
-    def handle_message(self, msg):
+    async def handle_message(self, msg):
         """Called each time the runner receives a message for one of the handler topics."""
 
         pass
 
-    @tornado.gen.coroutine
-    def init(self):
+    async def init(self):
         """Initializes the MQTT handler.
         Called when the MQTT runner starts."""
 
         pass
 
-    @tornado.gen.coroutine
-    def teardown(self):
+    async def teardown(self):
         """Destroys the MQTT handler.
         Called when the MQTT runner stops."""
 

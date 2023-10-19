@@ -151,7 +151,7 @@ class WoT(object):
             def unsubscribe():
                 state["stop"] = True
 
-            asyncio.get_event_loop().call_soon(callback)
+            asyncio.create_task(callback())
 
             return unsubscribe
 
