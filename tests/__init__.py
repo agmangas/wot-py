@@ -1,3 +1,9 @@
-import coloredlogs
+try:
+    import logging
 
-coloredlogs.install(level="DEBUG")
+    import coloredlogs
+
+    coloredlogs.install(level=logging.DEBUG)
+    logging.getLogger("faker").level = logging.WARNING
+except ImportError:
+    pass
