@@ -4,24 +4,21 @@
 import re
 import time
 import uuid
+from urllib.parse import urlparse, urlunparse
 
-# noinspection PyPackageRequirements
 import pytest
-import tornado.concurrent
-import tornado.gen
 import tornado.gen
 import tornado.ioloop
-import tornado.ioloop
-import tornado.testing
 import tornado.websocket
-import tornado.websocket
-# noinspection PyPackageRequirements
 from faker import Faker
-from six.moves.urllib.parse import urlparse, urlunparse
 
 from tests.utils import find_free_port
 from wotpy.protocols.ws.server import WebsocketServer
-from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
+from wotpy.wot.dictionaries.interaction import (
+    ActionFragmentDict,
+    EventFragmentDict,
+    PropertyFragmentDict,
+)
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 from wotpy.wot.td import ThingDescription
@@ -33,7 +30,7 @@ def build_websocket_url(exposed_thing, ws_server, server_port):
 
     base_url = ws_server.build_base_url(hostname="localhost", thing=exposed_thing.thing)
     parsed_url = urlparse(base_url)
-    test_netloc = re.sub(r':(\d+)$', ':{}'.format(server_port), parsed_url.netloc)
+    test_netloc = re.sub(r":(\d+)$", ":{}".format(server_port), parsed_url.netloc)
 
     test_url_parts = list(parsed_url)
     test_url_parts[1] = test_netloc
@@ -63,34 +60,24 @@ def websocket_server():
     prop_value_02 = Faker().sentence()
     prop_value_03 = Faker().sentence()
 
-    prop_init_01 = PropertyFragmentDict({
-        "type": "string",
-        "observable": True
-    })
+    prop_init_01 = PropertyFragmentDict({"type": "string", "observable": True})
 
-    prop_init_02 = PropertyFragmentDict({
-        "type": "string",
-        "observable": True
-    })
+    prop_init_02 = PropertyFragmentDict({"type": "string", "observable": True})
 
-    prop_init_03 = PropertyFragmentDict({
-        "type": "string",
-        "observable": True
-    })
+    prop_init_03 = PropertyFragmentDict({"type": "string", "observable": True})
 
-    event_init_01 = EventFragmentDict({
-        "type": "object"
-    })
+    event_init_01 = EventFragmentDict({"type": "object"})
 
-    action_init_01 = ActionFragmentDict({
-        "input": {"type": "string"},
-        "output": {"type": "string"}
-    })
+    action_init_01 = ActionFragmentDict(
+        {"input": {"type": "string"}, "output": {"type": "string"}}
+    )
 
     def async_lower(parameters):
         loop = tornado.ioloop.IOLoop.current()
         input_value = parameters.get("input")
-        return loop.run_in_executor(None, lambda x: time.sleep(0.1) or x.lower(), input_value)
+        return loop.run_in_executor(
+            None, lambda x: time.sleep(0.1) or x.lower(), input_value
+        )
 
     exposed_thing_01.add_property(prop_name_01, prop_init_01, value=prop_value_01)
     exposed_thing_01.add_property(prop_name_02, prop_init_02, value=prop_value_02)
@@ -133,7 +120,7 @@ def websocket_server():
         "ws_server": ws_server,
         "url_thing_01": url_thing_01,
         "url_thing_02": url_thing_02,
-        "ws_port": ws_port
+        "ws_port": ws_port,
     }
 
     @tornado.gen.coroutine
@@ -168,30 +155,16 @@ def websocket_servient():
         "id": uuid.uuid4().urn,
         "name": uuid.uuid4().hex,
         "properties": {
-            property_name_01: {
-                "observable": True,
-                "type": "string"
-            },
-            property_name_02: {
-                "observable": True,
-                "type": "string"
-            }
+            property_name_01: {"observable": True, "type": "string"},
+            property_name_02: {"observable": True, "type": "string"},
         },
         "actions": {
             action_name_01: {
-                "input": {
-                    "type": "object"
-                },
-                "output": {
-                    "type": "string"
-                },
+                "input": {"type": "object"},
+                "output": {"type": "string"},
             }
         },
-        "events": {
-            event_name_01: {
-                "type": "string"
-            }
-        },
+        "events": {event_name_01: {"type": "string"}},
     }
 
     td = ThingDescription(td_dict)
