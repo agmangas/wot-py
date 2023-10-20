@@ -10,7 +10,6 @@ import tornado.gen
 import tornado.ioloop
 from faker import Faker
 
-from tests.utils import is_github_actions
 from wotpy.support import is_mqtt_supported
 from wotpy.wot.dictionaries.interaction import (
     ActionFragmentDict,
@@ -24,14 +23,7 @@ from wotpy.wot.thing import Thing
 
 collect_ignore = []
 
-# ToDo: Fix GitHub Actions skip
-skip_reasons = [
-    (not is_mqtt_supported(), "Unsupported platform"),
-    (
-        is_github_actions(),
-        "Detected GitHub Actions environment",
-    ),
-]
+skip_reasons = [(not is_mqtt_supported(), "Unsupported platform")]
 
 for skip_check, reason in skip_reasons:
     if skip_check:
