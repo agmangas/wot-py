@@ -1,4 +1,4 @@
-name: WoTPy tests
+name: Run wot-py tests
 on: [push, pull_request]
 jobs:
   call-python-37-testing:
@@ -17,3 +17,7 @@ jobs:
     uses: ./.github/workflows/run-python-tests.yaml
     with:
       python-version-tag: "3.10"
+  call-python-311-testing:
+    uses: ./.github/workflows/run-python-tests.yaml
+    with:
+      python-version-tag: "3.11"

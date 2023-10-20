@@ -1,4 +1,4 @@
-name: Python testing reusable workflow
+name: Reusable workflow for wot-py tests
 on:
   workflow_call:
     inputs:

@@ -5,6 +5,7 @@
 Functions to check if some functionalities are enabled in the current platform.
 """
 
+import logging
 import platform
 import sys
 
@@ -29,6 +30,8 @@ FEATURE_REQUISITES = {
         "platforms": ["Linux", "Darwin"],
     },
 }
+
+_logger = logging.getLogger(__name__)
 
 
 def _is_version_gte(version_a, version_b):
@@ -85,6 +88,16 @@ def is_coap_supported():
 
 def is_mqtt_supported():
     """Returns True if the MQTT binding is supported in this platform."""
+
+    try:
+        # ToDo: Remove this after the tests are migrated to aiomqtt
+        # trunk-ignore(ruff/F401)
+        import hbmqtt.client
+    except ModuleNotFoundError:
+        pass
+    except Exception:
+        _logger.warning("Error importing hbmqtt: Disabling MQTT binding", exc_info=True)
+        return False
 
     return is_supported(FEATURE_MQTT)
 

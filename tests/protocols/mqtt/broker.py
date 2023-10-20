@@ -45,7 +45,10 @@ def is_test_broker_online():
 
         raise tornado.gen.Return(True)
 
-    conn_ok = tornado.ioloop.IOLoop.current().run_sync(check_conn)
+    try:
+        conn_ok = tornado.ioloop.IOLoop.current().run_sync(check_conn)
+    except Exception:
+        conn_ok = False
 
     if conn_ok is False:
         logging.warning(
