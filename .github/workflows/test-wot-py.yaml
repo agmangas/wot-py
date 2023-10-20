@@ -1,37 +1,28 @@
-name: Run wot-py tests
+name: Run Pytest tests in multiple Python versions
 on: [push, pull_request]
 jobs:
-  python-37:
-    uses: ./.github/workflows/run-python-tests.yaml
-    with:
-      python-version-tag: "3.7"
-  python-38:
-    needs:
-      - python-37
-    uses: ./.github/workflows/run-python-tests.yaml
-    with:
-      python-version-tag: "3.8"
-  python-39:
-    needs:
-      - python-37
-      - python-38
-    uses: ./.github/workflows/run-python-tests.yaml
-    with:
-      python-version-tag: "3.9"
-  python-310:
-    needs:
-      - python-37
-      - python-38
-      - python-39
-    uses: ./.github/workflows/run-python-tests.yaml
-    with:
-      python-version-tag: "3.10"
-  python-311:
-    needs:
-      - python-37
-      - python-38
-      - python-39
-      - python-310
-    uses: ./.github/workflows/run-python-tests.yaml
-    with:
-      python-version-tag: "3.11"
+  test:
+    runs-on: ubuntu-latest
+    services:
+      broker:
+        image: eclipse-mosquitto:1.6
+        ports:
+          - 1883:1883
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9, 3.10, 3.11]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -U .[tests]
+      - name: Run tests
+        run: |
+          pytest -v
+        env:
+          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://broker:1883
