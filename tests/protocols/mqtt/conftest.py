@@ -24,14 +24,20 @@ from wotpy.wot.thing import Thing
 
 collect_ignore = []
 
-if not is_mqtt_supported():
-    logging.warning("Skipping MQTT tests due to unsupported platform")
-    collect_ignore += ["test_server.py", "test_client.py"]
+# ToDo: Fix GitHub Actions skip
+skip_reasons = [
+    (not is_mqtt_supported(), "Unsupported platform"),
+    (
+        os.getenv("GITHUB_ACTION") and os.getenv("CI"),
+        "Detected GitHub Actions environment",
+    ),
+]
 
-# ToDo: Fix this
-if os.getenv("GITHUB_ACTION") and os.getenv("CI"):
-    logging.warning("Detected CI environment, skipping MQTT tests")
-    collect_ignore += ["test_server.py", "test_client.py"]
+for skip_check, reason in skip_reasons:
+    if skip_check:
+        logging.warning("Skipping MQTT tests: {}".format(reason))
+        collect_ignore += ["test_server.py", "test_client.py"]
+        break
 
 
 @pytest.fixture(params=[{"property_callback_ms": None}])

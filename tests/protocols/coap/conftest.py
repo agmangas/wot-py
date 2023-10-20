@@ -24,15 +24,20 @@ from wotpy.wot.thing import Thing
 
 collect_ignore = []
 
+# ToDo: Fix GitHub Actions skip
+skip_reasons = [
+    (not is_coap_supported(), "Unsupported platform"),
+    (
+        os.getenv("GITHUB_ACTION") and os.getenv("CI"),
+        "Detected GitHub Actions environment",
+    ),
+]
 
-if not is_coap_supported():
-    logging.warning("Skipping CoAP tests due to unsupported platform")
-    collect_ignore += ["test_server.py", "test_client.py"]
-
-# ToDo: Fix this
-if os.getenv("GITHUB_ACTION") and os.getenv("CI"):
-    logging.warning("Detected CI environment, skipping CoAP tests")
-    collect_ignore += ["test_server.py", "test_client.py"]
+for skip_check, reason in skip_reasons:
+    if skip_check:
+        logging.warning("Skipping CoAP tests: {}".format(reason))
+        collect_ignore += ["test_server.py", "test_client.py"]
+        break
 
 
 @pytest.fixture(params=[{"action_clear_ms": 5000}])

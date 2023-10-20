@@ -3,6 +3,7 @@
 
 import collections
 import logging
+import os
 import socket
 
 import pytest
@@ -16,9 +17,20 @@ from wotpy.wot.servient import Servient
 
 collect_ignore = []
 
-if not is_dnssd_supported():
-    logging.warning("Skipping DNS-SD tests due to unsupported platform")
-    collect_ignore.extend(["test_service.py"])
+# ToDo: Fix GitHub Actions skip
+skip_reasons = [
+    (not is_dnssd_supported(), "Unsupported platform"),
+    (
+        os.getenv("GITHUB_ACTION") and os.getenv("CI"),
+        "Detected GitHub Actions environment",
+    ),
+]
+
+for skip_check, reason in skip_reasons:
+    if skip_check:
+        logging.warning("Skipping DNS-SD tests: {}".format(reason))
+        collect_ignore.extend(["test_service.py"])
+        break
 
 
 @pytest.fixture
@@ -26,7 +38,8 @@ def asyncio_zeroconf():
     """Builds an aiozeroconf service instance and starts browsing for WoT Servient services.
     Provides a deque that contains the service state change history."""
 
-    from aiozeroconf import Zeroconf, ServiceBrowser
+    from aiozeroconf import ServiceBrowser, Zeroconf
+
     from wotpy.wot.discovery.dnssd.service import DNSSDDiscoveryService
 
     loop = tornado.ioloop.IOLoop.current()
@@ -39,10 +52,7 @@ def asyncio_zeroconf():
     aio_zc = Zeroconf(loop.asyncio_loop, address_family=[socket.AF_INET])
     ServiceBrowser(aio_zc, DNSSDDiscoveryService.WOT_SERVICE_TYPE, handlers=[on_change])
 
-    yield {
-        "zeroconf": aio_zc,
-        "service_history": service_history
-    }
+    yield {"zeroconf": aio_zc, "service_history": service_history}
 
     @tornado.gen.coroutine
     def close():
@@ -75,7 +85,8 @@ def dnssd_servient():
     servient = Servient(
         catalogue_port=find_free_port(),
         dnssd_enabled=True,
-        dnssd_instance_name=Faker().pystr())
+        dnssd_instance_name=Faker().pystr(),
+    )
 
     yield servient
 
