@@ -50,7 +50,7 @@ def find_free_port():
             sock.close()
 
 
-def is_github_actions():
+def is_github_actions() -> bool:
     """Returns True if the current environment is GitHub Actions."""
 
-    return os.getenv("GITHUB_ACTION") and os.getenv("CI")
+    return bool(os.getenv("GITHUB_ACTION")) and bool(os.getenv("CI"))
