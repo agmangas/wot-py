@@ -96,7 +96,7 @@ def is_mqtt_supported():
     except ModuleNotFoundError:
         pass
     except Exception:
-        _logger.warning("Error importing hbmqtt: Disabling MQTT binding", exc_info=True)
+        _logger.warning("Error importing hbmqtt: Disabling MQTT binding")
         return False
 
     return is_supported(FEATURE_MQTT)
