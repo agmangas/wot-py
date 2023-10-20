@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import os
 import random
 import uuid
 
@@ -11,6 +10,7 @@ import tornado.gen
 import tornado.ioloop
 from faker import Faker
 
+from tests.utils import is_github_actions
 from wotpy.support import is_mqtt_supported
 from wotpy.wot.dictionaries.interaction import (
     ActionFragmentDict,
@@ -28,7 +28,7 @@ collect_ignore = []
 skip_reasons = [
     (not is_mqtt_supported(), "Unsupported platform"),
     (
-        os.getenv("GITHUB_ACTION") and os.getenv("CI"),
+        is_github_actions(),
         "Detected GitHub Actions environment",
     ),
 ]

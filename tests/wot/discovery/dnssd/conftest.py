@@ -3,7 +3,6 @@
 
 import collections
 import logging
-import os
 import socket
 
 import pytest
@@ -11,7 +10,7 @@ import tornado.gen
 import tornado.ioloop
 from faker import Faker
 
-from tests.utils import find_free_port
+from tests.utils import find_free_port, is_github_actions
 from wotpy.support import is_dnssd_supported
 from wotpy.wot.servient import Servient
 
@@ -21,7 +20,7 @@ collect_ignore = []
 skip_reasons = [
     (not is_dnssd_supported(), "Unsupported platform"),
     (
-        os.getenv("GITHUB_ACTION") and os.getenv("CI"),
+        is_github_actions(),
         "Detected GitHub Actions environment",
     ),
 ]
