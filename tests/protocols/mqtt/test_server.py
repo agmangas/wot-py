@@ -7,23 +7,17 @@ import logging
 import random
 import time
 import uuid
-from asyncio import TimeoutError
+from contextlib import asynccontextmanager
 
 import aiomqtt
 import pytest
-import tornado.concurrent
-import tornado.gen
-import tornado.ioloop
 from faker import Faker
-from hbmqtt.client import MQTTClient
-from hbmqtt.mqtt.constants import QOS_0, QOS_2
 
 from tests.protocols.mqtt.broker import (
     BROKER_SKIP_REASON,
     get_test_broker_url,
     is_test_broker_online,
 )
-from tests.utils import run_test_coroutine
 from wotpy.protocols.enums import InteractionVerbs
 from wotpy.protocols.mqtt.handlers.action import ActionMQTTHandler
 from wotpy.protocols.mqtt.server import MQTTServer
@@ -45,31 +39,31 @@ def build_topic(server, interaction, interaction_verb):
     return "/".join(form.href.split("/")[3:])
 
 
-@tornado.gen.coroutine
-def connect_broker(topics):
-    """Connects to the test MQTT broker and subscribes to the topics."""
+def _client_config():
+    mqtt_broker_url = MQTTBrokerURL.from_url(get_test_broker_url())
 
-    topics = [(topics, QOS_0)] if isinstance(topics, str) else topics
-
-    hbmqtt_client = MQTTClient()
-    yield hbmqtt_client.connect(get_test_broker_url())
-    yield hbmqtt_client.subscribe(topics)
-
-    raise tornado.gen.Return(hbmqtt_client)
-
-
-async def _ping(mqtt_server, timeout=None):
-    """Returns True if the given MQTT server has answered to a PING request."""
-
-    broker_url = get_test_broker_url()
-    mqtt_broker_url = MQTTBrokerURL.from_url(broker_url)
-
-    client_config = {
+    return {
         "hostname": mqtt_broker_url.host,
         "port": mqtt_broker_url.port,
         "username": mqtt_broker_url.username,
         "password": mqtt_broker_url.password,
     }
+
+
+@asynccontextmanager
+async def mqtt_client(topics):
+    topics = [(topics, 0)] if isinstance(topics, str) else topics
+
+    async with aiomqtt.Client(**_client_config()) as client:
+        await asyncio.gather(
+            *[client.subscribe(topic=item[0], qos=item[1]) for item in topics]
+        )
+
+        yield client
+
+
+async def _ping(mqtt_server, timeout=None):
+    """Returns True if the given MQTT server has answered to a PING request."""
 
     topic_ping = "{}/ping".format(mqtt_server.servient_id)
     topic_pong = "{}/pong".format(mqtt_server.servient_id)
@@ -77,7 +71,7 @@ async def _ping(mqtt_server, timeout=None):
     bytes_payload = bytes(uuid.uuid4().hex, "utf8")
 
     try:
-        async with aiomqtt.Client(**client_config) as client:
+        async with aiomqtt.Client(**_client_config()) as client:
             await client.subscribe(topic=topic_pong, qos=2)
 
             async def read_messages():
@@ -154,7 +148,8 @@ async def test_servient_id():
     await asyncio.gather(mqtt_srv_01.stop(), mqtt_srv_03.stop())
 
 
-def test_property_read(mqtt_server):
+@pytest.mark.asyncio
+async def test_property_read(mqtt_server):
     """Current Property values may be requested using the MQTT binding."""
 
     exposed_thing = next(mqtt_server.exposed_things)
@@ -162,40 +157,45 @@ def test_property_read(mqtt_server):
     prop = exposed_thing.thing.properties[prop_name]
     topic_read = build_topic(mqtt_server, prop, InteractionVerbs.READ_PROPERTY)
     topic_observe = build_topic(mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY)
+    prop_value = await exposed_thing.properties[prop_name].read()
 
-    observe_timeout_secs = 1.0
+    async with mqtt_client(topic_read) as client_read:
+        async with mqtt_client(topic_observe) as client_observe:
+            try:
+                async with client_observe.messages() as obs_msgs:
+                    logging.debug("Waiting for messages on topic: %s", topic_observe)
+                    obs_msg_aiter = obs_msgs.__aiter__()
+                    await asyncio.wait_for(obs_msg_aiter.__anext__(), timeout=1.0)
+                    raise AssertionError(
+                        "Unexpected message on topic {}".format(topic_observe)
+                    )
+            except asyncio.TimeoutError:
+                pass
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        prop_value = yield exposed_thing.properties[prop_name].read()
+            stop_event = asyncio.Event()
 
-        client_read = yield connect_broker(topic_read)
-        client_observe = yield connect_broker(topic_observe)
+            async def read_value():
+                while not stop_event.is_set():
+                    payload = json.dumps({"action": "read"}).encode()
+                    await client_read.publish(topic=topic_read, payload=payload, qos=2)
+                    await asyncio.sleep(0.05)
 
-        try:
-            yield client_observe.deliver_message(timeout=observe_timeout_secs)
-            raise AssertionError("Unexpected message on topic {}".format(topic_observe))
-        except TimeoutError:
-            pass
+            read_task = asyncio.create_task(read_value())
 
-        @tornado.gen.coroutine
-        def read_value():
-            payload = json.dumps({"action": "read"}).encode()
-            yield client_read.publish(topic_read, payload, qos=QOS_2)
+            async with client_observe.messages() as obs_msgs:
+                logging.debug("Waiting for messages on topic: %s", topic_observe)
+                async for msg in obs_msgs:
+                    read_result = msg
+                    break
 
-        periodic_read = tornado.ioloop.PeriodicCallback(read_value, 50)
-        periodic_read.start()
+            stop_event.set()
+            await read_task
 
-        msg = yield client_observe.deliver_message()
-
-        periodic_read.stop()
-
-        assert json.loads(msg.data.decode()).get("value") == prop_value
-
-    run_test_coroutine(test_coroutine)
+            assert json.loads(read_result.payload.decode()).get("value") == prop_value
 
 
-def test_property_write(mqtt_server):
+@pytest.mark.asyncio
+async def test_property_write(mqtt_server):
     """Property values may be updated using the MQTT binding."""
 
     exposed_thing = next(mqtt_server.exposed_things)
@@ -203,48 +203,47 @@ def test_property_write(mqtt_server):
     prop = exposed_thing.thing.properties[prop_name]
     topic_write = build_topic(mqtt_server, prop, InteractionVerbs.WRITE_PROPERTY)
     topic_observe = build_topic(mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY)
+    updated_value = Faker().sentence()
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        updated_value = Faker().sentence()
+    async with mqtt_client(topic_write) as client_write:
+        async with mqtt_client(topic_observe) as client_observe:
 
-        client_write = yield connect_broker(topic_write)
-        client_observe = yield connect_broker(topic_observe)
+            async def wait_for_update():
+                async with client_observe.messages() as obs_msgs:
+                    async for msg in obs_msgs:
+                        assert (
+                            json.loads(msg.payload.decode()).get("value")
+                            == updated_value
+                        )
+                        return True
 
-        future_observe = tornado.concurrent.Future()
+            task_wait_update = asyncio.create_task(wait_for_update())
+            stop_event = asyncio.Event()
 
-        @tornado.gen.coroutine
-        def resolve_future_on_update():
-            msg_observe = yield client_observe.deliver_message()
-            assert json.loads(msg_observe.data.decode()).get("value") == updated_value
-            future_observe.set_result(True)
+            async def publish_write():
+                while not stop_event.is_set():
+                    payload = json.dumps(
+                        {"action": "write", "value": updated_value}
+                    ).encode()
+                    await client_write.publish(
+                        topic=topic_write, payload=payload, qos=2
+                    )
+                    await asyncio.sleep(0.05)
 
-        tornado.ioloop.IOLoop.current().spawn_callback(resolve_future_on_update)
-
-        @tornado.gen.coroutine
-        def publish_write():
-            payload = json.dumps({"action": "write", "value": updated_value}).encode()
-            yield client_write.publish(topic_write, payload, qos=QOS_2)
-
-        periodic_write = tornado.ioloop.PeriodicCallback(publish_write, 50)
-        periodic_write.start()
-
-        yield future_observe
-
-        assert future_observe.result() is True
-
-        periodic_write.stop()
-
-    run_test_coroutine(test_coroutine)
+            task_write = asyncio.create_task(publish_write())
+            assert await task_wait_update is True
+            stop_event.set()
+            await task_write
 
 
 CALLBACK_MS = 50
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "mqtt_server", [{"property_callback_ms": CALLBACK_MS}], indirect=True
 )
-def test_property_add_remove(mqtt_server):
+async def test_property_add_remove(mqtt_server):
     """The MQTT binding reacts appropriately to Properties
     being added and removed from ExposedThings."""
 
@@ -264,82 +263,89 @@ def test_property_add_remove(mqtt_server):
     def del_prop(pname):
         exposed_thing.remove_property(pname)
 
-    @tornado.gen.coroutine
-    def is_prop_active(prop, timeout_secs=1.0):
+    async def is_prop_active(prop, tout=1.0):
         topic_observe = build_topic(
             mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY
         )
+
         topic_write = build_topic(mqtt_server, prop, InteractionVerbs.WRITE_PROPERTY)
 
-        client_observe = yield connect_broker(topic_observe)
-        client_write = yield connect_broker(topic_write)
+        async with mqtt_client(topic_write) as client_write:
+            async with mqtt_client(topic_observe) as client_observe:
+                value = Faker().pyint()
+                stop_event = asyncio.Event()
 
-        value = Faker().pyint()
+                async def publish_write():
+                    while not stop_event.is_set():
+                        payload = json.dumps(
+                            {"action": "write", "value": value}
+                        ).encode()
 
-        @tornado.gen.coroutine
-        def publish_write():
-            payload = json.dumps({"action": "write", "value": value}).encode()
-            yield client_write.publish(topic_write, payload, qos=QOS_0)
+                        await client_write.publish(
+                            topic=topic_write, payload=payload, qos=0
+                        )
 
-        write_interval = (timeout_secs / 4.0) * 1000.0
-        periodic_write = tornado.ioloop.PeriodicCallback(publish_write, write_interval)
-        periodic_write.start()
+                        logging.debug("Published: %s", payload)
+                        await asyncio.sleep(tout / 4.0)
 
-        try:
-            msg = yield client_observe.deliver_message(timeout=timeout_secs)
-            assert json.loads(msg.data.decode()).get("value") == value
-            raise tornado.gen.Return(True)
-        except TimeoutError:
-            raise tornado.gen.Return(False)
-        finally:
-            periodic_write.stop()
+                task_write = asyncio.create_task(publish_write())
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        sleep_secs = (CALLBACK_MS / 1000.0) * 4
+                try:
+                    async with client_observe.messages() as msgs:
+                        maiter = msgs.__aiter__()
+                        msg = await asyncio.wait_for(maiter.__anext__(), timeout=tout)
+                        logging.debug("Received: %s", msg.payload)
+                        assert json.loads(msg.payload.decode()).get("value") == value
+                        return True
+                except asyncio.TimeoutError:
+                    logging.debug("Timeout")
+                    return False
+                finally:
+                    stop_event.set()
+                    await task_write
 
-        prop_01_name = uuid.uuid4().hex
-        prop_02_name = uuid.uuid4().hex
-        prop_03_name = uuid.uuid4().hex
+    sleep_secs = (CALLBACK_MS / 1000.0) * 4
 
-        add_prop(prop_01_name)
-        add_prop(prop_02_name)
-        add_prop(prop_03_name)
+    prop_01_name = uuid.uuid4().hex
+    prop_02_name = uuid.uuid4().hex
+    prop_03_name = uuid.uuid4().hex
 
-        prop_01 = exposed_thing.thing.properties[prop_01_name]
-        prop_02 = exposed_thing.thing.properties[prop_02_name]
-        prop_03 = exposed_thing.thing.properties[prop_03_name]
+    add_prop(prop_01_name)
+    add_prop(prop_02_name)
+    add_prop(prop_03_name)
 
-        yield tornado.gen.sleep(sleep_secs)
+    prop_01 = exposed_thing.thing.properties[prop_01_name]
+    prop_02 = exposed_thing.thing.properties[prop_02_name]
+    prop_03 = exposed_thing.thing.properties[prop_03_name]
 
-        assert (yield is_prop_active(prop_01))
-        assert (yield is_prop_active(prop_02))
-        assert (yield is_prop_active(prop_03))
+    await asyncio.sleep(sleep_secs)
 
-        del_prop(prop_01_name)
+    assert await is_prop_active(prop_01)
+    assert await is_prop_active(prop_02)
+    assert await is_prop_active(prop_03)
 
-        assert not (yield is_prop_active(prop_01))
-        assert (yield is_prop_active(prop_02))
-        assert (yield is_prop_active(prop_03))
+    del_prop(prop_01_name)
 
-        del_prop(prop_03_name)
+    assert not (await is_prop_active(prop_01))
+    assert await is_prop_active(prop_02)
+    assert await is_prop_active(prop_03)
 
-        assert not (yield is_prop_active(prop_01))
-        assert (yield is_prop_active(prop_02))
-        assert not (yield is_prop_active(prop_03))
+    del_prop(prop_03_name)
 
-        add_prop(prop_01_name)
+    assert not (await is_prop_active(prop_01))
+    assert await is_prop_active(prop_02)
+    assert not (await is_prop_active(prop_03))
 
-        prop_01 = exposed_thing.thing.properties[prop_01_name]
+    add_prop(prop_01_name)
+    prop_01 = exposed_thing.thing.properties[prop_01_name]
 
-        assert (yield is_prop_active(prop_01))
-        assert (yield is_prop_active(prop_02))
-        assert not (yield is_prop_active(prop_03))
-
-    run_test_coroutine(test_coroutine)
+    assert await is_prop_active(prop_01)
+    assert await is_prop_active(prop_02)
+    assert not (await is_prop_active(prop_03))
 
 
-def test_observe_property_changes(mqtt_server):
+@pytest.mark.asyncio
+async def test_observe_property_changes(mqtt_server):
     """Property updates may be observed using the MQTT binding."""
 
     exposed_thing = next(mqtt_server.exposed_things)
@@ -347,65 +353,66 @@ def test_observe_property_changes(mqtt_server):
     prop = exposed_thing.thing.properties[prop_name]
     topic_observe = build_topic(mqtt_server, prop, InteractionVerbs.OBSERVE_PROPERTY)
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        client_observe = yield connect_broker(topic_observe)
-
+    async with mqtt_client(topic_observe) as client_observe:
         updated_value = Faker().sentence()
+        stop_event = asyncio.Event()
 
-        @tornado.gen.coroutine
-        def write_value():
-            yield exposed_thing.properties[prop_name].write(updated_value)
+        async def write_value():
+            while not stop_event.is_set():
+                await exposed_thing.properties[prop_name].write(updated_value)
+                await asyncio.sleep(0.05)
 
-        periodic_write = tornado.ioloop.PeriodicCallback(write_value, 50)
-        periodic_write.start()
+        task_write = asyncio.create_task(write_value())
 
-        msg = yield client_observe.deliver_message()
+        async with client_observe.messages() as obs_msgs:
+            async for msg in obs_msgs:
+                observe_result = msg
+                break
 
-        assert json.loads(msg.data.decode()).get("value") == updated_value
+        assert json.loads(observe_result.payload.decode()).get("value") == updated_value
 
-        periodic_write.stop()
+        stop_event.set()
+        await task_write
 
-    run_test_coroutine(test_coroutine)
 
-
-def test_observe_event(mqtt_server):
+@pytest.mark.asyncio
+async def test_observe_event(mqtt_server):
     """Events may be observed using the MQTT binding."""
 
     now_ms = int(time.time() * 1000)
-
     exposed_thing = next(mqtt_server.exposed_things)
     event_name = next(iter(exposed_thing.thing.events.keys()))
     event = exposed_thing.thing.events[event_name]
     topic = build_topic(mqtt_server, event, InteractionVerbs.SUBSCRIBE_EVENT)
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        client = yield connect_broker(topic)
-
+    async with mqtt_client(topic) as client:
         emitted_value = Faker().pyint()
+        stop_event = asyncio.Event()
 
-        @tornado.gen.coroutine
-        def emit_value():
-            yield exposed_thing.events[event_name].emit(emitted_value)
+        async def emit_value():
+            while not stop_event.is_set():
+                exposed_thing.events[event_name].emit(emitted_value)
+                await asyncio.sleep(0.05)
 
-        periodic_emit = tornado.ioloop.PeriodicCallback(emit_value, 50)
-        periodic_emit.start()
+        task_emit = asyncio.create_task(emit_value())
 
-        msg = yield client.deliver_message()
+        async with client.messages() as obs_msgs:
+            async for msg in obs_msgs:
+                event_result = msg
+                break
 
-        event_data = json.loads(msg.data.decode())
+        event_data = json.loads(event_result.payload.decode())
 
         assert event_data.get("name") == event_name
         assert event_data.get("data") == emitted_value
         assert event_data.get("timestamp") >= now_ms
 
-        periodic_emit.stop()
+        stop_event.set()
+        await task_emit
 
-    run_test_coroutine(test_coroutine)
 
-
-def test_action_invoke(mqtt_server):
+@pytest.mark.asyncio
+async def test_action_invoke(mqtt_server):
     """Actions can be invoked using the MQTT binding."""
 
     exposed_thing = next(mqtt_server.exposed_things)
@@ -415,36 +422,33 @@ def test_action_invoke(mqtt_server):
     topic_invoke = build_topic(mqtt_server, action, InteractionVerbs.INVOKE_ACTION)
     topic_result = ActionMQTTHandler.to_result_topic(topic_invoke)
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        client_invoke = yield connect_broker(topic_invoke)
-        client_result = yield connect_broker(topic_result)
+    async with mqtt_client(topic_invoke) as client_invoke:
+        async with mqtt_client(topic_result) as client_result:
+            data = {"id": uuid.uuid4().hex, "input": Faker().pyint()}
+            now_ms = int(time.time() * 1000)
 
-        data = {"id": uuid.uuid4().hex, "input": Faker().pyint()}
+            await client_invoke.publish(
+                topic=topic_invoke, payload=json.dumps(data).encode(), qos=2
+            )
 
-        now_ms = int(time.time() * 1000)
+            async with client_result.messages() as msgs:
+                async for msg in msgs:
+                    msg_data = json.loads(msg.payload.decode())
+                    break
 
-        yield client_invoke.publish(topic_invoke, json.dumps(data).encode(), qos=QOS_2)
-
-        msg = yield client_result.deliver_message()
-        msg_data = json.loads(msg.data.decode())
-
-        assert msg_data.get("id") == data.get("id")
-        assert msg_data.get("result") == "{:f}".format(data.get("input"))
-        assert msg_data.get("timestamp") >= now_ms
-
-    run_test_coroutine(test_coroutine)
+            assert msg_data.get("id") == data.get("id")
+            assert msg_data.get("result") == "{:f}".format(data.get("input"))
+            assert msg_data.get("timestamp") >= now_ms
 
 
-def test_action_invoke_error(mqtt_server):
+@pytest.mark.asyncio
+async def test_action_invoke_error(mqtt_server):
     """Action errors are handled appropriately by the MQTT binding."""
 
     exposed_thing = next(mqtt_server.exposed_things)
-
     action_name = uuid.uuid4().hex
     err_message = Faker().sentence()
 
-    # noinspection PyUnusedLocal
     def handler(parameters):
         raise TypeError(err_message)
 
@@ -459,65 +463,65 @@ def test_action_invoke_error(mqtt_server):
     topic_invoke = build_topic(mqtt_server, action, InteractionVerbs.INVOKE_ACTION)
     topic_result = ActionMQTTHandler.to_result_topic(topic_invoke)
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        client_invoke = yield connect_broker(topic_invoke)
-        client_result = yield connect_broker(topic_result)
+    async with mqtt_client(topic_invoke) as client_invoke:
+        async with mqtt_client(topic_result) as client_result:
+            data = {"id": uuid.uuid4().hex, "input": Faker().pyint()}
 
-        data = {"id": uuid.uuid4().hex, "input": Faker().pyint()}
+            await client_invoke.publish(
+                topic=topic_invoke, payload=json.dumps(data).encode(), qos=2
+            )
 
-        yield client_invoke.publish(topic_invoke, json.dumps(data).encode(), qos=QOS_2)
+            async with client_result.messages() as msgs:
+                async for msg in msgs:
+                    msg_data = json.loads(msg.payload.decode())
+                    break
 
-        msg = yield client_result.deliver_message()
-        msg_data = json.loads(msg.data.decode())
-
-        assert msg_data.get("id") == data.get("id")
-        assert msg_data.get("error") == err_message
-        assert msg_data.get("result", None) is None
-
-    run_test_coroutine(test_coroutine)
+            assert msg_data.get("id") == data.get("id")
+            assert msg_data.get("error") == err_message
+            assert msg_data.get("result", None) is None
 
 
-def test_action_invoke_parallel(mqtt_server):
+@pytest.mark.asyncio
+async def test_action_invoke_parallel(mqtt_server):
     """Multiple Actions can be invoked in parallel using the MQTT binding."""
 
     exposed_thing = next(mqtt_server.exposed_things)
     action_name = next(iter(exposed_thing.thing.actions.keys()))
     action = exposed_thing.thing.actions[action_name]
-
     topic_invoke = build_topic(mqtt_server, action, InteractionVerbs.INVOKE_ACTION)
     topic_result = ActionMQTTHandler.to_result_topic(topic_invoke)
-
     num_requests = 10
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        client_invoke = yield connect_broker(topic_invoke)
-        client_result = yield connect_broker(topic_result)
+    async with mqtt_client(topic_invoke) as client_invoke:
+        async with mqtt_client(topic_result) as client_result:
+            requests = []
 
-        requests = []
+            for _ in range(num_requests):
+                requests.append({"id": uuid.uuid4().hex, "input": Faker().pyint()})
 
-        for idx in range(num_requests):
-            requests.append({"id": uuid.uuid4().hex, "input": Faker().pyint()})
+            now_ms = int(time.time() * 1000)
 
-        now_ms = int(time.time() * 1000)
-
-        yield [
-            client_invoke.publish(
-                topic_invoke, json.dumps(requests[idx]).encode(), qos=QOS_2
-            )
-            for idx in range(num_requests)
-        ]
-
-        for idx in range(num_requests):
-            msg = yield client_result.deliver_message()
-            msg_data = json.loads(msg.data.decode())
-            expected = next(
-                item for item in requests if item.get("id") == msg_data.get("id")
+            await asyncio.gather(
+                *[
+                    client_invoke.publish(
+                        topic=topic_invoke,
+                        payload=json.dumps(requests[idx]).encode(),
+                        qos=2,
+                    )
+                    for idx in range(num_requests)
+                ]
             )
 
-            assert msg_data.get("id") == expected.get("id")
-            assert msg_data.get("result") == "{:f}".format(expected.get("input"))
-            assert msg_data.get("timestamp") >= now_ms
+            for _ in range(num_requests):
+                async with client_result.messages() as msgs:
+                    async for msg in msgs:
+                        msg_data = json.loads(msg.payload.decode())
+                        break
 
-    run_test_coroutine(test_coroutine)
+                expected = next(
+                    item for item in requests if item.get("id") == msg_data.get("id")
+                )
+
+                assert msg_data.get("id") == expected.get("id")
+                assert msg_data.get("result") == "{:f}".format(expected.get("input"))
+                assert msg_data.get("timestamp") >= now_ms

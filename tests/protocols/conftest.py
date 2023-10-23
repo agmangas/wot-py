@@ -7,10 +7,9 @@ import tempfile
 import uuid
 
 import pytest
-import tornado.gen
-import tornado.ioloop
 from faker import Faker
 from OpenSSL import crypto
+
 from tests.utils import find_free_port
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.ws.server import WebsocketServer
@@ -20,7 +19,7 @@ from wotpy.wot.td import ThingDescription
 
 
 @pytest.fixture
-def all_protocols_servient():
+async def all_protocols_servient():
     """Returns a Servient configured to use all available protocol bindings."""
 
     servient = Servient(catalogue_port=None)
@@ -35,47 +34,35 @@ def all_protocols_servient():
 
     if is_coap_supported():
         from wotpy.protocols.coap.server import CoAPServer
+
         coap_port = find_free_port()
         coap_server = CoAPServer(port=coap_port)
         servient.add_server(coap_server)
 
     if is_mqtt_supported():
-        from tests.protocols.mqtt.broker import (get_test_broker_url,
-                                                 is_test_broker_online)
+        from tests.protocols.mqtt.broker import (
+            get_test_broker_url,
+            is_test_broker_online_async,
+        )
         from wotpy.protocols.mqtt.server import MQTTServer
-        if is_test_broker_online():
+
+        if await is_test_broker_online_async():
             mqtt_server = MQTTServer(broker_url=get_test_broker_url())
             servient.add_server(mqtt_server)
 
-    @tornado.gen.coroutine
-    def start():
-        raise tornado.gen.Return((yield servient.start()))
-
-    wot = tornado.ioloop.IOLoop.current().run_sync(start)
+    wot = await servient.start()
 
     td_dict = {
         "id": uuid.uuid4().urn,
         "title": uuid.uuid4().hex,
-        "properties": {
-            uuid.uuid4().hex: {
-                "observable": True,
-                "type": "string"
-            }
-        }
+        "properties": {uuid.uuid4().hex: {"observable": True, "type": "string"}},
     }
 
     td = ThingDescription(td_dict)
-
     exposed_thing = wot.produce(td.to_str())
     exposed_thing.expose()
-
     yield servient
-
-    @tornado.gen.coroutine
-    def shutdown():
-        yield servient.shutdown()
-
-    tornado.ioloop.IOLoop.current().run_sync(shutdown)
+    await servient.shutdown()
 
 
 @pytest.fixture

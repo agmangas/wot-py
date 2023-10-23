@@ -5,7 +5,7 @@ try:
 
     coloredlogs.install(level=logging.DEBUG)
 
-    for logger_name in ["hbmqtt", "faker", "transitions.core"]:
+    for logger_name in ["faker", "transitions.core"]:
         logging.getLogger(logger_name).setLevel(logging.WARNING)
 except ImportError:
     pass

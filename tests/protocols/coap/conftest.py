@@ -71,7 +71,6 @@ def coap_server(request):
 
     server = CoAPServer(port=port, **request.param)
     server.add_exposed_thing(exposed_thing)
-    server.start()
 
     @tornado.gen.coroutine
     def start():
@@ -89,22 +88,16 @@ def coap_server(request):
 
 
 @pytest.fixture
-def coap_servient():
+async def coap_servient():
     """Returns a Servient that exposes a CoAP server and one ExposedThing."""
 
     from wotpy.protocols.coap.server import CoAPServer
 
     coap_port = find_free_port()
     the_coap_server = CoAPServer(port=coap_port)
-
     servient = Servient(catalogue_port=None)
     servient.add_server(the_coap_server)
-
-    @tornado.gen.coroutine
-    def start():
-        raise tornado.gen.Return((yield servient.start()))
-
-    wot = tornado.ioloop.IOLoop.current().run_sync(start)
+    wot = await servient.start()
 
     property_name_01 = uuid.uuid4().hex
     action_name_01 = uuid.uuid4().hex
@@ -124,21 +117,13 @@ def coap_servient():
     }
 
     td = ThingDescription(td_dict)
-
     exposed_thing = wot.produce(td.to_str())
     exposed_thing.expose()
 
-    @tornado.gen.coroutine
-    def action_handler(parameters):
+    async def action_handler(parameters):
         input_value = parameters.get("input")
-        raise tornado.gen.Return(int(input_value) * 2)
+        return int(input_value) * 2
 
     exposed_thing.set_action_handler(action_name_01, action_handler)
-
     yield servient
-
-    @tornado.gen.coroutine
-    def shutdown():
-        yield servient.shutdown()
-
-    tornado.ioloop.IOLoop.current().run_sync(shutdown)
+    await servient.shutdown()

@@ -40,8 +40,6 @@ if is_coap_supported():
 
 if is_mqtt_supported():
     install_requires.append("aiomqtt>=1.2,<2.0")
-    test_requires.append("hbmqtt>=0.9.4,<1.0")
-    test_requires.append("websockets>=8.0,<9.0")
 
 if is_dnssd_supported():
     install_requires.append("zeroconf>=0.30.0,<0.37.0")

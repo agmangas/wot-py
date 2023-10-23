@@ -82,22 +82,16 @@ def mqtt_server(request):
 
 
 @pytest.fixture
-def mqtt_servient():
+async def mqtt_servient():
     """Returns a Servient that exposes a CoAP server and one ExposedThing."""
 
     from tests.protocols.mqtt.broker import get_test_broker_url
     from wotpy.protocols.mqtt.server import MQTTServer
 
     server = MQTTServer(broker_url=get_test_broker_url())
-
     servient = Servient(catalogue_port=None)
     servient.add_server(server)
-
-    @tornado.gen.coroutine
-    def start():
-        raise tornado.gen.Return((yield servient.start()))
-
-    wot = tornado.ioloop.IOLoop.current().run_sync(start)
+    wot = await servient.start()
 
     property_name_01 = uuid.uuid4().hex
     action_name_01 = uuid.uuid4().hex
@@ -117,21 +111,15 @@ def mqtt_servient():
     }
 
     td = ThingDescription(td_dict)
-
     exposed_thing = wot.produce(td.to_str())
     exposed_thing.expose()
 
-    @tornado.gen.coroutine
-    def action_handler(parameters):
+    async def action_handler(parameters):
         input_value = parameters.get("input")
-        raise tornado.gen.Return(int(input_value) * 2)
+        return int(input_value) * 2
 
     exposed_thing.set_action_handler(action_name_01, action_handler)
 
     yield servient
 
-    @tornado.gen.coroutine
-    def shutdown():
-        yield servient.shutdown()
-
-    tornado.ioloop.IOLoop.current().run_sync(shutdown)
+    await servient.shutdown()

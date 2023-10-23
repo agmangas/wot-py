@@ -5,10 +5,8 @@ import asyncio
 import random
 import uuid
 
-import pytest
 import tornado.concurrent
 import tornado.gen
-import tornado.ioloop
 from faker import Faker
 from rx.concurrency import IOLoopScheduler
 
@@ -21,11 +19,10 @@ from wotpy.wot.dictionaries.interaction import (
 from wotpy.wot.td import ThingDescription
 
 
-def client_test_on_property_change(servient, protocol_client_cls):
+async def client_test_on_property_change_async(servient, protocol_client_cls):
     """Helper function to test observation of Property updates on bindings clients."""
 
     exposed_thing = next(servient.exposed_things)
-
     prop_name = uuid.uuid4().hex
 
     exposed_thing.add_property(
@@ -35,97 +32,89 @@ def client_test_on_property_change(servient, protocol_client_cls):
     )
 
     servient.refresh_forms()
-
     td = ThingDescription.from_thing(exposed_thing.thing)
+    protocol_client = protocol_client_cls()
+    values = [Faker().sentence() for _ in range(10)]
+    values_observed = {value: asyncio.Future() for value in values}
+    stop_event = asyncio.Event()
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        protocol_client = protocol_client_cls()
-
-        values = [Faker().sentence() for _ in range(10)]
-        values_observed = {value: tornado.concurrent.Future() for value in values}
-
-        @tornado.gen.coroutine
-        def write_next():
+    async def write_next():
+        while not stop_event.is_set():
             try:
                 next_value = next(
                     val for val, fut in values_observed.items() if not fut.done()
                 )
-                yield exposed_thing.properties[prop_name].write(next_value)
+                await exposed_thing.properties[prop_name].write(next_value)
+                await asyncio.sleep(0.01)
             except StopIteration:
                 pass
 
-        def on_next(ev):
-            prop_value = ev.data.value
-            if prop_value in values_observed and not values_observed[prop_value].done():
-                values_observed[prop_value].set_result(True)
+    def on_next(ev):
+        prop_value = ev.data.value
+        if prop_value in values_observed and not values_observed[prop_value].done():
+            values_observed[prop_value].set_result(True)
 
-        observable = protocol_client.on_property_change(td, prop_name)
+    observable = protocol_client.on_property_change(td, prop_name)
+    subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
+    task_write = asyncio.create_task(write_next())
+    await asyncio.gather(*list(values_observed.values()))
+    stop_event.set()
+    await task_write
+    subscription.dispose()
 
-        subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
 
-        periodic_emit = tornado.ioloop.PeriodicCallback(write_next, 10)
-        periodic_emit.start()
-
-        yield list(values_observed.values())
-
-        periodic_emit.stop()
-        subscription.dispose()
+def client_test_on_property_change(*args, **kwargs):
+    async def test_coroutine():
+        await client_test_on_property_change_async(*args, **kwargs)
 
     run_test_coroutine(test_coroutine)
 
 
-def client_test_on_event(servient, protocol_client_cls):
+async def client_test_on_event_async(servient, protocol_client_cls):
     """Helper function to test observation of Events on bindings clients."""
 
     exposed_thing = next(servient.exposed_things)
-
     event_name = uuid.uuid4().hex
-
     exposed_thing.add_event(event_name, EventFragmentDict({"type": "number"}))
-
     servient.refresh_forms()
-
     td = ThingDescription.from_thing(exposed_thing.thing)
+    protocol_client = protocol_client_cls()
+    payloads = [Faker().pyint() for _ in range(10)]
+    future_payloads = {key: asyncio.Future() for key in payloads}
+    stop_event = asyncio.Event()
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        protocol_client = protocol_client_cls()
-
-        payloads = [Faker().pyint() for _ in range(10)]
-        future_payloads = {key: tornado.concurrent.Future() for key in payloads}
-
-        @tornado.gen.coroutine
-        def emit_next():
+    async def emit_next():
+        while not stop_event.is_set():
             next_value = next(
                 val for val, fut in future_payloads.items() if not fut.done()
             )
             exposed_thing.events[event_name].emit(next_value)
+            await asyncio.sleep(0.01)
 
-        def on_next(ev):
-            if ev.data in future_payloads and not future_payloads[ev.data].done():
-                future_payloads[ev.data].set_result(True)
+    def on_next(ev):
+        if ev.data in future_payloads and not future_payloads[ev.data].done():
+            future_payloads[ev.data].set_result(True)
 
-        observable = protocol_client.on_event(td, event_name)
+    observable = protocol_client.on_event(td, event_name)
+    subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
+    task_emit = asyncio.create_task(emit_next())
+    await asyncio.gather(*list(future_payloads.values()))
+    stop_event.set()
+    await task_emit
+    subscription.dispose()
 
-        subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(on_next)
 
-        periodic_emit = tornado.ioloop.PeriodicCallback(emit_next, 10)
-        periodic_emit.start()
-
-        yield list(future_payloads.values())
-
-        periodic_emit.stop()
-        subscription.dispose()
+def client_test_on_event(*args, **kwargs):
+    async def test_coroutine():
+        await client_test_on_event_async(*args, **kwargs)
 
     run_test_coroutine(test_coroutine)
 
 
-def client_test_read_property(servient, protocol_client_cls, timeout=None):
+async def client_test_read_property_async(servient, protocol_client_cls, timeout=None):
     """Helper function to test Property reads on bindings clients."""
 
     exposed_thing = next(servient.exposed_things)
-
     prop_name = uuid.uuid4().hex
 
     exposed_thing.add_property(
@@ -135,36 +124,36 @@ def client_test_read_property(servient, protocol_client_cls, timeout=None):
     )
 
     servient.refresh_forms()
-
     td = ThingDescription.from_thing(exposed_thing.thing)
+    protocol_client = protocol_client_cls()
+    prop_value = Faker().sentence()
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        protocol_client = protocol_client_cls()
-        prop_value = Faker().sentence()
+    curr_prop_value = await protocol_client.read_property(
+        td, prop_name, timeout=timeout
+    )
 
-        curr_prop_value = yield protocol_client.read_property(
-            td, prop_name, timeout=timeout
-        )
+    assert curr_prop_value != prop_value
 
-        assert curr_prop_value != prop_value
+    await exposed_thing.properties[prop_name].write(prop_value)
 
-        yield exposed_thing.properties[prop_name].write(prop_value)
+    curr_prop_value = await protocol_client.read_property(
+        td, prop_name, timeout=timeout
+    )
 
-        curr_prop_value = yield protocol_client.read_property(
-            td, prop_name, timeout=timeout
-        )
+    assert curr_prop_value == prop_value
 
-        assert curr_prop_value == prop_value
+
+def client_test_read_property(*args, **kwargs):
+    async def test_coroutine():
+        await client_test_read_property_async(*args, **kwargs)
 
     run_test_coroutine(test_coroutine)
 
 
-def client_test_write_property(servient, protocol_client_cls, timeout=None):
+async def client_test_write_property_async(servient, protocol_client_cls, timeout=None):
     """Helper function to test Property writes on bindings clients."""
 
     exposed_thing = next(servient.exposed_things)
-
     prop_name = uuid.uuid4().hex
 
     exposed_thing.add_property(
@@ -174,31 +163,27 @@ def client_test_write_property(servient, protocol_client_cls, timeout=None):
     )
 
     servient.refresh_forms()
-
     td = ThingDescription.from_thing(exposed_thing.thing)
+    protocol_client = protocol_client_cls()
+    prop_value = Faker().sentence()
+    prev_value = await exposed_thing.properties[prop_name].read()
+    assert prev_value != prop_value
+    await protocol_client.write_property(td, prop_name, prop_value, timeout=timeout)
+    curr_value = await exposed_thing.properties[prop_name].read()
+    assert curr_value == prop_value
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        protocol_client = protocol_client_cls()
-        prop_value = Faker().sentence()
 
-        prev_value = yield exposed_thing.properties[prop_name].read()
-        assert prev_value != prop_value
-
-        yield protocol_client.write_property(td, prop_name, prop_value, timeout=timeout)
-
-        curr_value = yield exposed_thing.properties[prop_name].read()
-        assert curr_value == prop_value
+def client_test_write_property(*args, **kwargs):
+    async def test_coroutine():
+        await client_test_write_property_async(*args, **kwargs)
 
     run_test_coroutine(test_coroutine)
 
 
-@pytest.mark.asyncio
-async def client_test_invoke_action(servient, protocol_client_cls, timeout=None):
+async def client_test_invoke_action_async(servient, protocol_client_cls, timeout=None):
     """Helper function to test Action invocations on bindings clients."""
 
     exposed_thing = next(servient.exposed_things)
-
     action_name = uuid.uuid4().hex
 
     async def action_handler(parameters):
@@ -213,11 +198,8 @@ async def client_test_invoke_action(servient, protocol_client_cls, timeout=None)
     )
 
     servient.refresh_forms()
-
     td = ThingDescription.from_thing(exposed_thing.thing)
-
     protocol_client = protocol_client_cls()
-
     input_value = Faker().pyint()
 
     result = await protocol_client.invoke_action(
@@ -229,16 +211,20 @@ async def client_test_invoke_action(servient, protocol_client_cls, timeout=None)
     assert result == result_expected
 
 
-def client_test_invoke_action_error(servient, protocol_client_cls):
+def client_test_invoke_action(*args, **kwargs):
+    async def test_coroutine():
+        await client_test_invoke_action_async(*args, **kwargs)
+
+    run_test_coroutine(test_coroutine)
+
+
+async def client_test_invoke_action_error_async(servient, protocol_client_cls):
     """Helper function to test Action invocations that raise errors on bindings clients."""
 
     exposed_thing = next(servient.exposed_things)
-
     action_name = uuid.uuid4().hex
-
     err_message = Faker().sentence()
 
-    # noinspection PyUnusedLocal
     def action_handler(parameters):
         raise ValueError(err_message)
 
@@ -249,28 +235,28 @@ def client_test_invoke_action_error(servient, protocol_client_cls):
     )
 
     servient.refresh_forms()
-
     td = ThingDescription.from_thing(exposed_thing.thing)
+    protocol_client = protocol_client_cls()
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        protocol_client = protocol_client_cls()
+    try:
+        await protocol_client.invoke_action(td, action_name, Faker().pyint())
+        raise AssertionError("Did not raise Exception")
+    except Exception as ex:
+        assert err_message in str(ex)
 
-        try:
-            yield protocol_client.invoke_action(td, action_name, Faker().pyint())
-            raise AssertionError("Did not raise Exception")
-        except Exception as ex:
-            assert err_message in str(ex)
+
+def client_test_invoke_action_error(*args, **kwargs):
+    async def test_coroutine():
+        await client_test_invoke_action_error_async(*args, **kwargs)
 
     run_test_coroutine(test_coroutine)
 
 
-def client_test_on_property_change_error(servient, protocol_client_cls):
+async def client_test_on_property_change_error_async(servient, protocol_client_cls):
     """Helper function to test propagation of errors raised
     during observation of Property updates on bindings clients."""
 
     exposed_thing = next(servient.exposed_things)
-
     prop_name = uuid.uuid4().hex
 
     exposed_thing.add_property(
@@ -280,36 +266,31 @@ def client_test_on_property_change_error(servient, protocol_client_cls):
     )
 
     servient.refresh_forms()
-
     td = ThingDescription.from_thing(exposed_thing.thing)
+    protocol_client = protocol_client_cls()
+    await servient.shutdown()
+    future_err = asyncio.Future()
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        protocol_client = protocol_client_cls()
+    def on_next(item):
+        future_err.set_exception(Exception("Should not have emitted any items"))
 
-        yield servient.shutdown()
+    def on_error(err):
+        future_err.set_result(err)
 
-        future_err = tornado.concurrent.Future()
+    observable = protocol_client.on_property_change(td, prop_name)
+    subscribe_kwargs = {"on_next": on_next, "on_error": on_error}
 
-        # noinspection PyUnusedLocal
-        def on_next(item):
-            future_err.set_exception(Exception("Should not have emitted any items"))
+    subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(
+        **subscribe_kwargs
+    )
 
-        def on_error(err):
-            future_err.set_result(err)
+    observe_err = await future_err
+    assert isinstance(observe_err, Exception)
+    subscription.dispose()
 
-        observable = protocol_client.on_property_change(td, prop_name)
 
-        subscribe_kwargs = {"on_next": on_next, "on_error": on_error}
-
-        subscription = observable.subscribe_on(IOLoopScheduler()).subscribe(
-            **subscribe_kwargs
-        )
-
-        observe_err = yield future_err
-
-        assert isinstance(observe_err, Exception)
-
-        subscription.dispose()
+def client_test_on_property_change_error(*args, **kwargs):
+    async def test_coroutine():
+        await client_test_on_property_change_error_async(*args, **kwargs)
 
     run_test_coroutine(test_coroutine)

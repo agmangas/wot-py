@@ -37,7 +37,6 @@ async def aiomqtt_read_loop(
     client: aiomqtt.Client,
     anext_ex_handler: Callable[[Exception], Awaitable[Any]],
     message_handler: Callable[[aiomqtt.Message], Awaitable[Any]],
-    queue_wait_secs: float = 0.1,
 ):
     msgs_queue = asyncio.Queue()
 
@@ -54,13 +53,8 @@ async def aiomqtt_read_loop(
     async def consume_messages():
         try:
             while True:
-                try:
-                    message = await asyncio.wait_for(
-                        msgs_queue.get(), timeout=queue_wait_secs
-                    )
-                    await message_handler(message)
-                except asyncio.TimeoutError:
-                    pass
+                message = await msgs_queue.get()
+                await message_handler(message)
         except asyncio.CancelledError:
             pass
 

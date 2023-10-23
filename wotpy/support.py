@@ -89,16 +89,6 @@ def is_coap_supported():
 def is_mqtt_supported():
     """Returns True if the MQTT binding is supported in this platform."""
 
-    try:
-        # ToDo: Remove this after the tests are migrated to aiomqtt
-        # trunk-ignore(ruff/F401)
-        import hbmqtt.client
-    except ModuleNotFoundError:
-        pass
-    except Exception:
-        _logger.warning("Error importing hbmqtt: Disabling MQTT binding")
-        return False
-
     return is_supported(FEATURE_MQTT)
 
 

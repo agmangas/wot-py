@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
-import datetime
 import json
 
 import aiocoap
@@ -67,48 +66,44 @@ def _next_observation(request):
     raise tornado.gen.Return(val)
 
 
-def test_start_stop():
+@pytest.mark.asyncio
+async def test_start_stop():
     """The CoAP server can be started and stopped."""
 
     coap_port = find_free_port()
     coap_server = CoAPServer(port=coap_port)
     ping_uri = "coap://127.0.0.1:{}/.well-known/core".format(coap_port)
 
-    @tornado.gen.coroutine
-    def ping():
+    async def ping():
         try:
-            coap_client = yield aiocoap.Context.create_client_context()
+            coap_client = await aiocoap.Context.create_client_context()
             request_msg = aiocoap.Message(code=aiocoap.Code.GET, uri=ping_uri)
-            response = yield tornado.gen.with_timeout(
-                datetime.timedelta(seconds=2), coap_client.request(request_msg).response
+            response = await asyncio.wait_for(
+                coap_client.request(request_msg).response, timeout=2
             )
         except Exception:
-            raise tornado.gen.Return(False)
+            return False
 
-        raise tornado.gen.Return(response.code.is_successful())
+        return response.code.is_successful()
 
-    @tornado.gen.coroutine
-    def test_coroutine():
-        assert not (yield ping())
+    assert not (await ping())
 
-        yield coap_server.start()
+    await coap_server.start()
 
-        assert (yield ping())
-        assert (yield ping())
+    assert await ping()
+    assert await ping()
 
-        for _ in range(5):
-            yield coap_server.stop()
+    for _ in range(5):
+        await coap_server.stop()
 
-        assert not (yield ping())
+    assert not (await ping())
 
-        yield coap_server.stop()
+    await coap_server.stop()
 
-        for _ in range(5):
-            yield coap_server.start()
+    for _ in range(5):
+        await coap_server.start()
 
-        assert (yield ping())
-
-    run_test_coroutine(test_coroutine)
+    assert await ping()
 
 
 def test_property_read(coap_server):

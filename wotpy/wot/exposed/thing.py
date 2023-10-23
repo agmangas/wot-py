@@ -255,7 +255,12 @@ class ExposedThing(object):
             handler_type=self.HandlerKeys.INVOKE_ACTION, interaction=action
         )
 
-        result = await asyncio.wrap_future(handler({"input": input_value}))
+        fut = handler({"input": input_value})
+
+        try:
+            result = await asyncio.ensure_future(fut)
+        except TypeError:
+            result = await asyncio.wrap_future(fut)
 
         event_init = ActionInvocationEventInit(action_name=name, return_value=result)
         emitted_event = ActionInvocationEmittedEvent(init=event_init)
