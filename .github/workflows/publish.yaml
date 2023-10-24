@@ -1,0 +1,36 @@
+name: Publish to PyPI
+on:
+  push:
+    tags:
+      - "**"
+env:
+  PYPI_PROJECT_NAME: wotpy
+  PYTHON_VERSION: "3.9"
+jobs:
+  build-publish:
+    name: Build and publish PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/${{ env.PYPI_PROJECT_NAME }}
+    # trunk-ignore(checkov/CKV2_GHA_1)
+    permissions:
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3.5.3
+      - name: Setup Python
+        uses: actions/setup-python@v4.7.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip build
+          pip install -U .[tests]
+      - name: Build a binary wheel and a source tarball
+        run: python3 -m build
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.8.8
+        with:
+          skip-existing: true
+          verbose: true
