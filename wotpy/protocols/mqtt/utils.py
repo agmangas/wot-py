@@ -5,6 +5,8 @@ from typing import Any, Awaitable, Callable
 
 import aiomqtt
 
+_DEFAULT_MQTT_PORT = 1883
+
 
 @dataclass
 class MQTTBrokerURL:
@@ -16,14 +18,19 @@ class MQTTBrokerURL:
     @classmethod
     def from_url(cls, url):
         regex = re.compile(
-            r"^(mqtt[s]?):\/\/(?:(?P<user>[^:@]+)(?::(?P<password>[^@]+))?@)?(?P<host>[^:]+)(?::(?P<port>\d+))?$"
+            r"^(mqtt[s]?):\/\/(?:(?P<user>[^:@]+)(?::(?P<password>[^@]+))?@)?(?P<host>[^:]+)(?::(?P<port>\d+))?\/?$"
         )
 
         match = regex.match(url)
 
         if match:
             host = match.group("host")
-            port = int(match.group("port"))
+
+            try:
+                port = int(match.group("port"))
+            except TypeError:
+                port = _DEFAULT_MQTT_PORT
+
             username = match.group("user")
             password = match.group("password")
 
