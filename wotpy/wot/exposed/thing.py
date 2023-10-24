@@ -6,6 +6,7 @@ Classes that represent Things exposed by a servient.
 """
 
 import asyncio
+import concurrent.futures
 from asyncio import Future
 
 from rx import Observable
@@ -239,7 +240,12 @@ class ExposedThing(object):
         )
 
         if handler:
-            await asyncio.wrap_future(handler(value))
+            fut = handler(value)
+
+            if isinstance(fut, concurrent.futures.Future):
+                await asyncio.wrap_future(fut)
+            else:
+                await asyncio.ensure_future(fut)
         else:
             await self._default_update_property_handler(name, value)
 
@@ -257,10 +263,10 @@ class ExposedThing(object):
 
         fut = handler({"input": input_value})
 
-        try:
-            result = await asyncio.ensure_future(fut)
-        except TypeError:
+        if isinstance(fut, concurrent.futures.Future):
             result = await asyncio.wrap_future(fut)
+        else:
+            result = await asyncio.ensure_future(fut)
 
         event_init = ActionInvocationEventInit(action_name=name, return_value=result)
         emitted_event = ActionInvocationEmittedEvent(init=event_init)
