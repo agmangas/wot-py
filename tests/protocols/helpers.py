@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
+import logging
 import random
 import uuid
 
-import tornado.concurrent
-import tornado.gen
 from faker import Faker
 from rx.concurrency import IOLoopScheduler
 
@@ -41,10 +40,13 @@ async def client_test_on_property_change_async(servient, protocol_client_cls):
     async def write_next():
         while not stop_event.is_set():
             try:
-                next_value = next(
-                    val for val, fut in values_observed.items() if not fut.done()
-                )
-                await exposed_thing.properties[prop_name].write(next_value)
+                try:
+                    next_value = next(
+                        val for val, fut in values_observed.items() if not fut.done()
+                    )
+                    await exposed_thing.properties[prop_name].write(next_value)
+                except StopIteration:
+                    logging.warning("Unexpected StopIteration", exc_info=True)
                 await asyncio.sleep(0.01)
             except StopIteration:
                 pass
@@ -85,10 +87,13 @@ async def client_test_on_event_async(servient, protocol_client_cls):
 
     async def emit_next():
         while not stop_event.is_set():
-            next_value = next(
-                val for val, fut in future_payloads.items() if not fut.done()
-            )
-            exposed_thing.events[event_name].emit(next_value)
+            try:
+                next_value = next(
+                    val for val, fut in future_payloads.items() if not fut.done()
+                )
+                exposed_thing.events[event_name].emit(next_value)
+            except StopIteration:
+                logging.warning("Unexpected StopIteration", exc_info=True)
             await asyncio.sleep(0.01)
 
     def on_next(ev):
