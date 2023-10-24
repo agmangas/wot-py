@@ -1,88 +1,91 @@
-> :warning: Please note that this project is currently behind the current version of the W3C WoT specifications although **efforts are currently being made in order to bring this project back to date**.  
-This actualization is still in the very early stages of development, so you may encounter bugs. Documentation may also be incomplete. Keep this in mind if you are planning on using this implementation on ongoing projects.
-
-# WoTPy
-
-[![Tests](https://img.shields.io/github/workflow/status/agmangas/wot-py/testing?label=tests)](https://github.com/agmangas/wot-py/actions/workflows/test-wot-py.yaml)
-[![Coveralls](https://img.shields.io/coveralls/github/agmangas/wot-py)](https://coveralls.io/github/agmangas/wot-py)
-[![PyPI](https://img.shields.io/pypi/v/wotpy)](https://pypi.org/project/wotpy/)
+# wotpy
 
 ## Introduction
 
-WoTPy is an experimental implementation of a [W3C WoT Runtime](https://github.com/w3c/wot-architecture/blob/master/proposals/terminology.md#wot-runtime) and the [W3C WoT Scripting API](https://github.com/w3c/wot-architecture/blob/master/proposals/terminology.md#scripting-api) in Python.
+wotpy is an experimental implementation of a [W3C WoT Runtime](https://github.com/w3c/wot-architecture/blob/master/proposals/terminology.md#wot-runtime) and the [W3C WoT Scripting API](https://github.com/w3c/wot-architecture/blob/master/proposals/terminology.md#scripting-api) in Python.
 
 Inspired by the exploratory implementations located in the [thingweb GitHub page](https://github.com/thingweb).
 
+### About the current version
+
+The current version of the project has been updated in an effort to address stability and deprecation issues. The following changes have been made compared to [version `0.16.0`](https://pypi.org/project/wotpy/0.16.0/), which was released in 2019:
+
+* The project has been updated to support Python 3.7 and above. All support for Python 2 has been dropped.
+* The project has mostly dropped the Tornado coroutines syntax in favor of the `async`/`await` syntax.
+* The project has removed the dependency from the `hbmqtt` package in favor of `aiomqtt` due to the deprecation of the former.
+
+However, please note that there's still a **significant pending issue**. Although the project is currently in a reasonably stable state, it does not implement the current version of the W3C WoT specifications. Specifically, the version at the time of writing is based on the following **outdated** references:
+
+* K. Kajimoto, M. Kovatsch, and U. Davuluru, ‘Web of Things (WoT) Architecture’, W3C, W3C First Public Working Draft, Sep. 2017. [Online]. Available: https://www.w3.org/TR/2017/WD-wot-architecture-20170914/
+* Z. Kis, K. Nimura, D. Peintner, and J. Hund, ‘Web of Things (WoT) Scripting API’, W3C, W3C Working Draft, Nov. 2018. [Online]. Available: https://www.w3.org/TR/2018/WD-wot-scripting-api-20181129/
+* S. Käbisch and T. Kamiya, ‘Web of Things (WoT) Thing Description’, W3C, W3C Working Draft, Oct. 2018. [Online]. Available: https://www.w3.org/TR/2018/WD-wot-thing-description-20181021/
+
 ## Features
-- Supports Python 3 with versions >= 3.7
-> :exclamation: Python 2 support is being dropped as it's reached its EOL.
-- Fully-implemented `WoT` interface.
-- Multicast discovery based on mDNS.
-- Asynchronous I/O programming model based on coroutines.
-- Multiple client and server [Protocol Binding](https://github.com/w3c/wot-architecture/blob/master/proposals/terminology.md#protocol-binding) implementations.
 
-### Feature support matrix
+The wotpy project provides fully functional implementations of four different protocol bindings: MQTT, HTTP, WebSockets, and CoAP. Moreover, it offers a discovery implementation based on Multicast DNS. These bindings are built on top of the following dependencies, which are instrumental to the project:
 
-|            Feature |  Python 3           | Implementation based on                                                 |
-| -----------------: |  ------------------ | ----------------------------------------------------------------------- |
-|       HTTP binding |  :heavy_check_mark: | [tornadoweb/tornado](https://github.com/tornadoweb/tornado)             |
-| WebSockets binding |  :heavy_check_mark: | [tornadoweb/tornado](https://github.com/tornadoweb/tornado)             |
-|       CoAP binding |  :heavy_check_mark: | [chrysn/aiocoap](https://github.com/chrysn/aiocoap)                     |
-|       MQTT binding |  :warning: | [beerfactory/hbmqtt](https://github.com/beerfactory/hbmqtt)             |
-|     mDNS discovery |  :heavy_check_mark: | [jstasiak/python-zeroconf](https://github.com/jstasiak/python-zeroconf) |
-
-> :warning: Some of these features are not currently supported for all python versions since some of the dependecies are broken for versions higher than 3.7, such as `hbmqtt`.
-
-## Couroutine APIs
-> :warning: Tornado courutines will be replaced with the more up-to-date. [asyncio](https://docs.python.org/3/library/asyncio.html) module.
-
-WoTPy is based on the [Tornado Framework](https://www.tornadoweb.org). Users therefore have two different API options to write code based on coroutines:
-
-- Users on **Python 3** may use the native [asyncio](https://docs.python.org/3/library/asyncio.html) module. This is, in fact, the recommended approach. It should be noted that Tornado on Python 3 acts basically [as a wrapper](https://www.tornadoweb.org/en/stable/asyncio.html) around `asyncio`.
+|            Feature | Implementation based on                                                 |
+| -----------------: | ----------------------------------------------------------------------- |
+|       HTTP binding | [tornadoweb/tornado](https://github.com/tornadoweb/tornado)             |
+| WebSockets binding | [tornadoweb/tornado](https://github.com/tornadoweb/tornado)             |
+|       CoAP binding | [chrysn/aiocoap](https://github.com/chrysn/aiocoap)                     |
+|       MQTT binding | [sbtinstruments/aiomqtt](https://github.com/sbtinstruments/aiomqtt)     |
+|     mDNS discovery | [jstasiak/python-zeroconf](https://github.com/jstasiak/python-zeroconf) |
 
 ## Installation
-> :warning: For the moment, this is not the current version, and it won't be  until we have reached some stability in the development.
-```
+
+```console
 pip install wotpy
 ```
 
 ### Development
 
-To install in development mode with all the test dependencies:
+The development workflow of wotpy is based on [Taskfile](https://taskfile.dev/installation/), so that's the first thing you need to install.
 
-```
-pip install -U -e .[tests]
-```
+Then to create a virtualenv under `.venv`, and install the project in development mode with all the test dependencies, run:
 
-Some WoTPy features (e.g. CoAP binding) are not available outside of Linux. If you have Docker available in your system, and want to easily run the tests in a Linux environment (whether you're on macOS or Windows) you can use the Docker-based test script:
-
-```
-$ WOTPY_TESTS_MQTT_BROKER_URL=mqtt://192.168.1.141 ./pytest-docker-all.sh
-...
-+ docker run --rm -it -v /var/folders/zd/02pk7r3954s_t03lktjmvbdc0000gn/T/wotpy-547bed6bacf34ddc95b41eceb46553dd:/app -e WOTPY_TESTS_MQTT_BROKER_URL=mqtt://192.168.1.141 python:3.9 /bin/bash -c 'cd /app && pip install -U .[tests] && pytest -v --disable-warnings'
-...
-Python 3.7 :: OK
-Python 3.8 :: OK
-Python 3.9 :: OK
-Python 3.10 :: OK
-```
-`WOTPY_TESTS_MQTT_BROKER_URL` defines the url of the MQTT broker. It will listen to port `1883` by default. If your broker is set up in a different way, you can provide the port in the url as well.
-
-You can also test only for a specific Python version with the `PYTHON_TAG` variable and the `pytest-docker.sh` script like this:
-
-```
-$ WOTPY_TESTS_MQTT_BROKER_URL=mqtt://192.168.1.141 PYTHON_TAG=3.8 ./pytest-docker.sh
-```
-### Development in VSCode with devcontainers
-We have also provided a convenient `devcontainer` configuration to better recreate your local development environment. VSCode should detect it if you have the [Remote - Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension installed.
-
-## Docs
-> :warning: Untested for current changes.
-
-Move to the `docs` folder and run:
-
-```
-make html
+```console
+task venv
 ```
 
-If you attempt to build the docs on a non-Linux platform or with Python 2.7 `_autosummary` will complain about being unable to import the unsupported modules (e.g. MQTT on Python 2.7). In this case the docs will be missing the sections regarding unsupported features.
+Some wotpy features (e.g., the CoAP binding) are not available outside of Linux. If you have Docker installed on your system and want to run the tests in a Linux environment easily, you can use the Docker-based test task:
+
+```console
+PYTHON_TAG="3.9" task docker-tests
+task: [test-broker] docker run -d -p 1883:1883 --name wotpy_test_broker eclipse-mosquitto:1.6
+
+68bfef102faf3529427e5c7122f41d43490885c04f8a2d673a2c57b3afd68f72
+task: [docker-tests] echo "⚙️ Running tests for Python 3.9..."
+⚙️ Running tests for Python 3.9...
+task: [docker-tests] /Users/agmangas/Documents/Projects/wot-py/pytest-docker.sh
+Running python tests for version 3.9 with arguments "-v"
+Creating temporary container volume
+wotpy_tests_28b82c629b354b83a7fa22a9ed3d6dba
+Running test container. Environment setup will take a while.
++ docker run --rm -it -v wotpy_tests_28b82c629b354b83a7fa22a9ed3d6dba:/app -e WOTPY_TESTS_MQTT_BROKER_URL=mqtt://172.16.102.196:1883 python:3.9 /bin/bash -c 'cd /app && pip install --quiet -U .[tests] && pytest -v'
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+
+[notice] A new release of pip is available: 23.0.1 -> 23.3.1
+[notice] To update, run: pip install --upgrade pip
+================================================================================================================================================== test session starts ===================================================================================================================================================
+platform linux -- Python 3.9.18, pytest-7.4.2, pluggy-1.3.0 -- /usr/local/bin/python
+cachedir: .pytest_cache
+rootdir: /app
+configfile: pytest.ini
+plugins: asyncio-0.21.1, rerunfailures-10.3, Faker-13.16.0, cov-2.5.1
+asyncio: mode=strict
+collected 154 items
+
+tests/codecs/test_json.py::test_json_codec PASSED [  0%]
+tests/protocols/test_protocols.py::test_all_protocols_combined PASSED [  1%]
+
+[...]
+
+================================================================================================================================== 148 passed, 6 skipped, 1 warning in 60.70s (0:01:00) ==================================================================================================================================
++ set +x
+wotpy_tests_28b82c629b354b83a7fa22a9ed3d6dba
+task: [docker-tests] echo "✅ Tests for Python 3.9 completed successfully"
+✅ Tests for Python 3.9 completed successfully
+```
+
+An MQTT broker is needed as a dependency for the MQTT binding tests. The task will automatically create a new container based on the `eclipse-mosquitto` image and expose the broker port to the host. The `WOTPY_TESTS_MQTT_BROKER_URL` environment variable will be set to the broker URL.
