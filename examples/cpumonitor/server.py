@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """
 WoT application to expose a Thing that provides current host CPU usage levels.
 """
@@ -10,6 +7,7 @@ import json
 import logging
 import os
 
+import coloredlogs
 import psutil
 
 from wotpy.protocols.http.server import HTTPServer
@@ -17,16 +15,14 @@ from wotpy.protocols.mqtt.server import MQTTServer
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.wot.servient import Servient
 
-logging.basicConfig()
-LOGGER = logging.getLogger("sysmonitor")
-LOGGER.setLevel(logging.INFO)
-
 PORT_CATALOGUE = int(os.environ.get("PORT_CATALOGUE", 9090))
 PORT_WS = int(os.environ.get("PORT_WS", 9191))
 PORT_HTTP = int(os.environ.get("PORT_HTTP", 9292))
 MQTT_BROKER = os.environ.get("MQTT_BROKER", "mqtt://localhost")
 DEFAULT_CPU_THRESHOLD = float(os.environ.get("CPU_THRESHOLD", 50.0))
 DEFAULT_CPU_CHECK_SEC = float(os.environ.get("CPU_CHECK_SEC", 2.0))
+DEFAULT_CPU_UPDATE_SEC = float(os.environ.get("CPU_UPDATE_SEC", 1.0))
+HOSTNAME = os.environ.get("HOSTNAME", "localhost")
 
 DESCRIPTION = {
     "id": "urn:org:fundacionctic:thing:cpumonitor",
@@ -35,93 +31,88 @@ DESCRIPTION = {
         "cpuPercent": {
             "description": "Current CPU usage",
             "type": "number",
-            "readOnly": True,
-            "observable": True
+            "observable": True,
         },
         "cpuThreshold": {
             "description": "CPU usage alert threshold",
             "type": "number",
-            "observable": True
-        }
+            "observable": True,
+        },
     },
     "events": {
         "cpuAlert": {
             "description": "Alert raised when CPU usage goes over the threshold",
-            "data": {
-                "type": "number"
-            }
+            "data": {"type": "number"},
         }
-    }
+    },
 }
 
-
-async def cpu_percent_handler():
-    """Read handler for the cpuPercent property."""
-
-    return psutil.cpu_percent(interval=1)
+_logger = logging.getLogger("cpumonitor")
 
 
-def create_cpu_check_task(exposed_thing):
+async def cpu_percent_loop(exposed_thing):
+    _logger.info("Starting loop to update CPU usage")
+
+    while True:
+        cpu_value = psutil.cpu_percent()
+        await exposed_thing.properties["cpuPercent"].write(cpu_value)
+        await asyncio.sleep(DEFAULT_CPU_UPDATE_SEC)
+
+
+async def cpu_check_loop(exposed_thing):
     """Launches the task that periodically checks for excessive CPU usage."""
 
-    async def check_cpu_loop():
-        """Coroutine that periodically checks for CPU usage."""
+    _logger.info("Starting loop to check for excessive CPU usage")
 
-        while True:
-            cpu_threshold = await exposed_thing.properties["cpuThreshold"].read()
-            cpu_percent = await exposed_thing.properties["cpuPercent"].read()
+    while True:
+        cpu_threshold = await exposed_thing.properties["cpuThreshold"].read()
+        cpu_percent = await exposed_thing.properties["cpuPercent"].read()
 
-            LOGGER.info("Current CPU usage: {}%".format(cpu_percent))
+        if cpu_percent is not None:
+            _logger.info("Current CPU usage: {}%".format(cpu_percent))
 
-            if cpu_percent >= cpu_threshold:
-                LOGGER.info("Emitting CPU alert event")
-                exposed_thing.events["cpuAlert"].emit(cpu_percent)
+        if (
+            cpu_percent is not None
+            and cpu_threshold is not None
+            and cpu_percent >= cpu_threshold
+        ):
+            _logger.info("Emitting CPU alert event")
+            exposed_thing.events["cpuAlert"].emit(cpu_percent)
 
-            await asyncio.sleep(DEFAULT_CPU_CHECK_SEC)
-
-    event_loop = asyncio.get_event_loop()
-    event_loop.create_task(check_cpu_loop())
+        await asyncio.sleep(DEFAULT_CPU_CHECK_SEC)
 
 
 async def main():
     """Main entrypoint."""
 
-    LOGGER.info("Creating WebSocket server on: {}".format(PORT_WS))
-
+    _logger.info("Creating WebSocket server on: {}".format(PORT_WS))
     ws_server = WebsocketServer(port=PORT_WS)
 
-    LOGGER.info("Creating HTTP server on: {}".format(PORT_HTTP))
-
+    _logger.info("Creating HTTP server on: {}".format(PORT_HTTP))
     http_server = HTTPServer(port=PORT_HTTP)
 
-    LOGGER.info("Creating MQTT server on broker: {}".format(MQTT_BROKER))
-
+    _logger.info("Creating MQTT server on broker: {}".format(MQTT_BROKER))
     mqtt_server = MQTTServer(MQTT_BROKER)
 
-    LOGGER.info("Creating servient with TD catalogue on: {}".format(PORT_CATALOGUE))
-
-    servient = Servient(catalogue_port=PORT_CATALOGUE)
+    _logger.info("Creating servient with TD catalogue on: {}".format(PORT_CATALOGUE))
+    servient = Servient(catalogue_port=PORT_CATALOGUE, hostname=HOSTNAME)
     servient.add_server(ws_server)
     servient.add_server(http_server)
     servient.add_server(mqtt_server)
 
-    LOGGER.info("Starting servient")
-
+    _logger.info("Starting servient")
     wot = await servient.start()
 
-    LOGGER.info("Exposing System Monitor Thing")
-
+    _logger.info("Exposing System Monitor Thing")
     exposed_thing = wot.produce(json.dumps(DESCRIPTION))
-    exposed_thing.set_property_read_handler("cpuPercent", cpu_percent_handler)
-    exposed_thing.properties["cpuThreshold"].write(DEFAULT_CPU_THRESHOLD)
+    await exposed_thing.properties["cpuThreshold"].write(DEFAULT_CPU_THRESHOLD)
     exposed_thing.expose()
 
-    create_cpu_check_task(exposed_thing)
+    task_cpu_check = asyncio.create_task(cpu_check_loop(exposed_thing))
+    task_cpu_update = asyncio.create_task(cpu_percent_loop(exposed_thing))
+    await asyncio.gather(task_cpu_check, task_cpu_update)
 
 
 if __name__ == "__main__":
-    LOGGER.info("Starting loop")
-
-    loop = asyncio.get_event_loop()
-    loop.create_task(main())
-    loop.run_forever()
+    coloredlogs.install(level="DEBUG")
+    asyncio.run(main())

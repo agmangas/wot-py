@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """
 WoT client application that takes a Thing Description URL and
 subscribes to all observable properties and events in the consumed Thing.
@@ -10,12 +7,12 @@ import argparse
 import asyncio
 import logging
 
+import coloredlogs
+
 from wotpy.wot.servient import Servient
 from wotpy.wot.wot import WoT
 
-logging.basicConfig()
-LOGGER = logging.getLogger()
-LOGGER.setLevel(logging.INFO)
+_logger = logging.getLogger("wotsubscriber")
 
 
 async def main(td_url, sleep_time):
@@ -24,17 +21,20 @@ async def main(td_url, sleep_time):
     wot = WoT(servient=Servient())
     consumed_thing = await wot.consume_from_url(td_url)
 
-    LOGGER.info("ConsumedThing: {}".format(consumed_thing))
+    _logger.info("ConsumedThing: {}".format(consumed_thing))
 
     subscriptions = []
 
     def subscribe(intrct):
-        LOGGER.info("Subscribing to: {}".format(intrct))
+        _logger.info("Subscribing to: {}".format(intrct))
 
         sub = intrct.subscribe(
-            on_next=lambda item: LOGGER.info("{} :: Next :: {}".format(intrct, item)),
-            on_completed=lambda: LOGGER.info("{} :: Completed".format(intrct)),
-            on_error=lambda error: LOGGER.warning("{} :: Error :: {}".format(intrct, error)))
+            on_next=lambda item: _logger.info("{} :: Next :: {}".format(intrct, item)),
+            on_completed=lambda: _logger.info("{} :: Completed".format(intrct)),
+            on_error=lambda error: _logger.warning(
+                "{} :: Error :: {}".format(intrct, error)
+            ),
+        )
 
         subscriptions.append(sub)
 
@@ -48,15 +48,19 @@ async def main(td_url, sleep_time):
     await asyncio.sleep(sleep_time)
 
     for subscription in subscriptions:
-        LOGGER.info("Disposing: {}".format(subscription))
+        _logger.info("Disposing: {}".format(subscription))
         subscription.dispose()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Subscribes to all events and properties")
-    parser.add_argument('--url', required=True, help="Thing Description URL")
-    parser.add_argument('--time', default=120, type=int, help="Total subscription time (s)")
+    parser = argparse.ArgumentParser(
+        description="Subscribes to all events and properties"
+    )
+    parser.add_argument("--url", required=True, help="Thing Description URL")
+    parser.add_argument(
+        "--time", default=120, type=int, help="Total subscription time (s)"
+    )
     args = parser.parse_args()
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main(args.url, args.time))
+    coloredlogs.install(level="DEBUG")
+    asyncio.run(main(args.url, args.time))
