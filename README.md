@@ -8,7 +8,7 @@ Inspired by the exploratory implementations located in the [thingweb GitHub page
 
 ### About the current version
 
-The current version of the project has been updated in an effort to address stability and deprecation issues. The following changes have been made compared to [version `0.16.0`](https://pypi.org/project/wotpy/0.16.0/), which was released in 2019:
+The current version of the project has been updated in an effort to address stability and deprecation issues. The following changes have been made compared to [version `0.16.0`](https://pypi.org/project/wotpy/0.16.0/):
 
 * The project has been updated to support Python 3.7 and above. All support for Python 2 has been dropped.
 * The project has mostly dropped the Tornado coroutines syntax in favor of the `async`/`await` syntax.
