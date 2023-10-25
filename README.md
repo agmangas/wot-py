@@ -12,7 +12,7 @@ The current version of the project has been updated in an effort to address stab
 
 * The project has been updated to support Python 3.7 and above. All support for Python 2 has been dropped.
 * The project has mostly dropped the Tornado coroutines syntax in favor of the `async`/`await` syntax.
-* The project has removed the dependency from the `hbmqtt` package in favor of `aiomqtt` due to the deprecation of the former.
+* The project has removed the dependency from the [`hbmqtt`](https://github.com/beerfactory/hbmqtt) package in favor of [`aiomqtt`](https://github.com/sbtinstruments/aiomqtt) due to the deprecation of the former.
 
 However, please note that there's still a **significant pending issue**. Although the project is currently in a reasonably stable state, it does not implement the current version of the W3C WoT specifications. Specifically, the version at the time of writing is based on the following **outdated** references:
 
@@ -20,9 +20,15 @@ However, please note that there's still a **significant pending issue**. Althoug
 * Z. Kis, K. Nimura, D. Peintner, and J. Hund, ‘Web of Things (WoT) Scripting API’, W3C, W3C Working Draft, Nov. 2018. [Online]. Available: https://www.w3.org/TR/2018/WD-wot-scripting-api-20181129/
 * S. Käbisch and T. Kamiya, ‘Web of Things (WoT) Thing Description’, W3C, W3C Working Draft, Oct. 2018. [Online]. Available: https://www.w3.org/TR/2018/WD-wot-thing-description-20181021/
 
+> ℹ️ It is in our plans to get wotpy up to speed with the latest version of the specifications. We don't have an ETA for this, but we will be working on it in the near future.
+
+In summary, wotpy is mature enough to be used in projects; in fact, it is being used in production at [CTIC](https://github.com/fundacionctic). However, it is not an adequate representation of the current status of the W3C WoT. We greatly encourage you to check the [Developer Resources section on the WoT website](https://www.w3.org/WoT/developers) to find out about the current state of the art.
+
 ## Features
 
-The wotpy project provides fully functional implementations of four different protocol bindings: MQTT, HTTP, WebSockets, and CoAP. Moreover, it offers a discovery implementation based on Multicast DNS. These bindings are built on top of the following dependencies, which are instrumental to the project:
+The wotpy project provides fully functional implementations of four different protocol bindings: MQTT, HTTP, WebSockets, and CoAP. Moreover, it offers a discovery implementation based on Multicast DNS.
+
+These bindings are built on top of the following dependencies, which are instrumental to the project:
 
 |            Feature | Implementation based on                                                 |
 | -----------------: | ----------------------------------------------------------------------- |
@@ -42,7 +48,7 @@ pip install wotpy
 
 The development workflow of wotpy is based on [Taskfile](https://taskfile.dev/installation/), so that's the first thing you need to install.
 
-Then to create a virtualenv under `.venv`, and install the project in development mode with all the test dependencies, run:
+Then, to create a virtual environment under `.venv`, and install the project in development mode with all the test dependencies, run:
 
 ```console
 task venv
@@ -51,7 +57,7 @@ task venv
 Some wotpy features (e.g., the CoAP binding) are not available outside of Linux. If you have Docker installed on your system and want to run the tests in a Linux environment easily, you can use the Docker-based test task:
 
 ```console
-PYTHON_TAG="3.9" task docker-tests
+$ PYTHON_TAG="3.9" task docker-tests
 task: [test-broker] docker run -d -p 1883:1883 --name wotpy_test_broker eclipse-mosquitto:1.6
 
 68bfef102faf3529427e5c7122f41d43490885c04f8a2d673a2c57b3afd68f72
@@ -88,4 +94,4 @@ task: [docker-tests] echo "✅ Tests for Python 3.9 completed successfully"
 ✅ Tests for Python 3.9 completed successfully
 ```
 
-An MQTT broker is needed as a dependency for the MQTT binding tests. The task will automatically create a new container based on the `eclipse-mosquitto` image and expose the broker port to the host. The `WOTPY_TESTS_MQTT_BROKER_URL` environment variable will be set to the broker URL.
+An MQTT broker is needed as a dependency for the MQTT binding tests. The task will automatically create a new container based on the [eclipse-mosquitto image](https://hub.docker.com/_/eclipse-mosquitto) and expose the broker port to the host. The `WOTPY_TESTS_MQTT_BROKER_URL` environment variable will be set to the broker URL.
