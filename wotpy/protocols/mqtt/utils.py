@@ -49,13 +49,15 @@ async def aiomqtt_read_loop(
 
     async def produce_messages():
         try:
-            async with client.messages() as messages:
-                async for message in messages:
-                    await msgs_queue.put(message)
+            while not stop_event.is_set():
+                try:
+                    async with client.messages() as messages:
+                        async for message in messages:
+                            await msgs_queue.put(message)
+                except Exception as ex:
+                    await anext_ex_handler(ex)
         except asyncio.CancelledError:
             pass
-        except Exception as ex:
-            await anext_ex_handler(ex)
 
     async def consume_messages():
         try:
