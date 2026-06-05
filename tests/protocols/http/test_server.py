@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import datetime
+
 # Copyright (c) 2018 CTIC Centro Tecnologico
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -22,6 +22,7 @@ import datetime
 #
 # SPDX-License-Identifier: MIT
 
+import datetime
 import json
 import random
 import ssl
