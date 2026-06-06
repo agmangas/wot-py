@@ -10,7 +10,7 @@ Inspired by the exploratory implementations located in the [thingweb GitHub page
 
 The current version of the project has been updated in an effort to address stability and deprecation issues. The following changes have been made compared to [version `0.16.0`](https://pypi.org/project/wotpy/0.16.0/):
 
-* The project has been updated to support Python 3.7 and above. All support for Python 2 has been dropped.
+* The project has been updated to support Python 3.8 and above. All support for Python 2 has been dropped.
 * The project has mostly dropped the Tornado coroutines syntax in favor of the `async`/`await` syntax.
 * The project has removed the dependency from the [`hbmqtt`](https://github.com/beerfactory/hbmqtt) package in favor of [`aiomqtt`](https://github.com/sbtinstruments/aiomqtt) due to the deprecation of the former.
 

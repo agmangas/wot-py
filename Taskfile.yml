@@ -46,7 +46,7 @@ tasks:
     desc: Run the tests in a Docker container
     vars:
       PYTEST_ARGS_DEFAULT: -v
-      PYTHON_TAG: "{{default 3.7 .PYTHON_TAG}}"
+      PYTHON_TAG: "{{default 3.8 .PYTHON_TAG}}"
       PYTEST_ARGS: "{{default .PYTEST_ARGS_DEFAULT .PYTEST_ARGS}}"
     env:
       PYTHON_TAG: "{{.PYTHON_TAG}}"
@@ -59,7 +59,7 @@ tasks:
   docker-tests-all:
     desc: Run the tests in a Docker container for all Python versions
     cmds:
-      - for: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+      - for: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         task: docker-tests
         vars:
           PYTHON_TAG: "{{.ITEM}}"
