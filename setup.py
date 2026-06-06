@@ -16,7 +16,7 @@ install_requires = [
 ]
 
 test_requires = [
-    "pytest>=6.2.5",
+    "pytest>=6.2.5,<9.0",
     "pytest-asyncio==0.21.1",
     "pytest-cov>=2.5.1,<2.6.0",
     "pytest-rerunfailures>=10.2,<11.0",
