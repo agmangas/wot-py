@@ -12,6 +12,8 @@
 
 wotpy is an implementation of a [W3C WoT Runtime](https://github.com/w3c/wot-architecture/blob/master/proposals/terminology.md#wot-runtime) and the [W3C WoT Scripting API](https://github.com/w3c/wot-architecture/blob/master/proposals/terminology.md#scripting-api) in Python.
 
+You can find the documentation at <https://eclipse-thingweb.github.io/wot-py/>.
+
 ### About the current version
 
 The current version of the project has been updated in an effort to address stability and deprecation issues. The following changes have been made compared to [version `0.16.0`](https://pypi.org/project/wotpy/0.16.0/):
