@@ -1,10 +1,18 @@
-# wotpy
+<h1>
+  <picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/eclipse-thingweb/thingweb/master/brand/logos/wotpy_for_dark_bg.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/eclipse-thingweb/thingweb/master/brand/logos/wotpy.svg">
+  <img title="ThingWeb wotpy" alt="Thingweb wotpy logo" src="https://raw.githubusercontent.com/eclipse-thingweb/thingweb/master/brand/logos/wotpy.svg" width="300">
+</picture>
+</h1>
+
+> A WoT runtime in Python for Thing and Consumer applications
 
 ## Introduction
 
-wotpy is an experimental implementation of a [W3C WoT Runtime](https://github.com/w3c/wot-architecture/blob/master/proposals/terminology.md#wot-runtime) and the [W3C WoT Scripting API](https://github.com/w3c/wot-architecture/blob/master/proposals/terminology.md#scripting-api) in Python.
+wotpy is an implementation of a [W3C WoT Runtime](https://github.com/w3c/wot-architecture/blob/master/proposals/terminology.md#wot-runtime) and the [W3C WoT Scripting API](https://github.com/w3c/wot-architecture/blob/master/proposals/terminology.md#scripting-api) in Python.
 
-Inspired by the exploratory implementations located in the [thingweb GitHub page](https://github.com/thingweb).
+You can find the documentation at <https://eclipse-thingweb.github.io/wot-py/>.
 
 ### About the current version
 
