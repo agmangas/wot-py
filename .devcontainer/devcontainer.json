@@ -3,7 +3,7 @@
 {
 	"name": "Python 3",
 	"dockerComposeFile": "docker-compose.devcontainer.yml",
-	"service": "wot-py",
+	"service": "wotpy",
 	"workspaceFolder": "/workspace",
 	"shutdownAction": "stopCompose",
 

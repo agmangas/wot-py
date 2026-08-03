@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -41,13 +42,14 @@ class WebsocketServer(BaseProtocolServer):
     """WebSockets binding server implementation. Builds a Tornado application
     that uses the WebsocketHandler handler to process WebSockets messages."""
 
-    DEFAULT_PORT = 81
+    DEFAULT_PORT = 8081
 
     def __init__(self, port=DEFAULT_PORT, ssl_context=None):
-        super(WebsocketServer, self).__init__(port=port)
+        super().__init__(port=port)
         self._server = None
         self._app = self._build_app()
         self._ssl_context = ssl_context
+        self._servient = None
 
     @property
     def protocol(self):
@@ -77,9 +79,11 @@ class WebsocketServer(BaseProtocolServer):
     def _build_app(self):
         """Builds and returns the Tornado application for the WebSockets server."""
 
-        return web.Application(
-            [(r"/(?P<name>[^\/]+)", WebsocketHandler, {"websocket_server": self})]
-        )
+        return web.Application([(
+            r"/(?P<name>[^\/]+)",
+            WebsocketHandler,
+            {"websocket_server": self}
+        )])
 
     def build_forms(self, hostname, interaction):
         """Builds and returns a list with all Form that are
@@ -97,22 +101,24 @@ class WebsocketServer(BaseProtocolServer):
                 interaction=interaction,
                 protocol=self.protocol,
                 href=base_url,
-                content_type=MediaTypes.JSON,
+                content_type=MediaTypes.JSON
             )
         ]
 
     def build_base_url(self, hostname, thing):
         """Returns the base URL for the given Thing in the context of this server."""
 
-        if not self.exposed_thing_set.find_by_thing_id(thing.id):
+        if not self.exposed_thing_set.find_by_thing_title(thing.title):
             raise ValueError("Unknown Thing")
 
         hostname = hostname.rstrip("/")
 
         return "{}://{}:{}/{}".format(self.scheme, hostname, self.port, thing.url_name)
 
-    async def start(self):
+    async def start(self, servient=None):
         """Starts the WebSockets server."""
+
+        self._servient = servient
 
         self._server = HTTPServer(self.app, ssl_options=self._ssl_context)
         self._server.listen(self.port)

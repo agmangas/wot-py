@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -28,8 +29,9 @@ Classes that represent Interaction instances accessed on a ConsumedThing.
 
 from collections import UserDict
 
-from rx.concurrency import IOLoopScheduler
+from reactivex.scheduler.eventloop import IOLoopScheduler
 from slugify import slugify
+from tornado import ioloop
 
 
 class ConsumedThingInteractionDict(UserDict):
@@ -50,7 +52,7 @@ class ConsumedThingInteractionDict(UserDict):
                 for key in self.interaction_dict.keys()
                 if slugify(key) == slugify(name)
             ),
-            None,
+            None
         )
 
     def __getitem__(self, name):
@@ -126,7 +128,7 @@ class ConsumedThingEventDict(ConsumedThingInteractionDict):
         return ConsumedThingEvent
 
 
-class ConsumedThingProperty(object):
+class ConsumedThingProperty:
     """The ThingProperty interface implementation for ConsumedThing objects."""
 
     def __init__(self, consumed_thing, name):
@@ -173,10 +175,14 @@ class ConsumedThingProperty(object):
             self._name, client_kwargs=client_kwargs
         )
 
-        return observable.subscribe_on(IOLoopScheduler()).subscribe(*args, **kwargs)
+        loop = ioloop.IOLoop.current()        
+        scheduler = IOLoopScheduler(loop)
+        kwargs["scheduler"] = scheduler
+
+        return observable.subscribe(*args, **kwargs)
 
 
-class ConsumedThingAction(object):
+class ConsumedThingAction:
     """The ThingAction interface implementation for ConsumedThing objects."""
 
     def __init__(self, consumed_thing, name):
@@ -209,7 +215,7 @@ class ConsumedThingAction(object):
         return result
 
 
-class ConsumedThingEvent(object):
+class ConsumedThingEvent:
     """The ThingEvent interface implementation for ConsumedThing objects."""
 
     def __init__(self, consumed_thing, name):
@@ -236,4 +242,8 @@ class ConsumedThingEvent(object):
             self._name, client_kwargs=client_kwargs
         )
 
-        return observable.subscribe_on(IOLoopScheduler()).subscribe(*args, **kwargs)
+        loop = ioloop.IOLoop.current()
+        scheduler = IOLoopScheduler(loop)
+        kwargs["scheduler"] = scheduler
+
+        return observable.subscribe(*args, **kwargs)

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -28,11 +29,11 @@ MQTT Protocol Binding implementation.
 .. autosummary::
     :toctree: _mqtt
 
-    wotpy.protocols.mqtt.handlers
-    wotpy.protocols.mqtt.client
-    wotpy.protocols.mqtt.enums
-    wotpy.protocols.mqtt.runner
-    wotpy.protocols.mqtt.server
+    handlers
+    client
+    enums
+    runner
+    server
 """
 
 from wotpy.support import is_mqtt_supported

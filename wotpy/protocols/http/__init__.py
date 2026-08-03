@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -28,8 +29,10 @@ HTTP Protocol Binding implementation.
 .. autosummary::
     :toctree: _http
 
-    wotpy.protocols.http.handlers
-    wotpy.protocols.http.client
-    wotpy.protocols.http.enums
-    wotpy.protocols.http.server
+    handlers
+    authenticator
+    client
+    credential
+    enums
+    server
 """

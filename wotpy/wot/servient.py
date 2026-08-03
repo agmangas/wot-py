@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -32,11 +33,11 @@ import re
 import socket
 
 import tornado.web
-
 from wotpy.protocols.enums import Protocols
 from wotpy.protocols.http.client import HTTPClient
 from wotpy.protocols.ws.client import WebsocketClient
-from wotpy.support import is_coap_supported, is_dnssd_supported, is_mqtt_supported
+from wotpy.protocols.zenoh.client import ZenohClient
+from wotpy.support import (is_coap_supported, is_mqtt_supported)
 from wotpy.utils.utils import get_main_ipv4_address
 from wotpy.wot.enums import InteractionTypes
 from wotpy.wot.exposed.thing_set import ExposedThingSet
@@ -51,7 +52,7 @@ class TDHandler(tornado.web.RequestHandler):
         self.servient = servient
 
     def get(self, thing_url_name):
-        exp_thing = self.servient.exposed_thing_set.find_by_thing_id(thing_url_name)
+        exp_thing = self.servient.exposed_thing_set.find_by_thing_title(thing_url_name)
 
         td_doc = ThingDescription.from_thing(exp_thing.thing).to_dict()
         base_url = self.servient.get_thing_base_url(exp_thing)
@@ -73,7 +74,7 @@ class TDCatalogueHandler(tornado.web.RequestHandler):
         response = {}
 
         for exp_thing in self.servient.enabled_exposed_things:
-            thing_id = exp_thing.thing.id
+            thing_title = exp_thing.thing.title
 
             if self.get_argument("expanded", False):
                 val = ThingDescription.from_thing(exp_thing.thing).to_dict()
@@ -81,7 +82,7 @@ class TDCatalogueHandler(tornado.web.RequestHandler):
             else:
                 val = "/{}".format(exp_thing.thing.url_name)
 
-            response[thing_id] = val
+            response[thing_title] = val
 
         self.write(response)
 
@@ -117,15 +118,14 @@ _REGEX_ARPA = r".*\.(ip6|in-addr)\.arpa$"
 def _get_hostname_fallback():
     """Tries to guess the hostname of the current host that should be used on TD Forms.
     Two strategies are used for this: First, the socket.getfqdn() method. If the returned
-    value is not a FQDN then we try to get the IPv4 address of the main network interface.
-    """
+    value is not a FQDN then we try to get the IPv4 address of the main network interface."""
 
     fqdn = socket.getfqdn()
     valid_fqdn = fqdn and not re.search(_REGEX_ARPA, fqdn)
     return fqdn if valid_fqdn else get_main_ipv4_address()
 
 
-class Servient(object):
+class Servient:
     """An entity that is both a WoT client and server at the same time.
     WoT servers are Web servers that possess capabilities to access underlying
     IoT devices and expose a public interface named the WoT Interface that may
@@ -140,8 +140,7 @@ class Servient(object):
         catalogue_port=9090,
         clients=None,
         clients_config=None,
-        dnssd_enabled=False,
-        dnssd_instance_name=None,
+        create_default_forms=True
     ):
         self._hostname = hostname if hostname is not None else _get_hostname_fallback()
 
@@ -159,14 +158,10 @@ class Servient(object):
         self._exposed_thing_set = ExposedThingSet()
         self._servient_lock = asyncio.Lock()
         self._is_running = False
-
-        self._dnssd_enabled = (
-            dnssd_enabled if dnssd_enabled and is_dnssd_supported() else False
-        )
-
-        self._dnssd_instance_name = dnssd_instance_name
-        self._dnssd = None
-        self._enabled_exposed_thing_ids = set()
+        self._create_default_forms = create_default_forms
+        self._enabled_exposed_thing_titles = set()
+        self._access_tokens = {}
+        self._credential_store = {}
 
         if not len(self._clients):
             self._build_default_clients()
@@ -178,35 +173,37 @@ class Servient(object):
 
         protocol_preference_map = {
             InteractionTypes.PROPERTY: [
+                Protocols.MQTT,
+                Protocols.ZENOH,
                 Protocols.HTTP,
                 Protocols.COAP,
                 Protocols.WEBSOCKETS,
-                Protocols.MQTT,
             ],
             InteractionTypes.ACTION: [
+                Protocols.HTTP,
                 Protocols.WEBSOCKETS,
                 Protocols.MQTT,
-                Protocols.COAP,
-                Protocols.HTTP,
+                Protocols.ZENOH,
+                Protocols.COAP
             ],
             InteractionTypes.EVENT: [
                 Protocols.WEBSOCKETS,
                 Protocols.MQTT,
+                Protocols.ZENOH,
                 Protocols.COAP,
-                Protocols.HTTP,
-            ],
+                Protocols.HTTP
+            ]
         }
 
         supported_protocols = [
-            client.protocol
-            for client in clients
+            client.protocol for client in clients
             if client.is_supported_interaction(td, name)
         ]
 
         intrct_names = {
             InteractionTypes.PROPERTY: td.properties.keys(),
             InteractionTypes.ACTION: td.actions.keys(),
-            InteractionTypes.EVENT: td.events.keys(),
+            InteractionTypes.EVENT: td.events.keys()
         }
 
         try:
@@ -257,7 +254,7 @@ class Servient(object):
         """Returns an iterator for the enabled ExposedThings contained in this Servient."""
 
         for exposed_thing in self.exposed_things:
-            if exposed_thing.id in self._enabled_exposed_thing_ids:
+            if exposed_thing.title in self._enabled_exposed_thing_titles:
                 yield exposed_thing
 
     @property
@@ -285,40 +282,6 @@ class Servient(object):
 
         self._catalogue_port = port
 
-    @property
-    def dnssd(self):
-        """Returns the DNS-SD instance linked to this Servient (if enabled and started)."""
-
-        return self._dnssd
-
-    @property
-    def dnssd_instance_name(self):
-        """Returns the user-given DNS-SD service instance name."""
-
-        return self._dnssd_instance_name
-
-    async def _start_dnssd(self):
-        """Starts the DNS-SD service and registers the servient."""
-
-        if self._dnssd or not self._dnssd_enabled:
-            return
-
-        from wotpy.wot.discovery.dnssd.service import DNSSDDiscoveryService
-
-        self._dnssd = DNSSDDiscoveryService()
-
-        await self._dnssd.start()
-        await self._dnssd.register(self, instance_name=self._dnssd_instance_name)
-
-    async def _stop_dnssd(self):
-        """Unregisters the servient and stops the DNS-SD service."""
-
-        if not self._dnssd:
-            return
-
-        await self._dnssd.stop()
-        self._dnssd = None
-
     def _build_default_clients(self):
         """Builds the default Protocol Binding clients."""
 
@@ -332,6 +295,7 @@ class Servient(object):
                     **conf.get(Protocols.WEBSOCKETS, {})
                 ),
                 Protocols.HTTP: HTTPClient(**conf.get(Protocols.HTTP, {})),
+                Protocols.ZENOH: ZenohClient(**conf.get(Protocols.ZENOH, {}))
             }
         )
 
@@ -356,7 +320,7 @@ class Servient(object):
         return tornado.web.Application(
             [
                 (r"/", TDCatalogueHandler, dict(servient=self)),
-                (r"/(?P<thing_url_name>[^\/]+)", TDHandler, dict(servient=self)),
+                (r"/(?P<thing_url_name>[^\/]+)", TDHandler, dict(servient=self))
             ]
         )
 
@@ -379,25 +343,24 @@ class Servient(object):
         self._catalogue_server = None
 
     def _clean_forms(self):
-        """Cleans all the Forms from all the ExposedThings contained in this Servient."""
+        """Cleans all the autogenerated Forms from all the ExposedThings
+        contained in this Servient."""
 
         for exposed_thing in self._exposed_thing_set.exposed_things:
             for interaction in exposed_thing.thing.interactions:
                 interaction.clean_forms()
 
     def _clean_protocol_forms(self, exposed_thing, protocol):
-        """Removes all interaction forms linked to this
+        """Removes all autogenerated interaction forms linked to this
         server protocol for the given ExposedThing."""
 
-        if not self._exposed_thing_set.contains(exposed_thing):
-            raise ValueError("Unknown ExposedThing")
-
-        if protocol not in self._servers:
-            raise ValueError("Unknown protocol")
+        assert self._exposed_thing_set.contains(exposed_thing)
+        assert protocol in self._servers
 
         for interaction in exposed_thing.thing.interactions:
             forms_to_remove = [
-                form for form in interaction.forms if form.protocol == protocol
+                form for form in interaction.forms
+                if form.protocol == protocol
             ]
 
             for form in forms_to_remove:
@@ -406,25 +369,20 @@ class Servient(object):
     def _server_has_exposed_thing(self, server, exposed_thing):
         """Returns True if the given server contains the ExposedThing."""
 
-        if server not in self._servers.values():
-            raise ValueError("Unknown server")
-
-        if not self._exposed_thing_set.contains(exposed_thing):
-            raise ValueError("Unknown ExposedThing")
+        assert server in self._servers.values()
+        assert self._exposed_thing_set.contains(exposed_thing)
 
         return server.exposed_thing_set.contains(exposed_thing)
 
     def _add_interaction_forms(self, server, exposed_thing):
         """Builds and adds to the ExposedThing the Links related to the given server."""
 
-        if server not in self._servers.values():
-            raise ValueError("Unknown server")
-
-        if not self._exposed_thing_set.contains(exposed_thing):
-            raise ValueError("Unknown ExposedThing")
+        assert server in self._servers.values()
+        assert self._exposed_thing_set.contains(exposed_thing)
 
         for interaction in exposed_thing.thing.interactions:
-            forms = server.build_forms(hostname=self._hostname, interaction=interaction)
+            forms = server.build_forms(
+                hostname=self._hostname, interaction=interaction)
 
             for form in forms:
                 interaction.add_form(form)
@@ -432,8 +390,7 @@ class Servient(object):
     def _regenerate_server_forms(self, server):
         """Cleans and regenerates Forms for the given server in all ExposedThings."""
 
-        if server not in self._servers.values():
-            raise ValueError("Unknown server")
+        assert server in self._servers.values()
 
         for exp_thing in self._exposed_thing_set.exposed_things:
             self._clean_protocol_forms(exp_thing, server.protocol)
@@ -454,14 +411,24 @@ class Servient(object):
             return None
 
         protocol_default = sorted(self.servers.keys())[0]
-
-        protocol = (
-            Protocols.HTTP if Protocols.HTTP in self.servers else protocol_default
-        )
-
+        protocol = Protocols.HTTP if Protocols.HTTP in self.servers else protocol_default
         server = self.servers[protocol]
 
         return server.build_base_url(hostname=self.hostname, thing=exposed_thing.thing)
+
+    def add_credentials(self, credentials_dict):
+        """Adds a dictionary of credentials for a specific thing."""
+
+        for thing_name, creds in credentials_dict.items():
+            if thing_name in self._credential_store:
+                self._credential_store[thing_name].update(creds)
+            else:
+                self._credential_store[thing_name] = creds
+
+    def retrieve_credentials(self, exposed_thing_title):
+        """Retrieves all the credentials associated with the given thing."""
+
+        return self._credential_store.get(exposed_thing_title, None)
 
     def select_client(self, td, name):
         """Returns the Protocol Binding client instance to
@@ -494,7 +461,7 @@ class Servient(object):
         self._servers.pop(protocol, None)
 
     def refresh_forms(self):
-        """Cleans and regenerates Forms for all the
+        """Cleans and regenerates autogenerated Forms for all the
         ExposedThings and servers contained in this servient."""
 
         self._clean_forms()
@@ -502,32 +469,32 @@ class Servient(object):
         for server in self._servers.values():
             self._regenerate_server_forms(server)
 
-    def enable_exposed_thing(self, thing_id):
+    def enable_exposed_thing(self, thing_title):
         """Enables the ExposedThing with the given ID.
         This is, the servers will listen for requests for this thing."""
 
-        exposed_thing = self.get_exposed_thing(thing_id)
+        exposed_thing = self.get_exposed_thing(thing_title)
 
         for server in self._servers.values():
             server.add_exposed_thing(exposed_thing)
             self._regenerate_server_forms(server)
 
-        self._enabled_exposed_thing_ids.add(exposed_thing.id)
+        self._enabled_exposed_thing_titles.add(exposed_thing.title)
 
-    def disable_exposed_thing(self, thing_id):
+    def disable_exposed_thing(self, thing_title):
         """Disables the ExposedThing with the given ID.
         This is, the servers will not listen for requests for this thing."""
 
-        exposed_thing = self.get_exposed_thing(thing_id)
+        exposed_thing = self.get_exposed_thing(thing_title)
 
-        if exposed_thing.id not in self._enabled_exposed_thing_ids:
-            raise ValueError("ExposedThing {} is already disabled".format(thing_id))
+        if exposed_thing.title not in self._enabled_exposed_thing_titles:
+            raise ValueError("ExposedThing {} is already disabled".format(thing_title))
 
         for server in self._servers.values():
-            server.remove_exposed_thing(exposed_thing.id)
+            server.remove_exposed_thing(exposed_thing.title)
             self._regenerate_server_forms(server)
 
-        self._enabled_exposed_thing_ids.remove(exposed_thing.id)
+        self._enabled_exposed_thing_titles.remove(exposed_thing.title)
 
     def add_exposed_thing(self, exposed_thing):
         """Adds an ExposedThing to this Servient.
@@ -535,22 +502,22 @@ class Servient(object):
 
         self._exposed_thing_set.add(exposed_thing)
 
-    def remove_exposed_thing(self, thing_id):
+    def remove_exposed_thing(self, thing_title):
         """Disables and removes an ExposedThing from this Servient."""
 
-        if thing_id in self._enabled_exposed_thing_ids:
-            self.disable_exposed_thing(thing_id)
+        if thing_title in self._enabled_exposed_thing_titles:
+            self.disable_exposed_thing(thing_title)
 
-        self._exposed_thing_set.remove(thing_id)
+        self._exposed_thing_set.remove(thing_title)
 
-    def get_exposed_thing(self, thing_id):
-        """Finds and returns an ExposedThing contained in this servient by Thing ID.
+    def get_exposed_thing(self, thing_title):
+        """Finds and returns an ExposedThing contained in this servient by Thing Name.
         Raises ValueError if the ExposedThing is not present."""
 
-        exp_thing = self._exposed_thing_set.find_by_thing_id(thing_id)
+        exp_thing = self._exposed_thing_set.find_by_thing_title(thing_title)
 
         if exp_thing is None:
-            raise ValueError("Unknown ExposedThing: {}".format(thing_id))
+            raise ValueError("Unknown ExposedThing: {}".format(thing_title))
 
         return exp_thing
 
@@ -564,10 +531,12 @@ class Servient(object):
         """Starts the servers and returns an instance of the WoT object."""
 
         async with self._servient_lock:
-            self.refresh_forms()
-            await asyncio.gather(*[server.start() for server in self._servers.values()])
+            await self.startup_hook()
+            if self._create_default_forms:
+                self.refresh_forms()
+            for server in self._servers.values():
+                await server.start(self)
             self._start_catalogue()
-            await self._start_dnssd()
             self._is_running = True
 
             return WoT(servient=self)
@@ -576,7 +545,18 @@ class Servient(object):
         """Stops the server configured under this servient."""
 
         async with self._servient_lock:
-            await asyncio.gather(*[server.stop() for server in self._servers.values()])
+            await self.shutdown_hook()
+            for server in self._servers.values():
+                await server.stop()
             self._stop_catalogue()
-            await self._stop_dnssd()
             self._is_running = False
+
+    async def startup_hook(self):
+        """Hook that is implemented by subclass."""
+
+        pass
+
+    async def shutdown_hook(self):
+        """Hook that is implemented by subclass."""
+
+        pass

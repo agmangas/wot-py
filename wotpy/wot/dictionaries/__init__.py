@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -28,12 +29,12 @@ Objects defined in the Scripting API specification represented as classes that a
 .. autosummary::
     :toctree: _dictionaries
 
-    wotpy.wot.dictionaries.base
-    wotpy.wot.dictionaries.filter
-    wotpy.wot.dictionaries.interaction
-    wotpy.wot.dictionaries.link
-    wotpy.wot.dictionaries.schema
-    wotpy.wot.dictionaries.security
-    wotpy.wot.dictionaries.thing
-    wotpy.wot.dictionaries.version
+    base
+    filter
+    interaction
+    link
+    schema
+    security
+    thing
+    version
 """

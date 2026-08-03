@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -35,7 +36,6 @@ class DiscoveryMethod(EnumListMixin):
     ANY = "any"
     LOCAL = "local"
     DIRECTORY = "directory"
-    MULTICAST = "multicast"
 
 
 class TDChangeType(EnumListMixin):
@@ -81,15 +81,15 @@ class SecuritySchemeType(EnumListMixin):
     """Defines the supported security schemes."""
 
     NOSEC = "nosec"
+    AUTO = "auto"
+    COMBO = "combo"
     BASIC = "basic"
-    CERT = "cert"
     DIGEST = "digest"
-    BEARER = "bearer"
-    POP = "pop"
-    PSK = "psk"
-    PUBLIC = "public"
-    OAUTH2 = "oauth2"
     APIKEY = "apikey"
+    BEARER = "bearer"
+    PSK = "psk"
+    OAUTH2 = "oauth2"
+    OIDC4VP = "oidc4vp"
 
 
 class InteractionTypes(EnumListMixin):

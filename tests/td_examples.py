@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -22,7 +23,12 @@
 #
 # SPDX-License-Identifier: MIT
 
+from wotpy.wot.constants import WOT_TD_CONTEXT_URL_V1_1
+
 TD_EXAMPLE = {
+    "@context": [
+        WOT_TD_CONTEXT_URL_V1_1
+    ],
     "id": "urn:dev:wot:com:example:servient:lamp",
     "title": "MyLampThing",
     "description": "MyLampThing uses JSON-LD 1.1 serialization",

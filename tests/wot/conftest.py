@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -22,20 +23,22 @@
 #
 # SPDX-License-Identifier: MIT
 
+import asyncio
 import uuid
 
 import pytest
-import tornado.gen
-import tornado.ioloop
+import pytest_asyncio
 import tornado.web
 from faker import Faker
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from tests.td_examples import TD_EXAMPLE
 from tests.utils import find_free_port
 from wotpy.protocols.client import BaseProtocolClient
+from wotpy.wot.constants import WOT_TD_CONTEXT_URL_V1_1
 from wotpy.wot.consumed.thing import ConsumedThing
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
+from wotpy.wot.dictionaries.thing import ThingFragment
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 from wotpy.wot.td import ThingDescription
@@ -99,13 +102,28 @@ def event_fragment():
     return _build_event_fragment()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def exposed_thing():
     """Builds and returns a random ExposedThing."""
 
+    thing_fragment = ThingFragment({
+        "@context": [
+            WOT_TD_CONTEXT_URL_V1_1,
+        ],
+        "id": uuid.uuid4().urn,
+        "title": uuid.uuid4().hex,
+        "securityDefinitions": {
+            "nosec_sc":{
+                "scheme":"nosec"
+            }
+        },
+        "security": "nosec_sc"
+    })
+    thing = Thing(thing_fragment=thing_fragment)
+
     return ExposedThing(
         servient=Servient(),
-        thing=Thing(id=uuid.uuid4().urn))
+        thing=thing)
 
 
 @pytest.fixture
@@ -113,7 +131,6 @@ def td_example_tornado_app():
     """Builds a Tornado web application with a simple handler
     that exposes the example Thing Description document."""
 
-    # noinspection PyAbstractClass
     class TDHandler(tornado.web.RequestHandler):
         """Dummy handler to fetch a JSON-serialized TD document."""
 
@@ -129,7 +146,7 @@ class ExposedThingProxyClient(BaseProtocolClient):
 
     def __init__(self, exp_thing):
         self._exp_thing = exp_thing
-        super(ExposedThingProxyClient, self).__init__()
+        super().__init__()
 
     @property
     def protocol(self):
@@ -138,19 +155,16 @@ class ExposedThingProxyClient(BaseProtocolClient):
     def is_supported_interaction(self, td, name):
         return True
 
-    @tornado.gen.coroutine
-    def invoke_action(self, td, name, input_value, timeout=None):
-        result = yield self._exp_thing.invoke_action(name, input_value)
-        raise tornado.gen.Return(result)
+    async def invoke_action(self, td, name, input_value, timeout=None):
+        result = await self._exp_thing.invoke_action(name, input_value)
+        return(result)
 
-    @tornado.gen.coroutine
-    def write_property(self, td, name, value, timeout=None):
-        yield self._exp_thing.write_property(name, value)
+    async def write_property(self, td, name, value, timeout=None):
+        await self._exp_thing.write_property(name, value)
 
-    @tornado.gen.coroutine
-    def read_property(self, td, name, timeout=None):
-        value = yield self._exp_thing.read_property(name)
-        raise tornado.gen.Return(value)
+    async def read_property(self, td, name, timeout=None):
+        value = await self._exp_thing.read_property(name)
+        return(value)
 
     def on_event(self, td, name):
         return self._exp_thing.on_event(name)
@@ -162,7 +176,7 @@ class ExposedThingProxyClient(BaseProtocolClient):
         return self._exp_thing.on_td_change()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def consumed_exposed_pair():
     """Returns a dict with two keys:
     * consumed_thing: A ConsumedThing instance. The Servient instance that contains this
@@ -171,17 +185,28 @@ def consumed_exposed_pair():
 
     servient = Servient()
 
-    exp_thing = ExposedThing(
-        servient=servient,
-        thing=Thing(id=uuid.uuid4().urn))
+    thing_fragment = ThingFragment({
+        "@context": [
+            WOT_TD_CONTEXT_URL_V1_1,
+        ],
+        "id": uuid.uuid4().urn,
+        "title": uuid.uuid4().hex,
+        "securityDefinitions": {
+            "nosec_sc":{
+                "scheme":"nosec"
+            }
+        },
+        "security": "nosec_sc"
+    })
+    thing = Thing(thing_fragment=thing_fragment)
+    exp_thing = ExposedThing(servient=Servient(), thing=thing)
 
     servient.select_client = MagicMock(return_value=ExposedThingProxyClient(exp_thing))
 
-    @tornado.gen.coroutine
-    def lower(parameters):
+    async def lower(parameters):
         input_value = parameters.get("input")
-        yield tornado.gen.sleep(0)
-        raise tornado.gen.Return(str(input_value).lower())
+        await asyncio.sleep(0)
+        return(str(input_value).lower())
 
     exp_thing.add_property(uuid.uuid4().hex, _build_property_fragment())
     exp_thing.add_action(uuid.uuid4().hex, _build_action_fragment(), lower)
@@ -195,24 +220,16 @@ def consumed_exposed_pair():
     }
 
 
-@pytest.fixture(params=[{"catalogue_enabled": True}])
-def servient(request):
+@pytest_asyncio.fixture(params=[{"catalogue_enabled": True}])
+async def servient(request):
     """Returns an empty WoT Servient."""
 
     catalogue_port = find_free_port() if request.param.get('catalogue_enabled') else None
 
     servient = Servient(catalogue_port=catalogue_port)
 
-    @tornado.gen.coroutine
-    def start():
-        yield servient.start()
 
-    tornado.ioloop.IOLoop.current().run_sync(start)
+    wot = await servient.start()
 
     yield servient
-
-    @tornado.gen.coroutine
-    def shutdown():
-        yield servient.shutdown()
-
-    tornado.ioloop.IOLoop.current().run_sync(shutdown)
+    await servient.shutdown()

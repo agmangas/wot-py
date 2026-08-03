@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -28,8 +29,9 @@ Classes that represent Interaction instances accessed on a ExposedThing.
 
 from collections import UserDict
 
-from rx.concurrency import IOLoopScheduler
+from reactivex.scheduler.eventloop import IOLoopScheduler
 from slugify import slugify
+from tornado import ioloop
 
 
 class ExposedThingInteractionDict(UserDict):
@@ -44,14 +46,7 @@ class ExposedThingInteractionDict(UserDict):
         """Takes a case-insensitive URL-safe interaction name and returns
         the actual name in the interaction dict."""
 
-        return next(
-            (
-                key
-                for key in self.interaction_dict.keys()
-                if slugify(key) == slugify(name)
-            ),
-            None,
-        )
+        return next((key for key in self.interaction_dict.keys() if slugify(key) == slugify(name)), None)
 
     def __getitem__(self, name):
         """Lazily build and return an object that implements the Interaction interface."""
@@ -125,7 +120,7 @@ class ExposedThingEventDict(ExposedThingInteractionDict):
         return ExposedThingEvent
 
 
-class ExposedThingProperty(object):
+class ExposedThingProperty:
     """The ThingProperty interface implementation for ExposedThing objects."""
 
     def __init__(self, exposed_thing, name):
@@ -162,10 +157,14 @@ class ExposedThingProperty(object):
         """Subscribe to an stream of events emitted when the property value changes."""
 
         observable = self._exposed_thing.on_property_change(self._name)
-        return observable.subscribe_on(IOLoopScheduler()).subscribe(*args, **kwargs)
+        loop = ioloop.IOLoop.current()
+        scheduler = IOLoopScheduler(loop)
+        kwargs["scheduler"] = scheduler
+
+        return observable.subscribe(*args, **kwargs)
 
 
-class ExposedThingAction(object):
+class ExposedThingAction:
     """The ThingAction interface implementation for ExposedThing objects."""
 
     def __init__(self, exposed_thing, name):
@@ -192,7 +191,7 @@ class ExposedThingAction(object):
         return result
 
 
-class ExposedThingEvent(object):
+class ExposedThingEvent:
     """The ThingEvent interface implementation for ExposedThing objects."""
 
     def __init__(self, exposed_thing, name):
@@ -200,9 +199,7 @@ class ExposedThingEvent(object):
         self._name = name
 
     def __str__(self):
-        return "<{}> ({}::{})".format(
-            self.__class__.__name__, self._exposed_thing.id, self._name
-        )
+        return "<{}> ({}::{})".format(self.__class__.__name__, self._exposed_thing.id, self._name)
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
@@ -214,7 +211,11 @@ class ExposedThingEvent(object):
         """Subscribe to an stream of emissions of this event."""
 
         observable = self._exposed_thing.on_event(self._name)
-        return observable.subscribe_on(IOLoopScheduler()).subscribe(*args, **kwargs)
+        loop = ioloop.IOLoop.current()
+        scheduler = IOLoopScheduler(loop)
+        kwargs["scheduler"] = scheduler
+        
+        return observable.subscribe(*args, **kwargs)
 
     def emit(self, payload):
         """Emits an event that carries data specified by the payload argument."""

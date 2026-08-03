@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -35,10 +36,9 @@ from wotpy.wot.thing import Thing
 from wotpy.wot.validation import SCHEMA_THING, InvalidDescription
 
 
-class ThingDescription(object):
+class ThingDescription:
     """Class that represents a Thing Description document.
-    Contains logic to validate and transform a Thing to a serialized TD and vice versa.
-    """
+    Contains logic to validate and transform a Thing to a serialized TD and vice versa."""
 
     def __init__(self, doc):
         """Constructor.

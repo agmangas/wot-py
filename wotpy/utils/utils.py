@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -28,9 +29,8 @@ Some utility functions for the WoT data type wrappers.
 
 import json
 import socket
+import collections.abc
 from functools import wraps
-
-import tornado.gen
 
 
 def merge_args_kwargs_dict(args, kwargs):
@@ -83,9 +83,12 @@ def to_json_obj(obj):
         pass
 
     try:
-        return {key: to_json_obj(val) for key, val in vars(obj).items()}
+        return {
+            key: to_json_obj(val)
+            for key, val in vars(obj).items()
+        }
     except TypeError:
-        raise ValueError("Object {} is not JSON serializable".format(obj)) from None
+        raise ValueError("Object {} is not JSON serializable".format(obj))
 
 
 def get_main_ipv4_address():
@@ -93,7 +96,7 @@ def get_main_ipv4_address():
     Attribution to the answer provided by Jamieson Becker on:
     https://stackoverflow.com/a/28950776"""
 
-    ip_range = ["10.255.255.255", "10.0.255.255", "10.0.0.255"]
+    ip_range = ['10.255.255.255', '10.0.255.255', '10.0.0.255']
 
     for ip in ip_range:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -102,8 +105,8 @@ def get_main_ipv4_address():
             addr = sock.getsockname()[0]
             sock.close()
             break
-        except Exception:
-            addr = "127.0.0.1"
+        except:
+            addr = '127.0.0.1'
         finally:
             sock.close()
 
@@ -126,3 +129,33 @@ def handle_observer_finalization(observer):
         return wrapper
 
     return deco
+
+def flatten(dictionary, parent_key='', separator='.'):
+    """This functions flattens a dictionary converting nested keys
+    into simple dot-separated strings.
+    Source: https://stackoverflow.com/questions/6027558/flatten-nested-dictionaries-compressing-keys"""
+
+    items = []
+    for key, value in dictionary.items():
+        new_key = parent_key + separator + key if parent_key else key
+        if isinstance(value, collections.abc.MutableMapping):
+            items.extend(flatten(value, new_key, separator=separator).items())
+        else:
+            items.append((new_key, value))
+    return dict(items)
+
+def dict_merge(dct, merge_dct):
+    """ Recursive dict merge. Inspired by :meth:``dict.update()``, instead of
+    updating only top-level keys, dict_merge recurses down into dicts nested
+    to an arbitrary depth, updating keys. The ``merge_dct`` is merged into
+    ``dct``.
+    :param dct: dict onto which the merge is executed
+    :param merge_dct: dct merged into dct
+    :return: None
+    Source: https://gist.github.com/angstwad/bf22d1822c38a92ec0a9
+    """
+    for key in merge_dct.keys():
+        if (key in dct and isinstance(dct[key], dict) and isinstance(merge_dct[key], dict)):  #noqa
+            dict_merge(dct[key], merge_dct[key])
+        else:
+            dct[key] = merge_dct[key]

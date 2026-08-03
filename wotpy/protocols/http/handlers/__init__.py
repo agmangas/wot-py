@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -28,8 +29,8 @@ HTTP request handlers that implement each of the Interaction verbs.
 .. autosummary::
     :toctree: _handlers
 
-    wotpy.protocols.http.handlers.action
-    wotpy.protocols.http.handlers.event
-    wotpy.protocols.http.handlers.property
-    wotpy.protocols.http.handlers.utils
+    action
+    event
+    property
+    utils
 """

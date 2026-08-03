@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -27,19 +28,23 @@ Class that implements the CoAP server.
 """
 
 import asyncio
+import json
 import logging
 
 import aiocoap
 import aiocoap.resource
+from aiocoap.oscore_sitewrapper import OscoreSiteWrapper
 
 from wotpy.codecs.enums import MediaTypes
+from wotpy.protocols.coap.authenticator import BaseAuthenticator
 from wotpy.protocols.coap.enums import CoAPSchemes
 from wotpy.protocols.coap.resources.action import ActionResource
 from wotpy.protocols.coap.resources.event import EventResource
 from wotpy.protocols.coap.resources.property import PropertyResource
-from wotpy.protocols.enums import InteractionVerbs, Protocols
+from wotpy.protocols.enums import Protocols, InteractionVerbs
 from wotpy.protocols.server import BaseProtocolServer
-from wotpy.wot.enums import InteractionTypes
+from wotpy.utils.utils import get_main_ipv4_address
+from wotpy.wot.enums import InteractionTypes, SecuritySchemeType
 from wotpy.wot.form import Form
 
 
@@ -47,14 +52,20 @@ class CoAPServer(BaseProtocolServer):
     """CoAP binding server implementation."""
 
     DEFAULT_PORT = 5683
+    DEFAULT_SECURITY_SCHEME = {"scheme": SecuritySchemeType.NOSEC}
 
-    def __init__(self, port=DEFAULT_PORT, ssl_context=None, action_clear_ms=None):
-        super(CoAPServer, self).__init__(port=port)
+    def __init__(self, port=DEFAULT_PORT, ssl_context=None, oscore_credentials_map=None,
+                 action_clear_ms=None, security_scheme=DEFAULT_SECURITY_SCHEME):
+        super().__init__(port=port)
         self._server = None
         self._server_lock = asyncio.Lock()
         self._ssl_context = ssl_context
+        self._oscore_credentials_map = oscore_credentials_map
         self._action_clear_ms = action_clear_ms
         self._logr = logging.getLogger(__name__)
+        self._servient = None
+        self._security_scheme = security_scheme if security_scheme.get("scheme", None) in\
+            SecuritySchemeType.list() else self.DEFAULT_SECURITY_SCHEME
 
     @property
     def protocol(self):
@@ -79,29 +90,21 @@ class CoAPServer(BaseProtocolServer):
     def action_clear_ms(self):
         """Returns the timeout (ms) before completed actions are removed from the server."""
 
-        return (
-            self._action_clear_ms
-            if self._action_clear_ms
-            else ActionResource.DEFAULT_CLEAR_MS
-        )
+        return self._action_clear_ms if self._action_clear_ms else ActionResource.DEFAULT_CLEAR_MS
 
     def _build_forms_property(self, proprty, hostname):
         """Builds and returns the CoAP Form instances for the given Property interaction."""
 
         href_prop = "{}://{}:{}/property?thing={}&name={}".format(
-            self.scheme,
-            hostname.rstrip("/").lstrip("/"),
-            self.port,
-            proprty.thing.url_name,
-            proprty.url_name,
-        )
+            self.scheme, hostname.rstrip("/").lstrip("/"), self.port,
+            proprty.thing.url_name, proprty.url_name)
 
         form_read = Form(
             interaction=proprty,
             protocol=self.protocol,
             href=href_prop,
             content_type=MediaTypes.JSON,
-            op=InteractionVerbs.READ_PROPERTY,
+            op=InteractionVerbs.READ_PROPERTY
         )
 
         form_write = Form(
@@ -109,7 +112,7 @@ class CoAPServer(BaseProtocolServer):
             protocol=self.protocol,
             href=href_prop,
             content_type=MediaTypes.JSON,
-            op=InteractionVerbs.WRITE_PROPERTY,
+            op=InteractionVerbs.WRITE_PROPERTY
         )
 
         form_observe = Form(
@@ -117,7 +120,7 @@ class CoAPServer(BaseProtocolServer):
             protocol=self.protocol,
             href=href_prop,
             content_type=MediaTypes.JSON,
-            op=InteractionVerbs.OBSERVE_PROPERTY,
+            op=InteractionVerbs.OBSERVE_PROPERTY
         )
 
         return [form_read, form_write, form_observe]
@@ -130,7 +133,7 @@ class CoAPServer(BaseProtocolServer):
             hostname.rstrip("/").lstrip("/"),
             self.port,
             action.thing.url_name,
-            action.url_name,
+            action.url_name
         )
 
         form_invoke = Form(
@@ -138,7 +141,7 @@ class CoAPServer(BaseProtocolServer):
             protocol=self.protocol,
             href=href_invoke,
             content_type=MediaTypes.JSON,
-            op=InteractionVerbs.INVOKE_ACTION,
+            op=InteractionVerbs.INVOKE_ACTION
         )
 
         return [form_invoke]
@@ -151,7 +154,7 @@ class CoAPServer(BaseProtocolServer):
             hostname.rstrip("/").lstrip("/"),
             self.port,
             event.thing.url_name,
-            event.url_name,
+            event.url_name
         )
 
         form = Form(
@@ -159,7 +162,7 @@ class CoAPServer(BaseProtocolServer):
             protocol=self.protocol,
             href=href,
             content_type=MediaTypes.JSON,
-            op=InteractionVerbs.SUBSCRIBE_EVENT,
+            op=InteractionVerbs.SUBSCRIBE_EVENT
         )
 
         return [form]
@@ -171,7 +174,7 @@ class CoAPServer(BaseProtocolServer):
         intrct_type_map = {
             InteractionTypes.PROPERTY: self._build_forms_property,
             InteractionTypes.ACTION: self._build_forms_action,
-            InteractionTypes.EVENT: self._build_forms_event,
+            InteractionTypes.EVENT: self._build_forms_event
         }
 
         if interaction.interaction_type not in intrct_type_map:
@@ -182,12 +185,13 @@ class CoAPServer(BaseProtocolServer):
     def build_base_url(self, hostname, thing):
         """Returns the base URL for the given Thing in the context of this server."""
 
-        if not self.exposed_thing_set.find_by_thing_id(thing.id):
+        if not self.exposed_thing_set.find_by_thing_title(thing.title):
             raise ValueError("Unknown Thing")
 
         return "{}://{}:{}".format(
-            self.scheme, hostname.rstrip("/").lstrip("/"), self.port
-        )
+            self.scheme,
+            hostname.rstrip("/").lstrip("/"),
+            self.port)
 
     def _build_root_site(self):
         """Builds and returns the root CoAP Site."""
@@ -196,16 +200,19 @@ class CoAPServer(BaseProtocolServer):
 
         root.add_resource(
             (".well-known", "core"),
-            aiocoap.resource.WKCResource(root.get_resources_as_linkheader),
-        )
-
-        root.add_resource(("property",), PropertyResource(self))
+            aiocoap.resource.WKCResource(root.get_resources_as_linkheader))
 
         root.add_resource(
-            ("action",), ActionResource(self, clear_ms=self._action_clear_ms)
-        )
+            ("property",),
+            PropertyResource(self))
 
-        root.add_resource(("event",), EventResource(self))
+        root.add_resource(
+            ("action",),
+            ActionResource(self, clear_ms=self._action_clear_ms))
+
+        root.add_resource(
+            ("event",),
+            EventResource(self))
 
         return root
 
@@ -229,8 +236,21 @@ class CoAPServer(BaseProtocolServer):
 
         return "::", self.port
 
-    async def start(self):
+    async def _check_credentials(self, exposed_thing_name, request):
+        """Checks the credentials of a request for a specific thing."""
+
+        if self._servient:
+            creds = self._servient.retrieve_credentials(exposed_thing_name)
+            authenticator = BaseAuthenticator.build(self._security_scheme)
+            return authenticator.authenticate(creds, request)
+        else:
+            #TODO: If the server is created without a servient should it try to check credentials in some other way?
+            return True
+
+    async def start(self, servient=None):
         """Starts the CoAP server."""
+
+        self._servient = servient
 
         async with self._server_lock:
             if self._server is not None:
@@ -240,10 +260,18 @@ class CoAPServer(BaseProtocolServer):
             bind_address = self._get_bind_address()
             self._logr.info("Binding CoAP server to: {}".format(bind_address))
 
-            coap_server = await aiocoap.Context.create_server_context(
-                root, bind=bind_address
-            )
+            if self._oscore_credentials_map:
+                server_credentials = aiocoap.credentials.CredentialsMap()
+                with open(self._oscore_credentials_map, "rb") as file:
+                    server_credentials.load_from_dict(json.load(file))
 
+                root = OscoreSiteWrapper(root, server_credentials)
+            else:
+                server_credentials = None
+
+            coap_server = await aiocoap.Context.create_server_context(
+                root, bind=bind_address, _ssl_context=self._ssl_context,
+                server_credentials=server_credentials)
             self._server = coap_server
 
     async def stop(self):

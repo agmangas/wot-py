@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wotpy"
+description = "Python implementation of a W3C WoT Runtime and the WoT Scripting API"
+readme = "README.md"
+dynamic = ["version"]
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+authors = [
+  { name = "Andres Garcia Mangas", email = "andres.garcia@fundacionctic.org" }
+]
+maintainers = [
+  { name = "Nikos Filinis", email = "nfilinis@netmode.ntua.gr" }
+]
+keywords = ["wot", "iot", "gateway", "fog", "w3c"]
+
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14"
+]
+dependencies = [
+  "tornado>=6.5.2,<7.0",
+  "jsonschema>=4.25.1",
+  "reactivex>=5.1.0,<6.0",
+  "python-slugify>=8.0.4",
+  "requests-oauthlib>=2.0.0",
+  "aiocoap[linkheader,oscore]>=0.4.7 ; platform_system != 'Darwin'",
+  "amqtt>=0.10.1",
+  "eclipse-zenoh>=1.5.0",
+  "websockets>=15.0.1"
+]
+
+[project.optional-dependencies]
+tests = [
+  "cryptography>=49.0.0",
+  "pyOpenSSL>=25.1.0",
+  "pytest>=8.4.1",
+  "pytest-cov>=6.2.1",
+  "pytest-rerunfailures>=16.0.1",
+  "pytest-asyncio>=1.1.0",
+  "faker>=37.6.0"
+]
+
+docs = [
+  "Sphinx>=7.4.7",
+  "sphinx-rtd-theme>=3.0.2"
+]
+
+[project.urls]
+Repository = "https://github.com/eclipse-thingweb/wotpy.git"
+
+[tool.setuptools.dynamic]
+version = {attr = "wotpy.__version__.__version__"}

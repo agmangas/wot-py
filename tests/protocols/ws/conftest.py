@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -22,24 +23,20 @@
 #
 # SPDX-License-Identifier: MIT
 
+import asyncio
 import re
 import time
 import uuid
 from urllib.parse import urlparse, urlunparse
 
-import pytest
-import tornado.gen
-import tornado.ioloop
+import pytest_asyncio
 import tornado.websocket
 from faker import Faker
 
 from tests.utils import find_free_port
 from wotpy.protocols.ws.server import WebsocketServer
-from wotpy.wot.dictionaries.interaction import (
-    ActionFragmentDict,
-    EventFragmentDict,
-    PropertyFragmentDict,
-)
+from wotpy.wot.constants import WOT_TD_CONTEXT_URL_V1_1
+from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 from wotpy.wot.td import ThingDescription
@@ -51,7 +48,7 @@ def build_websocket_url(exposed_thing, ws_server, server_port):
 
     base_url = ws_server.build_base_url(hostname="localhost", thing=exposed_thing.thing)
     parsed_url = urlparse(base_url)
-    test_netloc = re.sub(r":(\d+)$", ":{}".format(server_port), parsed_url.netloc)
+    test_netloc = re.sub(r':(\d+)$', ':{}'.format(server_port), parsed_url.netloc)
 
     test_url_parts = list(parsed_url)
     test_url_parts[1] = test_netloc
@@ -59,17 +56,42 @@ def build_websocket_url(exposed_thing, ws_server, server_port):
     return urlunparse(test_url_parts)
 
 
-@pytest.fixture
-def websocket_server():
+@pytest_asyncio.fixture
+async def websocket_server():
     """Builds a WebsocketServer instance with some ExposedThings."""
+
+    ws_port = find_free_port()
 
     servient = Servient()
 
     thing_01_id = uuid.uuid4().urn
+    thing_01_title = uuid.uuid4().hex
     thing_02_id = uuid.uuid4().urn
+    thing_02_title = uuid.uuid4().hex
 
-    exposed_thing_01 = ExposedThing(servient=servient, thing=Thing(id=thing_01_id))
-    exposed_thing_02 = ExposedThing(servient=servient, thing=Thing(id=thing_02_id))
+    td_json = {
+        "@context": [
+            WOT_TD_CONTEXT_URL_V1_1,
+        ],
+        "securityDefinitions": {
+            "nosec_sc":{
+                "scheme":"nosec"
+            }
+        },
+        "security": "nosec_sc"
+    }
+
+    thing_01_json = dict(td_json)
+    thing_01_json["title"] = thing_01_title
+    thing_01_json["id"] = thing_01_id
+    thing_01 = ThingDescription(doc=thing_01_json).build_thing()
+    exposed_thing_01 = ExposedThing(servient=Servient(), thing=thing_01)
+
+    thing_02_json = dict(td_json)
+    thing_02_json["title"] = thing_02_title
+    thing_02_json["id"] = thing_02_id
+    thing_02 = ThingDescription(doc=thing_02_json).build_thing()
+    exposed_thing_02 = ExposedThing(servient=Servient(), thing=thing_02)
 
     prop_name_01 = uuid.uuid4().hex
     prop_name_02 = uuid.uuid4().hex
@@ -94,7 +116,7 @@ def websocket_server():
     )
 
     def async_lower(parameters):
-        loop = tornado.ioloop.IOLoop.current()
+        loop = asyncio.get_running_loop()
         input_value = parameters.get("input")
         return loop.run_in_executor(
             None, lambda x: time.sleep(0.1) or x.lower(), input_value
@@ -107,17 +129,11 @@ def websocket_server():
 
     exposed_thing_02.add_property(prop_name_03, prop_init_03, value=prop_value_03)
 
-    ws_port = find_free_port()
-
     ws_server = WebsocketServer(port=ws_port)
     ws_server.add_exposed_thing(exposed_thing_01)
     ws_server.add_exposed_thing(exposed_thing_02)
 
-    @tornado.gen.coroutine
-    def start():
-        yield ws_server.start()
-
-    tornado.ioloop.IOLoop.current().run_sync(start)
+    wot = await ws_server.start()
 
     url_thing_01 = build_websocket_url(exposed_thing_01, ws_server, ws_port)
     url_thing_02 = build_websocket_url(exposed_thing_02, ws_server, ws_port)
@@ -141,18 +157,14 @@ def websocket_server():
         "ws_server": ws_server,
         "url_thing_01": url_thing_01,
         "url_thing_02": url_thing_02,
-        "ws_port": ws_port,
+        "ws_port": ws_port
     }
 
-    @tornado.gen.coroutine
-    def stop():
-        yield ws_server.stop()
-
-    tornado.ioloop.IOLoop.current().run_sync(stop)
+    await ws_server.stop()
 
 
-@pytest.fixture
-def websocket_servient():
+@pytest_asyncio.fixture
+async def websocket_servient():
     """Returns a Servient that exposes a Websockets server and one ExposedThing."""
 
     ws_port = find_free_port()
@@ -161,31 +173,51 @@ def websocket_servient():
     servient = Servient(catalogue_port=None)
     servient.add_server(ws_server)
 
-    @tornado.gen.coroutine
-    def start():
-        raise tornado.gen.Return((yield servient.start()))
-
-    wot = tornado.ioloop.IOLoop.current().run_sync(start)
+    wot = await servient.start()
 
     property_name_01 = uuid.uuid4().hex
     property_name_02 = uuid.uuid4().hex
     action_name_01 = uuid.uuid4().hex
     event_name_01 = uuid.uuid4().hex
 
+    title = uuid.uuid4().hex
     td_dict = {
+        "@context": [
+            WOT_TD_CONTEXT_URL_V1_1,
+        ],
         "id": uuid.uuid4().urn,
-        "name": uuid.uuid4().hex,
+        "title": title,
+        "securityDefinitions": {
+            "nosec_sc":{
+                "scheme":"nosec"
+            }
+        },
+        "security": "nosec_sc",
         "properties": {
-            property_name_01: {"observable": True, "type": "string"},
-            property_name_02: {"observable": True, "type": "string"},
+            property_name_01: {
+                "observable": True,
+                "type": "string"
+            },
+            property_name_02: {
+                "observable": True,
+                "type": "string"
+            }
         },
         "actions": {
             action_name_01: {
-                "input": {"type": "object"},
-                "output": {"type": "string"},
+                "input": {
+                    "type": "object"
+                },
+                "output": {
+                    "type": "string"
+                }
             }
         },
-        "events": {event_name_01: {"type": "string"}},
+        "events": {
+            event_name_01: {
+                "type": "string"
+            }
+        }
     }
 
     td = ThingDescription(td_dict)
@@ -193,18 +225,13 @@ def websocket_servient():
     exposed_thing = wot.produce(td.to_str())
     exposed_thing.expose()
 
-    @tornado.gen.coroutine
-    def action_handler(parameters):
+    async def action_handler(parameters):
         input_value = parameters.get("input")
         arg_b = input_value.get("arg_b") or uuid.uuid4().hex
-        raise tornado.gen.Return(input_value.get("arg_a") + arg_b)
+        return(input_value.get("arg_a") + arg_b)
 
     exposed_thing.set_action_handler(action_name_01, action_handler)
 
     yield servient
 
-    @tornado.gen.coroutine
-    def shutdown():
-        yield servient.shutdown()
-
-    tornado.ioloop.IOLoop.current().run_sync(shutdown)
+    await servient.shutdown()

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -26,20 +27,20 @@
 Base class for all MQTT handlers.
 """
 
-from asyncio import Queue
+import asyncio
 
 
-class BaseMQTTHandler(object):
+class BaseMQTTHandler:
     """Base class for all MQTT handlers."""
 
     def __init__(self, mqtt_server):
         self._mqtt_server = mqtt_server
-        self._queue = Queue()
+        self._queue = asyncio.Queue()
 
     @property
     def servient_id(self):
         """Servient ID that is used to avoid topic collisions
-        øwhen multiple Servients are connected to the same broker."""
+        when multiple Servients are connected to the same broker."""
 
         return self._mqtt_server.servient_id
 

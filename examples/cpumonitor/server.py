@@ -47,7 +47,16 @@ HOSTNAME = os.environ.get("HOSTNAME", "localhost")
 
 DESCRIPTION = {
     "id": "urn:org:fundacionctic:thing:cpumonitor",
-    "name": "CPU Monitor Thing",
+    "title": "CPU Monitor Thing",
+    "@context": [
+        "https://www.w3.org/2019/wot/td/v1",
+    ],
+    "securityDefinitions": {
+        "nosec_sc":{
+            "scheme":"nosec"
+        }
+    },
+    "security": "nosec_sc",
     "properties": {
         "cpuPercent": {
             "description": "Current CPU usage",

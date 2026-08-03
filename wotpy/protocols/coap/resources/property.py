@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -49,7 +50,7 @@ async def _build_property_value_response(thing_property):
     return response
 
 
-def get_thing_property(server, request):
+async def get_thing_property(server, request):
     """Takes a CoAP request and returns the Thing Property
     identified by the request arguments."""
 
@@ -60,26 +61,28 @@ def get_thing_property(server, request):
     if not url_name_thing or not url_name_prop:
         raise aiocoap.error.BadRequest("Missing query arguments")
 
-    exposed_thing = server.exposed_thing_set.find_by_thing_id(url_name_thing)
+    exposed_thing = server.exposed_thing_set.find_by_thing_title(url_name_thing)
 
     if not exposed_thing:
         raise aiocoap.error.NotFound("Thing not found")
 
+    valid_creds = await server._check_credentials(exposed_thing.title, request)
+    if not valid_creds:
+        raise aiocoap.error.Unauthorized("Authentication required")
+
     try:
         return next(
-            exposed_thing.properties[key]
-            for key in exposed_thing.properties
-            if exposed_thing.properties[key].url_name == url_name_prop
-        )
+            exposed_thing.properties[key] for key in exposed_thing.properties
+            if exposed_thing.properties[key].url_name == url_name_prop)
     except StopIteration:
-        raise aiocoap.error.NotFound("Property not found") from None
+        raise aiocoap.error.NotFound("Property not found")
 
 
 class PropertyResource(aiocoap.resource.ObservableResource):
     """CoAP resource that implements the Property read, write and observe verbs."""
 
     def __init__(self, server):
-        super(PropertyResource, self).__init__()
+        super().__init__()
         self._server = server
         self._logr = logging.getLogger(__name__)
 
@@ -91,7 +94,7 @@ class PropertyResource(aiocoap.resource.ObservableResource):
             return
 
         try:
-            thing_property = get_thing_property(self._server, request)
+            thing_property = await get_thing_property(self._server, request)
         except aiocoap.error.Error:
             return
 
@@ -99,9 +102,7 @@ class PropertyResource(aiocoap.resource.ObservableResource):
             server_observation.trigger()
 
         def on_error(err):
-            self._logr.warning(
-                "Error on subscription to {}: {}".format(thing_property, err)
-            )
+            self._logr.warning("Error on subscription to {}: {}".format(thing_property, err))
 
         subscription = thing_property.subscribe(on_next=on_next, on_error=on_error)
 
@@ -114,20 +115,28 @@ class PropertyResource(aiocoap.resource.ObservableResource):
     async def render_get(self, request):
         """Returns a CoAP response with the current property value."""
 
-        thing_property = get_thing_property(self._server, request)
+        thing_property = await get_thing_property(self._server, request)
         response = await _build_property_value_response(thing_property)
         return response
 
     async def render_put(self, request):
         """Updates the property with the value retrieved from the CoAP request payload."""
 
-        thing_property = get_thing_property(self._server, request)
+        thing_property = await get_thing_property(self._server, request)
         request_payload = json.loads(request.payload)
 
         if "value" not in request_payload:
             raise aiocoap.error.BadRequest()
 
-        await thing_property.write(request_payload.get("value"))
+        query = parse_request_opt_query(request)
+        exposed_thing = self._server.exposed_thing_set.find_by_thing_title(query.get("thing"))
+
+        try:
+            await exposed_thing.handle_write_property(
+                thing_property.name,
+                request_payload.get("value"))
+        except TypeError as ex:
+            raise aiocoap.error.MethodNotAllowed(str(ex))
         response = aiocoap.Message(code=aiocoap.Code.CHANGED)
 
         return response

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -37,7 +38,15 @@ class InteractionFragmentDict(WotBaseDict):
     (Properties, Actions and Events)."""
 
     class Meta:
-        fields = {"forms", "title", "uriVariables", "description", "security", "scopes"}
+        fields = {
+            "@type",
+            "title",
+            "titles",
+            "description",
+            "descriptions",
+            "forms",
+            "uriVariables"
+        }
 
     @property
     def forms(self):
@@ -58,17 +67,6 @@ class InteractionFragmentDict(WotBaseDict):
             for key, val in self._init.get("uriVariables").items()
         }
 
-    @property
-    def security(self):
-        """Set of security configurations, provided as an array,
-        that must all be satisfied for access to resources at or
-        below the current level, if not overridden at a lower level."""
-
-        if "security" not in self._init:
-            return None
-
-        return [SecuritySchemeDict.build(item) for item in self._init.get("security")]
-
 
 class PropertyFragmentDict(InteractionFragmentDict):
     """A dictionary wrapper class that contains data to initialize a Property."""
@@ -77,7 +75,7 @@ class PropertyFragmentDict(InteractionFragmentDict):
         fields = InteractionFragmentDict.Meta.fields.union({"observable"})
 
     def __init__(self, *args, **kwargs):
-        super(PropertyFragmentDict, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._data_schema = DataSchemaDict.build(self._init)
 
     def __getattr__(self, name):
@@ -85,14 +83,14 @@ class PropertyFragmentDict(InteractionFragmentDict):
         the internal ValueType before propagating the exception."""
 
         try:
-            return super(PropertyFragmentDict, self).__getattr__(name)
+            return super().__getattr__(name)
         except AttributeError:
             return getattr(self.data_schema, name)
 
     def to_dict(self):
         """Returns the pure dict (JSON-serializable) representation of this WoT dictionary."""
 
-        ret = super(PropertyFragmentDict, self).to_dict()
+        ret = super().to_dict()
         ret.update(self.data_schema.to_dict())
 
         return ret
@@ -109,16 +107,45 @@ class PropertyFragmentDict(InteractionFragmentDict):
 
         return not self.data_schema.read_only
 
+    @property
+    def forms(self):
+        """Indicates one or more endpoints from which
+        an interaction pattern is accessible."""
+
+        form_dicts = [FormDict(item) for item in self._init.get("forms", [])]
+        for form_dict in form_dicts:
+            read_only = bool(self._init.get("readOnly"))
+            write_only = bool(self._init.get("writeOnly"))
+
+            if not read_only and not write_only:
+                form_dict.Meta.defaults["op"] = [
+                    "readproperty",
+                    "writeproperty"
+                ]
+            elif read_only:
+                form_dict.Meta.defaults["op"] = ["readproperty"]
+            elif write_only:
+                form_dict.Meta.defaults["op"] = ["writeproperty"]
+
+        return form_dicts
+
 
 class ActionFragmentDict(InteractionFragmentDict):
     """A dictionary wrapper class that contains data to initialize an Action."""
 
     class Meta:
-        fields = InteractionFragmentDict.Meta.fields.union(
-            {"input", "output", "safe", "idempotent"}
-        )
+        fields = InteractionFragmentDict.Meta.fields.union({
+            "input",
+            "output",
+            "safe",
+            "idempotent",
+            "synchronous"
+        })
 
-        defaults = {"safe": False, "idempotent": False}
+        defaults = {
+            "safe": False,
+            "idempotent": False
+        }
 
     @property
     def input(self):
@@ -136,14 +163,27 @@ class ActionFragmentDict(InteractionFragmentDict):
 
         return DataSchemaDict.build(init) if init else None
 
+    @property
+    def forms(self):
+        """Indicates one or more endpoints from which
+        an interaction pattern is accessible."""
+
+        form_dicts = [FormDict(item) for item in self._init.get("forms", [])]
+        for form_dict in form_dicts:
+            form_dict.Meta.defaults["op"] = "invokeaction"
+        return form_dicts
+
 
 class EventFragmentDict(InteractionFragmentDict):
     """A dictionary wrapper class that contains data to initialize an Event."""
 
     class Meta:
-        fields = InteractionFragmentDict.Meta.fields.union(
-            {"subscription", "data", "cancellation"}
-        )
+        fields = InteractionFragmentDict.Meta.fields.union({
+            "subscription",
+            "data",
+            "dataResponse",
+            "cancellation"
+        })
 
     @property
     def subscription(self):
@@ -163,6 +203,15 @@ class EventFragmentDict(InteractionFragmentDict):
         return DataSchemaDict.build(init) if init else None
 
     @property
+    def data_response(self):
+        """Defines the data schema of the Event response messages sent by the
+        consumer in a response to a data message."""
+
+        init = self._init.get("dataResponse")
+
+        return DataSchemaDict.build(init) if init else None
+
+    @property
     def cancellation(self):
         """Defines any data that needs to be passed to cancel a subscription,
         e.g., a specific message to remove a Webhook."""
@@ -170,3 +219,16 @@ class EventFragmentDict(InteractionFragmentDict):
         init = self._init.get("cancellation")
 
         return DataSchemaDict.build(init) if init else None
+
+    @property
+    def forms(self):
+        """Indicates one or more endpoints from which
+        an interaction pattern is accessible."""
+
+        form_dicts = [FormDict(item) for item in self._init.get("forms", [])]
+        for form_dict in form_dicts:
+            form_dict.Meta.defaults["op"] = [
+                "subscribeevent",
+                "unsubscribeevent"
+            ]
+        return form_dicts

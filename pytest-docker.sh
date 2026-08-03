@@ -23,7 +23,7 @@
 
 set -e
 
-: "${PYTHON_TAG:=3.8}"
+: "${PYTHON_TAG:='3.10'}"
 : "${PYTEST_ARGS:=-v}"
 
 echo "Running python tests for version ${PYTHON_TAG} with arguments \"${PYTEST_ARGS}\""
@@ -50,6 +50,7 @@ set -x
 docker run --rm -it \
     -v "${VOL_NAME}":/app \
     -e WOTPY_TESTS_MQTT_BROKER_URL="${WOTPY_TESTS_MQTT_BROKER_URL}" \
+    -e WOTPY_TESTS_ZENOH_ROUTER_URL="${WOTPY_TESTS_ZENOH_ROUTER_URL}" \
     python:"${PYTHON_TAG}" \
     /bin/bash -c "cd /app && pip install --quiet -U .[tests] && pytest ${PYTEST_ARGS}" || PYTEST_EXIT_CODE=$?
 

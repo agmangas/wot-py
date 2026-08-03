@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -26,15 +27,11 @@
 Wrapper class for dictionaries to represent Things.
 """
 
-from wotpy.utils.utils import to_camel
 from wotpy.wot.dictionaries.base import WotBaseDict
-from wotpy.wot.dictionaries.interaction import (
-    ActionFragmentDict,
-    EventFragmentDict,
-    PropertyFragmentDict,
-)
+from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
 from wotpy.wot.dictionaries.link import LinkDict
 from wotpy.wot.dictionaries.security import SecuritySchemeDict
+from wotpy.utils.utils import to_camel
 from wotpy.wot.dictionaries.version import VersioningDict
 from wotpy.wot.enums import SecuritySchemeType
 
@@ -47,51 +44,80 @@ class ThingFragment(WotBaseDict):
 
     class Meta:
         fields = {
+            "@context",
+            "@type",
             "id",
-            "version",
             "title",
+            "titles",
             "description",
-            "support",
+            "descriptions",
+            "version",
             "created",
-            "lastModified",
+            "modified",
+            "support",
             "base",
             "properties",
             "actions",
             "events",
             "links",
+            "forms",
             "security",
             "securityDefinitions",
+            "profile",
+            "schemaDefinitions",
+            "uriVariables"
         }
 
-        required = {"id"}
-
-        fields_readonly = ["id"]
-
-        fields_str = [
+        required = {
+            "@context",
             "title",
-            "description",
-            "support",
-            "created",
-            "lastModified",
-            "base",
+            "security",
+            "securityDefinitions"
+        }
+
+        fields_readonly = [
+            "title"
         ]
 
-        fields_dict = ["properties", "actions", "events", "securityDefinitions"]
+        fields_str = [
+            "@context",
+            "@type",
+            "id",
+            "title",
+            "description",
+            "created",
+            "modified",
+            "support",
+            "base",
+            "security",
+            "profile"
+        ]
 
-        fields_list = ["links", "security"]
+        fields_dict = [
+            "titles",
+            "descriptions",
+            "properties",
+            "actions",
+            "events",
+            "securityDefinitions",
+            "schemaDefinitions",
+            "uriVariables"
+        ]
 
-        fields_instance = ["version"]
+        fields_list = [
+            "@context",
+            "@type",
+            "links",
+            "forms",
+            "security",
+            "profile"
+        ]
 
-        assert (
-            set(
-                fields_readonly
-                + fields_str
-                + fields_dict
-                + fields_list
-                + fields_instance
-            )
-            == fields
-        )
+        fields_instance = [
+            "version"
+        ]
+
+        assert set(fields_readonly + fields_str + fields_dict + fields_list + fields_instance) == fields
 
     def __setattr__(self, name, value):
         """Checks to see if the attribute that is being set is a
@@ -100,7 +126,7 @@ class ThingFragment(WotBaseDict):
         name_camel = to_camel(name)
 
         if name_camel not in self.Meta.fields:
-            return super(ThingFragment, self).__setattr__(name, value)
+            return super().__setattr__(name, value)
 
         if name_camel in self.Meta.fields_readonly:
             raise AttributeError("Can't set attribute {}".format(name))
@@ -123,32 +149,20 @@ class ThingFragment(WotBaseDict):
 
     @property
     def title(self):
-        """The title of the Thing.
-        This property returns the ID if the title is undefined."""
+        """The title of the Thing."""
 
-        return self._init.get("title", self.id)
+        return self._init.get("title")
 
     @property
     def security(self):
         """Set of security configurations, provided as an array,
         that must all be satisfied for access to resources at or
-        below the current level, if not overridden at a lower level.
-        A default nosec security scheme will be provided if none are defined."""
-
-        if "security" not in self._init and "securityDefinitions" not in self._init:
-            return ["nosec_sc"]
+        below the current level, if not overridden at a lower level."""
 
         return self._init.get("security")
 
     @property
     def security_definitions(self):
-        if "security" not in self._init and "securityDefinitions" not in self._init:
-            return {
-                "nosec_sc": SecuritySchemeDict.build(
-                    {"scheme": SecuritySchemeType.NOSEC}
-                )
-            }
-
         return {
             key: SecuritySchemeDict.build(val)
             for key, val in self._init.get("securityDefinitions", {}).items()
@@ -194,8 +208,29 @@ class ThingFragment(WotBaseDict):
     def version(self):
         """Provides version information."""
 
-        return (
-            VersioningDict(self._init.get("version"))
-            if self._init.get("version")
-            else None
-        )
+        return VersioningDict(self._init.get("version")) if self._init.get("version") else None
+
+    @property
+    def schema_definitons(self):
+        """Set of named data schemas. To be used in a schema name-value pair
+        inside an AdditionalExpectedResponse object."""
+
+        if "schemaDefinitions" not in self._init:
+            return None
+
+        return {
+            key: DataSchemaDict.build(val)
+            for key, val in self._init.get("schemaDefinitions").items()
+        }
+
+    @property
+    def uri_variables(self):
+        """Define URI template variables as collection based on DataSchema declarations."""
+
+        if "uriVariables" not in self._init:
+            return None
+
+        return {
+            key: DataSchemaDict.build(val)
+            for key, val in self._init.get("uriVariables").items()
+        }

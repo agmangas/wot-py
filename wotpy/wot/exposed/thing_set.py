@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -27,7 +28,7 @@ Class that represents a group or set of ExposedThing instances that exist in the
 """
 
 
-class ExposedThingSet(object):
+class ExposedThingSet:
     """Represents a group of ExposedThing objects.
     A group cannot contain two ExposedThing with the same Thing ID."""
 
@@ -49,30 +50,30 @@ class ExposedThingSet(object):
     def add(self, exposed_thing):
         """Add a new ExposedThing to this set."""
 
-        if exposed_thing.thing.id in self._exposed_things:
+        if exposed_thing.thing.title in self._exposed_things:
             raise ValueError("Duplicate Exposed Thing: {}".format(exposed_thing.title))
 
-        self._exposed_things[exposed_thing.thing.id] = exposed_thing
+        self._exposed_things[exposed_thing.thing.title] = exposed_thing
 
-    def remove(self, thing_id):
-        """Removes an existing ExposedThing by ID.
-        The thing_id argument may be the original Thing ID or the URL-safe name."""
+    def remove(self, thing_title):
+        """Removes an existing ExposedThing by title.
+        The thing_id argument may be the original Thing title or the URL-safe name."""
 
-        exposed_thing = self.find_by_thing_id(thing_id)
+        exposed_thing = self.find_by_thing_title(thing_title)
 
-        if exposed_thing is None or exposed_thing.thing.id not in self._exposed_things:
-            raise ValueError("Unknown Exposed Thing: {}".format(thing_id))
+        if exposed_thing is None or exposed_thing.thing.title not in self._exposed_things:
+            raise ValueError("Unknown Exposed Thing: {}".format(thing_title))
 
-        self._exposed_things.pop(exposed_thing.thing.id)
+        self._exposed_things.pop(exposed_thing.thing.title)
 
-    def find_by_thing_id(self, thing_id):
-        """Finds an existing ExposedThing by Thing ID.
-        The ID argument may be the original Thing ID or the URL-safe name
-        (which is also unique and based on the ID)."""
+    def find_by_thing_title(self, thing_title):
+        """Finds an existing ExposedThing by Thing title.
+        The ID argument may be the original Thing title or the URL-safe name
+        (which is also unique and based on the title)."""
 
         def is_match(exp_thing):
             return (
-                exp_thing.thing.id == thing_id or exp_thing.thing.url_name == thing_id
+                exp_thing.thing.title == thing_title or exp_thing.thing.url_name == thing_title
             )
 
         return next(

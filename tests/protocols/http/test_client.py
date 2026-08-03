@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -22,6 +23,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+import pytest
+
 from tests.protocols.helpers import \
     client_test_on_property_change, \
     client_test_on_event, \
@@ -33,44 +36,51 @@ from tests.protocols.helpers import \
 from wotpy.protocols.http.client import HTTPClient
 
 
-def test_read_property(http_servient):
+@pytest.mark.asyncio
+async def test_read_property(http_servient):
     """The HTTP client can read properties."""
 
-    client_test_read_property(http_servient, HTTPClient)
+    await client_test_read_property(http_servient, HTTPClient)
 
 
-def test_write_property(http_servient):
+@pytest.mark.asyncio
+async def test_write_property(http_servient):
     """The HTTP client can write properties."""
 
-    client_test_write_property(http_servient, HTTPClient)
+    await client_test_write_property(http_servient, HTTPClient)
 
 
-def test_invoke_action(http_servient):
+@pytest.mark.asyncio
+async def test_invoke_action(http_servient):
     """The HTTP client can invoke actions."""
 
-    client_test_invoke_action(http_servient, HTTPClient)
+    await client_test_invoke_action(http_servient, HTTPClient)
 
 
-def test_invoke_action_error(http_servient):
+@pytest.mark.asyncio
+async def test_invoke_action_error(http_servient):
     """Errors raised by Actions are propagated propertly by the HTTP binding client."""
 
-    client_test_invoke_action_error(http_servient, HTTPClient)
+    await client_test_invoke_action_error(http_servient, HTTPClient)
 
 
-def test_on_event(http_servient):
+@pytest.mark.asyncio
+async def test_on_event(http_servient):
     """The HTTP client can subscribe to event emissions."""
 
-    client_test_on_event(http_servient, HTTPClient)
+    await client_test_on_event(http_servient, HTTPClient)
 
 
-def test_on_property_change(http_servient):
+@pytest.mark.asyncio
+async def test_on_property_change(http_servient):
     """The HTTP client can subscribe to property updates."""
 
-    client_test_on_property_change(http_servient, HTTPClient)
+    await client_test_on_property_change(http_servient, HTTPClient)
 
 
-def test_on_property_change_error(http_servient):
+@pytest.mark.asyncio
+async def test_on_property_change_error(http_servient):
     """Errors that arise in the middle of an ongoing Property
     observation are propagated to the subscription as expected."""
 
-    client_test_on_property_change_error(http_servient, HTTPClient)
+    await client_test_on_property_change_error(http_servient, HTTPClient)

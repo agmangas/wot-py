@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -28,13 +29,14 @@ Implementations of the supported Protocol Binding templates.
 .. autosummary::
     :toctree: _protocols
 
-    wotpy.protocols.coap
-    wotpy.protocols.http
-    wotpy.protocols.mqtt
-    wotpy.protocols.ws
-    wotpy.protocols.client
-    wotpy.protocols.enums
-    wotpy.protocols.exceptions
-    wotpy.protocols.server
-    wotpy.protocols.utils
+    coap
+    http
+    mqtt
+    ws
+    zenoh
+    client
+    enums
+    exceptions
+    server
+    utils
 """

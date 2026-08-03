@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -36,7 +37,7 @@ class ProtocolClientException(Exception):
         if not (args or kwargs):
             args = (self.DEFAULT_MSG,)
 
-        super(ProtocolClientException, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class FormNotFoundException(ProtocolClientException):

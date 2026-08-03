@@ -30,6 +30,8 @@ from faker import Faker
 
 from tests.td_examples import TD_EXAMPLE
 from wotpy.protocols.enums import Protocols
+from wotpy.wot.constants import WOT_TD_CONTEXT_URL_V1_1
+from wotpy.wot.dictionaries.thing import ThingFragment
 from wotpy.wot.td import ThingDescription
 from wotpy.wot.form import Form
 from wotpy.wot.interaction import Action, Property, Event
@@ -50,8 +52,6 @@ def test_validate_err():
         lambda x: x.update({"properties": [1, 2, 3]}) or x,
         lambda x: x.update({"actions": "hello-interactions"}) or x,
         lambda x: x.update({"events": {"overheating": {"forms": 0.5}}}) or x,
-        lambda x: x.update({"events": {"Invalid Name": {}}}) or x,
-        lambda x: x.update({"events": {100: {"label": "Invalid Name"}}}) or x
     ]
 
     for update_func in update_funcs:
@@ -82,8 +82,22 @@ def test_from_thing():
     event_id = uuid.uuid4().hex
     action_form_href = fake.url()
     prop_form_href = fake.url()
+    event_form_href = fake.url()
 
-    thing = Thing(id=thing_id)
+    thing_fragment = ThingFragment({
+        "@context": [
+            WOT_TD_CONTEXT_URL_V1_1,
+        ],
+        "id": thing_id,
+        "title": uuid.uuid4().hex,
+        "securityDefinitions": {
+            "nosec_sc":{
+                "scheme":"nosec"
+            }
+        },
+        "security": "nosec_sc"
+    })
+    thing = Thing(thing_fragment=thing_fragment)
 
     action = Action(thing=thing, name=action_id)
     action_form = Form(interaction=action, protocol=Protocols.HTTP, href=action_form_href)

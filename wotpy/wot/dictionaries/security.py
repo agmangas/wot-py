@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -26,8 +27,8 @@
 Wrapper classes for security dictionaries defined in the Scripting API.
 """
 
-from wotpy.utils.utils import merge_args_kwargs_dict
 from wotpy.wot.dictionaries.base import WotBaseDict
+from wotpy.utils.utils import merge_args_kwargs_dict
 from wotpy.wot.enums import SecuritySchemeType
 
 
@@ -35,8 +36,17 @@ class SecuritySchemeDict(WotBaseDict):
     """Contains security related configuration."""
 
     class Meta:
-        fields = {"scheme", "description", "proxy"}
-        required = {"scheme"}
+        fields = {
+            "@type",
+            "description",
+            "descriptions",
+            "proxy",
+            "scheme"
+        }
+
+        required = {
+            "scheme"
+        }
 
     @classmethod
     def build(cls, *args, **kwargs):
@@ -46,15 +56,14 @@ class SecuritySchemeDict(WotBaseDict):
 
         klass_map = {
             SecuritySchemeType.NOSEC: NoSecuritySchemeDict,
+            SecuritySchemeType.AUTO: AutoSecuritySchemeDict,
+            SecuritySchemeType.COMBO: ComboSecuritySchemeDict,
             SecuritySchemeType.BASIC: BasicSecuritySchemeDict,
-            SecuritySchemeType.CERT: CertSecuritySchemeDict,
             SecuritySchemeType.DIGEST: DigestSecuritySchemeDict,
+            SecuritySchemeType.APIKEY: APIKeySecuritySchemeDict,
             SecuritySchemeType.BEARER: BearerSecuritySchemeDict,
             SecuritySchemeType.PSK: PSKSecuritySchemeDict,
-            SecuritySchemeType.PUBLIC: PublicSecuritySchemeDict,
-            SecuritySchemeType.OAUTH2: OAuth2SecuritySchemeDict,
-            SecuritySchemeType.APIKEY: APIKeySecuritySchemeDict,
-            SecuritySchemeType.POP: PoPSecuritySchemeDict,
+            SecuritySchemeType.OAUTH2: OAuth2SecuritySchemeDict
         }
 
         scheme_type = init_dict.get("scheme")
@@ -78,13 +87,55 @@ class NoSecuritySchemeDict(SecuritySchemeDict):
         return SecuritySchemeType.NOSEC
 
 
+class AutoSecuritySchemeDict(SecuritySchemeDict):
+    """An automatic authentication security configuration indicating
+    that the security parameters are going to be negotiated by
+    the underlying protocols at runtime."""
+
+    @property
+    def scheme(self):
+        """The scheme property represents the identification
+        of the security scheme to be used for the Thing."""
+
+        return SecuritySchemeType.AUTO
+
+
+class ComboSecuritySchemeDict(SecuritySchemeDict):
+    """A combination of other security schemes. Elements of this scheme define
+    various ways in which other named schemes defined in securityDefinitions,
+    including other ComboSecurityScheme definitions, are to be combined to
+    create a new scheme definition."""
+
+    class Meta:
+        fields = SecuritySchemeDict.Meta.fields.union({
+            "oneOf",
+            "allOf"
+        })
+
+        required = SecuritySchemeDict.Meta.required
+
+    @property
+    def scheme(self):
+        """The scheme property represents the identification
+        of the security scheme to be used for the Thing."""
+
+        return SecuritySchemeType.COMBO
+
+
 class BasicSecuritySchemeDict(SecuritySchemeDict):
     """Basic authentication security configuration using an unencrypted username and password."""
 
     class Meta:
-        fields = SecuritySchemeDict.Meta.fields.union({"in", "name"})
+        fields = SecuritySchemeDict.Meta.fields.union({
+            "in",
+            "name"
+        })
+
         required = SecuritySchemeDict.Meta.required
-        defaults = {"in": "header"}
+
+        defaults = {
+            "in": "header"
+        }
 
     @property
     def scheme(self):
@@ -94,29 +145,23 @@ class BasicSecuritySchemeDict(SecuritySchemeDict):
         return SecuritySchemeType.BASIC
 
 
-class CertSecuritySchemeDict(SecuritySchemeDict):
-    """Certificate-base asymmetric key security configuration."""
-
-    class Meta:
-        fields = SecuritySchemeDict.Meta.fields.union({"identity"})
-        required = SecuritySchemeDict.Meta.required
-
-    @property
-    def scheme(self):
-        """The scheme property represents the identification
-        of the security scheme to be used for the Thing."""
-
-        return SecuritySchemeType.CERT
-
-
 class DigestSecuritySchemeDict(SecuritySchemeDict):
     """Digest authentication security configuration. This scheme is similar to
     basic authentication but with added features to avoid man-in-the-middle attacks."""
 
     class Meta:
-        fields = SecuritySchemeDict.Meta.fields.union({"qop", "in", "name"})
+        fields = SecuritySchemeDict.Meta.fields.union({
+            "qop",
+            "in",
+            "name"
+        })
+
         required = SecuritySchemeDict.Meta.required
-        defaults = {"qop": "auth", "in": "header"}
+
+        defaults = {
+            "qop": "auth",
+            "in": "header"
+        }
 
     @property
     def scheme(self):
@@ -126,6 +171,30 @@ class DigestSecuritySchemeDict(SecuritySchemeDict):
         return SecuritySchemeType.DIGEST
 
 
+class APIKeySecuritySchemeDict(SecuritySchemeDict):
+    """API key authentication security configuration.
+    This is for the case where the access token is opaque and is not using a standard token format."""
+
+    class Meta:
+        fields = SecuritySchemeDict.Meta.fields.union({
+            "in",
+            "name"
+        })
+
+        required = SecuritySchemeDict.Meta.required
+
+        defaults = {
+            "in": "query"
+        }
+
+    @property
+    def scheme(self):
+        """The scheme property represents the identification
+        of the security scheme to be used for the Thing."""
+
+        return SecuritySchemeType.APIKEY
+
+
 class BearerSecuritySchemeDict(SecuritySchemeDict):
     """Bearer token authentication security configuration. This scheme is intended
     for situations where bearer tokens are used independently of OAuth2.
@@ -133,12 +202,21 @@ class BearerSecuritySchemeDict(SecuritySchemeDict):
     specify this scheme as well as it is implied."""
 
     class Meta:
-        fields = SecuritySchemeDict.Meta.fields.union(
-            {"authorization", "alg", "format", "in", "name"}
-        )
+        fields = SecuritySchemeDict.Meta.fields.union({
+            "authorization",
+            "alg",
+            "format",
+            "in",
+            "name"
+        })
 
         required = SecuritySchemeDict.Meta.required
-        defaults = {"alg": "ES256", "format": "jwt", "in": "header"}
+
+        defaults = {
+            "alg": "ES256",
+            "format": "jwt",
+            "in": "header"
+        }
 
     @property
     def scheme(self):
@@ -152,7 +230,9 @@ class PSKSecuritySchemeDict(SecuritySchemeDict):
     """Pre-shared key authentication security configuration."""
 
     class Meta:
-        fields = SecuritySchemeDict.Meta.fields.union({"identity"})
+        fields = SecuritySchemeDict.Meta.fields.union({
+            "identity"
+        })
 
         required = SecuritySchemeDict.Meta.required
 
@@ -164,21 +244,6 @@ class PSKSecuritySchemeDict(SecuritySchemeDict):
         return SecuritySchemeType.PSK
 
 
-class PublicSecuritySchemeDict(SecuritySchemeDict):
-    """Raw public key asymmetric key security configuration."""
-
-    class Meta:
-        fields = SecuritySchemeDict.Meta.fields.union({"identity"})
-        required = SecuritySchemeDict.Meta.required
-
-    @property
-    def scheme(self):
-        """The scheme property represents the identification
-        of the security scheme to be used for the Thing."""
-
-        return SecuritySchemeType.PUBLIC
-
-
 class OAuth2SecuritySchemeDict(SecuritySchemeDict):
     """OAuth2 authentication security configuration.
     For the implicit flow the authorization and scopes are required.
@@ -186,12 +251,19 @@ class OAuth2SecuritySchemeDict(SecuritySchemeDict):
     For the code flow authorization, token, and scopes are required."""
 
     class Meta:
-        fields = SecuritySchemeDict.Meta.fields.union(
-            {"authorization", "token", "refresh", "scopes", "flow"}
-        )
+        fields = SecuritySchemeDict.Meta.fields.union({
+            "authorization",
+            "token",
+            "refresh",
+            "scopes",
+            "flow"
+        })
 
         required = SecuritySchemeDict.Meta.required
-        defaults = {"flow": "implicit"}
+
+        defaults = {
+            "flow": "implicit"
+        }
 
     @property
     def scheme(self):
@@ -199,40 +271,3 @@ class OAuth2SecuritySchemeDict(SecuritySchemeDict):
         of the security scheme to be used for the Thing."""
 
         return SecuritySchemeType.OAUTH2
-
-
-class APIKeySecuritySchemeDict(SecuritySchemeDict):
-    """API key authentication security configuration.
-    This is for the case where the access token is opaque and is not using a standard token format.
-    """
-
-    class Meta:
-        fields = SecuritySchemeDict.Meta.fields.union({"in", "name"})
-        required = SecuritySchemeDict.Meta.required
-        defaults = {"in": "query"}
-
-    @property
-    def scheme(self):
-        """The scheme property represents the identification
-        of the security scheme to be used for the Thing."""
-
-        return SecuritySchemeType.APIKEY
-
-
-class PoPSecuritySchemeDict(SecuritySchemeDict):
-    """Proof-of-possession token authentication security configuration."""
-
-    class Meta:
-        fields = SecuritySchemeDict.Meta.fields.union(
-            {"alg", "authorization", "format", "in", "name"}
-        )
-
-        required = SecuritySchemeDict.Meta.required
-        defaults = {"alg": "ES256", "format": "jwt", "in": "header"}
-
-    @property
-    def scheme(self):
-        """The scheme property represents the identification
-        of the security scheme to be used for the Thing."""
-
-        return SecuritySchemeType.POP

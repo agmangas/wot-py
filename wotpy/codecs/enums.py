@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -34,3 +35,4 @@ class MediaTypes(EnumListMixin):
 
     JSON = "application/json"
     TEXT = "text/plain"
+    H264 = "video/H264"

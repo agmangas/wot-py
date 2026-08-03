@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -31,7 +32,7 @@ import pprint
 from wotpy.wot.enums import DefaultThingEvent, TDChangeType, TDChangeMethod
 
 
-class EmittedEvent(object):
+class EmittedEvent:
     """Base event class.
     Represents a generic event defined in a TD."""
 
@@ -60,7 +61,7 @@ class PropertyChangeEmittedEvent(EmittedEvent):
 
     def __init__(self, init):
         name = DefaultThingEvent.PROPERTY_CHANGE
-        super(PropertyChangeEmittedEvent, self).__init__(init=init, name=name)
+        super().__init__(init=init, name=name)
 
 
 class ActionInvocationEmittedEvent(EmittedEvent):
@@ -69,7 +70,7 @@ class ActionInvocationEmittedEvent(EmittedEvent):
 
     def __init__(self, init):
         name = DefaultThingEvent.ACTION_INVOCATION
-        super(ActionInvocationEmittedEvent, self).__init__(init=init, name=name)
+        super().__init__(init=init, name=name)
 
 
 class ThingDescriptionChangeEmittedEvent(EmittedEvent):
@@ -78,10 +79,10 @@ class ThingDescriptionChangeEmittedEvent(EmittedEvent):
 
     def __init__(self, init):
         name = DefaultThingEvent.DESCRIPTION_CHANGE
-        super(ThingDescriptionChangeEmittedEvent, self).__init__(init=init, name=name)
+        super().__init__(init=init, name=name)
 
 
-class PropertyChangeEventInit(object):
+class PropertyChangeEventInit:
     """Represents the data contained in a property update event.
 
     Args:
@@ -94,7 +95,7 @@ class PropertyChangeEventInit(object):
         self.value = value
 
 
-class ActionInvocationEventInit(object):
+class ActionInvocationEventInit:
     """Represents the data contained in an action invocation event.
 
     Args:
@@ -107,7 +108,7 @@ class ActionInvocationEventInit(object):
         self.return_value = return_value
 
 
-class ThingDescriptionChangeEventInit(object):
+class ThingDescriptionChangeEventInit:
     """Represents the data contained in a thing description update event.
 
     Args:

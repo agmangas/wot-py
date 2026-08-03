@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -26,8 +27,8 @@
 Wrapper classes for data schema dictionaries defined in the Scripting API.
 """
 
-from wotpy.utils.utils import merge_args_kwargs_dict
 from wotpy.wot.dictionaries.base import WotBaseDict
+from wotpy.utils.utils import merge_args_kwargs_dict
 from wotpy.wot.enums import DataType
 
 
@@ -36,17 +37,33 @@ class DataSchemaDict(WotBaseDict):
 
     class Meta:
         fields = {
-            "description",
+            "@type",
             "title",
-            "type",
+            "titles",
+            "description",
+            "descriptions",
             "const",
+            "default",
             "unit",
+            "oneOf",
             "enum",
             "readOnly",
             "writeOnly",
+            "format",
+            "type"
         }
 
-        defaults = {"readOnly": False, "writeOnly": False}
+        defaults = {
+            "readOnly": False,
+            "writeOnly": False
+        }
+
+    @property
+    def one_of(self):
+        """Used to ensure that the data is valid against
+        one of the specified schemas in the array."""
+
+        return [DataSchemaDict.build(item) for item in self._init.get("oneOf", [])]
 
     @classmethod
     def build(cls, *args, **kwargs):
@@ -61,6 +78,7 @@ class DataSchemaDict(WotBaseDict):
             DataType.OBJECT: ObjectSchemaDict,
             DataType.ARRAY: ArraySchemaDict,
             DataType.INTEGER: IntegerSchema,
+            DataType.NULL: NullSchemaDict
         }
 
         klass_type = init_dict.get("type")
@@ -71,12 +89,26 @@ class DataSchemaDict(WotBaseDict):
 
         return klass(*args, **kwargs)
 
+class NullSchemaDict(DataSchemaDict):
+    """Empty Null schema class."""
+
+    @property
+    def type(self):
+        """The type property represents the value type enumerated in DataType."""
+
+        return DataType.NULL
 
 class NumberSchemaDict(DataSchemaDict):
     """Properties to describe a numeric type."""
 
     class Meta:
-        fields = DataSchemaDict.Meta.fields.union({"minimum", "maximum"})
+        fields = DataSchemaDict.Meta.fields.union({
+            "minimum",
+            "exclusiveMinimum",
+            "maximum",
+            "exclusiveMaximum",
+            "multipleOf"
+        })
 
         defaults = DataSchemaDict.Meta.defaults
 
@@ -100,6 +132,17 @@ class BooleanSchemaDict(DataSchemaDict):
 class StringSchemaDict(DataSchemaDict):
     """Properties to describe a string type."""
 
+    class Meta:
+        fields = DataSchemaDict.Meta.fields.union({
+            "minLength",
+            "maxLength",
+            "pattern",
+            "contentEncoding",
+            "contentMediaType"
+        })
+
+        defaults = DataSchemaDict.Meta.defaults
+
     @property
     def type(self):
         """The type property represents the value type enumerated in DataType."""
@@ -111,7 +154,10 @@ class ObjectSchemaDict(DataSchemaDict):
     """Properties to describe an object type."""
 
     class Meta:
-        fields = DataSchemaDict.Meta.fields.union({"properties", "required"})
+        fields = DataSchemaDict.Meta.fields.union({
+            "properties",
+            "required"
+        })
 
         defaults = DataSchemaDict.Meta.defaults
 
@@ -135,7 +181,12 @@ class ArraySchemaDict(DataSchemaDict):
     """Properties to describe an array type."""
 
     class Meta:
-        fields = DataSchemaDict.Meta.fields.union({"items", "minItems", "maxItems"})
+        fields = DataSchemaDict.Meta.fields.union({
+            "items",
+            "minItems",
+            "maxItems"
+        })
+
         defaults = DataSchemaDict.Meta.defaults
 
     @property
@@ -148,9 +199,7 @@ class ArraySchemaDict(DataSchemaDict):
     def items(self):
         """Used to define the characteristics of an array."""
 
-        return (
-            DataSchemaDict.build(self._init["items"]) if "items" in self._init else None
-        )
+        return DataSchemaDict.build(self._init["items"]) if "items" in self._init else None
 
 
 class IntegerSchema(NumberSchemaDict):

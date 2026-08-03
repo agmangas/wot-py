@@ -23,41 +23,38 @@
 # SPDX-License-Identifier: MIT
 
 
-import string
 import uuid
 
-# noinspection PyPackageRequirements
 import pytest
-# noinspection PyPackageRequirements
-# noinspection PyPackageRequirements
 from slugify import slugify
 
 from wotpy.protocols.enums import Protocols
+from wotpy.wot.constants import WOT_TD_CONTEXT_URL_V1_1
+from wotpy.wot.dictionaries.thing import ThingFragment
 from wotpy.wot.td import ThingDescription
 from wotpy.wot.form import Form
 from wotpy.wot.interaction import Action
 from wotpy.wot.thing import Thing
 
-
-def test_unique_url_name():
-    """URL names are always unique as long as the IDs are."""
-
-    thing_id_base = uuid.uuid4().urn
-    thing_ids = [thing_id_base]
-
-    for ch in string.punctuation.replace("-", ""):
-        thing_ids.append(thing_id_base.replace("-", ch))
-
-    things = [Thing(id=item) for item in thing_ids]
-    url_names = [item.url_name for item in things]
-
-    assert len(url_names) == len(set(url_names))
-
+TD_DICT = {
+    "@context": [
+        WOT_TD_CONTEXT_URL_V1_1,
+    ],
+    "id": uuid.uuid4().urn,
+    "title": uuid.uuid4().hex,
+    "securityDefinitions": {
+        "nosec_sc":{
+            "scheme":"nosec"
+        }
+    },
+    "security": "nosec_sc"
+}
 
 def test_empty_thing_valid():
     """An empty Thing initialized by default has a valid JSON-LD serialization."""
 
-    thing = Thing(id=uuid.uuid4().urn)
+    thing_fragment = ThingFragment(TD_DICT)
+    thing = Thing(thing_fragment=thing_fragment)
     json_td = ThingDescription.from_thing(thing)
     ThingDescription.validate(json_td.to_dict())
 
@@ -79,7 +76,8 @@ def test_interaction_invalid_name():
         "?"
     ]
 
-    thing = Thing(id=uuid.uuid4().urn)
+    thing_fragment = ThingFragment(TD_DICT)
+    thing = Thing(thing_fragment=thing_fragment)
 
     for name in names_valid:
         Action(thing=thing, name=name)
@@ -92,7 +90,8 @@ def test_interaction_invalid_name():
 def test_find_interaction():
     """Interactions may be retrieved by name on a Thing."""
 
-    thing = Thing(id=uuid.uuid4().urn)
+    thing_fragment = ThingFragment(TD_DICT)
+    thing = Thing(thing_fragment=thing_fragment)
 
     interaction_01 = Action(thing=thing, name="my_interaction")
     interaction_02 = Action(thing=thing, name="AnotherInteraction")
@@ -109,7 +108,8 @@ def test_find_interaction():
 def test_remove_interaction():
     """Interactions may be removed from a Thing by name."""
 
-    thing = Thing(id=uuid.uuid4().urn)
+    thing_fragment = ThingFragment(TD_DICT)
+    thing = Thing(thing_fragment=thing_fragment)
 
     interaction_01 = Action(thing=thing, name="my_interaction")
     interaction_02 = Action(thing=thing, name="AnotherInteraction")
@@ -134,7 +134,8 @@ def test_remove_interaction():
 def test_duplicated_interactions():
     """Duplicated Interactions are rejected on a Thing."""
 
-    thing = Thing(id=uuid.uuid4().urn)
+    thing_fragment = ThingFragment(TD_DICT)
+    thing = Thing(thing_fragment=thing_fragment)
 
     interaction_01 = Action(thing=thing, name="my_interaction")
     interaction_02 = Action(thing=thing, name="AnotherInteraction")
@@ -150,7 +151,8 @@ def test_duplicated_interactions():
 def test_duplicated_forms():
     """Duplicated Forms are rejected on an Interaction."""
 
-    thing = Thing(id=uuid.uuid4().urn)
+    thing_fragment = ThingFragment(TD_DICT)
+    thing = Thing(thing_fragment=thing_fragment)
     interaction = Action(thing=thing, name="my_interaction")
     thing.add_interaction(interaction)
 

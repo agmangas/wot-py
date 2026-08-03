@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -26,11 +27,13 @@
 Class that handles incoming WebSockets messages.
 """
 
+import asyncio
 import uuid
 
 from jsonschema import validate, ValidationError
-from rx.concurrency import IOLoopScheduler
-from tornado import websocket, gen
+from reactivex.scheduler.eventloop import IOLoopScheduler
+from tornado import websocket
+from tornado import ioloop
 
 from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketErrors
 from wotpy.protocols.ws.messages import \
@@ -49,7 +52,6 @@ from wotpy.protocols.ws.schemas import \
     SCHEMA_PARAMS_ON_EVENT
 
 
-# noinspection PyAbstractClass
 class WebsocketHandler(websocket.WebSocketHandler):
     """Tornado handler for Websocket messages.
     This class processes all incoming WebSocket messages and
@@ -60,10 +62,11 @@ class WebsocketHandler(websocket.WebSocketHandler):
 
     def __init__(self, *args, **kwargs):
         self._server = kwargs.pop("websocket_server", None)
-        self._scheduler = IOLoopScheduler()
+        loop = ioloop.IOLoop.current()
+        self._scheduler = IOLoopScheduler(loop)
         self._subscriptions = {}
         self._exposed_thing_name = None
-        super(WebsocketHandler, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
     def exposed_thing(self):
@@ -137,15 +140,15 @@ class WebsocketHandler(websocket.WebSocketHandler):
     def _subscribe(self, subscription_id, observable):
         """Subscribe to the given Observable and add the subscription handler to the internal dict."""
 
-        subscription = observable.observe_on(self._scheduler).subscribe(
+        subscription = observable.subscribe(
             on_next=lambda item: self._on_subscription_next(subscription_id, item),
             on_error=lambda err: self._on_subscription_error(subscription_id, err),
-            on_completed=lambda: self._on_subscription_completed(subscription_id))
+            on_completed=lambda: self._on_subscription_completed(subscription_id),
+            scheduler=self._scheduler)
 
         self._subscriptions[subscription_id] = subscription
 
-    @gen.coroutine
-    def _handle_get_property(self, req):
+    async def _handle_get_property(self, req):
         """Handler for the 'get_property' method."""
 
         params = req.params
@@ -157,7 +160,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
             return
 
         try:
-            prop_value = yield self.exposed_thing.read_property(name=params["name"])
+            prop_value = await self.exposed_thing.read_property(name=params["name"])
         except Exception as ex:
             self._write_error(str(ex), WebsocketErrors.INTERNAL_ERROR, msg_id=req.id)
             return
@@ -165,8 +168,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
         res = WebsocketMessageResponse(result=prop_value, msg_id=req.id)
         self.write_message(res.to_json())
 
-    @gen.coroutine
-    def _handle_set_property(self, req):
+    async def _handle_set_property(self, req):
         """Handler for the 'set_property' method."""
 
         params = req.params
@@ -178,7 +180,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
             return
 
         try:
-            yield self.exposed_thing.write_property(name=params["name"], value=params["value"])
+            await self.exposed_thing.handle_write_property(params["name"], params["value"])
         except Exception as ex:
             self._write_error(str(ex), WebsocketErrors.INTERNAL_ERROR, msg_id=req.id)
             return
@@ -186,8 +188,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
         res = WebsocketMessageResponse(result=None, msg_id=req.id)
         self.write_message(res.to_json())
 
-    @gen.coroutine
-    def _handle_invoke_action(self, req):
+    async def _handle_invoke_action(self, req):
         """Handler for the 'invoke_action' method."""
 
         params = req.params
@@ -200,7 +201,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
 
         try:
             input_value = params.get("parameters")
-            action_result = yield self.exposed_thing.invoke_action(params["name"], input_value)
+            action_result = await self.exposed_thing.invoke_action(params["name"], input_value)
         except Exception as ex:
             self._write_error(str(ex), WebsocketErrors.INTERNAL_ERROR, msg_id=req.id)
             return
@@ -208,8 +209,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
         res = WebsocketMessageResponse(result=action_result, msg_id=req.id)
         self.write_message(res.to_json())
 
-    @gen.coroutine
-    def _handle_on_property_change(self, req):
+    async def _handle_on_property_change(self, req):
         """Handler for the 'on_property_change' subscription method."""
 
         params = req.params
@@ -229,8 +229,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
 
         self._subscribe(subscription_id, observable)
 
-    @gen.coroutine
-    def _handle_on_td_change(self, req):
+    async def _handle_on_td_change(self, req):
         """Handler for the 'on_td_change' subscription method."""
 
         params = req.params
@@ -250,8 +249,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
 
         self._subscribe(subscription_id, observable)
 
-    @gen.coroutine
-    def _handle_on_event(self, req):
+    async def _handle_on_event(self, req):
         """Handler for the 'on_event' subscription method."""
 
         params = req.params
@@ -271,8 +269,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
 
         self._subscribe(subscription_id, observable)
 
-    @gen.coroutine
-    def _handle_dispose(self, req):
+    async def _handle_dispose(self, req):
         """Handler for the 'dispose' method."""
 
         params = req.params
@@ -293,8 +290,7 @@ class WebsocketHandler(websocket.WebSocketHandler):
         res = WebsocketMessageResponse(result=result, msg_id=req.id)
         self.write_message(res.to_json())
 
-    @gen.coroutine
-    def _handle(self, req):
+    async def _handle(self, req):
         """Takes a WebsocketMessageRequest instance and routes
         the request to the required method handler."""
 
@@ -313,16 +309,15 @@ class WebsocketHandler(websocket.WebSocketHandler):
             return
 
         handler = handler_map[req.method]
-        yield handler(req)
+        await handler(req)
 
-    @gen.coroutine
-    def on_message(self, message):
+    async def on_message(self, message):
         """Called each time the server receives a WebSockets message.
         All messages that do not conform to the protocol are discarded."""
 
         try:
             req = WebsocketMessageRequest.from_raw(message)
-            gen.convert_yielded(self._handle(req))
+            asyncio.ensure_future(self._handle(req))
         except WebsocketMessageException as ex:
             self._write_error(str(ex), WebsocketErrors.INTERNAL_ERROR)
 

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -46,22 +47,25 @@ class EventObserverHandler(RequestHandler):
         Returns the event emission payload and destroys the subscription afterwards."""
 
         exposed_thing = handler_utils.get_exposed_thing(self._server, thing_name)
-        thing_event = exposed_thing.events[name]
+        valid_creds = await self._server._check_credentials(exposed_thing.title, self.request)
+        if not valid_creds:
+            handler_utils.request_auth(self, self._server.security_scheme, thing_name)
+        else:
+            thing_event = exposed_thing.events[name]
 
-        future_next = asyncio.Future()
+            loop = asyncio.get_running_loop()
+            future_next = loop.create_future()
 
-        def on_next(item):
-            not future_next.done() and future_next.set_result(item.data)
+            def on_next(item):
+                not future_next.done() and future_next.set_result(item.data)
 
-        def on_error(err):
-            self._logr.warning(
-                "Error on subscription to {}: {}".format(thing_event, err)
-            )
-            not future_next.done() and future_next.set_exception(err)
+            def on_error(err):
+                self._logr.warning("Error on subscription to {}: {}".format(thing_event, err))
+                not future_next.done() and future_next.set_exception(err)
 
-        self.subscription = thing_event.subscribe(on_next=on_next, on_error=on_error)
-        event_payload = await future_next
-        self.write({"payload": event_payload})
+            self.subscription = thing_event.subscribe(on_next=on_next, on_error=on_error)
+            event_payload = await future_next
+            self.write({"payload": event_payload})
 
     def on_finish(self):
         """Destroys the subscription to the observable when the request finishes."""

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -29,11 +30,10 @@ Class that represents the abstract client interface.
 from abc import ABCMeta, abstractmethod
 
 
-class BaseProtocolClient(object):
+class BaseProtocolClient(metaclass=ABCMeta):
     """Base protocol client class.
     This is the interface that must be implemented by all client classes."""
 
-    __metaclass__ = ABCMeta
 
     @property
     @abstractmethod
@@ -47,6 +47,11 @@ class BaseProtocolClient(object):
     def is_supported_interaction(self, td, name):
         """Returns True if the any of the Forms for the Interaction
         with the given name is supported in this Protocol Binding client."""
+
+        raise NotImplementedError()
+
+    def set_security(self, security_scheme_dict, credentials):
+        """Sets the security credentials for the given security scheme."""
 
         raise NotImplementedError()
 

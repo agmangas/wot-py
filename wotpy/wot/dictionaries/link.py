@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -26,47 +27,77 @@
 Wrapper classes for link dictionaries defined in the Scripting API.
 """
 
-import urllib.parse
+import urllib
 
 from wotpy.wot.dictionaries.base import WotBaseDict
 from wotpy.wot.dictionaries.security import SecuritySchemeDict
+from wotpy.wot.dictionaries.response import ExpectedResponse, AdditionalExpectedResponse
 
 
 class LinkDict(WotBaseDict):
     """A Web link, as specified by IETF RFC 8288."""
 
     class Meta:
-        fields = {"href", "type", "rel", "anchor"}
-        required = {"href"}
+        fields = {
+            "href",
+            "type",
+            "rel",
+            "anchor",
+            "sizes",
+            "hreflang"
+        }
+
+        required = {
+            "href"
+        }
 
 
-class FormDict(LinkDict):
+class FormDict(WotBaseDict):
     """Communication metadata indicating where a service can be accessed
     by a client application. An interaction might have more than one form."""
 
     class Meta:
-        fields = LinkDict.Meta.fields.union(
-            {"href", "contentType", "op", "subprotocol", "security", "scopes"}
-        )
+        fields = {
+            "href",
+            "contentType",
+            "contentCoding",
+            "security",
+            "scopes",
+            "response",
+            "additionalResponses",
+            "subprotocol",
+            "op"
+        }
 
-        required = LinkDict.Meta.required.union({"href"})
-        defaults = {"contentType": "application/json"}
+        required = {
+            "href"
+        }
+
+        defaults = {
+            "contentType": "application/json"
+        }
 
     @property
-    def security(self):
-        """Set of security configurations, provided as an array,
-        that must all be satisfied for access to resources at or
-        below the current level, if not overridden at a lower level"""
+    def response(self):
+        """This optional term can be used if the output communication
+        metadata differ from input metadata."""
 
-        if "security" not in self._init:
-            return None
+        return ExpectedResponse(self._init.get("response")) if self._init.get("response") else None
 
-        return [SecuritySchemeDict.build(item) for item in self._init.get("security")]
+    @property
+    def additional_responses(self):
+        """This optional term can be used if additional expected
+        responses are possible, e.g. for error reporting. Each
+        additional response needs to be distinguished from others
+        in some way (for example, by specifying a protocol-specific
+        error code), and may also have its own data schema."""
+
+        return [AdditionalExpectedResponse(item) for item in self._init.get("additionalResponses", [])]
+
 
     def resolve_uri(self, base=None):
         """Resolves and returns the Link URI.
-        When the href does not contain a full URL the base URI is joined with said href.
-        """
+        When the href does not contain a full URL the base URI is joined with said href."""
 
         href_parsed = urllib.parse.urlparse(self.href)
 

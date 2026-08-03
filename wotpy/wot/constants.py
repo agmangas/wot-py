@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -26,8 +27,5 @@
 Constants related to objects in the Thing hierarchy.
 """
 
-WOT_TD_CONTEXT_URL = "https://w3c.github.io/wot/w3c-wot-td-context.jsonld"
-"""W3C WoT TD semantic context."""
-
-WOT_COMMON_CONTEXT_URL = "https://w3c.github.io/wot/w3c-wot-common-context.jsonld"
-"""W3C WoT common semantic context."""
+WOT_TD_CONTEXT_URL_V1 = "https://www.w3.org/2019/wot/td/v1"
+WOT_TD_CONTEXT_URL_V1_1 = "https://www.w3.org/2022/wot/td/v1.1"

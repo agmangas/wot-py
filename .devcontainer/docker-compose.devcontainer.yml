@@ -3,21 +3,25 @@ version: "3.9"
 services:
   mqtt-broker:
     image: eclipse-mosquitto:1.6
+  zenoh-router:
+    image: eclipse/zenoh:1.9.0
     
-  wot-py:
+  wotpy:
     build:
       context: ..
       dockerfile: ./.devcontainer/Dockerfile
       args:
-        # Update 'VARIANT' to pick a Python version: 3, 3.12, 3.11, 3.10, 3.9, 3.8
+        # Update 'VARIANT' to pick a Python version: 3, 3.12, 3.11, 3.10,
         # Append -bullseye or -buster to pin to an OS version.
         # Use -bullseye variants on local on arm64/Apple Silicon.
-        - VARIANT=3.8
+        - VARIANT=3.10
         
     command: /bin/sh -c "while sleep 1000; do :; done"
     volumes:
       - ..:/workspace:cached
     environment:
       - WOTPY_TESTS_MQTT_BROKER_URL=mqtt://mqtt-broker:1883
+      - WOTPY_TESTS_ZENOH_ROUTER_URL=tcp/zenoh-router:7447
     depends_on:
       - mqtt-broker
+      - zenoh-router

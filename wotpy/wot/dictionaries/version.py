@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -35,5 +36,5 @@ class VersioningDict(WotBaseDict):
     (term definitions outside of the TD namespace) can be extended here."""
 
     class Meta:
-        fields = {"instance"}
+        fields = {"instance", "model"}
         required = {"instance"}
