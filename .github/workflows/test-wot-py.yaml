@@ -29,5 +29,5 @@ jobs:
         run: |
           pytest -v
         env:
-          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://broker:1883
-          WOTPY_TESTS_ZENOH_ROUTER_URL: tcp/zenoh:7447
+          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://127.0.0.1:1883
+          WOTPY_TESTS_ZENOH_ROUTER_URL: tcp/127.0.0.1:7447
