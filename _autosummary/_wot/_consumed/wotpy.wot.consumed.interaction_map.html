@@ -1,92 +1,54 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>wotpy.wot.consumed.interaction_map &mdash; WoTPy 0.16.0 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wotpy.wot.consumed.interaction_map &mdash; WoTPy 0.17.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
-  
-  
-  
-
-  
-  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../../_static/language_data.js"></script>
-    
-    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
-
-    
-
-  
-  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=9fbddafe"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="wotpy.wot.consumed.thing" href="wotpy.wot.consumed.thing.html" />
     <link rel="prev" title="wotpy.wot.consumed" href="../wotpy.wot.consumed.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="../../../index.html" class="icon icon-home"> WoTPy
           
-
-          
+          <a href="../../../index.html" class="icon icon-home">
+            WoTPy
           </a>
-
-          
-            
-            
-              <div class="version">
-                0.16.0
-              </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../../protocols.html">Protocol Bindings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authentication.html">Authentication Mechanisms</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.codecs.html">wotpy.codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.protocols.html">wotpy.protocols</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../wotpy.utils.html">wotpy.utils</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../../wotpy.wot.html">wotpy.wot</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="../wotpy.wot.consumed.html">wotpy.wot.consumed</a><ul class="current">
 <li class="toctree-l4 current"><a class="current reference internal" href="#">wotpy.wot.consumed.interaction_map</a></li>
@@ -94,7 +56,6 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.dictionaries.html">wotpy.wot.dictionaries</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.discovery.html">wotpy.wot.discovery</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.exposed.html">wotpy.wot.exposed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.constants.html">wotpy.wot.constants</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.enums.html">wotpy.wot.enums</a></li>
@@ -108,228 +69,180 @@
 <li class="toctree-l3"><a class="reference internal" href="../wotpy.wot.wot.html">wotpy.wot.wot</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../wotpy.utils.html">wotpy.utils</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../wotpy.protocols.html">wotpy.protocols</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../wotpy.codecs.html">wotpy.codecs</a></li>
 </ul>
 </li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../../index.html">WoTPy</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../../../index.html">Docs</a> &raquo;</li>
-        
-          <li><a href="../../../api.html">API Reference</a> &raquo;</li>
-        
-          <li><a href="../../wotpy.wot.html">wotpy.wot</a> &raquo;</li>
-        
-          <li><a href="../wotpy.wot.consumed.html">wotpy.wot.consumed</a> &raquo;</li>
-        
-      <li>wotpy.wot.consumed.interaction_map</li>
-    
-    
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../wotpy.wot.html">wotpy.wot</a></li>
+          <li class="breadcrumb-item"><a href="../wotpy.wot.consumed.html">wotpy.wot.consumed</a></li>
+      <li class="breadcrumb-item active">wotpy.wot.consumed.interaction_map</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="../../../_sources/_autosummary/_wot/_consumed/wotpy.wot.consumed.interaction_map.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="module-wotpy.wot.consumed.interaction_map">
-<span id="wotpy-wot-consumed-interaction-map"></span><h1>wotpy.wot.consumed.interaction_map<a class="headerlink" href="#module-wotpy.wot.consumed.interaction_map" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="module-wotpy.wot.consumed.interaction_map">
+<span id="wotpy-wot-consumed-interaction-map"></span><h1>wotpy.wot.consumed.interaction_map<a class="headerlink" href="#module-wotpy.wot.consumed.interaction_map" title="Link to this heading"></a></h1>
 <p>Classes that represent Interaction instances accessed on a ConsumedThing.</p>
 <p class="rubric">Classes</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingAction" title="wotpy.wot.consumed.interaction_map.ConsumedThingAction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConsumedThingAction</span></code></a>(consumed_thing,&nbsp;name)</td>
-<td>The ThingAction interface implementation for ConsumedThing objects.</td>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingAction" title="wotpy.wot.consumed.interaction_map.ConsumedThingAction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConsumedThingAction</span></code></a>(consumed_thing, name)</p></td>
+<td><p>The ThingAction interface implementation for ConsumedThing objects.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingActionDict" title="wotpy.wot.consumed.interaction_map.ConsumedThingActionDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConsumedThingActionDict</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>A dictionary that provides lazy access to the objects that implement the ThingAction interface for each action in a given ConsumedThing.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingActionDict" title="wotpy.wot.consumed.interaction_map.ConsumedThingActionDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConsumedThingActionDict</span></code></a>(*args, **kwargs)</p></td>
+<td><p>A dictionary that provides lazy access to the objects that implement the ThingAction interface for each action in a given ConsumedThing.</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingEvent" title="wotpy.wot.consumed.interaction_map.ConsumedThingEvent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConsumedThingEvent</span></code></a>(consumed_thing,&nbsp;name)</td>
-<td>The ThingEvent interface implementation for ConsumedThing objects.</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingEvent" title="wotpy.wot.consumed.interaction_map.ConsumedThingEvent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConsumedThingEvent</span></code></a>(consumed_thing, name)</p></td>
+<td><p>The ThingEvent interface implementation for ConsumedThing objects.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingEventDict" title="wotpy.wot.consumed.interaction_map.ConsumedThingEventDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConsumedThingEventDict</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>A dictionary that provides lazy access to the objects that implement the ThingEvent interface for each event in a given ConsumedThing.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingEventDict" title="wotpy.wot.consumed.interaction_map.ConsumedThingEventDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConsumedThingEventDict</span></code></a>(*args, **kwargs)</p></td>
+<td><p>A dictionary that provides lazy access to the objects that implement the ThingEvent interface for each event in a given ConsumedThing.</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict" title="wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConsumedThingInteractionDict</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>A dictionary that provides lazy access to the objects that implement the Interaction interface for each interaction in a given ConsumedThing.</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict" title="wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConsumedThingInteractionDict</span></code></a>(*args, **kwargs)</p></td>
+<td><p>A dictionary that provides lazy access to the objects that implement the Interaction interface for each interaction in a given ConsumedThing.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingProperty" title="wotpy.wot.consumed.interaction_map.ConsumedThingProperty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConsumedThingProperty</span></code></a>(consumed_thing,&nbsp;name)</td>
-<td>The ThingProperty interface implementation for ConsumedThing objects.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingProperty" title="wotpy.wot.consumed.interaction_map.ConsumedThingProperty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConsumedThingProperty</span></code></a>(consumed_thing, name)</p></td>
+<td><p>The ThingProperty interface implementation for ConsumedThing objects.</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingPropertyDict" title="wotpy.wot.consumed.interaction_map.ConsumedThingPropertyDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConsumedThingPropertyDict</span></code></a>(*args,&nbsp;**kwargs)</td>
-<td>A dictionary that provides lazy access to the objects that implement the ThingProperty interface for each property in a given ConsumedThing.</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingPropertyDict" title="wotpy.wot.consumed.interaction_map.ConsumedThingPropertyDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConsumedThingPropertyDict</span></code></a>(*args, **kwargs)</p></td>
+<td><p>A dictionary that provides lazy access to the objects that implement the ThingProperty interface for each property in a given ConsumedThing.</p></td>
 </tr>
 </tbody>
 </table>
-<dl class="class">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingAction">
-<em class="property">class </em><code class="descclassname">wotpy.wot.consumed.interaction_map.</code><code class="descname">ConsumedThingAction</code><span class="sig-paren">(</span><em>consumed_thing</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingAction" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingAction">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.consumed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ConsumedThingAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">consumed_thing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingAction" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>The ThingAction interface implementation for ConsumedThing objects.</p>
-<dl class="method">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingAction.invoke">
-<code class="descname">invoke</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingAction.invoke" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingAction.invoke">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">invoke</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingAction.invoke" title="Link to this definition"></a></dt>
 <dd><p>The invoke() method when invoked, starts the Action interaction
 with the input value provided by the inputValue argument.</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingActionDict">
-<em class="property">class </em><code class="descclassname">wotpy.wot.consumed.interaction_map.</code><code class="descname">ConsumedThingActionDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingActionDict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict" title="wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict</span></code></a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingActionDict">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.consumed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ConsumedThingActionDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingActionDict" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict" title="wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConsumedThingInteractionDict</span></code></a></p>
 <p>A dictionary that provides lazy access to the objects that implement
 the ThingAction interface for each action in a given ConsumedThing.</p>
-<dl class="attribute">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingActionDict.interaction_dict">
-<code class="descname">interaction_dict</code><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingActionDict.interaction_dict" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingActionDict.interaction_dict">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">interaction_dict</span></span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingActionDict.interaction_dict" title="Link to this definition"></a></dt>
 <dd><p>Returns an interactions dict by name.
 The dict values are the raw dict interactions as contained in a TD document.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingActionDict.thing_interaction_class">
-<code class="descname">thing_interaction_class</code><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingActionDict.thing_interaction_class" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingActionDict.thing_interaction_class">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">thing_interaction_class</span></span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingActionDict.thing_interaction_class" title="Link to this definition"></a></dt>
 <dd><p>Returns the class that implements the
 Interaction interface for this type of interaction.</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingEvent">
-<em class="property">class </em><code class="descclassname">wotpy.wot.consumed.interaction_map.</code><code class="descname">ConsumedThingEvent</code><span class="sig-paren">(</span><em>consumed_thing</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingEvent" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingEvent">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.consumed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ConsumedThingEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">consumed_thing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingEvent" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>The ThingEvent interface implementation for ConsumedThing objects.</p>
-<dl class="method">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingEvent.subscribe">
-<code class="descname">subscribe</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingEvent.subscribe" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingEvent.subscribe">
+<span class="sig-name descname"><span class="pre">subscribe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingEvent.subscribe" title="Link to this definition"></a></dt>
 <dd><p>Subscribe to an stream of emissions of this event.</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingEventDict">
-<em class="property">class </em><code class="descclassname">wotpy.wot.consumed.interaction_map.</code><code class="descname">ConsumedThingEventDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingEventDict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict" title="wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict</span></code></a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingEventDict">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.consumed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ConsumedThingEventDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingEventDict" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict" title="wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConsumedThingInteractionDict</span></code></a></p>
 <p>A dictionary that provides lazy access to the objects that implement
 the ThingEvent interface for each event in a given ConsumedThing.</p>
-<dl class="attribute">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingEventDict.interaction_dict">
-<code class="descname">interaction_dict</code><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingEventDict.interaction_dict" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingEventDict.interaction_dict">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">interaction_dict</span></span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingEventDict.interaction_dict" title="Link to this definition"></a></dt>
 <dd><p>Returns an interactions dict by name.
 The dict values are the raw dict interactions as contained in a TD document.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingEventDict.thing_interaction_class">
-<code class="descname">thing_interaction_class</code><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingEventDict.thing_interaction_class" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingEventDict.thing_interaction_class">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">thing_interaction_class</span></span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingEventDict.thing_interaction_class" title="Link to this definition"></a></dt>
 <dd><p>Returns the class that implements the
 Interaction interface for this type of interaction.</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict">
-<em class="property">class </em><code class="descclassname">wotpy.wot.consumed.interaction_map.</code><code class="descname">ConsumedThingInteractionDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">collections.UserDict</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.consumed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ConsumedThingInteractionDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">UserDict</span></code></p>
 <p>A dictionary that provides lazy access to the objects that implement
 the Interaction interface for each interaction in a given ConsumedThing.</p>
-<dl class="attribute">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict.interaction_dict">
-<code class="descname">interaction_dict</code><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict.interaction_dict" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict.interaction_dict">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">interaction_dict</span></span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict.interaction_dict" title="Link to this definition"></a></dt>
 <dd><p>Returns an interactions dict by name.
 The dict values are the raw dict interactions as contained in a TD document.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict.thing_interaction_class">
-<code class="descname">thing_interaction_class</code><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict.thing_interaction_class" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict.thing_interaction_class">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">thing_interaction_class</span></span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict.thing_interaction_class" title="Link to this definition"></a></dt>
 <dd><p>Returns the class that implements the
 Interaction interface for this type of interaction.</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingProperty">
-<em class="property">class </em><code class="descclassname">wotpy.wot.consumed.interaction_map.</code><code class="descname">ConsumedThingProperty</code><span class="sig-paren">(</span><em>consumed_thing</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingProperty" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingProperty">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.consumed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ConsumedThingProperty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">consumed_thing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingProperty" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>The ThingProperty interface implementation for ConsumedThing objects.</p>
-<dl class="method">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingProperty.read">
-<code class="descname">read</code><span class="sig-paren">(</span><em>timeout=None</em>, <em>client_kwargs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingProperty.read" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingProperty.read">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingProperty.read" title="Link to this definition"></a></dt>
 <dd><p>The read() method will fetch the value of the Property.
 A coroutine that yields the value or raises an error.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingProperty.subscribe">
-<code class="descname">subscribe</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingProperty.subscribe" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingProperty.subscribe">
+<span class="sig-name descname"><span class="pre">subscribe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingProperty.subscribe" title="Link to this definition"></a></dt>
 <dd><p>Subscribe to an stream of events emitted when the property value changes.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingProperty.write">
-<code class="descname">write</code><span class="sig-paren">(</span><em>value</em>, <em>timeout=None</em>, <em>client_kwargs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingProperty.write" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingProperty.write">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingProperty.write" title="Link to this definition"></a></dt>
 <dd><p>The write() method will attempt to set the value of the
 Property specified in the value argument whose type SHOULD
 match the one specified by the type property.
@@ -338,77 +251,59 @@ A coroutine that yields on success or raises an error.</p>
 
 </dd></dl>
 
-<dl class="class">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingPropertyDict">
-<em class="property">class </em><code class="descclassname">wotpy.wot.consumed.interaction_map.</code><code class="descname">ConsumedThingPropertyDict</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingPropertyDict" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict" title="wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict</span></code></a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingPropertyDict">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.consumed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ConsumedThingPropertyDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingPropertyDict" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict" title="wotpy.wot.consumed.interaction_map.ConsumedThingInteractionDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConsumedThingInteractionDict</span></code></a></p>
 <p>A dictionary that provides lazy access to the objects that implement
 the ThingProperty interface for each property in a given ConsumedThing.</p>
-<dl class="attribute">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingPropertyDict.interaction_dict">
-<code class="descname">interaction_dict</code><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingPropertyDict.interaction_dict" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingPropertyDict.interaction_dict">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">interaction_dict</span></span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingPropertyDict.interaction_dict" title="Link to this definition"></a></dt>
 <dd><p>Returns an interactions dict by name.
 The dict values are the raw dict interactions as contained in a TD document.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="wotpy.wot.consumed.interaction_map.ConsumedThingPropertyDict.thing_interaction_class">
-<code class="descname">thing_interaction_class</code><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingPropertyDict.thing_interaction_class" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="wotpy.wot.consumed.interaction_map.ConsumedThingPropertyDict.thing_interaction_class">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">thing_interaction_class</span></span><a class="headerlink" href="#wotpy.wot.consumed.interaction_map.ConsumedThingPropertyDict.thing_interaction_class" title="Link to this definition"></a></dt>
 <dd><p>Returns the class that implements the
 Interaction interface for this type of interaction.</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="wotpy.wot.consumed.thing.html" class="btn btn-neutral float-right" title="wotpy.wot.consumed.thing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="../wotpy.wot.consumed.html" class="btn btn-neutral float-left" title="wotpy.wot.consumed" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../wotpy.wot.consumed.html" class="btn btn-neutral float-left" title="wotpy.wot.consumed" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wotpy.wot.consumed.thing.html" class="btn btn-neutral float-right" title="wotpy.wot.consumed.thing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2018, Fundacion CTIC
-
-    </p>
+    <p>&#169; Copyright 2018, Fundacion CTIC.</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

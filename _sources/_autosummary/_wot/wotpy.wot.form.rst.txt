@@ -4,19 +4,9 @@ wotpy.wot.form
 .. automodule:: wotpy.wot.form
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
    
       Form
-   
-   
-
-   
-   
    

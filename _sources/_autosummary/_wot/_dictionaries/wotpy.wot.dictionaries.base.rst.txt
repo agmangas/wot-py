@@ -4,19 +4,9 @@ wotpy.wot.dictionaries.base
 .. automodule:: wotpy.wot.dictionaries.base
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
    
       WotBaseDict
-   
-   
-
-   
-   
    

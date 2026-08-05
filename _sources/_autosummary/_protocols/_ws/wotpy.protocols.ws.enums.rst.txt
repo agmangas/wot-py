@@ -4,11 +4,6 @@ wotpy.protocols.ws.enums
 .. automodule:: wotpy.protocols.ws.enums
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -16,9 +11,4 @@ wotpy.protocols.ws.enums
       WebsocketErrors
       WebsocketMethods
       WebsocketSchemes
-   
-   
-
-   
-   
    

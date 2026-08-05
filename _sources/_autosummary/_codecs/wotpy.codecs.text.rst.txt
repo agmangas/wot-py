@@ -4,19 +4,9 @@ wotpy.codecs.text
 .. automodule:: wotpy.codecs.text
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
    
       TextCodec
-   
-   
-
-   
-   
    

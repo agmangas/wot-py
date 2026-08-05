@@ -4,11 +4,6 @@ wotpy.wot.interaction
 .. automodule:: wotpy.wot.interaction
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -17,9 +12,4 @@ wotpy.wot.interaction
       Event
       InteractionPattern
       Property
-   
-   
-
-   
-   
    

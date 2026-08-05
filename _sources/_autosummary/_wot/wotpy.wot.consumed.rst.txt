@@ -4,13 +4,3 @@ wotpy.wot.consumed
 .. automodule:: wotpy.wot.consumed
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
-   

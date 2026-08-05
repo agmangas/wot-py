@@ -1,0 +1,12 @@
+wotpy.protocols.zenoh.handlers.event
+====================================
+
+.. automodule:: wotpy.protocols.zenoh.handlers.event
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      EventZenohHandler
+   

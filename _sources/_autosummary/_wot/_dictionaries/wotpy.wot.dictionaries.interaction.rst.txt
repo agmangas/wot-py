@@ -4,11 +4,6 @@ wotpy.wot.dictionaries.interaction
 .. automodule:: wotpy.wot.dictionaries.interaction
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -17,9 +12,4 @@ wotpy.wot.dictionaries.interaction
       EventFragmentDict
       InteractionFragmentDict
       PropertyFragmentDict
-   
-   
-
-   
-   
    

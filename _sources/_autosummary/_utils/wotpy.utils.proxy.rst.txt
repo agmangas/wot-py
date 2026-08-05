@@ -1,0 +1,15 @@
+wotpy.utils.proxy
+=================
+
+.. automodule:: wotpy.utils.proxy
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      build_action_invoke_proxy
+      build_prop_read_proxy
+      build_prop_write_proxy
+      subscribe_event
+   

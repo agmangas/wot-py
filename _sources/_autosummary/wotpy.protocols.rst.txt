@@ -1,16 +1,6 @@
-wotpy.protocols
+﻿wotpy.protocols
 ===============
 
 .. automodule:: wotpy.protocols
 
-   
-   
-   
-
-   
-   
-   
-
-   
-   
    

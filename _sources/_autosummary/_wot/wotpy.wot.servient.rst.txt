@@ -4,11 +4,6 @@ wotpy.wot.servient
 .. automodule:: wotpy.wot.servient
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -17,14 +12,9 @@ wotpy.wot.servient
       TDCatalogueHandler
       TDHandler
    
-   
-
-   
-   
    .. rubric:: Exceptions
 
    .. autosummary::
    
       ServientStateException
-   
    

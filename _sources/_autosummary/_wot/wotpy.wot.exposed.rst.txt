@@ -4,13 +4,3 @@ wotpy.wot.exposed
 .. automodule:: wotpy.wot.exposed
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
-   

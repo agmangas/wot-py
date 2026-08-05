@@ -1,0 +1,12 @@
+wotpy.protocols.zenoh.utils
+===========================
+
+.. automodule:: wotpy.protocols.zenoh.utils
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      build_zenoh_config
+   

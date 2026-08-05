@@ -4,19 +4,9 @@ wotpy.wot.dictionaries.version
 .. automodule:: wotpy.wot.dictionaries.version
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
    
       VersioningDict
-   
-   
-
-   
-   
    

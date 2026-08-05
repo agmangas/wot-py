@@ -4,13 +4,3 @@ wotpy.protocols.ws.schemas
 .. automodule:: wotpy.protocols.ws.schemas
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
-   

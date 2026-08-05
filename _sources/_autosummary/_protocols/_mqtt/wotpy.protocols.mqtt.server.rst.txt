@@ -4,19 +4,9 @@ wotpy.protocols.mqtt.server
 .. automodule:: wotpy.protocols.mqtt.server
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
    
       MQTTServer
-   
-   
-
-   
-   
    

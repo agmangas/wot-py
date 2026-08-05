@@ -4,19 +4,9 @@ wotpy.wot.dictionaries.filter
 .. automodule:: wotpy.wot.dictionaries.filter
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
    
       ThingFilterDict
-   
-   
-
-   
-   
    

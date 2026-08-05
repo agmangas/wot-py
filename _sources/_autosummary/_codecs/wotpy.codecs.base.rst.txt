@@ -4,19 +4,9 @@ wotpy.codecs.base
 .. automodule:: wotpy.codecs.base
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
    
       BaseCodec
-   
-   
-
-   
-   
    

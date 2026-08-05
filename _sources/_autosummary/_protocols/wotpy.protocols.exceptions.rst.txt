@@ -4,15 +4,6 @@ wotpy.protocols.exceptions
 .. automodule:: wotpy.protocols.exceptions
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
    .. rubric:: Exceptions
 
    .. autosummary::
@@ -20,5 +11,4 @@ wotpy.protocols.exceptions
       ClientRequestTimeout
       FormNotFoundException
       ProtocolClientException
-   
    

@@ -4,20 +4,11 @@ wotpy.protocols.http.handlers.utils
 .. automodule:: wotpy.protocols.http.handlers.utils
 
    
-   
    .. rubric:: Functions
 
    .. autosummary::
    
       get_argument
       get_exposed_thing
-   
-   
-
-   
-   
-   
-
-   
-   
+      request_auth
    

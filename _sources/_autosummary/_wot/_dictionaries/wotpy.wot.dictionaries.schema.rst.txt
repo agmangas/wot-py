@@ -4,11 +4,6 @@ wotpy.wot.dictionaries.schema
 .. automodule:: wotpy.wot.dictionaries.schema
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -17,12 +12,8 @@ wotpy.wot.dictionaries.schema
       BooleanSchemaDict
       DataSchemaDict
       IntegerSchema
+      NullSchemaDict
       NumberSchemaDict
       ObjectSchemaDict
       StringSchemaDict
-   
-   
-
-   
-   
    

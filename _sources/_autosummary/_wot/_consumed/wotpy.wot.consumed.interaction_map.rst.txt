@@ -4,11 +4,6 @@ wotpy.wot.consumed.interaction\_map
 .. automodule:: wotpy.wot.consumed.interaction_map
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -20,9 +15,4 @@ wotpy.wot.consumed.interaction\_map
       ConsumedThingInteractionDict
       ConsumedThingProperty
       ConsumedThingPropertyDict
-   
-   
-
-   
-   
    

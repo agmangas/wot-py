@@ -1,0 +1,186 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wotpy.protocols.zenoh.handlers.event &mdash; WoTPy 0.17.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=9fbddafe"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="wotpy.protocols.zenoh.handlers.ping" href="wotpy.protocols.zenoh.handlers.ping.html" />
+    <link rel="prev" title="wotpy.protocols.zenoh.handlers.base" href="wotpy.protocols.zenoh.handlers.base.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            WoTPy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../protocols.html">Protocol Bindings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../authentication.html">Authentication Mechanisms</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../../wotpy.codecs.html">wotpy.codecs</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../../wotpy.protocols.html">wotpy.protocols</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../../wotpy.protocols.coap.html">wotpy.protocols.coap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../wotpy.protocols.http.html">wotpy.protocols.http</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../wotpy.protocols.mqtt.html">wotpy.protocols.mqtt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../wotpy.protocols.ws.html">wotpy.protocols.ws</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../../wotpy.protocols.zenoh.html">wotpy.protocols.zenoh</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="../wotpy.protocols.zenoh.handlers.html">wotpy.protocols.zenoh.handlers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../wotpy.protocols.zenoh.client.html">wotpy.protocols.zenoh.client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../wotpy.protocols.zenoh.enums.html">wotpy.protocols.zenoh.enums</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../wotpy.protocols.zenoh.runner.html">wotpy.protocols.zenoh.runner</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../wotpy.protocols.zenoh.server.html">wotpy.protocols.zenoh.server</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../wotpy.protocols.zenoh.utils.html">wotpy.protocols.zenoh.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../wotpy.protocols.client.html">wotpy.protocols.client</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../wotpy.protocols.enums.html">wotpy.protocols.enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../wotpy.protocols.exceptions.html">wotpy.protocols.exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../wotpy.protocols.server.html">wotpy.protocols.server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../wotpy.protocols.utils.html">wotpy.protocols.utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../wotpy.utils.html">wotpy.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../wotpy.wot.html">wotpy.wot</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">WoTPy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../../wotpy.protocols.html">wotpy.protocols</a></li>
+          <li class="breadcrumb-item"><a href="../../wotpy.protocols.zenoh.html">wotpy.protocols.zenoh</a></li>
+          <li class="breadcrumb-item"><a href="../wotpy.protocols.zenoh.handlers.html">wotpy.protocols.zenoh.handlers</a></li>
+      <li class="breadcrumb-item active">wotpy.protocols.zenoh.handlers.event</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/_autosummary/_protocols/_zenoh/_handlers/wotpy.protocols.zenoh.handlers.event.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wotpy.protocols.zenoh.handlers.event">
+<span id="wotpy-protocols-zenoh-handlers-event"></span><h1>wotpy.protocols.zenoh.handlers.event<a class="headerlink" href="#module-wotpy.protocols.zenoh.handlers.event" title="Link to this heading"></a></h1>
+<p>Zenoh handler for Event subscriptions.</p>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wotpy.protocols.zenoh.handlers.event.EventZenohHandler" title="wotpy.protocols.zenoh.handlers.event.EventZenohHandler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EventZenohHandler</span></code></a>(zenoh_server[, callback_ms])</p></td>
+<td><p>Zenoh handler for Event subscriptions.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.event.EventZenohHandler">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.zenoh.handlers.event.</span></span><span class="sig-name descname"><span class="pre">EventZenohHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zenoh_server</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback_ms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.event.EventZenohHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="wotpy.protocols.zenoh.handlers.base.html#wotpy.protocols.zenoh.handlers.base.BaseZenohHandler" title="wotpy.protocols.zenoh.handlers.base.BaseZenohHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseZenohHandler</span></code></a></p>
+<p>Zenoh handler for Event subscriptions.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.event.EventZenohHandler.DEFAULT_CALLBACK_MS">
+<span class="sig-name descname"><span class="pre">DEFAULT_CALLBACK_MS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2000</span></span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.event.EventZenohHandler.DEFAULT_CALLBACK_MS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.event.EventZenohHandler.DEFAULT_JITTER">
+<span class="sig-name descname"><span class="pre">DEFAULT_JITTER</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.2</span></span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.event.EventZenohHandler.DEFAULT_JITTER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.event.EventZenohHandler.build_event_topic">
+<span class="sig-name descname"><span class="pre">build_event_topic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.event.EventZenohHandler.build_event_topic" title="Link to this definition"></a></dt>
+<dd><p>Returns the Zenoh topic for Event emissions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.event.EventZenohHandler.init">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.event.EventZenohHandler.init" title="Link to this definition"></a></dt>
+<dd><p>Initializes the Zenoh handler.
+Called when the Zenoh runner starts.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.event.EventZenohHandler.teardown">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">teardown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.event.EventZenohHandler.teardown" title="Link to this definition"></a></dt>
+<dd><p>Destroys the Zenoh handler.
+Called when the Zenoh runner stops.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wotpy.protocols.zenoh.handlers.base.html" class="btn btn-neutral float-left" title="wotpy.protocols.zenoh.handlers.base" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wotpy.protocols.zenoh.handlers.ping.html" class="btn btn-neutral float-right" title="wotpy.protocols.zenoh.handlers.ping" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Fundacion CTIC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
