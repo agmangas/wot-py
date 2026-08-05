@@ -4,19 +4,9 @@ wotpy.protocols.mqtt.handlers.property
 .. automodule:: wotpy.protocols.mqtt.handlers.property
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
    
       PropertyMQTTHandler
-   
-   
-
-   
-   
    

@@ -4,13 +4,3 @@ wotpy.protocols.mqtt.handlers
 .. automodule:: wotpy.protocols.mqtt.handlers
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
-   

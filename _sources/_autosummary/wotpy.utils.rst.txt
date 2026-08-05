@@ -1,16 +1,6 @@
-wotpy.utils
+﻿wotpy.utils
 ===========
 
 .. automodule:: wotpy.utils
 
-   
-   
-   
-
-   
-   
-   
-
-   
-   
    

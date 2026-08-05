@@ -8,6 +8,7 @@ Table of Contents
     :maxdepth: 2
 
     protocols
+    authentication
     api
 
 Indices and tables

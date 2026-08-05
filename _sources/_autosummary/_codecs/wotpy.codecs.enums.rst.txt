@@ -4,19 +4,9 @@ wotpy.codecs.enums
 .. automodule:: wotpy.codecs.enums
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
    
       MediaTypes
-   
-   
-
-   
-   
    

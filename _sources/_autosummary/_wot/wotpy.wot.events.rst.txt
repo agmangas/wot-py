@@ -4,11 +4,6 @@ wotpy.wot.events
 .. automodule:: wotpy.wot.events
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -20,9 +15,4 @@ wotpy.wot.events
       PropertyChangeEventInit
       ThingDescriptionChangeEmittedEvent
       ThingDescriptionChangeEventInit
-   
-   
-
-   
-   
    

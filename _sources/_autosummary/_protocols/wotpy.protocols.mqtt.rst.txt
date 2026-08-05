@@ -4,13 +4,3 @@ wotpy.protocols.mqtt
 .. automodule:: wotpy.protocols.mqtt
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
-   

@@ -1,16 +1,6 @@
-wotpy.wot
+﻿wotpy.wot
 =========
 
 .. automodule:: wotpy.wot
 
-   
-   
-   
-
-   
-   
-   
-
-   
-   
    

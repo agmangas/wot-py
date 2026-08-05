@@ -1,0 +1,12 @@
+wotpy.protocols.zenoh.handlers.base
+===================================
+
+.. automodule:: wotpy.protocols.zenoh.handlers.base
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      BaseZenohHandler
+   

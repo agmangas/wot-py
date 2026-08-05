@@ -4,19 +4,9 @@ wotpy.protocols.http.client
 .. automodule:: wotpy.protocols.http.client
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
    
       HTTPClient
-   
-   
-
-   
-   
    

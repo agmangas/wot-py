@@ -1,0 +1,12 @@
+wotpy.protocols.zenoh.handlers.property
+=======================================
+
+.. automodule:: wotpy.protocols.zenoh.handlers.property
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PropertyZenohHandler
+   

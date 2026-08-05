@@ -4,11 +4,6 @@ wotpy.protocols.mqtt.enums
 .. automodule:: wotpy.protocols.mqtt.enums
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -18,9 +13,4 @@ wotpy.protocols.mqtt.enums
       MQTTQoSLevels
       MQTTSchemes
       MQTTVocabularyKeys
-   
-   
-
-   
-   
    

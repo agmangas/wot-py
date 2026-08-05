@@ -1,0 +1,12 @@
+wotpy.protocols.zenoh.client
+============================
+
+.. automodule:: wotpy.protocols.zenoh.client
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ZenohClient
+   

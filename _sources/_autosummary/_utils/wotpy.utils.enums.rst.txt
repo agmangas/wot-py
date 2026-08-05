@@ -4,19 +4,9 @@ wotpy.utils.enums
 .. automodule:: wotpy.utils.enums
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
    
       EnumListMixin
-   
-   
-
-   
-   
    

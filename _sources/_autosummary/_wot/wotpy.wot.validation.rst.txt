@@ -4,27 +4,22 @@ wotpy.wot.validation
 .. automodule:: wotpy.wot.validation
 
    
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      REGEX_ANY_URI
    
    .. rubric:: Functions
 
    .. autosummary::
    
-      interaction_schema_for_type
       is_valid_safe_name
       is_valid_uri
-   
-   
-
-   
-   
-   
-
-   
    
    .. rubric:: Exceptions
 
    .. autosummary::
    
       InvalidDescription
-   
    

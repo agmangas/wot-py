@@ -1,0 +1,22 @@
+wotpy.protocols.http.authenticator
+==================================
+
+.. automodule:: wotpy.protocols.http.authenticator
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      APIKeySecurityAuthenticator
+      AutoSecurityAuthenticator
+      BaseAuthenticator
+      BasicSecurityAuthenticator
+      BearerSecurityAuthenticator
+      ComboSecurityAuthenticator
+      DigestSecurityAuthenticator
+      NoSecurityAuthenticator
+      OAuth2SecurityAuthenticator
+      OIDC4VPAuthenticator
+      PSKSecurityAuthenticator
+   

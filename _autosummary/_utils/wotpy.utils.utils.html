@@ -1,291 +1,226 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>wotpy.utils.utils &mdash; WoTPy 0.16.0 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wotpy.utils.utils &mdash; WoTPy 0.17.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
-  
-  
-  
-
-  
-  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../_static/language_data.js"></script>
-    
-    <script type="text/javascript" src="../../_static/js/theme.js"></script>
-
-    
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=9fbddafe"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="wotpy.protocols" href="../wotpy.protocols.html" />
-    <link rel="prev" title="wotpy.utils.enums" href="wotpy.utils.enums.html" /> 
+    <link rel="next" title="wotpy.wot" href="../wotpy.wot.html" />
+    <link rel="prev" title="wotpy.utils.proxy" href="wotpy.utils.proxy.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="../../index.html" class="icon icon-home"> WoTPy
           
-
-          
+          <a href="../../index.html" class="icon icon-home">
+            WoTPy
           </a>
-
-          
-            
-            
-              <div class="version">
-                0.16.0
-              </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../protocols.html">Protocol Bindings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authentication.html">Authentication Mechanisms</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../api.html">API Reference</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../wotpy.wot.html">wotpy.wot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../wotpy.codecs.html">wotpy.codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../wotpy.protocols.html">wotpy.protocols</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../wotpy.utils.html">wotpy.utils</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="wotpy.utils.enums.html">wotpy.utils.enums</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">wotpy.utils.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wotpy.utils.proxy.html">wotpy.utils.proxy</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wotpy.utils.utils</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wotpy.utils.utils.dict_merge"><code class="docutils literal notranslate"><span class="pre">dict_merge()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wotpy.utils.utils.flatten"><code class="docutils literal notranslate"><span class="pre">flatten()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wotpy.utils.utils.get_main_ipv4_address"><code class="docutils literal notranslate"><span class="pre">get_main_ipv4_address()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wotpy.utils.utils.handle_observer_finalization"><code class="docutils literal notranslate"><span class="pre">handle_observer_finalization()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wotpy.utils.utils.merge_args_kwargs_dict"><code class="docutils literal notranslate"><span class="pre">merge_args_kwargs_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wotpy.utils.utils.to_camel"><code class="docutils literal notranslate"><span class="pre">to_camel()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wotpy.utils.utils.to_json_obj"><code class="docutils literal notranslate"><span class="pre">to_json_obj()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wotpy.utils.utils.to_snake"><code class="docutils literal notranslate"><span class="pre">to_snake()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../wotpy.protocols.html">wotpy.protocols</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../wotpy.codecs.html">wotpy.codecs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../wotpy.wot.html">wotpy.wot</a></li>
 </ul>
 </li>
 </ul>
 
-            
-          
         </div>
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">WoTPy</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../../index.html">Docs</a> &raquo;</li>
-        
-          <li><a href="../../api.html">API Reference</a> &raquo;</li>
-        
-          <li><a href="../wotpy.utils.html">wotpy.utils</a> &raquo;</li>
-        
-      <li>wotpy.utils.utils</li>
-    
-    
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../wotpy.utils.html">wotpy.utils</a></li>
+      <li class="breadcrumb-item active">wotpy.utils.utils</li>
       <li class="wy-breadcrumbs-aside">
-        
-            
             <a href="../../_sources/_autosummary/_utils/wotpy.utils.utils.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="module-wotpy.utils.utils">
-<span id="wotpy-utils-utils"></span><h1>wotpy.utils.utils<a class="headerlink" href="#module-wotpy.utils.utils" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="module-wotpy.utils.utils">
+<span id="wotpy-utils-utils"></span><h1>wotpy.utils.utils<a class="headerlink" href="#module-wotpy.utils.utils" title="Link to this heading"></a></h1>
 <p>Some utility functions for the WoT data type wrappers.</p>
 <p class="rubric">Functions</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#wotpy.utils.utils.get_main_ipv4_address" title="wotpy.utils.utils.get_main_ipv4_address"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_main_ipv4_address</span></code></a>()</td>
-<td>Returns the main IPv4 address of the current machine in a portable fashion.</td>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wotpy.utils.utils.dict_merge" title="wotpy.utils.utils.dict_merge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict_merge</span></code></a>(dct, merge_dct)</p></td>
+<td><p>Recursive dict merge.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#wotpy.utils.utils.handle_observer_finalization" title="wotpy.utils.utils.handle_observer_finalization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">handle_observer_finalization</span></code></a>(observer)</td>
-<td>Builds a decorator that yields the wrapped coroutine and calls on_completed or on_error on the observer when the coroutine ends or raises an error.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="#wotpy.utils.utils.flatten" title="wotpy.utils.utils.flatten"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flatten</span></code></a>(dictionary[, parent_key, separator])</p></td>
+<td><p>This functions flattens a dictionary converting nested keys into simple dot-separated strings.</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#wotpy.utils.utils.merge_args_kwargs_dict" title="wotpy.utils.utils.merge_args_kwargs_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_args_kwargs_dict</span></code></a>(args,&nbsp;kwargs)</td>
-<td>Takes a tuple of args and dict of kwargs.</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wotpy.utils.utils.get_main_ipv4_address" title="wotpy.utils.utils.get_main_ipv4_address"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_main_ipv4_address</span></code></a>()</p></td>
+<td><p>Returns the main IPv4 address of the current machine in a portable fashion.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#wotpy.utils.utils.to_camel" title="wotpy.utils.utils.to_camel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_camel</span></code></a>(val)</td>
-<td>Takes a string and transforms it to camelCase.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="#wotpy.utils.utils.handle_observer_finalization" title="wotpy.utils.utils.handle_observer_finalization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">handle_observer_finalization</span></code></a>(observer)</p></td>
+<td><p>Builds a decorator that yields the wrapped coroutine and calls on_completed or on_error on the observer when the coroutine ends or raises an error.</p></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#wotpy.utils.utils.to_json_obj" title="wotpy.utils.utils.to_json_obj"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_json_obj</span></code></a>(obj)</td>
-<td>Recursive function that attempts to convert any given object to a JSON-serializable object.</td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wotpy.utils.utils.merge_args_kwargs_dict" title="wotpy.utils.utils.merge_args_kwargs_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_args_kwargs_dict</span></code></a>(args, kwargs)</p></td>
+<td><p>Takes a tuple of args and dict of kwargs.</p></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#wotpy.utils.utils.to_snake" title="wotpy.utils.utils.to_snake"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_snake</span></code></a>(val)</td>
-<td>Takes a string and transforms it to snake_case.</td>
+<tr class="row-even"><td><p><a class="reference internal" href="#wotpy.utils.utils.to_camel" title="wotpy.utils.utils.to_camel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_camel</span></code></a>(val)</p></td>
+<td><p>Takes a string and transforms it to camelCase.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wotpy.utils.utils.to_json_obj" title="wotpy.utils.utils.to_json_obj"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_json_obj</span></code></a>(obj)</p></td>
+<td><p>Recursive function that attempts to convert any given object to a JSON-serializable object.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wotpy.utils.utils.to_snake" title="wotpy.utils.utils.to_snake"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_snake</span></code></a>(val)</p></td>
+<td><p>Takes a string and transforms it to snake_case.</p></td>
 </tr>
 </tbody>
 </table>
-<dl class="function">
-<dt id="wotpy.utils.utils.get_main_ipv4_address">
-<code class="descclassname">wotpy.utils.utils.</code><code class="descname">get_main_ipv4_address</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.utils.utils.get_main_ipv4_address" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="wotpy.utils.utils.dict_merge">
+<span class="sig-prename descclassname"><span class="pre">wotpy.utils.utils.</span></span><span class="sig-name descname"><span class="pre">dict_merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dct</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">merge_dct</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.utils.utils.dict_merge" title="Link to this definition"></a></dt>
+<dd><p>Recursive dict merge. Inspired by :meth:<code class="docutils literal notranslate"><span class="pre">dict.update()</span></code>, instead of
+updating only top-level keys, dict_merge recurses down into dicts nested
+to an arbitrary depth, updating keys. The <code class="docutils literal notranslate"><span class="pre">merge_dct</span></code> is merged into
+<code class="docutils literal notranslate"><span class="pre">dct</span></code>.
+:param dct: dict onto which the merge is executed
+:param merge_dct: dct merged into dct
+:return: None
+Source: <a class="reference external" href="https://gist.github.com/angstwad/bf22d1822c38a92ec0a9">https://gist.github.com/angstwad/bf22d1822c38a92ec0a9</a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wotpy.utils.utils.flatten">
+<span class="sig-prename descclassname"><span class="pre">wotpy.utils.utils.</span></span><span class="sig-name descname"><span class="pre">flatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dictionary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.utils.utils.flatten" title="Link to this definition"></a></dt>
+<dd><p>This functions flattens a dictionary converting nested keys
+into simple dot-separated strings.
+Source: <a class="reference external" href="https://stackoverflow.com/questions/6027558/flatten-nested-dictionaries-compressing-keys">https://stackoverflow.com/questions/6027558/flatten-nested-dictionaries-compressing-keys</a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wotpy.utils.utils.get_main_ipv4_address">
+<span class="sig-prename descclassname"><span class="pre">wotpy.utils.utils.</span></span><span class="sig-name descname"><span class="pre">get_main_ipv4_address</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.utils.utils.get_main_ipv4_address" title="Link to this definition"></a></dt>
 <dd><p>Returns the main IPv4 address of the current machine in a portable fashion.
 Attribution to the answer provided by Jamieson Becker on:
 <a class="reference external" href="https://stackoverflow.com/a/28950776">https://stackoverflow.com/a/28950776</a></p>
 </dd></dl>
 
-<dl class="function">
-<dt id="wotpy.utils.utils.handle_observer_finalization">
-<code class="descclassname">wotpy.utils.utils.</code><code class="descname">handle_observer_finalization</code><span class="sig-paren">(</span><em>observer</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.utils.utils.handle_observer_finalization" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="wotpy.utils.utils.handle_observer_finalization">
+<span class="sig-prename descclassname"><span class="pre">wotpy.utils.utils.</span></span><span class="sig-name descname"><span class="pre">handle_observer_finalization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">observer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.utils.utils.handle_observer_finalization" title="Link to this definition"></a></dt>
 <dd><p>Builds a decorator that yields the wrapped coroutine and calls on_completed
 or on_error on the observer when the coroutine ends or raises an error.</p>
 </dd></dl>
 
-<dl class="function">
-<dt id="wotpy.utils.utils.merge_args_kwargs_dict">
-<code class="descclassname">wotpy.utils.utils.</code><code class="descname">merge_args_kwargs_dict</code><span class="sig-paren">(</span><em>args</em>, <em>kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.utils.utils.merge_args_kwargs_dict" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="wotpy.utils.utils.merge_args_kwargs_dict">
+<span class="sig-prename descclassname"><span class="pre">wotpy.utils.utils.</span></span><span class="sig-name descname"><span class="pre">merge_args_kwargs_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.utils.utils.merge_args_kwargs_dict" title="Link to this definition"></a></dt>
 <dd><p>Takes a tuple of args and dict of kwargs.
 Returns a dict that is the result of merging the first item
 of args (if that item is a dict) and the kwargs dict.</p>
 </dd></dl>
 
-<dl class="function">
-<dt id="wotpy.utils.utils.to_camel">
-<code class="descclassname">wotpy.utils.utils.</code><code class="descname">to_camel</code><span class="sig-paren">(</span><em>val</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.utils.utils.to_camel" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="wotpy.utils.utils.to_camel">
+<span class="sig-prename descclassname"><span class="pre">wotpy.utils.utils.</span></span><span class="sig-name descname"><span class="pre">to_camel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.utils.utils.to_camel" title="Link to this definition"></a></dt>
 <dd><p>Takes a string and transforms it to camelCase.</p>
 </dd></dl>
 
-<dl class="function">
-<dt id="wotpy.utils.utils.to_json_obj">
-<code class="descclassname">wotpy.utils.utils.</code><code class="descname">to_json_obj</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.utils.utils.to_json_obj" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="wotpy.utils.utils.to_json_obj">
+<span class="sig-prename descclassname"><span class="pre">wotpy.utils.utils.</span></span><span class="sig-name descname"><span class="pre">to_json_obj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.utils.utils.to_json_obj" title="Link to this definition"></a></dt>
 <dd><p>Recursive function that attempts to convert
 any given object to a JSON-serializable object.</p>
 </dd></dl>
 
-<dl class="function">
-<dt id="wotpy.utils.utils.to_snake">
-<code class="descclassname">wotpy.utils.utils.</code><code class="descname">to_snake</code><span class="sig-paren">(</span><em>val</em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.utils.utils.to_snake" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="wotpy.utils.utils.to_snake">
+<span class="sig-prename descclassname"><span class="pre">wotpy.utils.utils.</span></span><span class="sig-name descname"><span class="pre">to_snake</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.utils.utils.to_snake" title="Link to this definition"></a></dt>
 <dd><p>Takes a string and transforms it to snake_case.</p>
 </dd></dl>
 
-</div>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="../wotpy.protocols.html" class="btn btn-neutral float-right" title="wotpy.protocols" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="wotpy.utils.enums.html" class="btn btn-neutral float-left" title="wotpy.utils.enums" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wotpy.utils.proxy.html" class="btn btn-neutral float-left" title="wotpy.utils.proxy" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../wotpy.wot.html" class="btn btn-neutral float-right" title="wotpy.wot" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2018, Fundacion CTIC
-
-    </p>
+    <p>&#169; Copyright 2018, Fundacion CTIC.</p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

@@ -4,19 +4,9 @@ wotpy.wot.dictionaries.thing
 .. automodule:: wotpy.wot.dictionaries.thing
 
    
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
    
       ThingFragment
-   
-   
-
-   
-   
    

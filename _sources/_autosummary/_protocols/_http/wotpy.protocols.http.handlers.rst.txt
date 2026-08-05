@@ -4,13 +4,3 @@ wotpy.protocols.http.handlers
 .. automodule:: wotpy.protocols.http.handlers
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
-   

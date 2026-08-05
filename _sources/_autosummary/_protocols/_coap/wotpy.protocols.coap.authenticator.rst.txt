@@ -1,0 +1,21 @@
+wotpy.protocols.coap.authenticator
+==================================
+
+.. automodule:: wotpy.protocols.coap.authenticator
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      APIKeySecurityAuthenticator
+      AutoSecurityAuthenticator
+      BaseAuthenticator
+      BasicSecurityAuthenticator
+      BearerSecurityAuthenticator
+      ComboSecurityAuthenticator
+      DigestSecurityAuthenticator
+      NoSecurityAuthenticator
+      OAuth2SecurityAuthenticator
+      PSKSecurityAuthenticator
+   
