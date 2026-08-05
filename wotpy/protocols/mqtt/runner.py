@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -30,14 +31,18 @@ import asyncio
 import copy
 import logging
 import uuid
-from asyncio import Queue
+from urllib.parse import urlparse, urlunparse
 
-import aiomqtt
+from amqtt.client import MQTTClient
+try:
+    from amqtt.client import ConnectError
+except ImportError:
+    from amqtt.client import ClientException as ConnectError
 
-from wotpy.protocols.mqtt.utils import MQTTBrokerURL, aiomqtt_read_loop
+from wotpy.protocols.mqtt.enums import MQTTCodesACK
 
 
-class MQTTHandlerRunner(object):
+class MQTTHandlerRunner:
     """Class that wraps an MQTT handler. It handles connections to the
     MQTT broker, delivers messages, and runs the handler in a loop."""
 
@@ -45,7 +50,13 @@ class MQTTHandlerRunner(object):
     DEFAULT_SLEEP_ERR_RECONN = 2.0
     DEFAULT_MSGS_BUF_SIZE = 500
 
-    DEFAULT_CLIENT_CONFIG = {"clean_session": False}
+    # Highly permissive default keep_alive to avoid
+    # disconnections from broker on high throughput scenarios:
+    # https://github.com/beerfactory/hbmqtt/issues/119#issuecomment-430398094
+
+    DEFAULT_CLIENT_CONFIG = {
+        "keep_alive": 90
+    }
 
     def __init__(
         self,
@@ -54,21 +65,31 @@ class MQTTHandlerRunner(object):
         messages_buffer_size=DEFAULT_MSGS_BUF_SIZE,
         timeout_loops=DEFAULT_TIMEOUT_LOOPS_SECS,
         sleep_error_reconnect=DEFAULT_SLEEP_ERR_RECONN,
-        aiomqtt_config=None,
+        ca_file=None,
+        amqtt_config=None,
+        username=None,
+        password=None
     ):
-        self._broker_url = broker_url
         self._mqtt_handler = mqtt_handler
-        self._messages_buffer = Queue(maxsize=messages_buffer_size)
+        self._messages_buffer = asyncio.Queue(maxsize=messages_buffer_size)
         self._timeout_loops_secs = timeout_loops
         self._sleep_error_reconnect = sleep_error_reconnect
-        self._aiomqtt_config = aiomqtt_config
+        self._ca_file = ca_file
+        self._amqtt_config = amqtt_config
+        self._username = username
+        self._password = password
+        if username is not None and password is not None:
+            url_parts = list(urlparse(broker_url))
+            url_parts[1] = f"{self._username}:{self._password}@{url_parts[1]}"
+            self._broker_url = urlunparse(url_parts)
+        else:
+            self._broker_url = broker_url
         self._client = None
         self._client_id = uuid.uuid4().hex
         self._lock_conn = asyncio.Lock()
         self._lock_run = asyncio.Lock()
         self._event_stop_request = asyncio.Event()
         self._logr = logging.getLogger(__name__)
-        self._run_loop_task = None
 
     def _log(self, level, msg, **kwargs):
         """Helper function to wrap all log messages."""
@@ -80,21 +101,16 @@ class MQTTHandlerRunner(object):
         )
 
     def _build_client_config(self):
-        """Returns the config dict for a new MQTT client instance."""
+        """Returns the config dict for a new amqtt client instance."""
 
         config = copy.copy(self.DEFAULT_CLIENT_CONFIG)
-        config.update(self._aiomqtt_config if self._aiomqtt_config else {})
-        mqtt_broker_url = MQTTBrokerURL.from_url(self._broker_url)
+        config_arg = self._amqtt_config if self._amqtt_config else {}
+        config.update(config_arg)
 
-        config.update(
-            {
-                "hostname": mqtt_broker_url.host,
-                "port": mqtt_broker_url.port,
-                "username": mqtt_broker_url.username,
-                "password": mqtt_broker_url.password,
-                "client_id": self._client_id,
-            }
-        )
+        # The library does not resubscribe when reconnecting.
+        # We need to handle it manually.
+
+        config.update({"auto_reconnect": False})
 
         return config
 
@@ -102,36 +118,41 @@ class MQTTHandlerRunner(object):
         """MQTT connection helper function."""
 
         config = self._build_client_config()
+
+        self._log(logging.DEBUG, "MQTT client ID: {}".format(self._client_id))
         self._log(logging.DEBUG, "MQTT client config: {}".format(config))
-        aiomqtt_client = aiomqtt.Client(**config)
-        await aiomqtt_client.__aenter__()
+
+        amqtt_client = MQTTClient(client_id=self._client_id, config=config)
+
+        self._log(logging.INFO, "Connecting MQTT client to broker: {}".format(self._broker_url))
+
+        ack_con = await amqtt_client.connect(self._broker_url, cafile=self._ca_file, cleansession=False)
+
+        if ack_con != MQTTCodesACK.CON_OK:
+            raise ConnectError("Error code in connection ACK: {}".format(ack_con))
 
         if self._mqtt_handler.topics:
-            self._log(
-                logging.DEBUG, "Subscribing to: {}".format(self._mqtt_handler.topics)
-            )
+            self._log(logging.DEBUG, "Subscribing to: {}".format(self._mqtt_handler.topics))
+            ack_sub = await amqtt_client.subscribe(self._mqtt_handler.topics)
 
-            await asyncio.gather(
-                *[
-                    aiomqtt_client.subscribe(topic=topic, qos=qos)
-                    for topic, qos in self._mqtt_handler.topics
-                ]
-            )
+            if MQTTCodesACK.SUB_ERROR in ack_sub:
+                raise ConnectError("Error code in subscription ACK: {}".format(ack_sub))
 
-        self._client = aiomqtt_client
+        self._client = amqtt_client
 
     async def _disconnect(self):
         """MQTT disconnection helper function."""
 
         try:
             self._log(logging.DEBUG, "Disconnecting MQTT client")
-            await self._client.__aexit__(exc_type=None, exc=None, tb=None)
+
+            if self._mqtt_handler.topics:
+                self._log(logging.DEBUG, "Unsubscribing from: {}".format(self._mqtt_handler.topics))
+                await self._client.unsubscribe([name for name, qos in self._mqtt_handler.topics])
+
+            await self._client.disconnect()
         except Exception as ex:
-            self._log(
-                logging.DEBUG,
-                "Error disconnecting MQTT client: {}".format(ex),
-                exc_info=True,
-            )
+            self._log(logging.DEBUG, "Error disconnecting MQTT client: {}".format(ex), exc_info=True)
         finally:
             self._client = None
 
@@ -159,37 +180,30 @@ class MQTTHandlerRunner(object):
     async def _deliver_messages(self):
         """Receives messages from the MQTT broker and puts them in the internal buffer."""
 
-        async def anext_ex_handler(ex: Exception):
-            self._log(
-                logging.WARNING,
-                "Error reading MQTT queue ({}): {}".format(ex.__class__, ex),
-            )
+        message = None
 
-            try:
-                await asyncio.sleep(self._sleep_error_reconnect)
-                await self.connect(force_reconnect=True)
-            except Exception as ex:
-                self._log(
-                    logging.ERROR,
-                    "Error reconnecting: {}".format(ex),
-                    exc_info=True,
-                )
+        while not self._event_stop_request.is_set():
+            if message is None:
+                try:
+                    message = await self._client.deliver_message(timeout_duration=self._timeout_loops_secs)
+                except asyncio.TimeoutError:
+                    pass
+                except Exception as ex:
+                    self._log(logging.WARNING, "Error on MQTT deliver: {}".format(ex))
 
-        async def message_handler(message: aiomqtt.Message):
-            try:
-                await asyncio.wait_for(
-                    self._messages_buffer.put(message),
-                    timeout=self._timeout_loops_secs,
-                )
-            except asyncio.TimeoutError:
-                self._log(logging.DEBUG, "Full messages buffer")
+                    try:
+                        await asyncio.sleep(self._sleep_error_reconnect)
+                        await self.connect(force_reconnect=True)
+                    except Exception as ex:
+                        self._log(logging.ERROR, "Error reconnecting: {}".format(ex), exc_info=True)
 
-        await aiomqtt_read_loop(
-            stop_event=self._event_stop_request,
-            client=self._client,
-            anext_ex_handler=anext_ex_handler,
-            message_handler=message_handler,
-        )
+            if message is not None:
+                try:
+                    await asyncio.wait_for(
+                        self._messages_buffer.put(message), timeout=self._timeout_loops_secs)
+                    message = None
+                except asyncio.TimeoutError:
+                    self._log(logging.DEBUG, "Full messages buffer")
 
     async def _handle_messages(self):
         """Gets messages from the internal buffer and
@@ -198,16 +212,13 @@ class MQTTHandlerRunner(object):
         while not self._event_stop_request.is_set():
             try:
                 message = await asyncio.wait_for(
-                    self._messages_buffer.get(), timeout=self._timeout_loops_secs
-                )
-                self._log(logging.DEBUG, "Handling message: {}".format(message.payload))
-                await self._mqtt_handler.handle_message(message)
+                    self._messages_buffer.get(), timeout=self._timeout_loops_secs)
+                self._log(logging.DEBUG, "Handling message: {}".format(message.data))
+                asyncio.ensure_future(self._mqtt_handler.handle_message(message))
             except asyncio.TimeoutError:
                 pass
             except Exception as ex:
-                self._log(
-                    logging.WARNING, "MQTT handler error: {}".format(ex), exc_info=True
-                )
+                self._log(logging.WARNING, "MQTT handler error: {}".format(ex), exc_info=True)
 
     async def _publish_queued_messages(self):
         """Gets the pending messages from the handler queue and publishes them on the broker."""
@@ -218,30 +229,24 @@ class MQTTHandlerRunner(object):
             try:
                 if message is None:
                     message = await asyncio.wait_for(
-                        self._mqtt_handler.queue.get(), timeout=self._timeout_loops_secs
-                    )
+                        self._mqtt_handler.queue.get(), timeout=self._timeout_loops_secs)
                 else:
                     self._log(logging.WARNING, "Republish attempt: {}".format(message))
 
                 await self._client.publish(
                     topic=message["topic"],
-                    payload=message["data"],
-                    qos=message.get("qos", 0),
-                    retain=message.get("retain", False),
-                )
+                    message=message["data"],
+                    qos=message.get("qos", None),
+                    retain=message.get("retain", None))
 
                 message = None
             except asyncio.TimeoutError:
                 pass
             except Exception as ex:
-                self._log(
-                    logging.WARNING,
-                    "Exception publishing: {}".format(ex),
-                    exc_info=True,
-                )
+                self._log(logging.WARNING, "Exception publishing: {}".format(ex), exc_info=True)
                 await asyncio.sleep(self._sleep_error_reconnect)
 
-    async def _run_loop(self):
+    async def _add_loop_callback(self):
         """Adds the callback that will start the infinite loop
         to listen and handle the messages published in the topics
         that are of interest to this MQTT client."""
@@ -250,15 +255,14 @@ class MQTTHandlerRunner(object):
             async with self._lock_run:
                 self._log(logging.DEBUG, "Entering MQTT runner loop")
 
-                await asyncio.gather(
-                    self._deliver_messages(),
-                    self._handle_messages(),
-                    self._publish_queued_messages(),
-                )
+                asyncio.ensure_future(self._deliver_messages())
+                asyncio.ensure_future(self._handle_messages())
+                asyncio.ensure_future(self._publish_queued_messages())
+
         except asyncio.TimeoutError:
             self._log(
                 logging.WARNING,
-                "Cannot start MQTT handler loop while another is already running",
+                "Cannot start MQTT handler loop while another is already running"
             )
 
     async def start(self):
@@ -271,9 +275,9 @@ class MQTTHandlerRunner(object):
 
         await self.connect(force_reconnect=True)
         await self._mqtt_handler.init()
-        self._run_loop_task = asyncio.create_task(self._run_loop())
+        await self._add_loop_callback()
 
-    async def stop(self, run_loop_timeout=60.0):
+    async def stop(self):
         """Stops listening for published messages."""
 
         self._event_stop_request.set()
@@ -282,10 +286,5 @@ class MQTTHandlerRunner(object):
             pass
 
         await self._mqtt_handler.teardown()
-
-        try:
-            await asyncio.wait_for(self._run_loop_task, timeout=run_loop_timeout)
-        except asyncio.TimeoutError:
-            self._log(logging.WARNING, "MQTT handler loop did not finish in time")
 
         await self.disconnect()

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -34,35 +35,48 @@ from slugify import slugify
 
 from wotpy.utils.utils import to_camel
 from wotpy.wot.dictionaries.thing import ThingFragment
-from wotpy.wot.interaction import Action, Event, Property
+from wotpy.wot.interaction import Property, Action, Event
 
 
-class Thing(object):
+class Thing:
     """An abstraction of a physical or virtual entity whose metadata
     and interfaces are described by a WoT Thing Description."""
 
     THING_FRAGMENT_WRITABLE_FIELDS = {
-        "version",
-        "title",
-        "description",
-        "support",
-        "created",
-        "lastModified",
-        "base",
-        "links",
-        "security",
+            "@context",
+            "@type",
+            "id",
+            "title",
+            "titles",
+            "description",
+            "descriptions",
+            "version",
+            "created",
+            "modified",
+            "support",
+            "base",
+            "properties",
+            "actions",
+            "events",
+            "links",
+            "forms",
+            "security",
+            "securityDefinitions",
+            "profile",
+            "schemaDefinitions",
+            "uriVariables"
     }
 
     assert THING_FRAGMENT_WRITABLE_FIELDS.issubset(ThingFragment.Meta.fields)
 
     def __init__(self, thing_fragment=None, **kwargs):
-        self._thing_fragment = (
-            thing_fragment if thing_fragment else ThingFragment(**kwargs)
-        )
+        self._thing_fragment = thing_fragment if thing_fragment else ThingFragment(**kwargs)
+        self._security  = []
+        self._security_definitions = {}
         self._properties = {}
         self._actions = {}
         self._events = {}
-        self._init_fragment_interactions()
+        self._init_fragment_data()
 
     def __getattr__(self, name):
         """Search for members that raised an AttributeError in
@@ -76,12 +90,15 @@ class Thing(object):
         name_camel = to_camel(name)
 
         if name_camel not in self.THING_FRAGMENT_WRITABLE_FIELDS:
-            return super(Thing, self).__setattr__(name, value)
+            return super().__setattr__(name, value)
 
         return self._thing_fragment.__setattr__(name, value)
 
-    def _init_fragment_interactions(self):
-        """Adds the interactions declared in the ThingFragment to the instance private dicts."""
+    def _init_fragment_data(self):
+        """Adds the data declared in the ThingFragment to the instance private dicts."""
+
+        self._security = self._thing_fragment.security
+        self._security_definitions = self._thing_fragment.security_definitions
 
         for name, prop_fragment in self._thing_fragment.properties.items():
             prop = Property(thing=self, name=name, init_dict=prop_fragment)
@@ -150,25 +167,22 @@ class Thing(object):
         return self.thing_fragment.title
 
     @property
-    def uuid(self):
-        """Thing UUID in hex string format (e.g. a5220c5f-6bcb-4675-9c67-a2b1adc280b7).
-        This value is deterministic and derived from the Thing ID.
-        It may be of use when URL-unsafe chars are not acceptable."""
+    def url_name(self):
+        """Returns the URL-safe name of this Thing."""
 
-        # trunk-ignore(bandit/B324)
-        hasher = hashlib.md5()
-        hasher.update(self.id.encode())
-        bytes_id_hash = hasher.digest()
-
-        return str(uuid.UUID(bytes=bytes_id_hash))
+        return slugify(self.title)
 
     @property
-    def url_name(self):
-        """Returns the URL-safe name of this Thing.
-        The URL name of a Thing is always unique and stable as long as the ID is unique.
-        """
+    def security(self):
+        """List of supported security schemes."""
 
-        return slugify("{}-{}".format(self.title, self.uuid))
+        return self._security
+
+    @property
+    def security_definitions(self):
+        """Security configuration for each of the supported protocols."""
+
+        return self._security_definitions
 
     @property
     def properties(self):
@@ -193,8 +207,9 @@ class Thing(object):
         """Sequence of interactions linked to this thing."""
 
         return itertools.chain(
-            self._properties.values(), self._actions.values(), self._events.values()
-        )
+            self._properties.values(),
+            self._actions.values(),
+            self._events.values())
 
     def find_interaction(self, name):
         """Finds an existing Interaction by name.
@@ -214,22 +229,18 @@ class Thing(object):
         if interaction.thing is not self:
             raise ValueError("Interaction linked to another Thing")
 
-        if self.find_interaction(interaction.name) or self.find_interaction(
-            interaction.url_name
-        ):
+        if self.find_interaction(interaction.name) or self.find_interaction(interaction.url_name):
             raise ValueError("Duplicate Interaction: {}".format(interaction.name))
 
         interaction_dict_map = {
             Property: self._properties,
             Action: self._actions,
-            Event: self._events,
+            Event: self._events
         }
 
         interaction_class = next(
-            klass
-            for klass in [Property, Action, Event]
-            if isinstance(interaction, klass)
-        )
+            klass for klass in [Property, Action, Event]
+            if isinstance(interaction, klass))
 
         interaction_dict_map[interaction_class][interaction.name] = interaction
 

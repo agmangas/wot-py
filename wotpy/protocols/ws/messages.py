@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -67,7 +68,7 @@ class WebsocketMessageException(Exception):
     pass
 
 
-class WebsocketMessageRequest(object):
+class WebsocketMessageRequest:
     """Represents a message received on a websocket that
     contains a JSON-RPC WoT action request."""
 
@@ -121,7 +122,7 @@ class WebsocketMessageRequest(object):
         return json.dumps(self.to_dict())
 
 
-class WebsocketMessageResponse(object):
+class WebsocketMessageResponse:
     """Represents a WoT Websockets JSON-RPC response message."""
 
     @classmethod
@@ -171,7 +172,7 @@ class WebsocketMessageResponse(object):
         return json.dumps(self.to_dict())
 
 
-class WebsocketMessageError(object):
+class WebsocketMessageError:
     """Represents a WoT Websockets JSON-RPC error message."""
 
     @classmethod
@@ -229,7 +230,7 @@ class WebsocketMessageError(object):
         return json.dumps(self.to_dict())
 
 
-class WebsocketMessageEmittedItem(object):
+class WebsocketMessageEmittedItem:
     """Represents a Websockets message for an item emitted by an active subscription."""
 
     @classmethod

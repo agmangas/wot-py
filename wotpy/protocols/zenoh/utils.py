@@ -1,4 +1,7 @@
-# Copyright (c) 2017 CTIC Centro Tecnologico
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -18,3 +21,23 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 # SPDX-License-Identifier: MIT
+
+"""
+Zenoh utility functions.
+"""
+
+import json
+
+import zenoh
+
+
+def build_zenoh_config(router_url):
+    """Builds a Zenoh config that connects to a Zenoh router in client mode."""
+
+    config = zenoh.Config()
+
+    config.insert_json5("mode", json.dumps("client"))
+    router_url = router_url if router_url.startswith("tcp/") else f"tcp/{router_url}"
+    config.insert_json5("connect/endpoints", json.dumps([router_url]))
+
+    return config

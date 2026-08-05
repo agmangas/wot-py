@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -26,14 +27,16 @@
 MQTT handler for PING requests published on the MQTT broker.
 """
 
+from amqtt.mqtt.constants import QOS_1
+
 from wotpy.protocols.mqtt.handlers.base import BaseMQTTHandler
 
 
 class PingMQTTHandler(BaseMQTTHandler):
     """MQTT handler for PING requests published on the MQTT broker."""
 
-    def __init__(self, mqtt_server, qos=1):
-        super(PingMQTTHandler, self).__init__(mqtt_server)
+    def __init__(self, mqtt_server, qos=QOS_1):
+        super().__init__(mqtt_server)
         self._qos = qos
 
     @property
@@ -58,6 +61,8 @@ class PingMQTTHandler(BaseMQTTHandler):
         """Publishes a message in the PONG topic with the
         same payload as the one received in the PING topic."""
 
-        await self.queue.put(
-            {"topic": self.topic_pong, "data": msg.payload, "qos": self._qos}
-        )
+        return await self.queue.put({
+            "topic": self.topic_pong,
+            "data": msg.data,
+            "qos": self._qos
+        })

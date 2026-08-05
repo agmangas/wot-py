@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -22,13 +23,16 @@
 #
 # SPDX-License-Identifier: MIT
 
-import asyncio
 import logging
 import os
 
-import aiomqtt
+from amqtt.client import MQTTClient
+try:
+    from amqtt.client import ConnectError
+except ImportError:
+    from amqtt.client import ClientException as ConnectError
 
-from wotpy.protocols.mqtt.utils import MQTTBrokerURL
+from wotpy.protocols.mqtt.enums import MQTTCodesACK
 
 ENV_BROKER_URL = "WOTPY_TESTS_MQTT_BROKER_URL"
 BROKER_SKIP_REASON = "The test MQTT broker is offline"
@@ -40,35 +44,33 @@ def get_test_broker_url():
     return os.environ.get(ENV_BROKER_URL, None)
 
 
-async def is_test_broker_online_async():
-    broker_url = get_test_broker_url()
+async def is_test_broker_online():
+    """Returns True if the MQTT broker defined in the environment is online."""
 
-    if not broker_url:
-        logging.warning("Undefined MQTT broker URL")
-        return False
+    async def check_conn():
+        broker_url = get_test_broker_url()
 
-    mqtt_broker_url = MQTTBrokerURL.from_url(broker_url)
+        if not broker_url:
+            logging.warning("Undefined MQTT broker URL")
+            return False
 
-    client_config = {
-        "hostname": mqtt_broker_url.host,
-        "port": mqtt_broker_url.port,
-        "username": mqtt_broker_url.username,
-        "password": mqtt_broker_url.password,
-    }
+        try:
+            amqtt_client = MQTTClient()
+            ack_con = await amqtt_client.connect(broker_url)
+            if ack_con != MQTTCodesACK.CON_OK:
+                logging.warning("Error ACK on MQTT broker connection: {}".format(ack_con))
+                return False
+        except ConnectError as ex:
+            logging.warning("MQTT broker connection error: {}".format(ex))
+            return False
 
-    try:
-        async with aiomqtt.Client(**client_config) as client:
-            logging.debug("Connected to test MQTT broker: {}".format(client_config))
-            assert client
-            return True
-    except Exception as ex:
-        logging.debug("Test MQTT broker connection error: {}".format(ex))
+        return True
+
+    conn_ok = await check_conn()
+
+    if conn_ok is False:
         logging.warning(
             "Couldn't connect to the test MQTT broker. "
-            "Please check the {} variable".format(ENV_BROKER_URL)
-        )
-        return False
+            "Please check the {} variable".format(ENV_BROKER_URL))
 
-
-def is_test_broker_online():
-    return asyncio.run(is_test_broker_online_async())
+    return conn_ok

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -29,7 +30,7 @@ Class that represents the form entities exposed by interactions.
 from wotpy.wot.dictionaries.link import FormDict
 
 
-class Form(object):
+class Form:
     """Communication metadata where a service can be accessed by a client application."""
 
     def __init__(self, interaction, protocol, form_dict=None, **kwargs):

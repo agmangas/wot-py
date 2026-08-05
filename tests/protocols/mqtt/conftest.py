@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -22,21 +23,18 @@
 #
 # SPDX-License-Identifier: MIT
 
+import asyncio
 import logging
 import random
 import uuid
 
-import pytest
-import tornado.gen
-import tornado.ioloop
+import pytest_asyncio
 from faker import Faker
 
 from wotpy.support import is_mqtt_supported
-from wotpy.wot.dictionaries.interaction import (
-    ActionFragmentDict,
-    EventFragmentDict,
-    PropertyFragmentDict,
-)
+from wotpy.wot.constants import WOT_TD_CONTEXT_URL_V1_1
+from wotpy.wot.dictionaries.interaction import ActionFragmentDict, EventFragmentDict, PropertyFragmentDict
+from wotpy.wot.dictionaries.thing import ThingFragment
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 from wotpy.wot.td import ThingDescription
@@ -44,72 +42,82 @@ from wotpy.wot.thing import Thing
 
 collect_ignore = []
 
-skip_reasons = [(not is_mqtt_supported(), "Unsupported platform")]
-
-for skip_check, reason in skip_reasons:
-    if skip_check:
-        logging.warning("Skipping MQTT tests: {}".format(reason))
-        collect_ignore += ["test_server.py", "test_client.py"]
-        break
+if not is_mqtt_supported():
+    logging.warning("Skipping MQTT tests due to unsupported platform")
+    collect_ignore += ["test_server.py", "test_client.py"]
 
 
-@pytest.fixture(params=[{"property_callback_ms": None}])
-def mqtt_server(request):
+@pytest_asyncio.fixture(params=[{"property_callback_ms": None}],)
+async def mqtt_server(request):
     """Builds a MQTTServer instance that contains an ExposedThing."""
 
-    from tests.protocols.mqtt.broker import get_test_broker_url
     from wotpy.protocols.mqtt.server import MQTTServer
+    from tests.protocols.mqtt.broker import get_test_broker_url
 
-    exposed_thing = ExposedThing(servient=Servient(), thing=Thing(id=uuid.uuid4().urn))
+    broker_url = get_test_broker_url()
+    server = MQTTServer(broker_url=broker_url, **request.param)
+    servient_id = server.servient_id
 
+    thing_name = uuid.uuid4().hex
+    thing_fragment = ThingFragment({
+        "@context": [
+            WOT_TD_CONTEXT_URL_V1_1,
+        ],
+        "id": uuid.uuid4().urn,
+        "title": thing_name,
+        "securityDefinitions": {
+            "nosec_sc":{
+                "scheme":"nosec"
+            }
+        },
+        "security": "nosec_sc"
+    })
+    thing = Thing(thing_fragment=thing_fragment)
+    exposed_thing = ExposedThing(servient=Servient(), thing=thing)
+
+    prop_name = uuid.uuid4().hex
     exposed_thing.add_property(
-        uuid.uuid4().hex,
+        prop_name,
         PropertyFragmentDict({"type": "string", "observable": True}),
-        value=Faker().sentence(),
+        value=Faker().sentence()
     )
 
-    exposed_thing.add_event(uuid.uuid4().hex, EventFragmentDict({"type": "number"}))
+    event_name = uuid.uuid4().hex
+    exposed_thing.add_event(event_name, EventFragmentDict({"type": "number"}))
 
     action_name = uuid.uuid4().hex
 
-    @tornado.gen.coroutine
-    def handler(parameters):
+    async def handler(parameters):
         input_value = parameters.get("input")
-        yield tornado.gen.sleep(random.random() * 0.1)
-        raise tornado.gen.Return("{:f}".format(input_value))
+        await asyncio.sleep(random.random() * 0.1)
+        return("{:f}".format(input_value))
 
     exposed_thing.add_action(
         action_name,
         ActionFragmentDict({"input": {"type": "number"}, "output": {"type": "string"}}),
-        handler,
+        handler
     )
 
-    server = MQTTServer(broker_url=get_test_broker_url(), **request.param)
     server.add_exposed_thing(exposed_thing)
 
-    @tornado.gen.coroutine
-    def start():
-        yield server.start()
-
-    tornado.ioloop.IOLoop.current().run_sync(start)
+    wot = await server.start()
 
     yield server
 
-    @tornado.gen.coroutine
-    def stop():
-        yield server.stop()
-
-    tornado.ioloop.IOLoop.current().run_sync(stop)
+    await server.stop()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def mqtt_servient():
     """Returns a Servient that exposes a CoAP server and one ExposedThing."""
 
-    from tests.protocols.mqtt.broker import get_test_broker_url
     from wotpy.protocols.mqtt.server import MQTTServer
+    from tests.protocols.mqtt.broker import get_test_broker_url
 
-    server = MQTTServer(broker_url=get_test_broker_url())
+    broker_url = get_test_broker_url()
+    server = MQTTServer(broker_url=broker_url)
+    servient_id = server.servient_id
+
     servient = Servient(catalogue_port=None)
     servient.add_server(server)
     wot = await servient.start()
@@ -118,17 +126,40 @@ async def mqtt_servient():
     action_name_01 = uuid.uuid4().hex
     event_name_01 = uuid.uuid4().hex
 
+    thing_name = uuid.uuid4().hex
     td_dict = {
+        "@context": [
+            WOT_TD_CONTEXT_URL_V1_1,
+        ],
         "id": uuid.uuid4().urn,
-        "name": uuid.uuid4().hex,
-        "properties": {property_name_01: {"observable": True, "type": "string"}},
-        "actions": {
-            action_name_01: {
-                "input": {"type": "number"},
-                "output": {"type": "number"},
+        "title": thing_name,
+        "securityDefinitions": {
+            "nosec_sc":{
+                "scheme":"nosec"
             }
         },
-        "events": {event_name_01: {"type": "string"}},
+        "security": "nosec_sc",
+        "properties": {
+            property_name_01: {
+                "observable": True,
+                "type": "string"
+            }
+        },
+        "actions": {
+            action_name_01: {
+                "input": {
+                    "type": "number"
+                },
+                "output": {
+                    "type": "number"
+                }
+            }
+        },
+        "events": {
+            event_name_01: {
+                "type": "string"
+            }
+        },
     }
 
     td = ThingDescription(td_dict)

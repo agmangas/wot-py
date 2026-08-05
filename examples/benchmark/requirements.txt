@@ -1,0 +1,6 @@
+Logbook==1.9.2
+lxml==6.1.1
+py==1.11.0
+pyshark==0.6
+numpy==2.5.1
+netifaces==0.11.0

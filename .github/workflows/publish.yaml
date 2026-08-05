@@ -5,7 +5,7 @@ on:
       - "**"
 env:
   PYPI_PROJECT_NAME: wotpy
-  PYTHON_VERSION: "3.9"
+  PYTHON_VERSION: "3.10"
 jobs:
   build-publish:
     name: Build and publish PyPI

@@ -1,4 +1,5 @@
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -47,7 +48,16 @@ HOSTNAME = os.environ.get("HOSTNAME", "localhost")
 
 DESCRIPTION = {
     "id": "urn:org:fundacionctic:thing:cpumonitor",
-    "name": "CPU Monitor Thing",
+    "title": "CPU Monitor Thing",
+    "@context": [
+        "https://www.w3.org/2019/wot/td/v1",
+    ],
+    "securityDefinitions": {
+        "nosec_sc":{
+            "scheme":"nosec"
+        }
+    },
+    "security": "nosec_sc",
     "properties": {
         "cpuPercent": {
             "description": "Current CPU usage",

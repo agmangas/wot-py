@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -28,8 +29,8 @@ Classes to serialize and deserialize messages.
 .. autosummary::
     :toctree: _codecs
 
-    wotpy.codecs.base
-    wotpy.codecs.enums
-    wotpy.codecs.json_codec
-    wotpy.codecs.text
+    base
+    enums
+    json_codec
+    text
 """

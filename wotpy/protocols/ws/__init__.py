@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -28,10 +29,10 @@ WebSockets Protocol Binding implementation.
 .. autosummary::
     :toctree: _ws
 
-    wotpy.protocols.ws.client
-    wotpy.protocols.ws.enums
-    wotpy.protocols.ws.handler
-    wotpy.protocols.ws.messages
-    wotpy.protocols.ws.schemas
-    wotpy.protocols.ws.server
+    client
+    enums
+    handler
+    messages
+    schemas
+    server
 """

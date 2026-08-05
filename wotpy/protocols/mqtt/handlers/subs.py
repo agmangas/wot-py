@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -28,19 +29,16 @@ all the ExposedThings contained by a Protocol Binding server.
 """
 
 import logging
-from functools import partial
 
 from wotpy.wot.enums import InteractionTypes
 
 
-class InteractionsSubscriber(object):
+class InteractionsSubscriber:
     """Class that subscribes to all the Interactions of one kind for
     all the ExposedThings contained by a Protocol Binding server."""
 
     def __init__(self, interaction_type, server, on_next_builder):
-        if interaction_type not in [InteractionTypes.PROPERTY, InteractionTypes.EVENT]:
-            raise ValueError("Invalid interaction type: {}".format(interaction_type))
-
+        assert interaction_type in [InteractionTypes.PROPERTY, InteractionTypes.EVENT]
         self._interaction_type = interaction_type
         self._server = server
         self._on_next_builder = on_next_builder
@@ -64,7 +62,7 @@ class InteractionsSubscriber(object):
 
         return {
             InteractionTypes.PROPERTY: "properties",
-            InteractionTypes.EVENT: "events",
+            InteractionTypes.EVENT: "events"
         }.get(self._interaction_type)
 
     def _get_exposed_thing_interaction_set(self, exp_thing):
@@ -103,21 +101,12 @@ class InteractionsSubscriber(object):
             on_next = self._on_next_builder(exp_thing, intrc)
             exp_thing_intrc = exp_thing.__getattribute__(attr)[intrc.name]
 
-            def on_error(err, exp_thing_intrc, intrc):
-                self._logr.warning(
-                    "Error on subscription to {}: {}".format(exp_thing_intrc, err)
-                )
-
+            def on_error(err):
+                self._logr.warning("Error on subscription to {}: {}".format(exp_thing_intrc, err))
                 thing_subs[intrc].dispose()
                 thing_subs.pop(intrc)
 
-            on_error_partial = partial(
-                on_error, exp_thing_intrc=exp_thing_intrc, intrc=intrc
-            )
-
-            thing_subs[intrc] = exp_thing_intrc.subscribe(
-                on_next=on_next, on_error=on_error_partial
-            )
+            thing_subs[intrc] = exp_thing_intrc.subscribe(on_next=on_next, on_error=on_error)
 
     def dispose(self):
         """Disposes of all the currently active subscriptions."""

@@ -8,9 +8,13 @@ jobs:
         image: eclipse-mosquitto:1.6
         ports:
           - 1883:1883
+      zenoh:
+        image: eclipse/zenoh:1.9.0
+        ports:
+          - 7447:7447
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
@@ -25,4 +29,5 @@ jobs:
         run: |
           pytest -v
         env:
-          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://broker:1883
+          WOTPY_TESTS_MQTT_BROKER_URL: mqtt://127.0.0.1:1883
+          WOTPY_TESTS_ZENOH_ROUTER_URL: tcp/127.0.0.1:7447

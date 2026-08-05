@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -22,24 +23,22 @@
 #
 # SPDX-License-Identifier: MIT
 
+import asyncio
 import os
 import socket
 
-import tornado.ioloop
 from tornado.escape import to_unicode
 
 DEFAULT_TIMEOUT_SECS = 30
 TIMEOUT_CORO_VAR = "WOTPY_TESTS_CORO_TIMEOUT"
 
 
-def run_test_coroutine(coro, timeout=None):
+async def run_test_coroutine(coro, timeout=None):
     """Synchronously runs the given test coroutine with an optinally defined timeout."""
 
-    timeout = (
-        timeout if timeout else os.getenv(TIMEOUT_CORO_VAR, str(DEFAULT_TIMEOUT_SECS))
-    )
+    timeout = timeout if timeout else os.getenv(TIMEOUT_CORO_VAR, str(DEFAULT_TIMEOUT_SECS))
 
-    tornado.ioloop.IOLoop.current().run_sync(coro, timeout=float(timeout))
+    await asyncio.wait_for(coro(), timeout=float(timeout))
 
 
 def assert_equal_dict(dict_a, dict_b, compare_as_unicode=False):
@@ -69,9 +68,3 @@ def find_free_port():
     finally:
         if sock:
             sock.close()
-
-
-def is_github_actions() -> bool:
-    """Returns True if the current environment is GitHub Actions."""
-
-    return bool(os.getenv("GITHUB_ACTION")) and bool(os.getenv("CI"))

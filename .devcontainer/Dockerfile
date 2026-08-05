@@ -1,6 +1,6 @@
 # See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.238.0/containers/python-3/.devcontainer/base.Dockerfile
 
-# [Choice] Python version (use -bullseye variants on local arm64/Apple Silicon): 3, 3.12, 3.11, 3.10, 3.9, 3.8, 3-bullseye, 3.12-bullseye, 3.11-bullseye, 3.10-bullseye, 3.9-bullseye, 3.8-bullseye
+# [Choice] Python version (use -bullseye variants on local arm64/Apple Silicon): 3, 3.12, 3.11, 3.10, 3-bullseye, 3.12-bullseye, 3.11-bullseye, 3.10-bullseye
 ARG VARIANT="3.10-bullseye"
 FROM mcr.microsoft.com/vscode/devcontainers/python:${VARIANT}
 

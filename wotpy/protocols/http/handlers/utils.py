@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -33,14 +34,14 @@ from tornado.web import HTTPError
 APPLICATION_JSON = "application/json"
 
 
-def get_exposed_thing(server, thing_name):
+def get_exposed_thing(server, title):
     """Utility function to retrieve an ExposedThing
     from the HTTPServer or raise an HTTPError."""
 
     try:
-        return server.get_exposed_thing(thing_name)
+        return server.get_exposed_thing(title)
     except ValueError:
-        raise HTTPError(log_message="Unknown Thing: {}".format(thing_name))
+        raise HTTPError(log_message="Unknown Thing: {}".format(title))
 
 
 def get_argument(req_handler, name, default=None):
@@ -60,3 +61,10 @@ def get_argument(req_handler, name, default=None):
         raise HTTPError(log_message="Not a JSON object: {}".format(parsed_body))
 
     return parsed_body.get(name, default)
+
+def request_auth(req_handler, scheme, thing_name):
+    """If authentication fails request authentication from the client with the correct scheme."""
+
+    req_handler.set_header("WWW-Authenticate", f"{scheme} realm={thing_name}")
+    req_handler.set_status(401)
+    req_handler.finish()

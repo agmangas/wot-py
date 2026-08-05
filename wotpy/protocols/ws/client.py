@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -31,25 +32,25 @@ import logging
 import uuid
 
 import tornado.websocket
-from rx import Observable
+import reactivex
 
 from wotpy.protocols.client import BaseProtocolClient
 from wotpy.protocols.enums import Protocols
-from wotpy.protocols.exceptions import ClientRequestTimeout, FormNotFoundException
+from wotpy.protocols.exceptions import FormNotFoundException, ClientRequestTimeout
 from wotpy.protocols.refs import ConnRefCounter
-from wotpy.protocols.utils import is_scheme_form, pick_form
+from wotpy.protocols.utils import pick_form, is_scheme_form
 from wotpy.protocols.ws.enums import WebsocketMethods, WebsocketSchemes
 from wotpy.protocols.ws.messages import (
-    WebsocketMessageEmittedItem,
-    WebsocketMessageError,
-    WebsocketMessageException,
     WebsocketMessageRequest,
     WebsocketMessageResponse,
+    WebsocketMessageEmittedItem,
+    WebsocketMessageError,
+    WebsocketMessageException
 )
 from wotpy.wot.events import (
-    EmittedEvent,
     PropertyChangeEmittedEvent,
-    PropertyChangeEventInit,
+    EmittedEvent,
+    PropertyChangeEventInit
 )
 
 
@@ -82,7 +83,8 @@ class WebsocketClient(BaseProtocolClient):
             self._logr.debug("Connecting to <{}>".format(ws_url))
 
             self._conns[ws_url] = await tornado.websocket.websocket_connect(
-                ws_url, ping_interval=self._ping_interval
+                ws_url,
+                ping_interval=self._ping_interval
             )
 
             async def _start_receive_loop():
@@ -101,7 +103,7 @@ class WebsocketClient(BaseProtocolClient):
                 return
 
             try:
-                if self._conns.get(ws_url, None) is not None:
+                if ws_url in self._conns:
                     self._logr.debug("Disconnecting WS client: {}".format(ws_url))
                     self._conns[ws_url].close()
             except Exception as ex:
@@ -170,8 +172,8 @@ class WebsocketClient(BaseProtocolClient):
                     conditions = self._msg_conditions.get(ws_url, None)
 
                     if conditions and msg_res.id in conditions:
+                        self._logr.debug("Notifying: {}".format(msg_res.id))
                         async with conditions[msg_res.id]:
-                            self._logr.debug("Notifying: {}".format(msg_res.id))
                             conditions[msg_res.id].notify_all()
             except Exception as ex:
                 self._logr.warning("Error in read loop: {}".format(ex), exc_info=True)
@@ -233,11 +235,15 @@ class WebsocketClient(BaseProtocolClient):
         """Builds the subscribe function that is passed
         as an argument on the creation of an Observable."""
 
-        def subscribe(observer):
+        def subscribe(observer, scheduler):
             """Connect to the WS server and start passing the received events to the Observer."""
 
-            future_sub_id = asyncio.Future()
-            future_ws_conn = asyncio.Future()
+            loop = asyncio.get_running_loop()
+            future_sub_id = loop.create_future()
+            future_ws_conn = loop.create_future()
+
+            stop_event = asyncio.Event()
+            task = None
 
             def on_error(ex):
                 observer.on_error(ex)
@@ -279,20 +285,34 @@ class WebsocketClient(BaseProtocolClient):
                 else:
                     parse_subscription_id(raw_msg)
 
-            def on_conn(ft):
+            async def connect():
                 try:
-                    ws_conn = ft.result()
+                    ws_conn = await tornado.websocket.websocket_connect(ws_url)
+                    future_ws_conn.set_result(ws_conn)
+
+                    await ws_conn.write_message(msg_req.to_json())
+
+                    while not stop_event.is_set():
+                        raw_msg = await ws_conn.read_message()
+
+                        if raw_msg is None:
+                            return on_error(Exception("WS connection closed"))
+
+                        if future_sub_id.done():
+                            on_next_event(raw_msg)
+                        else:
+                            parse_subscription_id(raw_msg)
                 except Exception as ex:
                     return on_error(ex)
 
-                future_ws_conn.set_result(ws_conn)
-                ws_conn.write_message(msg_req.to_json())
 
-            tornado.websocket.websocket_connect(
-                ws_url, callback=on_conn, on_message_callback=on_msg
-            )
+            task = asyncio.create_task(connect())
 
             def unsubscribe():
+                stop_event.set()
+
+                if task:
+                    task.cancel()
                 if future_ws_conn.done():
                     ws_conn = future_ws_conn.result()
                     ws_conn.close()
@@ -308,26 +328,23 @@ class WebsocketClient(BaseProtocolClient):
         forms = td.get_forms(name)
 
         forms_wss = [
-            form
-            for form in forms
+            form for form in forms
             if is_scheme_form(form, td.base, WebsocketSchemes.WSS)
         ]
 
         forms_ws = [
-            form for form in forms if is_scheme_form(form, td.base, WebsocketSchemes.WS)
+            form for form in forms
+            if is_scheme_form(form, td.base, WebsocketSchemes.WS)
         ]
 
         return len(forms_wss) or len(forms_ws)
 
-    def _return_message(self, ws_url, msg_id):
+    def _raise_message(self, ws_url, msg_id):
         """Raises the error or return Exception from the message
         in the internal collection matching the given ID."""
 
-        if ws_url not in self._messages:
-            raise Exception("Unknown WS connection")
-
-        if msg_id not in self._messages[ws_url]:
-            raise Exception("Unknown message ID")
+        assert ws_url in self._messages, "Unknown WS connection"
+        assert msg_id in self._messages[ws_url], "Unknown message ID"
 
         msg = self._messages[ws_url][msg_id]
 
@@ -336,6 +353,11 @@ class WebsocketClient(BaseProtocolClient):
         else:
             return msg.result
 
+    async def _wait_condition(self, condition):
+        """Acquires the lock of the condition and waits on it."""
+        async with condition:
+            await condition.wait()
+
     async def invoke_action(self, td, name, input_value, timeout=None):
         """Invokes an Action on a remote Thing.
         Returns a Future."""
@@ -343,7 +365,9 @@ class WebsocketClient(BaseProtocolClient):
         if name not in td.actions:
             raise FormNotFoundException()
 
-        form = pick_form(td, td.get_action_forms(name), WebsocketSchemes.list())
+        form = pick_form(
+            td, td.get_action_forms(name),
+            WebsocketSchemes.list())
 
         if not form:
             raise FormNotFoundException()
@@ -357,18 +381,16 @@ class WebsocketClient(BaseProtocolClient):
             msg_req = WebsocketMessageRequest(
                 method=WebsocketMethods.INVOKE_ACTION,
                 params={"name": name, "parameters": input_value},
-                msg_id=uuid.uuid4().hex,
-            )
+                msg_id=uuid.uuid4().hex)
 
             condition = await self._send_message(ws_url, msg_req)
 
-            async with condition:
-                try:
-                    await asyncio.wait_for(condition.wait(), timeout=timeout)
-                except asyncio.TimeoutError as ex:
-                    raise ClientRequestTimeout from ex
+            try:
+                await asyncio.wait_for(self._wait_condition(condition), timeout=timeout)
+            except asyncio.TimeoutError:
+                raise ClientRequestTimeout()
 
-            return self._return_message(ws_url, msg_req.id)
+            return self._raise_message(ws_url, msg_req.id)
         finally:
             await self._stop_conn(ws_url, ref_id)
 
@@ -379,7 +401,9 @@ class WebsocketClient(BaseProtocolClient):
         if name not in td.properties:
             raise FormNotFoundException()
 
-        form = pick_form(td, td.get_property_forms(name), WebsocketSchemes.list())
+        form = pick_form(
+            td, td.get_property_forms(name),
+            WebsocketSchemes.list())
 
         if not form:
             raise FormNotFoundException()
@@ -393,18 +417,16 @@ class WebsocketClient(BaseProtocolClient):
             msg_req = WebsocketMessageRequest(
                 method=WebsocketMethods.WRITE_PROPERTY,
                 params={"name": name, "value": value},
-                msg_id=uuid.uuid4().hex,
-            )
+                msg_id=uuid.uuid4().hex)
 
             condition = await self._send_message(ws_url, msg_req)
 
-            async with condition:
-                try:
-                    await asyncio.wait_for(condition.wait(), timeout=timeout)
-                except asyncio.TimeoutError as ex:
-                    raise ClientRequestTimeout from ex
+            try:
+                await asyncio.wait_for(self._wait_condition(condition), timeout=timeout)
+            except asyncio.TimeoutError:
+                raise ClientRequestTimeout()
 
-            return self._return_message(ws_url, msg_req.id)
+            return self._raise_message(ws_url, msg_req.id)
         finally:
             await self._stop_conn(ws_url, ref_id)
 
@@ -415,7 +437,9 @@ class WebsocketClient(BaseProtocolClient):
         if name not in td.properties:
             raise FormNotFoundException()
 
-        form = pick_form(td, td.get_property_forms(name), WebsocketSchemes.list())
+        form = pick_form(
+            td, td.get_property_forms(name),
+            WebsocketSchemes.list())
 
         if not form:
             raise FormNotFoundException()
@@ -429,18 +453,16 @@ class WebsocketClient(BaseProtocolClient):
             msg_req = WebsocketMessageRequest(
                 method=WebsocketMethods.READ_PROPERTY,
                 params={"name": name},
-                msg_id=uuid.uuid4().hex,
-            )
+                msg_id=uuid.uuid4().hex)
 
             condition = await self._send_message(ws_url, msg_req)
 
-            async with condition:
-                try:
-                    await asyncio.wait_for(condition.wait(), timeout=timeout)
-                except asyncio.TimeoutError as ex:
-                    raise ClientRequestTimeout from ex
+            try:
+                await asyncio.wait_for(self._wait_condition(condition), timeout=timeout)
+            except asyncio.TimeoutError:
+                raise ClientRequestTimeout
 
-            return self._return_message(ws_url, msg_req.id)
+            return self._raise_message(ws_url, msg_req.id)
         finally:
             await self._stop_conn(ws_url, ref_id)
 
@@ -449,47 +471,49 @@ class WebsocketClient(BaseProtocolClient):
         Returns an Observable."""
 
         if name not in td.events:
-            return Observable.throw(FormNotFoundException())
+            return reactivex.throw(FormNotFoundException())
 
-        form = pick_form(td, td.get_event_forms(name), WebsocketSchemes.list())
+        form = pick_form(
+            td, td.get_event_forms(name),
+            WebsocketSchemes.list())
 
         if not form:
-            return Observable.throw(FormNotFoundException())
+            return reactivex.throw(FormNotFoundException())
 
         ws_url = form.resolve_uri(td.base)
 
         msg_req = WebsocketMessageRequest(
             method=WebsocketMethods.ON_EVENT,
             params={"name": name},
-            msg_id=uuid.uuid4().hex,
-        )
+            msg_id=uuid.uuid4().hex)
 
         def on_next(observer, msg_item):
             observer.on_next(EmittedEvent(init=msg_item.data, name=name))
 
         subscribe = self._build_subscribe(ws_url, msg_req, on_next)
 
-        return Observable.create(subscribe)
+        return reactivex.create(subscribe)
 
     def on_property_change(self, td, name):
         """Subscribes to property changes on a remote Thing.
         Returns an Observable."""
 
         if name not in td.properties:
-            return Observable.throw(FormNotFoundException())
+            return reactivex.throw(FormNotFoundException())
 
-        form = pick_form(td, td.get_property_forms(name), WebsocketSchemes.list())
+        form = pick_form(
+            td, td.get_property_forms(name),
+            WebsocketSchemes.list())
 
         if not form:
-            return Observable.throw(FormNotFoundException())
+            return reactivex.throw(FormNotFoundException())
 
         ws_url = form.resolve_uri(td.base)
 
         msg_req = WebsocketMessageRequest(
             method=WebsocketMethods.ON_PROPERTY_CHANGE,
             params={"name": name},
-            msg_id=uuid.uuid4().hex,
-        )
+            msg_id=uuid.uuid4().hex)
 
         def on_next(observer, msg_item):
             init_name = msg_item.data["name"]
@@ -499,7 +523,7 @@ class WebsocketClient(BaseProtocolClient):
 
         subscribe = self._build_subscribe(ws_url, msg_req, on_next)
 
-        return Observable.create(subscribe)
+        return reactivex.create(subscribe)
 
     def on_td_change(self, url):
         """Subscribes to Thing Description changes on a remote Thing.

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -26,7 +27,7 @@
 Utility functions for CoAP resources.
 """
 
-import urllib.parse as parse
+from urllib import parse
 
 
 def parse_request_opt_query(request):

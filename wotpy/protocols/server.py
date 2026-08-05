@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -31,13 +32,13 @@ from abc import ABCMeta, abstractmethod
 from wotpy.wot.exposed.thing_set import ExposedThingSet
 
 
-class BaseProtocolServer(object):
+class BaseProtocolServer(metaclass=ABCMeta):
     """Base protocol server class.
     This is the interface that must be implemented by all server classes."""
 
-    __metaclass__ = ABCMeta
 
-    def __init__(self, port):
+    def __init__(self, port, form_port=None):
+        self._form_port = port if form_port is None else form_port
         self._port = port
         self._codecs = []
         self._exposed_thing_set = ExposedThingSet()
@@ -54,6 +55,14 @@ class BaseProtocolServer(object):
         """Port property."""
 
         return self._port
+
+    @property
+    def form_port(self):
+        """Port that will be used inside of forms in case
+        it differs from the server's port for example in cases
+        of a proxy."""
+
+        return self._form_port
 
     @property
     def exposed_thing_set(self):
@@ -91,14 +100,14 @@ class BaseProtocolServer(object):
 
         self._exposed_thing_set.remove(thing_id)
 
-    def get_exposed_thing(self, name):
+    def get_exposed_thing(self, title):
         """Finds and returns an ExposedThing contained in this server by name.
         Raises ValueError if the ExposedThing is not present."""
 
-        exposed_thing = self._exposed_thing_set.find_by_thing_id(name)
+        exposed_thing = self._exposed_thing_set.find_by_thing_title(title)
 
         if exposed_thing is None:
-            raise ValueError("Unknown Exposed Thing: {}".format(name))
+            raise ValueError("Unknown Exposed Thing: {}".format(title))
 
         return exposed_thing
 
@@ -116,13 +125,13 @@ class BaseProtocolServer(object):
         raise NotImplementedError()
 
     @abstractmethod
-    def start(self):
+    async def start(self, servient):
         """Coroutine that starts the server."""
 
         raise NotImplementedError()
 
     @abstractmethod
-    def stop(self):
+    async def stop(self):
         """Coroutine that stops the server.
         Some requests could be still in progress and would be served after the server has stopped."""
 

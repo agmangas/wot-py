@@ -1,4 +1,7 @@
-# Copyright (c) 2017 CTIC Centro Tecnologico
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -18,3 +21,15 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 # SPDX-License-Identifier: MIT
+
+"""
+Enumeration classes related to the Zenoh protocol binding.
+"""
+
+from wotpy.utils.enums import EnumListMixin
+
+
+class ZenohSchemes(EnumListMixin):
+    """Enumeration of Zenoh schemes."""
+
+    ZENOH = "zenoh"

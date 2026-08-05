@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -28,10 +29,10 @@ Entities that handle the MQTT operations needed to support each of the Interacti
 .. autosummary::
     :toctree: _handlers
 
-    wotpy.protocols.mqtt.handlers.action
-    wotpy.protocols.mqtt.handlers.base
-    wotpy.protocols.mqtt.handlers.event
-    wotpy.protocols.mqtt.handlers.ping
-    wotpy.protocols.mqtt.handlers.property
-    wotpy.protocols.mqtt.handlers.subs
+    action
+    base
+    event
+    ping
+    property
+    subs
 """

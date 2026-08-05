@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -26,12 +27,13 @@
 MQTT handler for Property reads, writes and subscriptions to value updates.
 """
 
+import asyncio
 import json
+import random
 import time
-from asyncio import QueueFull
 from json import JSONDecodeError
 
-import tornado.ioloop
+from amqtt.mqtt.constants import QOS_0, QOS_2
 
 from wotpy.protocols.mqtt.handlers.base import BaseMQTTHandler
 from wotpy.protocols.mqtt.handlers.subs import InteractionsSubscriber
@@ -50,8 +52,8 @@ class PropertyMQTTHandler(BaseMQTTHandler):
     DEFAULT_CALLBACK_MS = 2000
     DEFAULT_JITTER = 0.2
 
-    def __init__(self, mqtt_server, qos_observe=0, qos_rw=1, callback_ms=None):
-        super(PropertyMQTTHandler, self).__init__(mqtt_server)
+    def __init__(self, mqtt_server, qos_observe=QOS_0, qos_rw=QOS_2, callback_ms=None):
+        super().__init__(mqtt_server)
 
         callback_ms = self.DEFAULT_CALLBACK_MS if callback_ms is None else callback_ms
 
@@ -59,18 +61,12 @@ class PropertyMQTTHandler(BaseMQTTHandler):
         self._qos_rw = qos_rw
         self._callback_ms = callback_ms
         self._subs = {}
+        self._periodic_refresh_subs = None
 
         self._interaction_subscriber = InteractionsSubscriber(
             interaction_type=InteractionTypes.PROPERTY,
             server=self.mqtt_server,
-            on_next_builder=self._build_on_next,
-        )
-
-        async def refresh_subs():
-            self._interaction_subscriber.refresh()
-
-        self._periodic_refresh_subs = tornado.ioloop.PeriodicCallback(
-            refresh_subs, self._callback_ms, jitter=self.DEFAULT_JITTER
+            on_next_builder=self._build_on_next
         )
 
     @property
@@ -90,17 +86,8 @@ class PropertyMQTTHandler(BaseMQTTHandler):
     def to_write_ack_topic(cls, requests_topic):
         """Takes a Property requests topic and returns the related write ACK topic."""
 
-        # ToDo: Ensure that topic is a str instead of an instance of aiomqtt.Topic
-        try:
-            topic_split = requests_topic.value.split("/")
-        except Exception:
-            topic_split = requests_topic.split("/")
-
-        servient_id, thing_name, prop_name = (
-            topic_split[-5],
-            topic_split[-2],
-            topic_split[-1],
-        )
+        topic_split = requests_topic.split("/")
+        servient_id, thing_name, prop_name = topic_split[-5], topic_split[-2], topic_split[-1]
 
         return "{}/property/ack/{}/{}".format(servient_id, thing_name, prop_name)
 
@@ -114,7 +101,7 @@ class PropertyMQTTHandler(BaseMQTTHandler):
         """Listens to all Property request topics and responds to read and write requests."""
 
         try:
-            parsed_msg = json.loads(msg.payload.decode())
+            parsed_msg = json.loads(msg.data.decode())
         except (JSONDecodeError, TypeError):
             return
 
@@ -123,7 +110,7 @@ class PropertyMQTTHandler(BaseMQTTHandler):
         if not action or action not in [self.ACTION_WRITE, self.ACTION_READ]:
             return
 
-        topic_split = msg.topic.value.split("/")
+        topic_split = msg.topic.split("/")
 
         splits_expected_len = len(self.topic_wildcard_requests.split("/")) + 1
 
@@ -153,14 +140,14 @@ class PropertyMQTTHandler(BaseMQTTHandler):
             update_msg = self._build_update_message(topic, value)
             await self.queue.put(update_msg)
         elif action == self.ACTION_WRITE and self.KEY_VALUE in parsed_msg:
-            await exp_thing.properties[prop.name].write(parsed_msg[self.KEY_VALUE])
+            await exp_thing.handle_write_property(prop.name, parsed_msg[self.KEY_VALUE])
             await self.publish_write_ack(msg)
 
     async def publish_write_ack(self, msg):
         """Takes a Property write request message and publishes the related write ACK message."""
 
         try:
-            parsed_msg = json.loads(msg.payload.decode())
+            parsed_msg = json.loads(msg.data.decode())
         except (JSONDecodeError, TypeError):
             return
 
@@ -176,7 +163,7 @@ class PropertyMQTTHandler(BaseMQTTHandler):
             {
                 "topic": topic_ack,
                 "data": json.dumps({self.KEY_ACK: ack_code}).encode(),
-                "qos": self._qos_rw,
+                "qos": self._qos_rw
             }
         )
 
@@ -184,15 +171,26 @@ class PropertyMQTTHandler(BaseMQTTHandler):
         """Initializes the MQTT handler.
         Called when the MQTT runner starts."""
 
+        async def refresh_subs():
+            while True:
+                self._interaction_subscriber.refresh()
+                callback_sec = self._callback_ms / 1000
+                callback_sec *=  1 + (self.DEFAULT_JITTER * (random.random() - 0.5))
+                await asyncio.sleep(callback_sec)
+
         self._interaction_subscriber.refresh()
-        self._periodic_refresh_subs.start()
+        self._periodic_refresh_subs = asyncio.create_task(refresh_subs())
+
+        return None
 
     async def teardown(self):
         """Destroys the MQTT handler.
         Called when the MQTT runner stops."""
 
-        self._periodic_refresh_subs.stop()
+        self._periodic_refresh_subs.cancel()
         self._interaction_subscriber.dispose()
+
+        return None
 
     def _build_update_message(self, topic, value):
         """Builds an MQTT message to publish an update for a Property value."""
@@ -204,7 +202,7 @@ class PropertyMQTTHandler(BaseMQTTHandler):
             "data": json.dumps(
                 {"value": to_json_obj(value), "timestamp": now_ms}
             ).encode(),
-            "qos": self._qos_observe,
+            "qos": self._qos_observe
         }
 
     def _build_on_next(self, exp_thing, prop):
@@ -216,7 +214,7 @@ class PropertyMQTTHandler(BaseMQTTHandler):
             try:
                 msg = self._build_update_message(topic, item.data.value)
                 self.queue.put_nowait(msg)
-            except QueueFull:
+            except asyncio.QueueFull:
                 pass
 
         return on_next

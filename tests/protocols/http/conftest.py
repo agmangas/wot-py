@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -22,77 +23,86 @@
 #
 # SPDX-License-Identifier: MIT
 
+import asyncio
 import uuid
 
-import pytest
-import tornado.gen
-import tornado.ioloop
+import pytest_asyncio
 from faker import Faker
 
 from tests.utils import find_free_port
 from wotpy.protocols.http.server import HTTPServer
+from wotpy.wot.constants import WOT_TD_CONTEXT_URL_V1_1
 from wotpy.wot.dictionaries.interaction import PropertyFragmentDict, ActionFragmentDict, EventFragmentDict
+from wotpy.wot.dictionaries.thing import ThingFragment
 from wotpy.wot.exposed.thing import ExposedThing
 from wotpy.wot.servient import Servient
 from wotpy.wot.td import ThingDescription
 from wotpy.wot.thing import Thing
 
 
-@pytest.fixture
-def http_server():
+@pytest_asyncio.fixture
+async def http_server():
     """Builds an HTTPServer instance that contains an ExposedThing."""
 
-    exposed_thing = ExposedThing(servient=Servient(), thing=Thing(id=uuid.uuid4().urn))
+    port = find_free_port()
 
-    exposed_thing.add_property(uuid.uuid4().hex, PropertyFragmentDict({
+    thing_fragment = ThingFragment({
+        "@context": [
+            WOT_TD_CONTEXT_URL_V1_1,
+        ],
+        "id": uuid.uuid4().urn,
+        "title": uuid.uuid4().hex,
+        "securityDefinitions": {
+            "nosec_sc":{
+                "scheme":"nosec"
+            }
+        },
+        "security": "nosec_sc"
+    })
+    thing = Thing(thing_fragment=thing_fragment)
+    exposed_thing = ExposedThing(servient=Servient(), thing=thing)
+
+    property_name_01 = uuid.uuid4().hex
+    exposed_thing.add_property(property_name_01, PropertyFragmentDict({
         "type": "number",
         "observable": True
     }), value=Faker().pyint())
 
-    exposed_thing.add_property(uuid.uuid4().hex, PropertyFragmentDict({
+    property_name_02 = uuid.uuid4().hex
+    exposed_thing.add_property(property_name_02, PropertyFragmentDict({
         "type": "number",
         "observable": True
     }), value=Faker().pyint())
 
-    exposed_thing.add_event(uuid.uuid4().hex, EventFragmentDict({
+    event_name = uuid.uuid4().hex
+    exposed_thing.add_event(event_name, EventFragmentDict({
         "type": "object"
     }))
 
     action_name = uuid.uuid4().hex
 
-    @tornado.gen.coroutine
-    def triple(parameters):
+    async def triple(parameters):
         input_value = parameters.get("input")
-        yield tornado.gen.sleep(0)
-        raise tornado.gen.Return(input_value * 3)
+        await asyncio.sleep(0)
+        return(input_value * 3)
 
     exposed_thing.add_action(action_name, ActionFragmentDict({
         "input": {"type": "number"},
         "output": {"type": "number"}
     }), triple)
 
-    port = find_free_port()
-
     server = HTTPServer(port=port)
     server.add_exposed_thing(exposed_thing)
 
-    @tornado.gen.coroutine
-    def start():
-        yield server.start()
-
-    tornado.ioloop.IOLoop.current().run_sync(start)
+    wot = await server.start()
 
     yield server
 
-    @tornado.gen.coroutine
-    def stop():
-        yield server.stop()
-
-    tornado.ioloop.IOLoop.current().run_sync(stop)
+    await server.stop()
 
 
-@pytest.fixture
-def http_servient():
+@pytest_asyncio.fixture
+async def http_servient():
     """Returns a Servient that exposes an HTTP server and one ExposedThing."""
 
     http_port = find_free_port()
@@ -101,11 +111,7 @@ def http_servient():
     servient = Servient(catalogue_port=None)
     servient.add_server(http_server)
 
-    @tornado.gen.coroutine
-    def start():
-        raise tornado.gen.Return((yield servient.start()))
-
-    wot = tornado.ioloop.IOLoop.current().run_sync(start)
+    wot = await servient.start()
 
     property_name_01 = uuid.uuid4().hex
     property_name_02 = uuid.uuid4().hex
@@ -113,8 +119,17 @@ def http_servient():
     event_name_01 = uuid.uuid4().hex
 
     td_dict = {
+        "@context": [
+            WOT_TD_CONTEXT_URL_V1_1,
+        ],
         "id": uuid.uuid4().urn,
         "title": uuid.uuid4().hex,
+        "securityDefinitions": {
+            "nosec_sc":{
+                "scheme":"nosec"
+            }
+        },
+        "security": "nosec_sc",
         "properties": {
             property_name_01: {
                 "observable": True,
@@ -132,12 +147,12 @@ def http_servient():
                 },
                 "output": {
                     "type": "number"
-                },
+                }
             }
         },
         "events": {
             event_name_01: {
-                "type": "string"
+                "type": "string",
             }
         },
     }
@@ -147,17 +162,12 @@ def http_servient():
     exposed_thing = wot.produce(td.to_str())
     exposed_thing.expose()
 
-    @tornado.gen.coroutine
-    def action_handler(parameters):
+    async def action_handler(parameters):
         input_value = parameters.get("input")
-        raise tornado.gen.Return(int(input_value) * 2)
+        return(int(input_value) * 2)
 
     exposed_thing.set_action_handler(action_name_01, action_handler)
 
     yield servient
 
-    @tornado.gen.coroutine
-    def shutdown():
-        yield servient.shutdown()
-
-    tornado.ioloop.IOLoop.current().run_sync(shutdown)
+    await servient.shutdown()

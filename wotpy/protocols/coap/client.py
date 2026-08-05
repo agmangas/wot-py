@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -33,32 +34,28 @@ import time
 from urllib.parse import urlparse
 
 import aiocoap
-from rx import Observable
+import reactivex
 
 from wotpy.protocols.client import BaseProtocolClient
 from wotpy.protocols.coap.enums import CoAPSchemes
-from wotpy.protocols.enums import InteractionVerbs, Protocols
-from wotpy.protocols.exceptions import (
-    ClientRequestTimeout,
-    FormNotFoundException,
-    ProtocolClientException,
-)
+from wotpy.protocols.coap.credential import BaseCredential
+from wotpy.protocols.enums import Protocols, InteractionVerbs
+from wotpy.protocols.exceptions import FormNotFoundException, ProtocolClientException, ClientRequestTimeout
 from wotpy.protocols.utils import is_scheme_form
 from wotpy.utils.utils import handle_observer_finalization
-from wotpy.wot.events import (
-    EmittedEvent,
-    PropertyChangeEmittedEvent,
-    PropertyChangeEventInit,
-)
+from wotpy.wot.events import PropertyChangeEventInit, PropertyChangeEmittedEvent, EmittedEvent
 
 
 class CoAPClient(BaseProtocolClient):
     """Implementation of the protocol client interface for the CoAP protocol."""
 
-    def __init__(self):
+    def __init__(self, credentials=None):
         self._logr = logging.getLogger(__name__)
+        self._credentials = credentials
         self._coap_client = None
-        super(CoAPClient, self).__init__()
+        self._client_lock = asyncio.Lock()
+        self._credential = None
+        super().__init__()
 
     @classmethod
     def _pick_coap_href(cls, td, forms, op=None):
@@ -73,10 +70,8 @@ class CoAPClient(BaseProtocolClient):
         def find_href(scheme):
             try:
                 return next(
-                    form.href
-                    for form in forms
-                    if is_scheme_form(form, td.base, scheme) and is_op_form(form)
-                )
+                    form.href for form in forms
+                    if is_scheme_form(form, td.base, scheme) and is_op_form(form))
             except StopIteration:
                 return None
 
@@ -95,63 +90,66 @@ class CoAPClient(BaseProtocolClient):
         """Builds the subscribe function that should be passed when
         constructing an Observable linked to an observable CoAP resurce."""
 
-        def subscribe(observer):
+        def subscribe(observer, scheduler):
             """Subscription function to observe resources using the CoAP protocol."""
 
             query = urlparse(href).query
 
             state = {
-                "unsubscribe_event": asyncio.Event(),
+                "active": True,
                 "request": None,
+                "pending": None
             }
 
             @handle_observer_finalization(observer)
             async def callback():
-                self._logr.debug(
-                    "Creating CoAP client for observation: {}".format(query)
-                )
+                self._logr.debug("Creating CoAP client for observation: {}".format(query))
 
                 coap_client = await aiocoap.Context.create_client_context()
+                if self._credentials:
+                    with open(self._credentials, "rb") as file:
+                        coap_client.client_credentials.load_from_dict(json.load(file))
 
                 try:
                     msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href, observe=0)
-                    state["request"] = coap_client.request(msg)
-                    self._logr.debug("Sending observation request: {}".format(msg))
-                    await state["request"].response
+                    state["request"] = coap_client.request(await self.sign_request(msg))
 
-                    def obs_cb(msg):
-                        self._logr.debug("Observation message: {}".format(msg))
-                        self._assert_success(msg)
-                        next_item = next_item_builder(msg.payload)
+                    self._logr.debug("Sending observation request: {}".format(msg))
+
+                    future_first_resp = state["request"].response
+                    state["pending"] = future_first_resp
+                    first_resp = await future_first_resp
+                    state["pending"] = None
+                    self._assert_success(first_resp)
+                    next_item = next_item_builder(first_resp.payload)
+                    next_item is not None and observer.on_next(next_item)
+
+                    while state["active"]:
+                        next_obsv_gen = state["request"].observation.__aiter__().__anext__()
+                        future_resp = asyncio.ensure_future(next_obsv_gen)
+                        state["pending"] = future_resp
+                        resp = await future_resp
+                        state["pending"] = None
+                        self._assert_success(resp)
+                        next_item = next_item_builder(resp.payload)
                         next_item is not None and observer.on_next(next_item)
 
-                    state["request"].observation.register_callback(obs_cb)
-
-                    def obs_cb_err(err):
-                        self._logr.warning(
-                            "Observation error ({}): {}".format(err.__class__, err)
-                        )
-
-                        state["unsubscribe_event"].set()
-
-                    state["request"].observation.register_errback(obs_cb_err)
-
-                    await state["unsubscribe_event"].wait()
-
-                    self._logr.debug(
-                        "Terminated subscription callback for: {}".format(query)
-                    )
+                    self._logr.debug("Terminated subscription callback for: {}".format(query))
                 finally:
                     await coap_client.shutdown()
 
             def unsubscribe():
                 self._logr.debug("Unsubscribing from: {}".format(query))
 
-                state["unsubscribe_event"].set()
+                state["active"] = False
 
                 if state["request"] and not state["request"].observation.cancelled:
                     self._logr.debug("Cancelling observation on: {}".format(query))
                     state["request"].observation.cancel()
+
+                if state["pending"]:
+                    self._logr.debug("Cancelling pending request: {}".format(state["pending"]))
+                    state["pending"].cancel()
 
             asyncio.create_task(callback())
 
@@ -173,22 +171,38 @@ class CoAPClient(BaseProtocolClient):
         forms = td.get_forms(name)
 
         forms_coap = [
-            form for form in forms if is_scheme_form(form, td.base, CoAPSchemes.list())
+            form for form in forms
+            if is_scheme_form(form, td.base, CoAPSchemes.list())
         ]
 
         return len(forms_coap) > 0
+
+    def set_security(self, security_scheme_dict, credentials):
+        """Sets the security credentials for the given security scheme."""
+
+        credential = BaseCredential.build(security_scheme_dict, credentials)
+        self._credential = credential
+
+    async def sign_request(self, request):
+        """Adds the appropriate authorization header to the request
+        and delegates the addition of the header to the credential class."""
+
+        if self._credential:
+            return await self._credential.sign(request)
+
+        return request
 
     async def _invocation_create(self, coap_client, href, input_value, timeout=None):
         """Creates a new action invocation by sending a POST request."""
 
         payload = json.dumps({"input": input_value}).encode("utf-8")
         msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
-        request = coap_client.request(msg)
+        request = coap_client.request(await self.sign_request(msg))
 
         try:
             response = await asyncio.wait_for(request.response, timeout=timeout)
-        except asyncio.TimeoutError as ex:
-            raise ClientRequestTimeout from ex
+        except asyncio.TimeoutError:
+            raise ClientRequestTimeout
 
         self._assert_success(response)
 
@@ -200,15 +214,13 @@ class CoAPClient(BaseProtocolClient):
         """Starts observing an existing action invocation by sending a GET request."""
 
         payload = json.dumps({"id": invocation_id}).encode("utf-8")
-        msg = aiocoap.Message(
-            code=aiocoap.Code.GET, payload=payload, uri=href, observe=0
-        )
-        request = coap_client.request(msg)
+        msg = aiocoap.Message(code=aiocoap.Code.GET, payload=payload, uri=href, observe=0)
+        request = coap_client.request(await self.sign_request(msg))
 
         try:
             response = await asyncio.wait_for(request.response, timeout=timeout)
-        except asyncio.TimeoutError as ex:
-            raise ClientRequestTimeout from ex
+        except asyncio.TimeoutError:
+            raise ClientRequestTimeout
 
         self._assert_success(response)
 
@@ -219,10 +231,10 @@ class CoAPClient(BaseProtocolClient):
 
         try:
             response = await asyncio.wait_for(
-                request.observation.__aiter__().__anext__(), timeout=timeout
-            )
-        except asyncio.TimeoutError as ex:
-            raise ClientRequestTimeout from ex
+                request.observation.__aiter__().__anext__(),
+                timeout=timeout)
+        except asyncio.TimeoutError:
+            raise ClientRequestTimeout
 
         self._assert_success(response)
 
@@ -232,22 +244,23 @@ class CoAPClient(BaseProtocolClient):
         """Invokes an Action on a remote Thing."""
 
         href = self._pick_coap_href(
-            td, td.get_action_forms(name), op=InteractionVerbs.INVOKE_ACTION
-        )
+            td, td.get_action_forms(name),
+            op=InteractionVerbs.INVOKE_ACTION)
 
         if href is None:
             raise FormNotFoundException()
 
         coap_client = await aiocoap.Context.create_client_context()
+        if self._credentials:
+            with open(self._credentials, "rb") as file:
+                coap_client.client_credentials.load_from_dict(json.load(file))
 
         try:
             invocation_id = await self._invocation_create(
-                coap_client, href, input_value, timeout=timeout
-            )
+                coap_client, href, input_value, timeout=timeout)
 
             request_obsv, response_obsv = await self._invocation_observe(
-                coap_client, href, invocation_id, timeout=timeout
-            )
+                coap_client, href, invocation_id, timeout=timeout)
 
             invocation_status = json.loads(response_obsv.payload)
 
@@ -257,9 +270,7 @@ class CoAPClient(BaseProtocolClient):
                 if timeout and (time.time() - now) > timeout:
                     raise ClientRequestTimeout
 
-                response_obsv = await self._invocation_next(
-                    request_obsv, timeout=timeout
-                )
+                response_obsv = await self._invocation_next(request_obsv, timeout=timeout)
                 invocation_status = json.loads(response_obsv.payload)
 
             if not request_obsv.observation.cancelled:
@@ -276,23 +287,26 @@ class CoAPClient(BaseProtocolClient):
         """Updates the value of a Property on a remote Thing."""
 
         href = self._pick_coap_href(
-            td, td.get_property_forms(name), op=InteractionVerbs.WRITE_PROPERTY
-        )
+            td, td.get_property_forms(name),
+            op=InteractionVerbs.WRITE_PROPERTY)
 
         if href is None:
             raise FormNotFoundException()
 
         coap_client = await aiocoap.Context.create_client_context()
+        if self._credentials:
+            with open(self._credentials, "rb") as file:
+                coap_client.client_credentials.load_from_dict(json.load(file))
 
         try:
             payload = json.dumps({"value": value}).encode("utf-8")
             msg = aiocoap.Message(code=aiocoap.Code.PUT, payload=payload, uri=href)
-            request = coap_client.request(msg)
+            request = coap_client.request(await self.sign_request(msg))
 
             try:
                 response = await asyncio.wait_for(request.response, timeout=timeout)
-            except asyncio.TimeoutError as ex:
-                raise ClientRequestTimeout from ex
+            except asyncio.TimeoutError:
+                raise ClientRequestTimeout
 
             self._assert_success(response)
         finally:
@@ -302,22 +316,25 @@ class CoAPClient(BaseProtocolClient):
         """Reads the value of a Property on a remote Thing."""
 
         href = self._pick_coap_href(
-            td, td.get_property_forms(name), op=InteractionVerbs.READ_PROPERTY
-        )
+            td, td.get_property_forms(name),
+            op=InteractionVerbs.READ_PROPERTY)
 
         if href is None:
             raise FormNotFoundException()
 
         coap_client = await aiocoap.Context.create_client_context()
+        if self._credentials:
+            with open(self._credentials, "rb") as file:
+                coap_client.client_credentials.load_from_dict(json.load(file))
 
         try:
             msg = aiocoap.Message(code=aiocoap.Code.GET, uri=href)
-            request = coap_client.request(msg)
+            request = coap_client.request(await self.sign_request(msg))
 
             try:
                 response = await asyncio.wait_for(request.response, timeout=timeout)
-            except asyncio.TimeoutError as ex:
-                raise ClientRequestTimeout from ex
+            except asyncio.TimeoutError:
+                raise ClientRequestTimeout
 
             self._assert_success(response)
 
@@ -332,8 +349,8 @@ class CoAPClient(BaseProtocolClient):
         Returns an Observable"""
 
         href = self._pick_coap_href(
-            td, td.get_property_forms(name), op=InteractionVerbs.OBSERVE_PROPERTY
-        )
+            td, td.get_property_forms(name),
+            op=InteractionVerbs.OBSERVE_PROPERTY)
 
         if href is None:
             raise FormNotFoundException()
@@ -345,15 +362,15 @@ class CoAPClient(BaseProtocolClient):
 
         subscribe = self._build_subscribe(href, next_item_builder)
 
-        return Observable.create(subscribe)
+        return reactivex.create(subscribe)
 
     def on_event(self, td, name):
         """Subscribes to an event on a remote Thing.
         Returns an Observable."""
 
         href = self._pick_coap_href(
-            td, td.get_event_forms(name), op=InteractionVerbs.SUBSCRIBE_EVENT
-        )
+            td, td.get_event_forms(name),
+            op=InteractionVerbs.SUBSCRIBE_EVENT)
 
         if href is None:
             raise FormNotFoundException()
@@ -367,7 +384,7 @@ class CoAPClient(BaseProtocolClient):
 
         subscribe = self._build_subscribe(href, next_item_builder)
 
-        return Observable.create(subscribe)
+        return reactivex.create(subscribe)
 
     def on_td_change(self, url):
         """Subscribes to Thing Description changes on a remote Thing.

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -30,24 +31,18 @@ import logging
 import platform
 import sys
 
-FEATURE_DNSSD = "DNSSD"
 FEATURE_COAP = "COAP"
 FEATURE_MQTT = "MQTT"
 
 FEATURE_REQUISITES = {
-    FEATURE_DNSSD: {
-        "max_version_exclusive": (3, 13),
-        "min_version_inclusive": (3, 7),
-        "platforms": ["Linux", "Darwin"],
-    },
     FEATURE_COAP: {
-        "max_version_exclusive": (3, 13),
-        "min_version_inclusive": (3, 7),
+        "max_version_exclusive": (3, 15),
+        "min_version_inclusive": (3, 9),
         "platforms": ["Linux"],
     },
     FEATURE_MQTT: {
-        "max_version_exclusive": (3, 13),
-        "min_version_inclusive": (3, 8),
+        "max_version_exclusive": (3, 15),
+        "min_version_inclusive": (3, 9),
         "platforms": ["Linux", "Darwin"],
     },
 }
@@ -111,9 +106,3 @@ def is_mqtt_supported():
     """Returns True if the MQTT binding is supported in this platform."""
 
     return is_supported(FEATURE_MQTT)
-
-
-def is_dnssd_supported():
-    """Returns True if DNS-SD is supported in this platform."""
-
-    return is_supported(FEATURE_DNSSD)

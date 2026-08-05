@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -26,17 +27,13 @@
 Class that serves as the WoT entrypoint.
 """
 
-import asyncio
 import json
 import logging
-import warnings
 
-import tornado.gen
-from rx import Observable
+import reactivex
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 
-from wotpy.support import is_dnssd_supported
-from wotpy.utils.utils import handle_observer_finalization
+from wotpy.protocols.http.credential import OIDC4VPCredential
 from wotpy.wot.consumed.thing import ConsumedThing
 from wotpy.wot.dictionaries.thing import ThingFragment
 from wotpy.wot.enums import DiscoveryMethod
@@ -47,7 +44,7 @@ from wotpy.wot.thing import Thing
 DEFAULT_FETCH_TIMEOUT_SECS = 20.0
 
 
-class WoT(object):
+class WoT:
     """The WoT object is the API entry point and it is exposed by an
     implementation of the WoT Runtime. The WoT object does not expose
     properties, only methods for discovering, consuming and exposing a Thing."""
@@ -55,6 +52,11 @@ class WoT(object):
     def __init__(self, servient):
         self._servient = servient
         self._logr = logging.getLogger(__name__)
+        # Create overridable ExposedThing class
+        self._exposed_thing_cls = ExposedThing
+
+    def set_exposed_thing_class(self, cls):
+        self._exposed_thing_cls = cls
 
     @property
     def servient(self):
@@ -76,12 +78,13 @@ class WoT(object):
         elif isinstance(item, ThingDescription):
             td = item
 
-        if not td:
-            raise RuntimeError
+        assert td
 
         fragment_dict = thing_filter.fragment if thing_filter.fragment else {}
 
-        return all(item in td.to_dict().items() for item in fragment_dict.items())
+        return all(
+            item in td.to_dict().items()
+            for item in fragment_dict.items())
 
     def _build_local_discover_observable(self, thing_filter):
         """Builds an Observable to discover Things using the local method."""
@@ -92,134 +95,68 @@ class WoT(object):
             if self._is_fragment_match(exposed_thing, thing_filter)
         ]
 
-        return Observable.of(*found_tds)
+        return reactivex.of(*found_tds)
 
-    def _build_dnssd_discover_observable(self, thing_filter, dnssd_find_kwargs):
-        """Builds an Observable to discover Things using the multicast method based on DNS-SD."""
+    async def _get_verifiable_creds_token(self, url, credentials_dict):
+        """Queries the OIDC4VP holder for a token."""
 
-        if not is_dnssd_supported():
-            warnings.warn(
-                "Unsupported DNS-SD multicast discovery",
-                UserWarning,
-                stacklevel=1,
-            )
+        if credentials_dict is not None:
+            if url in self.servient._access_tokens:
+                token = self.servient._access_tokens[url]
+                self._logr.log(logging.DEBUG, f"Token for '{url}' already stored: {token}")
+            else:
+                holder_url = credentials_dict.get("holder_url", None)
+                requester = credentials_dict.get("requester", None)
+                if holder_url is None:
+                    raise ValueError("Missing Verifiable credentials holder url")
+                if requester is None:
+                    raise ValueError("Missing Verifiable credentials requester URL/IP")
 
-            return Observable.empty()
-
-        dnssd_find_kwargs = dnssd_find_kwargs if dnssd_find_kwargs else {}
-
-        if not self._servient.dnssd:
-            return Observable.empty()
-
-        def subscribe(observer):
-            """Browses the Servient services using DNS-SD and retrieves the TDs that match the filters."""
-
-            state = {"stop": False}
-
-            @handle_observer_finalization(observer)
-            async def callback():
-                address_port_pairs = await self._servient.dnssd.find(
-                    **dnssd_find_kwargs
+                token = await OIDC4VPCredential.holder_token_request(
+                    holder_url, url, "GET", requester
                 )
+                self.servient._access_tokens[url] = token
+                self._logr.log(logging.DEBUG, f"Stored token for '{url}': {token}")
+            headers = {"X-Auth-token": token}
+            return headers
 
-                def build_pair_url(idx, path=None):
-                    addr, port = address_port_pairs[idx]
-                    base = "http://{}:{}".format(addr, port)
-                    path = path if path else ""
-                    return "{}/{}".format(base, path.strip("/"))
+        return None
 
-                http_client = AsyncHTTPClient()
-
-                catalogue_resps = [
-                    http_client.fetch(build_pair_url(idx))
-                    for idx in range(len(address_port_pairs))
-                ]
-
-                wait_iter = tornado.gen.WaitIterator(*catalogue_resps)
-
-                while not wait_iter.done() and not state["stop"]:
-                    try:
-                        catalogue_resp = await wait_iter.next()
-                    except Exception as ex:
-                        self._logr.warning(
-                            "Exception on HTTP request to TD catalogue: {}".format(ex)
-                        )
-                    else:
-                        catalogue = json.loads(catalogue_resp.body)
-
-                        if state["stop"]:
-                            return
-
-                        td_resps = await asyncio.gather(
-                            *[
-                                http_client.fetch(
-                                    build_pair_url(wait_iter.current_index, path=path)
-                                )
-                                for thing_id, path in catalogue.items()
-                            ]
-                        )
-
-                        tds = [ThingDescription(td_resp.body) for td_resp in td_resps]
-
-                        tds_filtered = [
-                            td
-                            for td in tds
-                            if self._is_fragment_match(td, thing_filter)
-                        ]
-
-                        [observer.on_next(td.to_str()) for td in tds_filtered]
-
-            def unsubscribe():
-                state["stop"] = True
-
-            asyncio.create_task(callback())
-
-            return unsubscribe
-
-        return Observable.create(subscribe)
-
-    def discover(self, thing_filter, dnssd_find_kwargs=None):
+    def discover(self, thing_filter):
         """Starts the discovery process that will provide ThingDescriptions
         that match the optional argument filter of type ThingFilter."""
 
         supported_methods = [
             DiscoveryMethod.ANY,
-            DiscoveryMethod.LOCAL,
-            DiscoveryMethod.MULTICAST,
+            DiscoveryMethod.LOCAL
         ]
 
         if thing_filter.method not in supported_methods:
             err = NotImplementedError("Unsupported discovery method")
-            return Observable.throw(err)
+            return reactivex.throw(err)
 
         if thing_filter.query:
             err = NotImplementedError(
-                "Queries are not supported yet (please use filter.fragment)"
-            )
-
-            return Observable.throw(err)
+                "Queries are not supported yet (please use filter.fragment)")
+            return reactivex.throw(err)
 
         observables = []
 
         if thing_filter.method in [DiscoveryMethod.ANY, DiscoveryMethod.LOCAL]:
-            observables.append(self._build_local_discover_observable(thing_filter))
-
-        if thing_filter.method in [DiscoveryMethod.ANY, DiscoveryMethod.MULTICAST]:
             observables.append(
-                self._build_dnssd_discover_observable(thing_filter, dnssd_find_kwargs)
-            )
+                self._build_local_discover_observable(thing_filter))
 
-        return Observable.merge(*observables)
+        return reactivex.merge(*observables)
 
     @classmethod
-    async def fetch(cls, url, timeout_secs=None):
+    async def fetch(cls, url, headers=None, timeout_secs=None):
         """Accepts an url argument and returns a Future
         that resolves with a Thing Description string."""
 
         timeout_secs = timeout_secs or DEFAULT_FETCH_TIMEOUT_SECS
 
         http_client = AsyncHTTPClient()
-        http_request = HTTPRequest(url, request_timeout=timeout_secs)
+        http_request = HTTPRequest(url, headers=headers, request_timeout=timeout_secs)
 
         http_response = await http_client.fetch(http_request)
 
@@ -260,7 +197,7 @@ class WoT(object):
         object, locally created based on the provided initialization parameters."""
 
         thing = self.thing_from_model(model)
-        exposed_thing = ExposedThing(servient=self._servient, thing=thing)
+        exposed_thing = self._exposed_thing_cls(servient=self._servient, thing=thing)
         self._servient.add_exposed_thing(exposed_thing)
 
         return exposed_thing
@@ -274,11 +211,23 @@ class WoT(object):
 
         return exposed_thing
 
-    async def consume_from_url(self, url, timeout_secs=None):
+    async def consume_from_url(self, url, credentials_dict=None, timeout_secs=None):
         """Return a Future that resolves to a ConsumedThing created
         from the thing description retrieved from the given URL."""
 
-        td_str = await self.fetch(url, timeout_secs=timeout_secs)
+        headers = await self._get_verifiable_creds_token(url, credentials_dict)
+
+        td_str = await self.fetch(url, headers=headers, timeout_secs=timeout_secs)
+
+        # Invalid credential
+        if td_str is None:
+            self.servient._access_tokens.pop(url, None)
+            headers = await self._get_verifiable_creds_token(url, credentials_dict)
+            td_str = await self.fetch(url, headers=headers, timeout_secs=timeout_secs)
+
+            if td_str is None:
+                raise Exception("Error when retrieving access token")
+
         consumed_thing = self.consume(td_str)
 
         return consumed_thing

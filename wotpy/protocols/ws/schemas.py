@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -41,7 +42,7 @@ SCHEMA_ID = {
 }
 
 SCHEMA_REQUEST = {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "id": "http://fundacionctic.org/schemas/wotpy-ws-request.json",
     "type": "object",
     "properties": {
@@ -68,7 +69,7 @@ SCHEMA_REQUEST = {
 }
 
 SCHEMA_RESPONSE = {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "id": "http://fundacionctic.org/schemas/wotpy-ws-response.json",
     "type": "object",
     "properties": {
@@ -87,7 +88,7 @@ SCHEMA_RESPONSE = {
 }
 
 SCHEMA_ERROR = {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "id": "http://fundacionctic.org/schemas/wotpy-ws-error.json",
     "type": "object",
     "properties": {
@@ -117,7 +118,7 @@ SCHEMA_ERROR = {
 }
 
 SCHEMA_EMITTED_ITEM = {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "id": "http://fundacionctic.org/schemas/wotpy-ws-emitted-item.json",
     "type": "object",
     "properties": {
@@ -133,7 +134,7 @@ SCHEMA_EMITTED_ITEM = {
 }
 
 SCHEMA_PARAMS_READ_PROPERTY = {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "id": "http://fundacionctic.org/schemas/wotpy-ws-params-read-property.json",
     "type": "object",
     "properties": {
@@ -145,7 +146,7 @@ SCHEMA_PARAMS_READ_PROPERTY = {
 }
 
 SCHEMA_PARAMS_WRITE_PROPERTY = {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "id": "http://fundacionctic.org/schemas/wotpy-ws-params-write-property.json",
     "type": "object",
     "properties": {
@@ -159,7 +160,7 @@ SCHEMA_PARAMS_WRITE_PROPERTY = {
 }
 
 SCHEMA_PARAMS_INVOKE_ACTION = {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "id": "http://fundacionctic.org/schemas/wotpy-ws-params-invoke-action.json",
     "type": "object",
     "properties": {
@@ -172,7 +173,7 @@ SCHEMA_PARAMS_INVOKE_ACTION = {
 }
 
 SCHEMA_PARAMS_ON_PROPERTY_CHANGE = {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "id": "http://fundacionctic.org/schemas/wotpy-ws-params-on-property-change.json",
     "type": "object",
     "properties": {
@@ -184,13 +185,13 @@ SCHEMA_PARAMS_ON_PROPERTY_CHANGE = {
 }
 
 SCHEMA_PARAMS_ON_TD_CHANGE = {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "id": "http://fundacionctic.org/schemas/wotpy-ws-params-on-td-change.json",
     "type": "object"
 }
 
 SCHEMA_PARAMS_ON_EVENT = {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "id": "http://fundacionctic.org/schemas/wotpy-ws-params-on-event.json",
     "type": "object",
     "properties": {
@@ -202,7 +203,7 @@ SCHEMA_PARAMS_ON_EVENT = {
 }
 
 SCHEMA_PARAMS_DISPOSE = {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "id": "http://fundacionctic.org/schemas/wotpy-ws-params-dispose.json",
     "type": "object",
     "properties": {

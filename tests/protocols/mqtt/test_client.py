@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -22,95 +23,202 @@
 #
 # SPDX-License-Identifier: MIT
 
+import asyncio
+import random
+
 import pytest
+from faker import Faker
+from unittest.mock import MagicMock, patch
 
-from tests.protocols.helpers import (
-    client_test_invoke_action_async,
-    client_test_invoke_action_error_async,
-    client_test_on_event_async,
-    client_test_on_property_change_async,
-    client_test_read_property_async,
-    client_test_write_property_async,
-)
-from tests.protocols.mqtt.broker import BROKER_SKIP_REASON, is_test_broker_online
+from tests.protocols.helpers import \
+    client_test_on_property_change, \
+    client_test_on_event, \
+    client_test_read_property, \
+    client_test_write_property, \
+    client_test_invoke_action, \
+    client_test_invoke_action_error
+from tests.protocols.mqtt.broker import is_test_broker_online, BROKER_SKIP_REASON
+from tests.utils import run_test_coroutine, DEFAULT_TIMEOUT_SECS
+from wotpy.protocols.exceptions import ClientRequestTimeout
 from wotpy.protocols.mqtt.client import MQTTClient
+from wotpy.wot.td import ThingDescription
 
-pytestmark = pytest.mark.skipif(
-    is_test_broker_online() is False, reason=BROKER_SKIP_REASON
-)
+pytestmark = pytest.mark.skipif(asyncio.run(is_test_broker_online()) is False, reason=BROKER_SKIP_REASON)
 
 
 @pytest.mark.asyncio
 async def test_read_property(mqtt_servient):
     """Property values may be retrieved using the MQTT binding client."""
 
-    async for servient in mqtt_servient:
-        await client_test_read_property_async(servient, MQTTClient)
+    await client_test_read_property(mqtt_servient, MQTTClient)
 
 
 @pytest.mark.asyncio
 async def test_write_property(mqtt_servient):
     """Properties may be updated using the MQTT binding client."""
 
-    async for servient in mqtt_servient:
-        await client_test_write_property_async(servient, MQTTClient)
+    await client_test_write_property(mqtt_servient, MQTTClient)
 
 
 @pytest.mark.asyncio
 async def test_invoke_action(mqtt_servient):
     """Actions may be invoked using the MQTT binding client."""
 
-    async for servient in mqtt_servient:
-        await client_test_invoke_action_async(servient, MQTTClient)
+    await client_test_invoke_action(mqtt_servient, MQTTClient)
 
 
 @pytest.mark.asyncio
 async def test_invoke_action_error(mqtt_servient):
     """Errors raised by Actions are propagated propertly by the MQTT binding client."""
 
-    async for servient in mqtt_servient:
-        await client_test_invoke_action_error_async(servient, MQTTClient)
+    await client_test_invoke_action_error(mqtt_servient, MQTTClient)
 
 
 @pytest.mark.asyncio
 async def test_on_property_change(mqtt_servient):
     """Property updates may be observed using the MQTT binding client."""
 
-    async for servient in mqtt_servient:
-        await client_test_on_property_change_async(servient, MQTTClient)
+    await client_test_on_property_change(mqtt_servient, MQTTClient)
 
 
 @pytest.mark.asyncio
 async def test_on_event(mqtt_servient):
     """Event emissions may be observed using the MQTT binding client."""
 
-    async for servient in mqtt_servient:
-        await client_test_on_event_async(servient, MQTTClient)
+    await client_test_on_event(mqtt_servient, MQTTClient)
 
 
-@pytest.mark.skip(reason="ToDo: Implement this test")
-def test_timeout_invoke_action(mqtt_servient):
+def _effect_dummy(*args, **kwargs):
+    """Coroutine mock side effect that does nothing and returns a Mock."""
+
+    async def _coro():
+        await asyncio.sleep(0)
+        return MagicMock()
+
+    return _coro()
+
+
+def _effect_raise_timeout(*args, **kwargs):
+    """Coroutine mock side effect that raises a timeout error."""
+
+    async def _coro():
+        await asyncio.sleep(0)
+        raise asyncio.TimeoutError()
+
+    return _coro()
+
+
+def _build_effect_sleep(sleep_secs):
+    """Factory function to build coroutine mock side effects to sleep a fixed amount of time."""
+
+    def _effect_wait(*args, **kwargs):
+        async def _coro():
+            await asyncio.sleep(sleep_secs)
+            raise asyncio.TimeoutError()
+
+        return _coro()
+
+    return _effect_wait
+
+
+def _build_amqtt_mock(side_effect_deliver_message):
+    """Returns a mock of the AMQTT Client class."""
+
+    mock_client = MagicMock()
+    mock_client.connect.side_effect = _effect_dummy
+    mock_client.deliver_message.side_effect = side_effect_deliver_message
+    mock_client.disconnect.side_effect = _effect_dummy
+    mock_client.subscribe.side_effect = _effect_dummy
+    mock_client.publish.side_effect = _effect_dummy
+
+    mock_cls = MagicMock()
+    mock_cls.return_value = mock_client
+
+    return mock_cls
+
+
+@pytest.mark.asyncio
+async def test_timeout_invoke_action(mqtt_servient):
     """Timeouts can be defined on Action invocations."""
 
-    pass
+    exposed_thing = next(mqtt_servient.exposed_things)
+    action_name = next(iter(exposed_thing.actions.keys()))
+    td = ThingDescription.from_thing(exposed_thing.thing)
+    mqtt_mock = _build_amqtt_mock(_effect_raise_timeout)
+
+    timeout = random.random()
+
+    async def test_coroutine():
+        with patch('wotpy.protocols.mqtt.client.amqtt.client.MQTTClient', new=mqtt_mock):
+            mqtt_client = MQTTClient()
+
+            with pytest.raises(ClientRequestTimeout):
+                await mqtt_client.invoke_action(td, action_name, Faker().pystr(), timeout=timeout)
+
+    await run_test_coroutine(test_coroutine)
 
 
-@pytest.mark.skip(reason="ToDo: Implement this test")
-def test_timeout_read_property(mqtt_servient):
+@pytest.mark.asyncio
+async def test_timeout_read_property(mqtt_servient):
     """Timeouts can be defined on Property reads."""
 
-    pass
+    exposed_thing = next(mqtt_servient.exposed_things)
+    prop_name = next(iter(exposed_thing.properties.keys()))
+    td = ThingDescription.from_thing(exposed_thing.thing)
+    mqtt_mock = _build_amqtt_mock(_effect_raise_timeout)
+
+    timeout = random.random()
+
+    async def test_coroutine():
+        with patch('wotpy.protocols.mqtt.client.amqtt.client.MQTTClient', new=mqtt_mock):
+            mqtt_client = MQTTClient()
+
+            with pytest.raises(ClientRequestTimeout):
+                await mqtt_client.read_property(td, prop_name, timeout=timeout)
+
+    await run_test_coroutine(test_coroutine)
 
 
-@pytest.mark.skip(reason="ToDo: Implement this test")
-def test_timeout_write_property(mqtt_servient):
+@pytest.mark.asyncio
+async def test_timeout_write_property(mqtt_servient):
     """Timeouts can be defined on Property writes."""
 
-    pass
+    exposed_thing = next(mqtt_servient.exposed_things)
+    prop_name = next(iter(exposed_thing.properties.keys()))
+    td = ThingDescription.from_thing(exposed_thing.thing)
+    mqtt_mock = _build_amqtt_mock(_effect_raise_timeout)
+
+    timeout = random.random()
+
+    async def test_coroutine():
+        with patch('wotpy.protocols.mqtt.client.amqtt.client.MQTTClient', new=mqtt_mock):
+            mqtt_client = MQTTClient()
+
+            with pytest.raises(ClientRequestTimeout):
+                await mqtt_client.write_property(td, prop_name, Faker().pystr(), timeout=timeout)
+
+    await run_test_coroutine(test_coroutine)
 
 
-@pytest.mark.skip(reason="ToDo: Implement this test")
-def test_timeout_stop(mqtt_servient):
+@pytest.mark.asyncio
+async def test_stop_timeout(mqtt_servient):
     """Attempting to stop an unresponsive connection does not result in an indefinite wait."""
 
-    pass
+    exposed_thing = next(mqtt_servient.exposed_things)
+    prop_name = next(iter(exposed_thing.properties.keys()))
+    td = ThingDescription.from_thing(exposed_thing.thing)
+
+    timeout = random.random()
+
+    assert (timeout * 3) < DEFAULT_TIMEOUT_SECS
+
+    mqtt_mock = _build_amqtt_mock(_build_effect_sleep(DEFAULT_TIMEOUT_SECS * 10))
+
+    async def test_coroutine():
+        with patch('wotpy.protocols.mqtt.client.amqtt.client.MQTTClient', new=mqtt_mock):
+            mqtt_client = MQTTClient(stop_loop_timeout_secs=timeout)
+
+            with pytest.raises(ClientRequestTimeout):
+                await mqtt_client.read_property(td, prop_name, timeout=timeout)
+
+    await run_test_coroutine(test_coroutine)

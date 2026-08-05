@@ -4,13 +4,20 @@ vars:
   TEST_BROKER_IMAGE: eclipse-mosquitto:1.6
   TEST_BROKER_NAME: wotpy_test_broker
   TEST_BROKER_MAPPED_PORT: "{{default 1883 .TEST_BROKER_MAPPED_PORT}}"
+
+  TEST_ZENOH_IMAGE: eclipse/zenoh:1.9.0
+  TEST_ZENOH_NAME: wotpy_test_zenoh
+  TEST_ZENOH_MAPPED_PORT: "{{default 7447 .TEST_ZENOH_MAPPED_PORT}}"
+
   VENV_PATH: "{{.ROOT_DIR}}/.venv"
   MAIN_IP_ADDRESS:
-    sh: ip route get 1.2.3.4 | awk '{print $7}'
+    sh: ip route get 1.2.3.4 | awk '{print $7}' | tr -d '\n'
   WOTPY_TESTS_MQTT_BROKER_URL: mqtt://{{.MAIN_IP_ADDRESS}}:{{.TEST_BROKER_MAPPED_PORT}}
+  WOTPY_TESTS_ZENOH_ROUTER_URL: tcp/{{.MAIN_IP_ADDRESS}}:{{.TEST_ZENOH_MAPPED_PORT}}
 
 env:
   WOTPY_TESTS_MQTT_BROKER_URL: "{{.WOTPY_TESTS_MQTT_BROKER_URL}}"
+  WOTPY_TESTS_ZENOH_ROUTER_URL: "{{.WOTPY_TESTS_ZENOH_ROUTER_URL}}"
 
 tasks:
   clean:
@@ -19,6 +26,8 @@ tasks:
       - cmd: rm -fr {{.VENV_PATH}}
         ignore_error: true
       - cmd: docker rm -f {{.TEST_BROKER_NAME}}
+        ignore_error: true
+      - cmd: docker rm -f {{.TEST_ZENOH_NAME}}
         ignore_error: true
 
   test-broker:
@@ -32,21 +41,46 @@ tasks:
     status:
       - docker ps | grep {{.TEST_BROKER_NAME}}
 
-  venv:
-    desc: Create the virtual environment for development
+  test-zenoh:
+    desc: Run the Zenoh router used for testing
     cmds:
-      - virtualenv --python python3 {{.VENV_PATH}}
+      - >
+        docker run -d
+        -p {{.TEST_ZENOH_MAPPED_PORT}}:7447
+        --name {{.TEST_ZENOH_NAME}}
+        {{.TEST_ZENOH_IMAGE}}
+    status:
+      - docker ps | grep {{.TEST_ZENOH_NAME}}
+
+  test-services:
+    desc: Start all test infrastructure services
+    deps:
+      - test-broker
+      - test-zenoh
+
+  venv:
+    desc: Create the virtual environment for development using pip
+    cmds:
+      - python3 -m venv {{.VENV_PATH}}
       - "{{.VENV_PATH}}/bin/pip install -U -e '{{.ROOT_DIR}}[tests]'"
+    status:
+      - test -d {{.VENV_PATH}}
+
+  uv-venv:
+    desc: Create the virtual environment for development using uv
+    cmds:
+      - uv venv {{.VENV_PATH}}
+      - uv sync --extra tests
     status:
       - test -d {{.VENV_PATH}}
 
   docker-tests:
     deps:
-      - test-broker
+      - test-services
     desc: Run the tests in a Docker container
     vars:
       PYTEST_ARGS_DEFAULT: -v
-      PYTHON_TAG: "{{default 3.8 .PYTHON_TAG}}"
+      PYTHON_TAG: '{{default "3.10" .PYTHON_TAG}}'
       PYTEST_ARGS: "{{default .PYTEST_ARGS_DEFAULT .PYTEST_ARGS}}"
     env:
       PYTHON_TAG: "{{.PYTHON_TAG}}"
@@ -59,7 +93,7 @@ tasks:
   docker-tests-all:
     desc: Run the tests in a Docker container for all Python versions
     cmds:
-      - for: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+      - for: ["3.10", "3.11", "3.12", "3.13", "3.14"]
         task: docker-tests
         vars:
           PYTHON_TAG: "{{.ITEM}}"
@@ -68,6 +102,7 @@ tasks:
     desc: Run the tests in the local virtualenv
     deps:
       - venv
+      - test-services
     dir: "{{.ROOT_DIR}}"
     cmds:
       - "{{.VENV_PATH}}/bin/pytest -v"
@@ -83,13 +118,15 @@ tasks:
   start-devcontainer:
     desc: Open a shell in a development container
     deps:
-      - test-broker
+      - test-services
     vars:
-      PYTHON_TAG: "{{default 3.8 .PYTHON_TAG}}"
+      PYTHON_TAG: "{{default 3.10 .PYTHON_TAG}}"
     cmds:
       - >
         docker run --rm -it
+        --add-host=host.docker.internal:host-gateway
         -v {{.ROOT_DIR}}:/workspace
         -e WOTPY_TESTS_MQTT_BROKER_URL={{.WOTPY_TESTS_MQTT_BROKER_URL}}
+        -e WOTPY_TESTS_ZENOH_ROUTER_URL={{.WOTPY_TESTS_ZENOH_ROUTER_URL}}
         python:{{.PYTHON_TAG}}
         /bin/bash -c "cd /workspace && pip install -U -e .[tests] && bash"

@@ -1,4 +1,5 @@
 # Copyright (c) 2019 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -22,7 +23,7 @@
 import logging
 
 
-class ConnRefCounter(object):
+class ConnRefCounter:
     """A simple connection reference counter to keep
     track of active connections and enable reuse."""
 

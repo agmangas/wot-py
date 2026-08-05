@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -26,16 +27,17 @@
 Class that represents a Thing consumed by a servient.
 """
 
-from rx.concurrency import IOLoopScheduler
+from reactivex.scheduler.eventloop import IOLoopScheduler
+from tornado import ioloop
 
 from wotpy.wot.consumed.interaction_map import (
     ConsumedThingActionDict,
     ConsumedThingEventDict,
-    ConsumedThingPropertyDict,
+    ConsumedThingPropertyDict
 )
 
 
-class ConsumedThing(object):
+class ConsumedThing:
     """An entity that serves to interact with a Thing.
     An application uses this class when it acts as a *client* of the Thing."""
 
@@ -174,4 +176,8 @@ class ConsumedThing(object):
         """Subscribes to changes on the TD of this thing."""
 
         observable = self.on_td_change()
-        return observable.subscribe_on(IOLoopScheduler()).subscribe(*args, **kwargs)
+        loop = ioloop.IOLoop.current()
+        scheduler = IOLoopScheduler(loop)
+        kwargs["scheduler"] = scheduler
+
+        return observable.subscribe(*args, **kwargs)

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -30,23 +31,19 @@ import asyncio
 import json
 import logging
 import time
-import urllib.parse as parse
 
 import tornado.httpclient
-from rx import Observable
+import reactivex
 from tornado.simple_httpclient import HTTPTimeoutError
 
 from wotpy.protocols.client import BaseProtocolClient
-from wotpy.protocols.enums import InteractionVerbs, Protocols
-from wotpy.protocols.exceptions import ClientRequestTimeout, FormNotFoundException
+from wotpy.protocols.enums import Protocols, InteractionVerbs
+from wotpy.protocols.exceptions import FormNotFoundException, ClientRequestTimeout
 from wotpy.protocols.http.enums import HTTPSchemes
 from wotpy.protocols.utils import is_scheme_form
 from wotpy.utils.utils import handle_observer_finalization
-from wotpy.wot.events import (
-    EmittedEvent,
-    PropertyChangeEmittedEvent,
-    PropertyChangeEventInit,
-)
+from wotpy.wot.events import EmittedEvent, PropertyChangeEmittedEvent, PropertyChangeEventInit
+from wotpy.protocols.http.credential import BaseCredential, OIDC4VPCredential
 
 
 class HTTPClient(BaseProtocolClient):
@@ -56,13 +53,12 @@ class HTTPClient(BaseProtocolClient):
     DEFAULT_CON_TIMEOUT = 60
     DEFAULT_REQ_TIMEOUT = 60
 
-    def __init__(
-        self, connect_timeout=DEFAULT_CON_TIMEOUT, request_timeout=DEFAULT_REQ_TIMEOUT
-    ):
+    def __init__(self, connect_timeout=DEFAULT_CON_TIMEOUT, request_timeout=DEFAULT_REQ_TIMEOUT):
         self._connect_timeout = connect_timeout
         self._request_timeout = request_timeout
         self._logr = logging.getLogger(__name__)
-        super(HTTPClient, self).__init__()
+        self._credential = None
+        super().__init__()
 
     @classmethod
     def pick_http_href(cls, td, forms, op=None):
@@ -77,10 +73,8 @@ class HTTPClient(BaseProtocolClient):
         def find_href(scheme):
             try:
                 return next(
-                    form.href
-                    for form in forms
-                    if is_scheme_form(form, td.base, scheme) and is_op_form(form)
-                )
+                    form.href for form in forms
+                    if is_scheme_form(form, td.base, scheme) and is_op_form(form))
             except StopIteration:
                 return None
 
@@ -114,10 +108,26 @@ class HTTPClient(BaseProtocolClient):
         forms = td.get_forms(name)
 
         forms_http = [
-            form for form in forms if is_scheme_form(form, td.base, HTTPSchemes.list())
+            form for form in forms
+            if is_scheme_form(form, td.base, HTTPSchemes.list())
         ]
 
         return len(forms_http) > 0
+
+    def set_security(self, security_scheme_dict, credentials):
+        """Sets the security credentials for the given security scheme."""
+
+        credential = BaseCredential.build(security_scheme_dict, credentials)
+        self._credential = credential
+
+    async def sign_request(self, request):
+        """Adds the appropriate authorization header to the request
+        and delegates the addition of the header to the credential class."""
+
+        if self._credential:
+            return await self._credential.sign(request)
+
+        return request
 
     async def invoke_action(self, td, name, input_value, timeout=None):
         """Invokes an Action on a remote Thing.
@@ -138,62 +148,22 @@ class HTTPClient(BaseProtocolClient):
 
         try:
             http_request = tornado.httpclient.HTTPRequest(
-                href,
-                method="POST",
+                href, method="POST",
                 body=body,
                 headers=self.JSON_HEADERS,
                 connect_timeout=con_timeout,
                 request_timeout=req_timeout,
-            )
-        except HTTPTimeoutError as ex:
-            raise ClientRequestTimeout from ex
+                validate_cert=False)
+        except HTTPTimeoutError:
+            raise ClientRequestTimeout
 
-        response = await http_client.fetch(http_request)
-        invocation_url = json.loads(response.body).get("invocation")
+        response = await http_client.fetch(await self.sign_request(http_request))
+        resp_body = json.loads(response.body)
 
-        async def check_invocation():
-            parsed = parse.urlparse(href)
-
-            invoc_href = "{}://{}/{}".format(
-                parsed.scheme, parsed.netloc, invocation_url.lstrip("/")
-            )
-
-            invoc_http_req = tornado.httpclient.HTTPRequest(
-                invoc_href,
-                method="GET",
-                connect_timeout=con_timeout,
-                request_timeout=req_timeout,
-            )
-
-            self._logr.debug("Checking invocation: {}".format(invocation_url))
-
-            try:
-                invoc_res = await http_client.fetch(invoc_http_req)
-            except HTTPTimeoutError:
-                self._logr.debug(
-                    "Timeout checking invocation: {}".format(invocation_url)
-                )
-                return (False, None)
-
-            status = json.loads(invoc_res.body)
-
-            if status.get("done") is False:
-                return (False, None)
-
-            if status.get("error") is not None:
-                return (True, Exception(status.get("error")))
-            else:
-                return (True, status.get("result"))
-
-        while True:
-            done, result = await check_invocation()
-
-            if done and isinstance(result, Exception):
-                raise result
-            elif done:
-                return result
-            elif timeout and (time.time() - now) > timeout:
-                raise ClientRequestTimeout
+        if resp_body.get("error") is not None:
+            raise Exception(resp_body.get("error"))
+        else:
+            return resp_body.get("result")
 
     async def write_property(self, td, name, value, timeout=None):
         """Updates the value of a Property on a remote Thing.
@@ -212,15 +182,13 @@ class HTTPClient(BaseProtocolClient):
 
         try:
             http_request = tornado.httpclient.HTTPRequest(
-                href,
-                method="PUT",
-                body=body,
+                href, method="PUT", body=body,
                 headers=self.JSON_HEADERS,
                 connect_timeout=con_timeout,
                 request_timeout=req_timeout,
-            )
-        except HTTPTimeoutError as ex:
-            raise ClientRequestTimeout from ex
+                validate_cert=False)
+        except HTTPTimeoutError:
+            raise ClientRequestTimeout
 
         await http_client.fetch(http_request)
 
@@ -240,15 +208,24 @@ class HTTPClient(BaseProtocolClient):
 
         try:
             http_request = tornado.httpclient.HTTPRequest(
-                href,
-                method="GET",
+                href, method="GET",
                 connect_timeout=con_timeout,
                 request_timeout=req_timeout,
-            )
-        except HTTPTimeoutError as ex:
-            raise ClientRequestTimeout from ex
+                validate_cert=False)
+        except HTTPTimeoutError:
+            raise ClientRequestTimeout
 
-        response = await http_client.fetch(http_request)
+        try:
+            response = await http_client.fetch(await self.sign_request(http_request))
+        except Exception as exception:
+            # If using OIDC4VP, the first request could use an expired token.
+            # In that case catch the exception, get rid of the old token and retry
+            if self._credential is not None and type(self._credential) is OIDC4VPCredential:
+                self._credential._access_tokens.pop(http_request.url, None)
+                response = await http_client.fetch(await self.sign_request(http_request))
+            else:
+                raise exception
+
         result = json.loads(response.body)
         result = result.get("value", result)
 
@@ -263,7 +240,7 @@ class HTTPClient(BaseProtocolClient):
         if href is None:
             raise FormNotFoundException()
 
-        def subscribe(observer):
+        def subscribe(observer, scheduler):
             """Subscription function to observe events using the HTTP protocol."""
 
             state = {"active": True}
@@ -271,11 +248,11 @@ class HTTPClient(BaseProtocolClient):
             @handle_observer_finalization(observer)
             async def callback():
                 http_client = tornado.httpclient.AsyncHTTPClient()
-                http_request = tornado.httpclient.HTTPRequest(href, method="GET")
+                http_request = tornado.httpclient.HTTPRequest(href, method="GET", validate_cert=False)
 
                 while state["active"]:
                     try:
-                        response = await http_client.fetch(http_request)
+                        response = await http_client.fetch(await self.sign_request(http_request))
                         payload = json.loads(response.body).get("payload")
                         observer.on_next(EmittedEvent(init=payload, name=name))
                     except HTTPTimeoutError:
@@ -284,24 +261,23 @@ class HTTPClient(BaseProtocolClient):
             def unsubscribe():
                 state["active"] = False
 
-            asyncio.create_task(callback())
+            loop = asyncio.get_running_loop()
+            loop.create_task(callback())
 
             return unsubscribe
 
-        return Observable.create(subscribe)
+        return reactivex.create(subscribe)
 
     def on_property_change(self, td, name):
         """Subscribes to property changes on a remote Thing.
         Returns an Observable"""
 
-        href = self.pick_http_href(
-            td, td.get_property_forms(name), op=InteractionVerbs.OBSERVE_PROPERTY
-        )
+        href = self.pick_http_href(td, td.get_property_forms(name), op=InteractionVerbs.OBSERVE_PROPERTY)
 
         if href is None:
             raise FormNotFoundException()
 
-        def subscribe(observer):
+        def subscribe(observer, scheduler):
             """Subscription function to observe property updates using the HTTP protocol."""
 
             state = {"active": True}
@@ -309,11 +285,11 @@ class HTTPClient(BaseProtocolClient):
             @handle_observer_finalization(observer)
             async def callback():
                 http_client = tornado.httpclient.AsyncHTTPClient()
-                http_request = tornado.httpclient.HTTPRequest(href, method="GET")
+                http_request = tornado.httpclient.HTTPRequest(href, method="GET", validate_cert=False)
 
                 while state["active"]:
                     try:
-                        response = await http_client.fetch(http_request)
+                        response = await http_client.fetch(await self.sign_request(http_request))
                         value = json.loads(response.body)
                         value = value.get("value", value)
                         init = PropertyChangeEventInit(name=name, value=value)
@@ -324,11 +300,12 @@ class HTTPClient(BaseProtocolClient):
             def unsubscribe():
                 state["active"] = False
 
-            asyncio.create_task(callback())
+            loop = asyncio.get_running_loop()
+            loop.create_task(callback())
 
             return unsubscribe
 
-        return Observable.create(subscribe)
+        return reactivex.create(subscribe)
 
     def on_td_change(self, url):
         """Subscribes to Thing Description changes on a remote Thing.

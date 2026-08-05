@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
+# Copyright (c) 2025 National Technical University of Athens
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -28,7 +29,7 @@ ExposedThing and related entities.
 .. autosummary::
     :toctree: _exposed
 
-    wotpy.wot.exposed.interaction_map
-    wotpy.wot.exposed.thing
-    wotpy.wot.exposed.thing_set
+    interaction_map
+    thing
+    thing_set
 """
