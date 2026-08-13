@@ -3,6 +3,7 @@
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
 # Copyright (c) 2025 National Technical University of Athens
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -27,12 +28,11 @@
 Request handler for Action interactions.
 """
 
-from tornado.web import RequestHandler
-
 import wotpy.protocols.http.handlers.utils as handler_utils
+from wotpy.protocols.http.handlers.base import BaseHandler, HTTPError
 
 
-class ActionInvokeHandler(RequestHandler):
+class ActionInvokeHandler(BaseHandler):
     """Handler for Action invocation requests."""
 
     def initialize(self, http_server):
@@ -51,4 +51,4 @@ class ActionInvokeHandler(RequestHandler):
                 result = await exposed_thing.actions[name].invoke(input_value)
                 self.write({"result": result})
             except Exception as ex:
-                self.write({"error": str(ex)})
+                raise HTTPError(reason=str(ex))

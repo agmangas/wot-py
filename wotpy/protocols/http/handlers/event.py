@@ -3,6 +3,7 @@
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
 # Copyright (c) 2025 National Technical University of Athens
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -30,12 +31,11 @@ Request handler for Event interactions.
 import asyncio
 import logging
 
-from tornado.web import RequestHandler
-
 import wotpy.protocols.http.handlers.utils as handler_utils
+from wotpy.protocols.http.handlers.base import BaseHandler
 
 
-class EventObserverHandler(RequestHandler):
+class EventObserverHandler(BaseHandler):
     """Handler for Event subscription requests."""
 
     def initialize(self, http_server):
