@@ -320,7 +320,7 @@ class Servient:
         return tornado.web.Application(
             [
                 (r"/", TDCatalogueHandler, dict(servient=self)),
-                (r"/(?P<thing_url_name>[^\/]+)", TDHandler, dict(servient=self))
+                (r"/(?P<thing_url_name>[^/]+)/?", TDHandler, dict(servient=self))
             ]
         )
 
