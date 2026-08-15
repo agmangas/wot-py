@@ -3,6 +3,7 @@
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
 # Copyright (c) 2025 National Technical University of Athens
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -84,7 +85,7 @@ class CoAPClient(BaseProtocolClient):
         """Asserts that the given CoAP response was successful and raises an Exception if not."""
 
         if not res.code.is_successful():
-            raise ProtocolClientException("Unsuccessful CoAP response: {}".format(res))
+            raise ProtocolClientException("Unsuccessful CoAP response: {}".format(res.payload.decode("utf-8")))
 
     def _build_subscribe(self, href, next_item_builder):
         """Builds the subscribe function that should be passed when

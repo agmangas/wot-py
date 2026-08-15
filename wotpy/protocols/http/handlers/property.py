@@ -3,6 +3,7 @@
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
 # Copyright (c) 2025 National Technical University of Athens
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -30,12 +31,13 @@ Request handler for Property interactions.
 import asyncio
 import logging
 
-from tornado.web import RequestHandler, HTTPError
+from tornado.web import HTTPError
 
 import wotpy.protocols.http.handlers.utils as handler_utils
+from wotpy.protocols.http.handlers.base import BaseHandler
 
 
-class PropertyReadWriteHandler(RequestHandler):
+class PropertyReadWriteHandler(BaseHandler):
     """Handler for Property get/set requests."""
 
     def initialize(self, http_server):
@@ -64,10 +66,10 @@ class PropertyReadWriteHandler(RequestHandler):
             try:
                 await exposed_thing.handle_write_property(name, value)
             except TypeError as ex:
-                raise HTTPError(str(ex))
+                raise HTTPError(reason=str(ex))
 
 
-class PropertyObserverHandler(RequestHandler):
+class PropertyObserverHandler(BaseHandler):
     """Handler for Property subscription requests."""
 
     def initialize(self, http_server):

@@ -3,6 +3,7 @@
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
 # Copyright (c) 2025 National Technical University of Athens
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -232,10 +233,11 @@ async def test_action_run_error(http_server):
             raise Exception(parameters.get("input"))
 
         ex_message = Faker().sentence()
-        result = await _test_action_run(http_server, action_handler, ex_message)
+        with pytest.raises(tornado.httpclient.HTTPClientError) as exc_info:
+            await _test_action_run(http_server, action_handler, ex_message)
 
-        assert result.get("result", None) is None
-        assert ex_message in result.get("error")
+        error = exc_info.value
+        assert ex_message in error.response.reason
 
     await run_test_coroutine(test_coroutine)
 

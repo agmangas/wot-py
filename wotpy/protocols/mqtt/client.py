@@ -3,6 +3,7 @@
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
 # Copyright (c) 2025 National Technical University of Athens
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -77,7 +78,7 @@ class MQTTClient(BaseProtocolClient):
                  deliver_timeout_secs=DEFAULT_DELIVER_TIMEOUT_SECS,
                  msg_wait_timeout_secs=DEFAULT_MSG_WAIT_TIMEOUT_SECS,
                  msg_ttl_secs=DEFAULT_MSG_TTL_SECS,
-                 timeout_default=None,
+                 timeout_default=DEFAULT_MSG_WAIT_TIMEOUT_SECS,
                  amqtt_config=None,
                  ca_file=None,
                  username=None,

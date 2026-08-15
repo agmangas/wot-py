@@ -3,6 +3,7 @@
 
 # Copyright (c) 2018 CTIC Centro Tecnologico
 # Copyright (c) 2025 National Technical University of Athens
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -24,7 +25,7 @@
 # SPDX-License-Identifier: MIT
 
 """
-Request handler for Property interactions.
+General utilities.
 """
 
 import json
@@ -41,7 +42,7 @@ def get_exposed_thing(server, title):
     try:
         return server.get_exposed_thing(title)
     except ValueError:
-        raise HTTPError(log_message="Unknown Thing: {}".format(title))
+        raise HTTPError(reason=f"Unknown Thing: {title}")
 
 
 def get_argument(req_handler, name, default=None):
@@ -55,10 +56,10 @@ def get_argument(req_handler, name, default=None):
     try:
         parsed_body = json.loads(req_handler.request.body)
     except Exception as ex:
-        raise HTTPError(log_message="Error decoding JSON: {}".format(ex))
+        raise HTTPError(reason=f"Error decoding JSON: {str(ex)}")
 
     if not isinstance(parsed_body, dict):
-        raise HTTPError(log_message="Not a JSON object: {}".format(parsed_body))
+        raise HTTPError(reason=f"Not a JSON object: {parsed_body}")
 
     return parsed_body.get(name, default)
 

@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2017 CTIC Centro Tecnologico
-# Copyright (c) 2025 National Technical University of Athens
 # Copyright (c) 2026 Contributors to the Eclipse Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -25,14 +23,28 @@
 # SPDX-License-Identifier: MIT
 
 """
-HTTP request handlers that implement each of the Interaction verbs.
-
-.. autosummary::
-    :toctree: _handlers
-
-    action
-    base
-    event
-    property
-    utils
+Base request handler for proper error reporting.
 """
+
+from tornado.web import RequestHandler, HTTPError
+
+class BaseHandler(RequestHandler):
+
+    def write_error(self, status_code, **kwargs):
+        self.set_header("Content-Type", "application/json")
+
+        message = "Internal server error"
+
+        exc_info = kwargs.get("exc_info")
+        if exc_info:
+            exception = exc_info[1]
+
+            if isinstance(exception, HTTPError):
+                message = exception.reason or str(exception)
+
+        self.finish({
+            "error": {
+                "status": status_code,
+                "message": message,
+            }
+        })
