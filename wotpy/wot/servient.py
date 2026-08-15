@@ -3,6 +3,7 @@
 
 # Copyright (c) 2017 CTIC Centro Tecnologico
 # Copyright (c) 2025 National Technical University of Athens
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -320,7 +321,7 @@ class Servient:
         return tornado.web.Application(
             [
                 (r"/", TDCatalogueHandler, dict(servient=self)),
-                (r"/(?P<thing_url_name>[^\/]+)", TDHandler, dict(servient=self))
+                (r"/(?P<thing_url_name>[^/]+)/?", TDHandler, dict(servient=self))
             ]
         )
 

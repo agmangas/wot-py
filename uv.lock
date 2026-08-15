@@ -1898,7 +1898,7 @@ requires-dist = [
     { name = "pytest-rerunfailures", marker = "extra == 'tests'", specifier = ">=16.0.1" },
     { name = "python-slugify", specifier = ">=8.0.4" },
     { name = "reactivex", specifier = ">=5.1.0,<6.0" },
-    { name = "requests-oauthlib", specifier = ">=2.0.0,<3.0" },
+    { name = "requests-oauthlib", specifier = ">=2.0.0" },
     { name = "sphinx", marker = "extra == 'docs'", specifier = ">=7.4.7" },
     { name = "sphinx-rtd-theme", marker = "extra == 'docs'", specifier = ">=3.0.2" },
     { name = "tornado", specifier = ">=6.5.2,<7.0" },
