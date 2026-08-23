@@ -72,85 +72,11 @@ async def get_thing_action(server, request):
 class ActionResource(aiocoap.resource.ObservableResource):
     """CoAP resource to invoke Actions and observe those invocations."""
 
-    DEFAULT_CLEAR_MS = 1000 * 60 * 5
 
-    def __init__(self, server, clear_ms=None):
+    def __init__(self, server):
         super().__init__()
         self._server = server
-        self._clear_ms = self.DEFAULT_CLEAR_MS if clear_ms is None else clear_ms
-        self._pending_actions = {}
         self._logr = logging.getLogger(__name__)
-
-    async def render_get(self, request):
-        """Handler to check the status of an ongoing invocation."""
-
-        request_payload = json.loads(request.payload)
-        invocation_id = request_payload.get("id", None)
-
-        self._logr.debug("Action GET request for invocation: {}".format(invocation_id))
-
-        if invocation_id is None:
-            raise aiocoap.error.BadRequest("Missing invocation ID")
-
-        if invocation_id not in self._pending_actions:
-            raise aiocoap.error.NotFound("Unknown invocation")
-
-        future_result = self._pending_actions[invocation_id]
-
-        def raise_response(the_resp_dict):
-            response_payload = json.dumps(the_resp_dict).encode("utf-8")
-            response = aiocoap.Message(code=aiocoap.Code.CONTENT, payload=response_payload)
-            response.opt.content_format = JSON_CONTENT_FORMAT
-            return response
-
-        if not future_result.done(): # TODO propably change
-            self._logr.debug("Invocation ({}) is still pending".format(invocation_id))
-            return raise_response({"id": invocation_id, "done": False})
-
-        resp_dict = {"done": True, "id": invocation_id}
-
-        try:
-            result = future_result.result()
-            resp_dict.update({"result": result})
-        except Exception as ex:
-            resp_dict.update({"error": str(ex)})
-
-        self._logr.debug("Returning invocation: {}".format(invocation_id))
-
-        return raise_response(resp_dict)
-
-    async def add_observation(self, request, server_observation):
-        """Method that decides whether to add a new observer.
-        Observers are added for GET requests (checks for invocation status)
-        but not for POST requests (action invocations)."""
-
-        if request.code.name != aiocoap.Code.GET.name:
-            return
-
-        try:
-            request_payload = json.loads(request.payload)
-        except (TypeError, json.decoder.JSONDecodeError):
-            return
-
-        invocation_id = request_payload.get("id", None)
-
-        if invocation_id not in self._pending_actions:
-            self._logr.debug("Observation rejected (unknown invocation): {}".format(invocation_id))
-            return
-
-        def cancellation_cb():
-            self._logr.debug("Observation cancel callback for invocation: {}".format(invocation_id))
-
-        self._logr.debug("Added observation for invocation: {}".format(invocation_id))
-
-        server_observation.accept(cancellation_cb)
-
-        def trigger_cb(fut):
-            self._logr.debug("Triggering observation for invocation: {}".format(invocation_id))
-            server_observation.trigger()
-
-        future_result = self._pending_actions[invocation_id]
-        future_result.add_done_callback(trigger_cb)
 
     async def render_post(self, request):
         """Handler for action invocations."""
@@ -161,27 +87,14 @@ class ActionResource(aiocoap.resource.ObservableResource):
 
         request_payload = json.loads(request.payload)
 
-        if "input" not in request_payload:
-            raise aiocoap.error.BadRequest("Missing input value")
+        try:
+            result = await thing_action.invoke(request_payload)
+            response_payload = json.dumps(result).encode("utf-8")
+        except Exception as ex:
+            self._logr.exception("Error invoking action")
+            response_payload = json.dumps(f"error {str(ex)}").encode("utf-8")
 
-        invocation_id = uuid.uuid4().hex
-
-        def clear_cb():
-            self._logr.debug("Removing pending invocation: {}".format(invocation_id))
-            self._pending_actions.pop(invocation_id, None)
-
-        def done_cb(fut):
-            loop = asyncio.get_running_loop()
-            self._logr.debug("Invocation done ({}): cleaning on {} ms".format(invocation_id, self._clear_ms))
-            delay_in_seconds = self._clear_ms / 1000
-            loop.call_later(delay_in_seconds, clear_cb)
-
-        input_value = request_payload.get("input")
-        fut_action = asyncio.ensure_future(thing_action.invoke(input_value))
-        fut_action.add_done_callback(done_cb)
-        self._pending_actions[invocation_id] = fut_action
-        response_payload = json.dumps({"id": invocation_id}).encode("utf-8")
-        response = aiocoap.Message(code=aiocoap.Code.CREATED, payload=response_payload)
+        response = aiocoap.Message(code=aiocoap.Code.CONTENT, payload=response_payload)
         response.opt.content_format = JSON_CONTENT_FORMAT
 
         return response

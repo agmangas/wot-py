@@ -105,7 +105,7 @@ async def test_property_get(http_server):
         http_request = tornado.httpclient.HTTPRequest(href, method="GET")
         response = await http_client.fetch(http_request)
 
-        assert json.loads(response.body).get("value") == prop_value
+        assert json.loads(response.body) == prop_value
 
     await run_test_coroutine(test_coroutine)
 
@@ -132,24 +132,12 @@ async def _test_property_set(server, body, prop_value, headers=None):
 
 
 @pytest.mark.asyncio
-async def test_property_set_form_urlencoded(http_server):
-    """Properties exposed in an HTTP server can be
-    updated with an application/x-www-form-urlencoded HTTP PUT request."""
-
-    prop_value = Faker().pyint()
-    body = parse.urlencode({"value": prop_value})
-    await _test_property_set(
-        http_server, body, str(prop_value), headers=FORM_URLENCODED_HEADERS
-    )
-
-
-@pytest.mark.asyncio
 async def test_property_set_json(http_server):
     """Properties exposed in an HTTP server can be
     updated with an application/json HTTP PUT request."""
 
     prop_value = Faker().pyint()
-    body = json.dumps({"value": prop_value})
+    body = json.dumps(prop_value)
     await _test_property_set(http_server, body, prop_value, headers=JSON_HEADERS)
 
 
@@ -183,7 +171,6 @@ async def test_property_subscribe(http_server):
         task.cancel()
 
         result = json.loads(response.body)
-        result = result.get("value", result)
         assert result == prop_value
 
     await run_test_coroutine(test_coroutine)
@@ -198,7 +185,7 @@ async def _test_action_run(server, action_handler, input_value):
 
     exposed_thing.set_action_handler(action_name, action_handler)
 
-    body = json.dumps({"input": input_value})
+    body = json.dumps(input_value)
     http_client = tornado.httpclient.AsyncHTTPClient()
     http_request = tornado.httpclient.HTTPRequest(href, method="POST", body=body, headers=JSON_HEADERS)
     response = await http_client.fetch(http_request)
@@ -212,14 +199,15 @@ async def test_action_run_success(http_server):
     """Actions exposed in an HTTP server can be successfully invoked with an HTTP POST request."""
 
     async def test_coroutine():
-        async def action_handler(parameters):
-            return parameters.get("input") * 2
+        async def action_handler(input_value):
+            return input_value * 2
 
         input_value = Faker().pyint()
         result = await _test_action_run(http_server, action_handler, input_value)
 
-        assert result.get("result") == input_value * 2
-        assert result.get("error", None) is None
+        assert result == input_value * 2
+        if type(result) is str:
+            assert "error" not in result
 
     await run_test_coroutine(test_coroutine)
 
@@ -230,7 +218,7 @@ async def test_action_run_error(http_server):
 
     async def test_coroutine():
         async def action_handler(parameters):
-            raise Exception(parameters.get("input"))
+            raise Exception(parameters)
 
         ex_message = Faker().sentence()
         with pytest.raises(tornado.httpclient.HTTPClientError) as exc_info:
@@ -267,7 +255,7 @@ async def test_event_subscribe(http_server):
 
         task.cancel()
 
-        assert json.loads(response.body).get("payload") == payload
+        assert json.loads(response.body) == payload
 
     await run_test_coroutine(test_coroutine)
 
@@ -323,7 +311,6 @@ async def test_ssl_context(self_signed_ssl_context):
         response = await http_client.fetch(http_request)
 
         result = json.loads(response.body)
-        result = result.get("value", result)
         assert result == prop_value
 
         await server.stop()

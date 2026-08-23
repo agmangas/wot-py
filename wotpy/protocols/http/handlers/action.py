@@ -28,6 +28,8 @@
 Request handler for Action interactions.
 """
 
+import json
+
 import wotpy.protocols.http.handlers.utils as handler_utils
 from wotpy.protocols.http.handlers.base import BaseHandler, HTTPError
 
@@ -46,9 +48,10 @@ class ActionInvokeHandler(BaseHandler):
         if not valid_creds:
             handler_utils.request_auth(self, self._server.security_scheme, thing_name)
         else:
-            input_value = handler_utils.get_argument(self, "input")
+            input_value = handler_utils.parse_json_body(self)
             try:
                 result = await exposed_thing.actions[name].invoke(input_value)
-                self.write({"result": result})
+                self.write(json.dumps(result))
+                self.set_header('Content-Type', 'application/json')
             except Exception as ex:
                 raise HTTPError(reason=str(ex))

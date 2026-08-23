@@ -294,9 +294,7 @@ class ExposedThing:
             handler_type=self.HandlerKeys.INVOKE_ACTION,
             interaction=action)
 
-        result = await handler({
-            "input": input_value
-        })
+        result = await handler(input_value)
 
         event_init = ActionInvocationEventInit(action_name=name, return_value=result)
         emitted_event = ActionInvocationEmittedEvent(init=event_init)

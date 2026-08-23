@@ -81,8 +81,7 @@ async def http_server():
 
     action_name = uuid.uuid4().hex
 
-    async def triple(parameters):
-        input_value = parameters.get("input")
+    async def triple(input_value):
         await asyncio.sleep(0)
         return(input_value * 3)
 

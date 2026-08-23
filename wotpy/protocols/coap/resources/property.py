@@ -44,7 +44,7 @@ async def _build_property_value_response(thing_property):
     the CoAP response containing said value."""
 
     value = await thing_property.read()
-    payload = json.dumps({"value": value}).encode("utf-8")
+    payload = json.dumps(value).encode("utf-8")
     response = aiocoap.Message(code=aiocoap.Code.CONTENT, payload=payload)
     response.opt.content_format = JSON_CONTENT_FORMAT
     return response
@@ -125,16 +125,13 @@ class PropertyResource(aiocoap.resource.ObservableResource):
         thing_property = await get_thing_property(self._server, request)
         request_payload = json.loads(request.payload)
 
-        if "value" not in request_payload:
-            raise aiocoap.error.BadRequest()
-
         query = parse_request_opt_query(request)
         exposed_thing = self._server.exposed_thing_set.find_by_thing_title(query.get("thing"))
 
         try:
             await exposed_thing.handle_write_property(
                 thing_property.name,
-                request_payload.get("value"))
+                request_payload)
         except TypeError as ex:
             raise aiocoap.error.MethodNotAllowed(str(ex))
         response = aiocoap.Message(code=aiocoap.Code.CHANGED)

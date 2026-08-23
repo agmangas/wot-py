@@ -80,8 +80,7 @@ async def zenoh_server(request):
 
     action_name = uuid.uuid4().hex
 
-    async def handler(parameters):
-        input_value = parameters.get("input")
+    async def handler(input_value):
         await asyncio.sleep(random.random() * 0.1)
         return "{:f}".format(input_value)
 
@@ -157,8 +156,7 @@ async def zenoh_servient():
     exposed_thing = wot.produce(td.to_str())
     exposed_thing.expose()
 
-    async def action_handler(parameters):
-        input_value = parameters.get("input")
+    async def action_handler(input_value):
         return int(input_value) * 2
 
     exposed_thing.set_action_handler(action_name_01, action_handler)

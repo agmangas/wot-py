@@ -115,12 +115,9 @@ async def websocket_server():
         {"input": {"type": "string"}, "output": {"type": "string"}}
     )
 
-    def async_lower(parameters):
+    def async_lower(input_value):
         loop = asyncio.get_running_loop()
-        input_value = parameters.get("input")
-        return loop.run_in_executor(
-            None, lambda x: time.sleep(0.1) or x.lower(), input_value
-        )
+        return loop.run_in_executor(None, lambda x: time.sleep(0.1) or x.lower(), input_value)
 
     exposed_thing_01.add_property(prop_name_01, prop_init_01, value=prop_value_01)
     exposed_thing_01.add_property(prop_name_02, prop_init_02, value=prop_value_02)

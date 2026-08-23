@@ -55,13 +55,12 @@ class CoAPServer(BaseProtocolServer):
     DEFAULT_SECURITY_SCHEME = {"scheme": SecuritySchemeType.NOSEC}
 
     def __init__(self, port=DEFAULT_PORT, ssl_context=None, oscore_credentials_map=None,
-                 action_clear_ms=None, security_scheme=DEFAULT_SECURITY_SCHEME):
+                 security_scheme=DEFAULT_SECURITY_SCHEME):
         super().__init__(port=port)
         self._server = None
         self._server_lock = asyncio.Lock()
         self._ssl_context = ssl_context
         self._oscore_credentials_map = oscore_credentials_map
-        self._action_clear_ms = action_clear_ms
         self._logr = logging.getLogger(__name__)
         self._servient = None
         self._security_scheme = security_scheme if security_scheme.get("scheme", None) in\
@@ -85,12 +84,6 @@ class CoAPServer(BaseProtocolServer):
         """Returns True if this server is configured to use SSL encryption."""
 
         return self._ssl_context is not None
-
-    @property
-    def action_clear_ms(self):
-        """Returns the timeout (ms) before completed actions are removed from the server."""
-
-        return self._action_clear_ms if self._action_clear_ms else ActionResource.DEFAULT_CLEAR_MS
 
     def _build_forms_property(self, proprty, hostname):
         """Builds and returns the CoAP Form instances for the given Property interaction."""
@@ -208,7 +201,7 @@ class CoAPServer(BaseProtocolServer):
 
         root.add_resource(
             ("action",),
-            ActionResource(self, clear_ms=self._action_clear_ms))
+            ActionResource(self))
 
         root.add_resource(
             ("event",),

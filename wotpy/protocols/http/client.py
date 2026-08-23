@@ -143,7 +143,7 @@ class HTTPClient(BaseProtocolClient):
         if href is None:
             raise FormNotFoundException()
 
-        body = json.dumps({"input": input_value})
+        body = json.dumps(input_value)
         http_client = tornado.httpclient.AsyncHTTPClient()
 
         try:
@@ -160,10 +160,10 @@ class HTTPClient(BaseProtocolClient):
         response = await http_client.fetch(await self.sign_request(http_request))
         resp_body = json.loads(response.body)
 
-        if resp_body.get("error") is not None:
-            raise Exception(resp_body.get("error"))
+        if "error" in resp_body:
+            raise Exception(resp_body)
         else:
-            return resp_body.get("result")
+            return resp_body
 
     async def write_property(self, td, name, value, timeout=None):
         """Updates the value of a Property on a remote Thing.
@@ -178,7 +178,7 @@ class HTTPClient(BaseProtocolClient):
             raise FormNotFoundException()
 
         http_client = tornado.httpclient.AsyncHTTPClient()
-        body = json.dumps({"value": value})
+        body = json.dumps(value)
 
         try:
             http_request = tornado.httpclient.HTTPRequest(
@@ -227,7 +227,6 @@ class HTTPClient(BaseProtocolClient):
                 raise exception
 
         result = json.loads(response.body)
-        result = result.get("value", result)
 
         return result
 
@@ -253,7 +252,7 @@ class HTTPClient(BaseProtocolClient):
                 while state["active"]:
                     try:
                         response = await http_client.fetch(await self.sign_request(http_request))
-                        payload = json.loads(response.body).get("payload")
+                        payload = json.loads(response.body)
                         observer.on_next(EmittedEvent(init=payload, name=name))
                     except HTTPTimeoutError:
                         pass
@@ -291,7 +290,6 @@ class HTTPClient(BaseProtocolClient):
                     try:
                         response = await http_client.fetch(await self.sign_request(http_request))
                         value = json.loads(response.body)
-                        value = value.get("value", value)
                         init = PropertyChangeEventInit(name=name, value=value)
                         observer.on_next(PropertyChangeEmittedEvent(init=init))
                     except HTTPTimeoutError:

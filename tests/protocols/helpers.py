@@ -203,8 +203,7 @@ async def client_test_invoke_action(servient, protocol_client_cls, timeout=None)
     exposed_thing = next(servient.exposed_things)
     action_name = uuid.uuid4().hex
 
-    async def action_handler(parameters):
-        input_value = parameters.get("input")
+    async def action_handler(input_value):
         await asyncio.sleep(random.random() * 0.1)
         return("{:f}".format(input_value))
 
@@ -223,7 +222,7 @@ async def client_test_invoke_action(servient, protocol_client_cls, timeout=None)
         input_value = Faker().pyint()
 
         result = await protocol_client.invoke_action(td, action_name, input_value, timeout=timeout)
-        result_expected = await action_handler({"input": input_value})
+        result_expected = await action_handler(input_value)
 
         assert result == result_expected
 
