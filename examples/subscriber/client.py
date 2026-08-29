@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
 # Copyright (c) 2018 CTIC Centro Tecnologico
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -27,8 +28,6 @@ subscribes to all observable properties and events in the consumed Thing.
 import argparse
 import asyncio
 import logging
-
-import coloredlogs
 
 from wotpy.wot.servient import Servient
 from wotpy.wot.wot import WoT
@@ -73,6 +72,27 @@ async def main(td_url, sleep_time):
         subscription.dispose()
 
 
+def _setup_logging() -> None:
+    colors = {
+        logging.DEBUG: "\033[37m",
+        logging.INFO: "\033[36m",
+        logging.WARNING: "\033[33m",
+        logging.ERROR: "\033[31m",
+        logging.CRITICAL: "\033[35m",
+    }
+    reset = "\033[0m"
+
+    class _ColorFormatter(logging.Formatter):
+        def format(self, record: logging.LogRecord) -> str:
+            record.levelname = f"{colors.get(record.levelno, '')}{record.levelname}{reset}"
+            return super().format(record)
+
+    handler = logging.StreamHandler()
+    handler.setFormatter(_ColorFormatter("%(asctime)s %(name)s %(levelname)s %(message)s"))
+    logging.root.setLevel(logging.DEBUG)
+    logging.root.addHandler(handler)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Subscribes to all events and properties"
@@ -83,5 +103,5 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    coloredlogs.install(level="DEBUG")
+    _setup_logging()
     asyncio.run(main(args.url, args.time))
