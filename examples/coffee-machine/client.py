@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
 # Copyright (c) 2023 CTIC Centro Tecnologico
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -29,6 +30,7 @@ https://github.com/eclipse/thingweb.node-wot/blob/master/packages/examples/src/s
 import asyncio
 import json
 import logging
+import urllib.request
 
 import coloredlogs
 
@@ -37,12 +39,23 @@ from wotpy.wot.wot import WoT
 
 _logger = logging.getLogger("coffee-machine-client")
 
+CATALOGUE_URL = "http://127.0.0.1:9090"
+THING_TITLE = "Smart-Coffee-Machine"
+
+
+async def discover_thing_url(catalogue: str, title: str) -> str:
+    loop = asyncio.get_event_loop()
+    data = await loop.run_in_executor(
+        None, lambda: urllib.request.urlopen(catalogue).read()
+    )
+    return json.loads(data)[title]
+
 
 async def main():
     wot = WoT(servient=Servient())
 
     consumed_thing = await wot.consume_from_url(
-        "http://127.0.0.1:9090/smart-coffee-machine-97e83de1-f5c9-a4a0-23b6-be918d3a22ca"
+        await discover_thing_url(CATALOGUE_URL, THING_TITLE)
     )
 
     _logger.info("Consumed Thing: {}".format(consumed_thing))

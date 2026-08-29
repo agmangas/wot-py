@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
 # Copyright (c) 2023 CTIC Centro Tecnologico
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -52,6 +53,12 @@ A complementary tutorial is available at http://www.thingweb.io/smart-coffee-mac
     "@context": [
         "https://www.w3.org/2019/wot/td/v1",
     ],
+    "securityDefinitions": {
+        "nosec_sc": {
+            "scheme": "nosec",
+        }
+    },
+    "security": "nosec_sc",
     "properties": {
         "allAvailableResources": {
             "type": "object",
