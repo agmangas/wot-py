@@ -203,8 +203,7 @@ def consumed_exposed_pair():
 
     servient.select_client = MagicMock(return_value=ExposedThingProxyClient(exp_thing))
 
-    async def lower(parameters):
-        input_value = parameters.get("input")
+    async def lower(input_value):
         await asyncio.sleep(0)
         return(str(input_value).lower())
 

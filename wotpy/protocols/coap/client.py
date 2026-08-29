@@ -196,7 +196,7 @@ class CoAPClient(BaseProtocolClient):
     async def _invocation_create(self, coap_client, href, input_value, timeout=None):
         """Creates a new action invocation by sending a POST request."""
 
-        payload = json.dumps({"input": input_value}).encode("utf-8")
+        payload = json.dumps(input_value).encode("utf-8")
         msg = aiocoap.Message(code=aiocoap.Code.POST, payload=payload, uri=href)
         request = coap_client.request(await self.sign_request(msg))
 
@@ -207,39 +207,11 @@ class CoAPClient(BaseProtocolClient):
 
         self._assert_success(response)
 
-        invocation_id = json.loads(response.payload).get("id")
+        resp_payload = json.loads(response.payload)
+        if "error" in resp_payload:
+            raise Exception(resp_payload)
 
-        return invocation_id
-
-    async def _invocation_observe(self, coap_client, href, invocation_id, timeout=None):
-        """Starts observing an existing action invocation by sending a GET request."""
-
-        payload = json.dumps({"id": invocation_id}).encode("utf-8")
-        msg = aiocoap.Message(code=aiocoap.Code.GET, payload=payload, uri=href, observe=0)
-        request = coap_client.request(await self.sign_request(msg))
-
-        try:
-            response = await asyncio.wait_for(request.response, timeout=timeout)
-        except asyncio.TimeoutError:
-            raise ClientRequestTimeout
-
-        self._assert_success(response)
-
-        return request, response
-
-    async def _invocation_next(self, request, timeout=None):
-        """Waits for the next item in an active action invocation observation."""
-
-        try:
-            response = await asyncio.wait_for(
-                request.observation.__aiter__().__anext__(),
-                timeout=timeout)
-        except asyncio.TimeoutError:
-            raise ClientRequestTimeout
-
-        self._assert_success(response)
-
-        return response
+        return resp_payload
 
     async def invoke_action(self, td, name, input_value, timeout=None):
         """Invokes an Action on a remote Thing."""
@@ -257,30 +229,9 @@ class CoAPClient(BaseProtocolClient):
                 coap_client.client_credentials.load_from_dict(json.load(file))
 
         try:
-            invocation_id = await self._invocation_create(
+            result = await self._invocation_create(
                 coap_client, href, input_value, timeout=timeout)
-
-            request_obsv, response_obsv = await self._invocation_observe(
-                coap_client, href, invocation_id, timeout=timeout)
-
-            invocation_status = json.loads(response_obsv.payload)
-
-            now = time.time()
-
-            while not invocation_status.get("done"):
-                if timeout and (time.time() - now) > timeout:
-                    raise ClientRequestTimeout
-
-                response_obsv = await self._invocation_next(request_obsv, timeout=timeout)
-                invocation_status = json.loads(response_obsv.payload)
-
-            if not request_obsv.observation.cancelled:
-                request_obsv.observation.cancel()
-
-            if invocation_status.get("error"):
-                raise Exception(invocation_status.get("error"))
-            else:
-                return invocation_status.get("result")
+            return result
         finally:
             await coap_client.shutdown()
 
@@ -300,7 +251,7 @@ class CoAPClient(BaseProtocolClient):
                 coap_client.client_credentials.load_from_dict(json.load(file))
 
         try:
-            payload = json.dumps({"value": value}).encode("utf-8")
+            payload = json.dumps(value).encode("utf-8")
             msg = aiocoap.Message(code=aiocoap.Code.PUT, payload=payload, uri=href)
             request = coap_client.request(await self.sign_request(msg))
 
@@ -339,7 +290,7 @@ class CoAPClient(BaseProtocolClient):
 
             self._assert_success(response)
 
-            prop_value = json.loads(response.payload).get("value")
+            prop_value = json.loads(response.payload)
 
             return prop_value
         finally:
@@ -357,7 +308,7 @@ class CoAPClient(BaseProtocolClient):
             raise FormNotFoundException()
 
         def next_item_builder(payload):
-            value = json.loads(payload).get("value")
+            value = json.loads(payload)
             init = PropertyChangeEventInit(name=name, value=value)
             return PropertyChangeEmittedEvent(init=init)
 

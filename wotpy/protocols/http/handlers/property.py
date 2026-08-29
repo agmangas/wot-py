@@ -29,6 +29,7 @@ Request handler for Property interactions.
 """
 
 import asyncio
+import json
 import logging
 
 from tornado.web import HTTPError
@@ -52,7 +53,8 @@ class PropertyReadWriteHandler(BaseHandler):
             handler_utils.request_auth(self, self._server.security_scheme, thing_name)
         else:
             value = await exposed_thing.properties[name].read()
-            self.write({"value": value})
+            self.write(json.dumps(value))
+            self.set_header('Content-Type', 'application/json')
 
     async def put(self, thing_name, name):
         """Updates the Property value."""
@@ -62,11 +64,11 @@ class PropertyReadWriteHandler(BaseHandler):
         if not valid_creds:
             handler_utils.request_auth(self, self._server.security_scheme, thing_name)
         else:
-            value = handler_utils.get_argument(self, "value", self.request.body)
+            value = handler_utils.parse_json_body(self)
             try:
                 await exposed_thing.handle_write_property(name, value)
             except TypeError as ex:
-                raise HTTPError(reason=str(ex))
+                raise HTTPError(str(ex))
 
 
 class PropertyObserverHandler(BaseHandler):
@@ -99,7 +101,8 @@ class PropertyObserverHandler(BaseHandler):
 
             self.subscription = thing_property.subscribe(on_next=on_next, on_error=on_error)
             updated_value = await future_next
-            self.write({"value": updated_value})
+            self.write(json.dumps(updated_value))
+            self.set_header('Content-Type', 'application/json')
 
     def on_finish(self):
         """Destroys the subscription to the observable when the request finishes."""

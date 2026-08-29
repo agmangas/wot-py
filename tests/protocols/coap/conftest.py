@@ -47,8 +47,8 @@ if not is_coap_supported():
 
 
 
-@pytest_asyncio.fixture(params=[{"action_clear_ms": 5000}])
-async def coap_server(request):
+@pytest_asyncio.fixture
+async def coap_server():
     """Builds a CoAPServer instance that contains an ExposedThing."""
 
     from wotpy.protocols.coap.server import CoAPServer
@@ -90,8 +90,7 @@ async def coap_server(request):
 
     action_name = uuid.uuid4().hex
 
-    async def triple(parameters):
-        input_value = parameters.get("input")
+    async def triple(input_value):
         return input_value * 3
 
     exposed_thing.add_action(
@@ -101,7 +100,7 @@ async def coap_server(request):
     )
 
 
-    server = CoAPServer(port=port, **request.param)
+    server = CoAPServer(port=port)
     server.add_exposed_thing(exposed_thing)
 
     wot = await server.start()
@@ -166,8 +165,7 @@ async def coap_servient():
     exposed_thing = wot.produce(td.to_str())
     exposed_thing.expose()
 
-    async def action_handler(parameters):
-        input_value = parameters.get("input")
+    async def action_handler(input_value):
         return int(input_value) * 2
 
     exposed_thing.set_action_handler(action_name, action_handler)

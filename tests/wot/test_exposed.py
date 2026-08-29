@@ -147,24 +147,19 @@ async def test_invoke_action(exposed_thing, action_fragment):
 
     thread_executor = ThreadPoolExecutor(max_workers=1)
 
-    def upper_thread(parameters):
-        input_value = parameters.get("input")
+    def upper_thread(input_value):
         return asyncio.wrap_future(
-            thread_executor.submit(lambda x: time.sleep(0.1) or str(x).upper(), input_value)
-        )
+            thread_executor.submit(lambda x: time.sleep(0.1) or str(x).upper(), input_value))
 
-    def upper(parameters):
+    def upper(input_value):
         loop = asyncio.get_running_loop()
-        input_value = parameters.get("input")
         return loop.run_in_executor(None, lambda x: time.sleep(0.1) or str(x).upper(), input_value)
 
-    async def lower(parameters):
-        input_value = parameters.get("input")
+    async def lower(input_value):
         await asyncio.sleep(0)
         return str(input_value).lower()
 
-    def title(parameters):
-        input_value = parameters.get("input")
+    def title(input_value):
         loop = asyncio.get_running_loop()
         future = loop.create_future()
         future.set_result(input_value.title())
@@ -201,8 +196,8 @@ async def test_invoke_action_undefined_handler(exposed_thing, action_fragment):
         with pytest.raises(NotImplementedError):
             await exposed_thing.invoke_action(action_name)
 
-        async def dummy_func(parameters):
-            assert parameters.get("input") is None
+        async def dummy_func(input_value):
+            assert input_value is None
             return True
 
         exposed_thing.set_action_handler(action_name, dummy_func)
@@ -408,8 +403,7 @@ async def test_thing_property_getters(exposed_thing, property_fragment):
 async def test_thing_action_run(exposed_thing):
     """Actions can be invoked on ExposedThings using the map-like interface."""
 
-    async def lower(parameters):
-        input_value = parameters.get("input")
+    async def lower(input_value):
         return str(input_value).lower()
 
     async def test_coroutine():
@@ -605,19 +599,15 @@ async def test_thing_fragment_getters_setters():
     assert exp_thing.description != description_original
 
     with pytest.raises(AttributeError):
-        # noinspection PyPropertyAccess
         exp_thing.title = Faker().pystr()
 
     with pytest.raises(AttributeError):
-        # noinspection PyPropertyAccess
         exp_thing.properties = Faker().pylist()
 
     with pytest.raises(AttributeError):
-        # noinspection PyPropertyAccess
         exp_thing.actions = Faker().pylist()
 
     with pytest.raises(AttributeError):
-        # noinspection PyPropertyAccess
         exp_thing.events = Faker().pylist()
 
 

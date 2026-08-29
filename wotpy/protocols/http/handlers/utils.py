@@ -45,23 +45,15 @@ def get_exposed_thing(server, title):
         raise HTTPError(reason=f"Unknown Thing: {title}")
 
 
-def get_argument(req_handler, name, default=None):
-    """Returns an argument extracted from the request.
-    Interprets the body as JSON if the Content-Type is application/json.
-    Reverts to the default Tornado get_argument otherwise."""
-
-    if req_handler.request.headers.get("Content-Type") != APPLICATION_JSON:
-        return req_handler.get_argument(name, default)
+def parse_json_body(req_handler):
+    """Parses the request body as JSON and returns the resulting object."""
 
     try:
         parsed_body = json.loads(req_handler.request.body)
     except Exception as ex:
-        raise HTTPError(reason=f"Error decoding JSON: {str(ex)}")
+        raise HTTPError(log_message="Error decoding JSON: {}".format(ex))
+    return parsed_body
 
-    if not isinstance(parsed_body, dict):
-        raise HTTPError(reason=f"Not a JSON object: {parsed_body}")
-
-    return parsed_body.get(name, default)
 
 def request_auth(req_handler, scheme, thing_name):
     """If authentication fails request authentication from the client with the correct scheme."""

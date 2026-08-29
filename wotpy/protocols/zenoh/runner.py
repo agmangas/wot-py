@@ -59,14 +59,15 @@ class ZenohHandlerRunner:
 
         self._logr.log(level, "{} - {}".format(self._zenoh_handler.__class__.__name__, msg), **kwargs)
 
-    def _deliver_messages(self, sample):
+    async def _deliver_messages(self, sample):
         """Receives messages from the Zenoh broker and puts them in the internal buffer."""
 
         if sample is not None:
             try:
-                self._messages_buffer.put_nowait(sample)
+                await asyncio.wait_for(
+                    self._messages_buffer.put(sample), timeout=self._timeout_loops_secs)
                 sample = None
-            except asyncio.QueueFull:
+            except asyncio.TimeoutError:
                 self._log(logging.DEBUG, "Full messages buffer")
 
     async def _handle_messages(self):
@@ -119,7 +120,8 @@ class ZenohHandlerRunner:
             # Zenoh callbacks run on a different thread. Using asyncio.run() would
             # create a different loop that creates overhead
             def listener(sample):
-                self._deliver_messages(sample)
+                coro = self._deliver_messages(sample)
+                asyncio.run_coroutine_threadsafe(coro, loop)
 
             if self._zenoh_handler.topics:
                 self._log(logging.DEBUG, "Subscribing to: {}".format(self._zenoh_handler.topics))
