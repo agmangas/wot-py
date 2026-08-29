@@ -28,7 +28,6 @@ For development — running the examples from the repository — you need a virt
 
       python3 -m venv .venv
       .venv/bin/pip install -U -e ".[tests]"
-      .venv/bin/pip install -r examples/coffee-machine/requirements.txt
 
 * Using ``uv``:
 
@@ -36,7 +35,6 @@ For development — running the examples from the repository — you need a virt
 
       uv venv .venv
       uv sync --extra tests
-      .venv/bin/pip install -r examples/coffee-machine/requirements.txt
 
 If you have `Taskfile <https://taskfile.dev/installation/>`__ **v3.28 or later** installed, the first two steps can be replaced with ``task venv`` (pip) or ``task uv-venv`` (uv).
 
