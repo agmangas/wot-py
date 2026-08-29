@@ -122,6 +122,32 @@ When the client runs successfully you will see log lines showing each interactio
 8. Subscribe to the ``outOfResource`` event
 9. Wait 60 seconds for any incoming events, then exit
 
+Other examples
+--------------
+
+Each example directory contains a ``README.md`` with setup and run instructions.
+
+.. list-table::
+   :widths: 25 75
+   :header-rows: 1
+
+   * - Example
+     - What it covers
+   * - `coffee-machine <https://github.com/eclipse-thingweb/wotpy/tree/develop/examples/coffee-machine>`__
+     - Full producer/consumer pair — properties, actions, events, catalogue discovery *(this guide)*
+   * - `temperature <https://github.com/eclipse-thingweb/wotpy/tree/develop/examples/temperature>`__
+     - Server with a custom property read handler, periodic updates, and threshold events
+   * - `subscriber <https://github.com/eclipse-thingweb/wotpy/tree/develop/examples/subscriber>`__
+     - Generic consumer that subscribes to all observables on any Thing by TD URL
+   * - `cpumonitor <https://github.com/eclipse-thingweb/wotpy/tree/develop/examples/cpumonitor>`__
+     - HTTP + WebSocket + MQTT server with environment-variable configuration
+   * - `basic-security-test <https://github.com/eclipse-thingweb/wotpy/tree/develop/examples/basic-security-test>`__
+     - Basic auth (username/password) over CoAP
+   * - `bearer-security-test <https://github.com/eclipse-thingweb/wotpy/tree/develop/examples/bearer-security-test>`__
+     - Bearer token auth over HTTP
+   * - `benchmark <https://github.com/eclipse-thingweb/wotpy/tree/develop/examples/benchmark>`__
+     - Throughput and latency measurement across protocol bindings
+
 Next steps
 ----------
 

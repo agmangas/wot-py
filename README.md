@@ -25,6 +25,8 @@ Please note that there's still a **significant pending issue**. Although the pro
 * S. Käbisch and T. Kamiya, ‘Web of Things (WoT) Thing Description’, W3C, W3C Working Draft, Oct. 2018. [Online]. Available: https://www.w3.org/TR/2018/WD-wot-thing-description-20181021/
 
 > ℹ️ It is in our plans to get wotpy up to speed with the latest version of the specifications. We don't have an ETA for this, but we will be working on it in the near future.
+>
+> If you are looking for a Python-like reference for the current Scripting API, see [the `WoT` namespace definition](https://w3c.github.io/wot-scripting-api/#the-wot-namespace) in the W3C WoT Scripting API specification. The canonical reference implementation is [node-wot](https://github.com/eclipse-thingweb/node-wot).
 
 In summary, wotpy is mature enough to be used in projects; in fact, it is being used in production at [CTIC](https://github.com/fundacionctic). However, it is not an adequate representation of the current status of the W3C WoT. We greatly encourage you to check the [Developer Resources section on the WoT website](https://www.w3.org/WoT/developers) to find out about the current state of the art.
 
