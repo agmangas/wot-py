@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
 # Copyright (c) 2017 CTIC Centro Tecnologico
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -31,8 +32,6 @@ import json
 import logging
 import random
 
-from tornado.ioloop import IOLoop, PeriodicCallback
-
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.wot.servient import Servient
@@ -45,9 +44,7 @@ GLOBAL_TEMPERATURE = None
 PERIODIC_MS = 3000
 DEFAULT_TEMP_THRESHOLD = 27.0
 
-logging.basicConfig()
-LOGGER = logging.getLogger()
-LOGGER.setLevel(logging.INFO)
+LOGGER = logging.getLogger(__name__)
 
 ID_THING = "urn:temperaturething"
 NAME_PROP_TEMP = "temperature"
@@ -142,17 +139,43 @@ async def main():
     await exposed_thing.properties[NAME_PROP_TEMP_THRESHOLD].write(DEFAULT_TEMP_THRESHOLD)
     exposed_thing.expose()
 
-    periodic_update = PeriodicCallback(update_temp, PERIODIC_MS)
-    periodic_update.start()
+    async def run_periodic_update():
+        while True:
+            await asyncio.sleep(PERIODIC_MS / 1000)
+            update_temp()
 
-    async def emit_for_exposed_thing():
-        await emit_temp_high(exposed_thing)
+    async def run_periodic_emit():
+        while True:
+            await asyncio.sleep(PERIODIC_MS / 1000)
+            await emit_temp_high(exposed_thing)
 
-    periodic_emit = PeriodicCallback(emit_for_exposed_thing, PERIODIC_MS)
-    periodic_emit.start()
+    asyncio.create_task(run_periodic_update())
+    asyncio.create_task(run_periodic_emit())
+
+    await asyncio.Future()
+
+
+def _setup_logging() -> None:
+    colors = {
+        logging.DEBUG: "\033[37m",
+        logging.INFO: "\033[36m",
+        logging.WARNING: "\033[33m",
+        logging.ERROR: "\033[31m",
+        logging.CRITICAL: "\033[35m",
+    }
+    reset = "\033[0m"
+
+    class _ColorFormatter(logging.Formatter):
+        def format(self, record: logging.LogRecord) -> str:
+            record.levelname = f"{colors.get(record.levelno, '')}{record.levelname}{reset}"
+            return super().format(record)
+
+    handler = logging.StreamHandler()
+    handler.setFormatter(_ColorFormatter("%(asctime)s %(name)s %(levelname)s %(message)s"))
+    logging.root.setLevel(logging.INFO)
+    logging.root.addHandler(handler)
 
 
 if __name__ == "__main__":
-    LOGGER.info("Starting loop")
-    IOLoop.current().add_callback(main)
-    IOLoop.current().start()
+    _setup_logging()
+    asyncio.run(main())
