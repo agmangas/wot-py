@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wotpy.protocols.mqtt.handlers.action &mdash; WoTPy 0.17.2 documentation</title>
+  <title>wotpy.protocols.mqtt.handlers.action &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=9fbddafe"></script>
-      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../../_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -43,6 +43,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting-started.html">Getting Started with wotpy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../protocols.html">Protocol Bindings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../authentication.html">Authentication Mechanisms</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../../../api.html">API Reference</a><ul class="current">
@@ -114,17 +115,17 @@
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.mqtt.handlers.action.</span></span><span class="sig-name descname"><span class="pre">ActionMQTTHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mqtt_server</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.mqtt.handlers.action.</span></span><span class="sig-name descname"><span class="pre">ActionMQTTHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mqtt_server</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="wotpy.protocols.mqtt.handlers.base.html#wotpy.protocols.mqtt.handlers.base.BaseMQTTHandler" title="wotpy.protocols.mqtt.handlers.base.BaseMQTTHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseMQTTHandler</span></code></a></p>
 <p>MQTT handler for Action invocations.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.KEY_INPUT">
-<span class="sig-name descname"><span class="pre">KEY_INPUT</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'input'</span></span><a class="headerlink" href="#wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.KEY_INPUT" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">KEY_INPUT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'input'</span></em><a class="headerlink" href="#wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.KEY_INPUT" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.KEY_INVOCATION_ID">
-<span class="sig-name descname"><span class="pre">KEY_INVOCATION_ID</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'id'</span></span><a class="headerlink" href="#wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.KEY_INVOCATION_ID" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">KEY_INVOCATION_ID</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'id'</span></em><a class="headerlink" href="#wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.KEY_INVOCATION_ID" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -135,25 +136,25 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.handle_message">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">handle_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.handle_message" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">handle_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.handle_message" title="Link to this definition"></a></dt>
 <dd><p>Listens to all Property request topics and responds to read and write requests.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.to_result_topic">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">to_result_topic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">invocation_topic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.to_result_topic" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_result_topic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">invocation_topic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.to_result_topic" title="Link to this definition"></a></dt>
 <dd><p>Takes an Action invocation MQTT topic and returns the related result topic.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.topic_wildcard_invocation">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">topic_wildcard_invocation</span></span><a class="headerlink" href="#wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.topic_wildcard_invocation" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">topic_wildcard_invocation</span></span><a class="headerlink" href="#wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.topic_wildcard_invocation" title="Link to this definition"></a></dt>
 <dd><p>Wildcard topic to subscribe to all Action invocations.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.topics">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">topics</span></span><a class="headerlink" href="#wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.topics" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">topics</span></span><a class="headerlink" href="#wotpy.protocols.mqtt.handlers.action.ActionMQTTHandler.topics" title="Link to this definition"></a></dt>
 <dd><p>List of topics that this MQTT handler wants to subscribe to.</p>
 </dd></dl>
 

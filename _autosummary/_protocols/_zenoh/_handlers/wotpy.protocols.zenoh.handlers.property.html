@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wotpy.protocols.zenoh.handlers.property &mdash; WoTPy 0.17.2 documentation</title>
+  <title>wotpy.protocols.zenoh.handlers.property &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=9fbddafe"></script>
-      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../../_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -43,6 +43,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting-started.html">Getting Started with wotpy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../protocols.html">Protocol Bindings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../authentication.html">Authentication Mechanisms</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../../../api.html">API Reference</a><ul class="current">
@@ -115,42 +116,42 @@
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.zenoh.handlers.property.</span></span><span class="sig-name descname"><span class="pre">PropertyZenohHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zenoh_server</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback_ms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.zenoh.handlers.property.</span></span><span class="sig-name descname"><span class="pre">PropertyZenohHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zenoh_server</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback_ms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="wotpy.protocols.zenoh.handlers.base.html#wotpy.protocols.zenoh.handlers.base.BaseZenohHandler" title="wotpy.protocols.zenoh.handlers.base.BaseZenohHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseZenohHandler</span></code></a></p>
 <p>Zenoh handler for Property reads, writes and subscriptions to value updates.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.ACTION_READ">
-<span class="sig-name descname"><span class="pre">ACTION_READ</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'read'</span></span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.ACTION_READ" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">ACTION_READ</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'read'</span></em><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.ACTION_READ" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.ACTION_WRITE">
-<span class="sig-name descname"><span class="pre">ACTION_WRITE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'write'</span></span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.ACTION_WRITE" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">ACTION_WRITE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'write'</span></em><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.ACTION_WRITE" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.DEFAULT_CALLBACK_MS">
-<span class="sig-name descname"><span class="pre">DEFAULT_CALLBACK_MS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2000</span></span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.DEFAULT_CALLBACK_MS" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">DEFAULT_CALLBACK_MS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2000</span></em><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.DEFAULT_CALLBACK_MS" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.DEFAULT_JITTER">
-<span class="sig-name descname"><span class="pre">DEFAULT_JITTER</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.2</span></span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.DEFAULT_JITTER" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">DEFAULT_JITTER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.2</span></em><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.DEFAULT_JITTER" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.KEY_ACK">
-<span class="sig-name descname"><span class="pre">KEY_ACK</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ack'</span></span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.KEY_ACK" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">KEY_ACK</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ack'</span></em><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.KEY_ACK" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.KEY_ACTION">
-<span class="sig-name descname"><span class="pre">KEY_ACTION</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'action'</span></span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.KEY_ACTION" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">KEY_ACTION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'action'</span></em><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.KEY_ACTION" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.KEY_VALUE">
-<span class="sig-name descname"><span class="pre">KEY_VALUE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'value'</span></span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.KEY_VALUE" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">KEY_VALUE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'value'</span></em><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.KEY_VALUE" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -161,45 +162,45 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.handle_message">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">handle_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.handle_message" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">handle_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.handle_message" title="Link to this definition"></a></dt>
 <dd><p>Listens to all Property request topics and responds to read and write requests.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.init">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.init" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.init" title="Link to this definition"></a></dt>
 <dd><p>Initializes the Zenoh handler.
 Called when the Zenoh runner starts.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.publish_write_ack">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">publish_write_ack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.publish_write_ack" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">publish_write_ack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.publish_write_ack" title="Link to this definition"></a></dt>
 <dd><p>Takes a Property write request message and publishes the related write ACK message.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.teardown">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">teardown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.teardown" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">teardown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.teardown" title="Link to this definition"></a></dt>
 <dd><p>Destroys the Zenoh handler.
 Called when the Zenoh runner stops.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.to_write_ack_topic">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">to_write_ack_topic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">requests_topic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.to_write_ack_topic" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_write_ack_topic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">requests_topic</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.to_write_ack_topic" title="Link to this definition"></a></dt>
 <dd><p>Takes a Property requests topic and returns the related write ACK topic.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.topic_wildcard_requests">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">topic_wildcard_requests</span></span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.topic_wildcard_requests" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">topic_wildcard_requests</span></span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.topic_wildcard_requests" title="Link to this definition"></a></dt>
 <dd><p>Wildcard topic to subscribe to all Property requests.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.topics">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">topics</span></span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.topics" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">topics</span></span><a class="headerlink" href="#wotpy.protocols.zenoh.handlers.property.PropertyZenohHandler.topics" title="Link to this definition"></a></dt>
 <dd><p>List of topics that this Zenoh handler wants to subscribe to.</p>
 </dd></dl>
 

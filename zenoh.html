@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zenoh &mdash; WoTPy 0.17.2 documentation</title>
+  <title>Zenoh &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9fbddafe"></script>
-      <script src="_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,6 +43,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started with wotpy</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="protocols.html">Protocol Bindings</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="http.html">HTTP</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mqtt.html">MQTT</a></li>
@@ -178,14 +179,14 @@ messages exchanged with the Zenoh router when using the Zenoh Protocol Binding.<
 <h3>Read Property<a class="headerlink" href="#read-property" title="Link to this heading"></a></h3>
 <p>The client may publish a message in the <strong>property request</strong> topic to force the server to publish the current value of the property:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;read&quot;</span>
+    <span class="s2">"action"</span><span class="p">:</span> <span class="s2">"read"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>The property value will be published in the <strong>property update</strong> topic:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unix_timestamp_ms</span><span class="o">&gt;</span>
+    <span class="s2">"value"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"timestamp"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unix_timestamp_ms</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -194,8 +195,8 @@ messages exchanged with the Zenoh router when using the Zenoh Protocol Binding.<
 <h3>Observe Property changes<a class="headerlink" href="#observe-property-changes" title="Link to this heading"></a></h3>
 <p>All property changes are automatically published in the <strong>property update</strong> topic without further intervention from the client:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unix_timestamp_ms</span><span class="o">&gt;</span>
+    <span class="s2">"value"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"timestamp"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unix_timestamp_ms</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -204,15 +205,15 @@ messages exchanged with the Zenoh router when using the Zenoh Protocol Binding.<
 <h3>Write Property<a class="headerlink" href="#write-property" title="Link to this heading"></a></h3>
 <p>To update the value of a property, the client will publish a message in the <strong>property request</strong> topic with the following format:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;write&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;ack&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unique_ack_handler</span><span class="o">&gt;</span>
+    <span class="s2">"action"</span><span class="p">:</span> <span class="s2">"write"</span><span class="p">,</span>
+    <span class="s2">"value"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"ack"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unique_ack_handler</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>The server will acknowledge the write by publishing a message in the <strong>property write ACK</strong> topic:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;ack&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unique_ack_handler</span><span class="o">&gt;</span>
+    <span class="s2">"ack"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unique_ack_handler</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -221,17 +222,17 @@ messages exchanged with the Zenoh router when using the Zenoh Protocol Binding.<
 <h3>Invoke Action<a class="headerlink" href="#invoke-action" title="Link to this heading"></a></h3>
 <p>An invocation may be started by publishing a message in the <strong>action invocation</strong> topic:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unique_invocation_handler</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">action_argument</span><span class="o">&gt;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unique_invocation_handler</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"input"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">action_argument</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>The invocation result will be published in the <strong>action result</strong> topic:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unique_invocation_handler</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unix_timestamp_ms</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;result&quot;</span> <span class="o">&lt;</span><span class="n">result_value</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">error_message</span><span class="o">&gt;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unique_invocation_handler</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"timestamp"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unix_timestamp_ms</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"result"</span> <span class="o">&lt;</span><span class="n">result_value</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"error"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">error_message</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -240,9 +241,9 @@ messages exchanged with the Zenoh router when using the Zenoh Protocol Binding.<
 <h3>Observe Event<a class="headerlink" href="#observe-event" title="Link to this heading"></a></h3>
 <p>All event emissions are automatically published in the <strong>event emission</strong> topic without further intervention from the client:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_name</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_payload</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unix_timestamp_ms</span><span class="o">&gt;</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_name</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_payload</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"timestamp"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unix_timestamp_ms</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>

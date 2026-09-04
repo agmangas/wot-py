@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HTTP &mdash; WoTPy 0.17.2 documentation</title>
+  <title>HTTP &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9fbddafe"></script>
-      <script src="_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,6 +43,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started with wotpy</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="protocols.html">Protocol Bindings</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">HTTP</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#form-elements">Form elements</a></li>
@@ -128,9 +129,9 @@ messages exchanged with the server when using the HTTP Protocol Binding.</p>
 <h3>Read Property<a class="headerlink" href="#read-property" title="Link to this heading"></a></h3>
 <p>Form:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;op&quot;</span><span class="p">:</span> <span class="s2">&quot;readproperty&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;contentType&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;href&quot;</span><span class="p">:</span> <span class="s2">&quot;http://&lt;host&gt;:&lt;port&gt;/&lt;thing_name&gt;/property/&lt;property_name&gt;&quot;</span>
+    <span class="s2">"op"</span><span class="p">:</span> <span class="s2">"readproperty"</span><span class="p">,</span>
+    <span class="s2">"contentType"</span><span class="p">:</span> <span class="s2">"application/json"</span><span class="p">,</span>
+    <span class="s2">"href"</span><span class="p">:</span> <span class="s2">"http://&lt;host&gt;:&lt;port&gt;/&lt;thing_name&gt;/property/&lt;property_name&gt;"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -142,7 +143,7 @@ messages exchanged with the server when using the HTTP Protocol Binding.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HTTP</span> <span class="mi">200</span>
 
 <span class="p">{</span>
-    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span>
+    <span class="s2">"value"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -151,9 +152,9 @@ messages exchanged with the server when using the HTTP Protocol Binding.</p>
 <h3>Write Property<a class="headerlink" href="#write-property" title="Link to this heading"></a></h3>
 <p>Form:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;op&quot;</span><span class="p">:</span> <span class="s2">&quot;writeproperty&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;contentType&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;href&quot;</span><span class="p">:</span> <span class="s2">&quot;http://&lt;host&gt;:&lt;port&gt;/&lt;thing_name&gt;/property/&lt;property_name&gt;&quot;</span>
+    <span class="s2">"op"</span><span class="p">:</span> <span class="s2">"writeproperty"</span><span class="p">,</span>
+    <span class="s2">"contentType"</span><span class="p">:</span> <span class="s2">"application/json"</span><span class="p">,</span>
+    <span class="s2">"href"</span><span class="p">:</span> <span class="s2">"http://&lt;host&gt;:&lt;port&gt;/&lt;thing_name&gt;/property/&lt;property_name&gt;"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -161,7 +162,7 @@ messages exchanged with the server when using the HTTP Protocol Binding.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PUT</span> <span class="n">http</span><span class="p">:</span><span class="o">//&lt;</span><span class="n">host</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">port</span><span class="o">&gt;/&lt;</span><span class="n">thing_name</span><span class="o">&gt;/</span><span class="nb">property</span><span class="o">/&lt;</span><span class="n">property_name</span><span class="o">&gt;</span>
 
 <span class="p">{</span>
-    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span>
+    <span class="s2">"value"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -174,9 +175,9 @@ messages exchanged with the server when using the HTTP Protocol Binding.</p>
 <h3>Invoke Action<a class="headerlink" href="#invoke-action" title="Link to this heading"></a></h3>
 <p>Form:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;op&quot;</span><span class="p">:</span> <span class="s2">&quot;invokeaction&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;contentType&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;href&quot;</span><span class="p">:</span> <span class="s2">&quot;http://&lt;host&gt;:&lt;port&gt;/&lt;thing_name&gt;/action/&lt;action_name&gt;&quot;</span>
+    <span class="s2">"op"</span><span class="p">:</span> <span class="s2">"invokeaction"</span><span class="p">,</span>
+    <span class="s2">"contentType"</span><span class="p">:</span> <span class="s2">"application/json"</span><span class="p">,</span>
+    <span class="s2">"href"</span><span class="p">:</span> <span class="s2">"http://&lt;host&gt;:&lt;port&gt;/&lt;thing_name&gt;/action/&lt;action_name&gt;"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -184,7 +185,7 @@ messages exchanged with the server when using the HTTP Protocol Binding.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="n">http</span><span class="p">:</span><span class="o">//&lt;</span><span class="n">host</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">port</span><span class="o">&gt;/&lt;</span><span class="n">thing_name</span><span class="o">&gt;/</span><span class="n">action</span><span class="o">/&lt;</span><span class="n">action_name</span><span class="o">&gt;</span>
 
 <span class="p">{</span>
-    <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">action_argument</span><span class="o">&gt;</span>
+    <span class="s2">"input"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">action_argument</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -192,7 +193,7 @@ messages exchanged with the server when using the HTTP Protocol Binding.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HTTP</span> <span class="mi">200</span>
 
 <span class="p">{</span>
-    <span class="s2">&quot;invocation&quot;</span><span class="p">:</span> <span class="s2">&quot;/invocation/&lt;uuid&gt;&quot;</span>
+    <span class="s2">"invocation"</span><span class="p">:</span> <span class="s2">"/invocation/&lt;uuid&gt;"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -204,9 +205,9 @@ messages exchanged with the server when using the HTTP Protocol Binding.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HTTP</span> <span class="mi">200</span>
 
 <span class="p">{</span>
-    <span class="s2">&quot;done&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;result&quot;</span> <span class="o">&lt;</span><span class="n">result_value</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">error_message</span><span class="o">&gt;</span>
+    <span class="s2">"done"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"result"</span> <span class="o">&lt;</span><span class="n">result_value</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"error"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">error_message</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -215,9 +216,9 @@ messages exchanged with the server when using the HTTP Protocol Binding.</p>
 <h3>Observe Property changes<a class="headerlink" href="#observe-property-changes" title="Link to this heading"></a></h3>
 <p>Form:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;op&quot;</span><span class="p">:</span> <span class="s2">&quot;observeproperty&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;contentType&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;href&quot;</span><span class="p">:</span> <span class="s2">&quot;http://&lt;host&gt;:&lt;port&gt;/&lt;thing_name&gt;/property/&lt;property_name&gt;/subscription&quot;</span>
+    <span class="s2">"op"</span><span class="p">:</span> <span class="s2">"observeproperty"</span><span class="p">,</span>
+    <span class="s2">"contentType"</span><span class="p">:</span> <span class="s2">"application/json"</span><span class="p">,</span>
+    <span class="s2">"href"</span><span class="p">:</span> <span class="s2">"http://&lt;host&gt;:&lt;port&gt;/&lt;thing_name&gt;/property/&lt;property_name&gt;/subscription"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -229,7 +230,7 @@ messages exchanged with the server when using the HTTP Protocol Binding.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HTTP</span> <span class="mi">200</span>
 
 <span class="p">{</span>
-    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span>
+    <span class="s2">"value"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -238,9 +239,9 @@ messages exchanged with the server when using the HTTP Protocol Binding.</p>
 <h3>Observe Event<a class="headerlink" href="#observe-event" title="Link to this heading"></a></h3>
 <p>Form:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;op&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribeevent&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;contentType&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;href&quot;</span><span class="p">:</span> <span class="s2">&quot;http://&lt;host&gt;:&lt;port&gt;/&lt;thing_name&gt;/event/&lt;event_name&gt;/subscription&quot;</span>
+    <span class="s2">"op"</span><span class="p">:</span> <span class="s2">"subscribeevent"</span><span class="p">,</span>
+    <span class="s2">"contentType"</span><span class="p">:</span> <span class="s2">"application/json"</span><span class="p">,</span>
+    <span class="s2">"href"</span><span class="p">:</span> <span class="s2">"http://&lt;host&gt;:&lt;port&gt;/&lt;thing_name&gt;/event/&lt;event_name&gt;/subscription"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -252,7 +253,7 @@ messages exchanged with the server when using the HTTP Protocol Binding.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HTTP</span> <span class="mi">200</span>
 
 <span class="p">{</span>
-    <span class="s2">&quot;payload&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_payload</span><span class="o">&gt;</span>
+    <span class="s2">"payload"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_payload</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>

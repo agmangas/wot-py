@@ -6,20 +6,20 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wotpy.protocols.http.handlers.action &mdash; WoTPy 0.17.2 documentation</title>
+  <title>wotpy.protocols.http.handlers.action &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=9fbddafe"></script>
-      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../../_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="wotpy.protocols.http.handlers.event" href="wotpy.protocols.http.handlers.event.html" />
+    <link rel="next" title="wotpy.protocols.http.handlers.base" href="wotpy.protocols.http.handlers.base.html" />
     <link rel="prev" title="wotpy.protocols.http.handlers" href="../wotpy.protocols.http.handlers.html" /> 
 </head>
 
@@ -43,6 +43,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../getting-started.html">Getting Started with wotpy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../protocols.html">Protocol Bindings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../authentication.html">Authentication Mechanisms</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../../../api.html">API Reference</a><ul class="current">
@@ -115,8 +116,8 @@
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.protocols.http.handlers.action.ActionInvokeHandler">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.http.handlers.action.</span></span><span class="sig-name descname"><span class="pre">ActionInvokeHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">application</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Application</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HTTPServerRequest</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.handlers.action.ActionInvokeHandler" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RequestHandler</span></code></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.http.handlers.action.</span></span><span class="sig-name descname"><span class="pre">ActionInvokeHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">application</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Application</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HTTPServerRequest</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.handlers.action.ActionInvokeHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="wotpy.protocols.http.handlers.base.html#wotpy.protocols.http.handlers.base.BaseHandler" title="wotpy.protocols.http.handlers.base.BaseHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseHandler</span></code></a></p>
 <p>Handler for Action invocation requests.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.protocols.http.handlers.action.ActionInvokeHandler.initialize">
@@ -125,7 +126,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.protocols.http.handlers.action.ActionInvokeHandler.post">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">post</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thing_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.handlers.action.ActionInvokeHandler.post" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">post</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thing_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.handlers.action.ActionInvokeHandler.post" title="Link to this definition"></a></dt>
 <dd><p>Invokes the action and returns the invocation result.</p>
 </dd></dl>
 
@@ -138,7 +139,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../wotpy.protocols.http.handlers.html" class="btn btn-neutral float-left" title="wotpy.protocols.http.handlers" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="wotpy.protocols.http.handlers.event.html" class="btn btn-neutral float-right" title="wotpy.protocols.http.handlers.event" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="wotpy.protocols.http.handlers.base.html" class="btn btn-neutral float-right" title="wotpy.protocols.http.handlers.base" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

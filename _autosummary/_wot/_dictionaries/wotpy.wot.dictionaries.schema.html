@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wotpy.wot.dictionaries.schema &mdash; WoTPy 0.17.2 documentation</title>
+  <title>wotpy.wot.dictionaries.schema &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=9fbddafe"></script>
-      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -43,6 +43,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting-started.html">Getting Started with wotpy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../protocols.html">Protocol Bindings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../authentication.html">Authentication Mechanisms</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../../api.html">API Reference</a><ul class="current">
@@ -140,34 +141,34 @@
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.ArraySchemaDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.schema.</span></span><span class="sig-name descname"><span class="pre">ArraySchemaDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ArraySchemaDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.schema.</span></span><span class="sig-name descname"><span class="pre">ArraySchemaDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ArraySchemaDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.schema.DataSchemaDict" title="wotpy.wot.dictionaries.schema.DataSchemaDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataSchemaDict</span></code></a></p>
 <p>Properties to describe an array type.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.ArraySchemaDict.Meta">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ArraySchemaDict.Meta" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ArraySchemaDict.Meta" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.ArraySchemaDict.Meta.defaults">
-<span class="sig-name descname"><span class="pre">defaults</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'readOnly':</span> <span class="pre">False,</span> <span class="pre">'writeOnly':</span> <span class="pre">False}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ArraySchemaDict.Meta.defaults" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'readOnly':</span> <span class="pre">False,</span> <span class="pre">'writeOnly':</span> <span class="pre">False}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ArraySchemaDict.Meta.defaults" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.ArraySchemaDict.Meta.fields">
-<span class="sig-name descname"><span class="pre">fields</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'const',</span> <span class="pre">'default',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'enum',</span> <span class="pre">'format',</span> <span class="pre">'items',</span> <span class="pre">'maxItems',</span> <span class="pre">'minItems',</span> <span class="pre">'oneOf',</span> <span class="pre">'readOnly',</span> <span class="pre">'title',</span> <span class="pre">'titles',</span> <span class="pre">'type',</span> <span class="pre">'unit',</span> <span class="pre">'writeOnly'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ArraySchemaDict.Meta.fields" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'const',</span> <span class="pre">'default',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'enum',</span> <span class="pre">'format',</span> <span class="pre">'items',</span> <span class="pre">'maxItems',</span> <span class="pre">'minItems',</span> <span class="pre">'oneOf',</span> <span class="pre">'readOnly',</span> <span class="pre">'title',</span> <span class="pre">'titles',</span> <span class="pre">'type',</span> <span class="pre">'unit',</span> <span class="pre">'writeOnly'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ArraySchemaDict.Meta.fields" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.ArraySchemaDict.items">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">items</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ArraySchemaDict.items" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">items</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ArraySchemaDict.items" title="Link to this definition"></a></dt>
 <dd><p>Used to define the characteristics of an array.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.ArraySchemaDict.type">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ArraySchemaDict.type" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ArraySchemaDict.type" title="Link to this definition"></a></dt>
 <dd><p>The type property represents the value type enumerated in DataType.</p>
 </dd></dl>
 
@@ -175,12 +176,12 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.BooleanSchemaDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.schema.</span></span><span class="sig-name descname"><span class="pre">BooleanSchemaDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.BooleanSchemaDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.schema.</span></span><span class="sig-name descname"><span class="pre">BooleanSchemaDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.BooleanSchemaDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.schema.DataSchemaDict" title="wotpy.wot.dictionaries.schema.DataSchemaDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataSchemaDict</span></code></a></p>
 <p>Properties to describe a boolean type.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.BooleanSchemaDict.type">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.BooleanSchemaDict.type" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.BooleanSchemaDict.type" title="Link to this definition"></a></dt>
 <dd><p>The type property represents the value type enumerated in DataType.</p>
 </dd></dl>
 
@@ -188,34 +189,34 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.DataSchemaDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.schema.</span></span><span class="sig-name descname"><span class="pre">DataSchemaDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.DataSchemaDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.schema.</span></span><span class="sig-name descname"><span class="pre">DataSchemaDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.DataSchemaDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="wotpy.wot.dictionaries.base.html#wotpy.wot.dictionaries.base.WotBaseDict" title="wotpy.wot.dictionaries.base.WotBaseDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">WotBaseDict</span></code></a></p>
 <p>Represents the common properties of a value type definition.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.DataSchemaDict.Meta">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.DataSchemaDict.Meta" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.DataSchemaDict.Meta" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.DataSchemaDict.Meta.defaults">
-<span class="sig-name descname"><span class="pre">defaults</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'readOnly':</span> <span class="pre">False,</span> <span class="pre">'writeOnly':</span> <span class="pre">False}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.DataSchemaDict.Meta.defaults" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'readOnly':</span> <span class="pre">False,</span> <span class="pre">'writeOnly':</span> <span class="pre">False}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.schema.DataSchemaDict.Meta.defaults" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.DataSchemaDict.Meta.fields">
-<span class="sig-name descname"><span class="pre">fields</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'const',</span> <span class="pre">'default',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'enum',</span> <span class="pre">'format',</span> <span class="pre">'oneOf',</span> <span class="pre">'readOnly',</span> <span class="pre">'title',</span> <span class="pre">'titles',</span> <span class="pre">'type',</span> <span class="pre">'unit',</span> <span class="pre">'writeOnly'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.DataSchemaDict.Meta.fields" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'const',</span> <span class="pre">'default',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'enum',</span> <span class="pre">'format',</span> <span class="pre">'oneOf',</span> <span class="pre">'readOnly',</span> <span class="pre">'title',</span> <span class="pre">'titles',</span> <span class="pre">'type',</span> <span class="pre">'unit',</span> <span class="pre">'writeOnly'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.schema.DataSchemaDict.Meta.fields" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.DataSchemaDict.build">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.DataSchemaDict.build" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.DataSchemaDict.build" title="Link to this definition"></a></dt>
 <dd><p>Builds an instance of the appropriate subclass for the given ValueType.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.DataSchemaDict.one_of">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">one_of</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.DataSchemaDict.one_of" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">one_of</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.DataSchemaDict.one_of" title="Link to this definition"></a></dt>
 <dd><p>Used to ensure that the data is valid against
 one of the specified schemas in the array.</p>
 </dd></dl>
@@ -224,12 +225,12 @@ one of the specified schemas in the array.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.IntegerSchema">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.schema.</span></span><span class="sig-name descname"><span class="pre">IntegerSchema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.IntegerSchema" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.schema.</span></span><span class="sig-name descname"><span class="pre">IntegerSchema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.IntegerSchema" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.schema.NumberSchemaDict" title="wotpy.wot.dictionaries.schema.NumberSchemaDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">NumberSchemaDict</span></code></a></p>
 <p>Properties to describe an integer type.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.IntegerSchema.type">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.IntegerSchema.type" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.IntegerSchema.type" title="Link to this definition"></a></dt>
 <dd><p>The type property represents the value type enumerated in DataType.</p>
 </dd></dl>
 
@@ -237,12 +238,12 @@ one of the specified schemas in the array.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.NullSchemaDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.schema.</span></span><span class="sig-name descname"><span class="pre">NullSchemaDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.NullSchemaDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.schema.</span></span><span class="sig-name descname"><span class="pre">NullSchemaDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.NullSchemaDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.schema.DataSchemaDict" title="wotpy.wot.dictionaries.schema.DataSchemaDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataSchemaDict</span></code></a></p>
 <p>Empty Null schema class.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.NullSchemaDict.type">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.NullSchemaDict.type" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.NullSchemaDict.type" title="Link to this definition"></a></dt>
 <dd><p>The type property represents the value type enumerated in DataType.</p>
 </dd></dl>
 
@@ -250,28 +251,28 @@ one of the specified schemas in the array.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.NumberSchemaDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.schema.</span></span><span class="sig-name descname"><span class="pre">NumberSchemaDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.NumberSchemaDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.schema.</span></span><span class="sig-name descname"><span class="pre">NumberSchemaDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.NumberSchemaDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.schema.DataSchemaDict" title="wotpy.wot.dictionaries.schema.DataSchemaDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataSchemaDict</span></code></a></p>
 <p>Properties to describe a numeric type.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.NumberSchemaDict.Meta">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.NumberSchemaDict.Meta" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.NumberSchemaDict.Meta" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.NumberSchemaDict.Meta.defaults">
-<span class="sig-name descname"><span class="pre">defaults</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'readOnly':</span> <span class="pre">False,</span> <span class="pre">'writeOnly':</span> <span class="pre">False}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.NumberSchemaDict.Meta.defaults" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'readOnly':</span> <span class="pre">False,</span> <span class="pre">'writeOnly':</span> <span class="pre">False}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.schema.NumberSchemaDict.Meta.defaults" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.NumberSchemaDict.Meta.fields">
-<span class="sig-name descname"><span class="pre">fields</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'const',</span> <span class="pre">'default',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'enum',</span> <span class="pre">'exclusiveMaximum',</span> <span class="pre">'exclusiveMinimum',</span> <span class="pre">'format',</span> <span class="pre">'maximum',</span> <span class="pre">'minimum',</span> <span class="pre">'multipleOf',</span> <span class="pre">'oneOf',</span> <span class="pre">'readOnly',</span> <span class="pre">'title',</span> <span class="pre">'titles',</span> <span class="pre">'type',</span> <span class="pre">'unit',</span> <span class="pre">'writeOnly'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.NumberSchemaDict.Meta.fields" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'const',</span> <span class="pre">'default',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'enum',</span> <span class="pre">'exclusiveMaximum',</span> <span class="pre">'exclusiveMinimum',</span> <span class="pre">'format',</span> <span class="pre">'maximum',</span> <span class="pre">'minimum',</span> <span class="pre">'multipleOf',</span> <span class="pre">'oneOf',</span> <span class="pre">'readOnly',</span> <span class="pre">'title',</span> <span class="pre">'titles',</span> <span class="pre">'type',</span> <span class="pre">'unit',</span> <span class="pre">'writeOnly'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.schema.NumberSchemaDict.Meta.fields" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.NumberSchemaDict.type">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.NumberSchemaDict.type" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.NumberSchemaDict.type" title="Link to this definition"></a></dt>
 <dd><p>The type property represents the value type (a member of DataType).</p>
 </dd></dl>
 
@@ -279,34 +280,34 @@ one of the specified schemas in the array.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.ObjectSchemaDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.schema.</span></span><span class="sig-name descname"><span class="pre">ObjectSchemaDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ObjectSchemaDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.schema.</span></span><span class="sig-name descname"><span class="pre">ObjectSchemaDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ObjectSchemaDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.schema.DataSchemaDict" title="wotpy.wot.dictionaries.schema.DataSchemaDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataSchemaDict</span></code></a></p>
 <p>Properties to describe an object type.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.ObjectSchemaDict.Meta">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ObjectSchemaDict.Meta" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ObjectSchemaDict.Meta" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.ObjectSchemaDict.Meta.defaults">
-<span class="sig-name descname"><span class="pre">defaults</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'readOnly':</span> <span class="pre">False,</span> <span class="pre">'writeOnly':</span> <span class="pre">False}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ObjectSchemaDict.Meta.defaults" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'readOnly':</span> <span class="pre">False,</span> <span class="pre">'writeOnly':</span> <span class="pre">False}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ObjectSchemaDict.Meta.defaults" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.ObjectSchemaDict.Meta.fields">
-<span class="sig-name descname"><span class="pre">fields</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'const',</span> <span class="pre">'default',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'enum',</span> <span class="pre">'format',</span> <span class="pre">'oneOf',</span> <span class="pre">'properties',</span> <span class="pre">'readOnly',</span> <span class="pre">'required',</span> <span class="pre">'title',</span> <span class="pre">'titles',</span> <span class="pre">'type',</span> <span class="pre">'unit',</span> <span class="pre">'writeOnly'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ObjectSchemaDict.Meta.fields" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'const',</span> <span class="pre">'default',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'enum',</span> <span class="pre">'format',</span> <span class="pre">'oneOf',</span> <span class="pre">'properties',</span> <span class="pre">'readOnly',</span> <span class="pre">'required',</span> <span class="pre">'title',</span> <span class="pre">'titles',</span> <span class="pre">'type',</span> <span class="pre">'unit',</span> <span class="pre">'writeOnly'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ObjectSchemaDict.Meta.fields" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.ObjectSchemaDict.properties">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">properties</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ObjectSchemaDict.properties" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">properties</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ObjectSchemaDict.properties" title="Link to this definition"></a></dt>
 <dd><p>Data schema nested definitions.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.ObjectSchemaDict.type">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ObjectSchemaDict.type" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.ObjectSchemaDict.type" title="Link to this definition"></a></dt>
 <dd><p>The type property represents the value type enumerated in DataType.</p>
 </dd></dl>
 
@@ -314,28 +315,28 @@ one of the specified schemas in the array.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.StringSchemaDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.schema.</span></span><span class="sig-name descname"><span class="pre">StringSchemaDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.StringSchemaDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.schema.</span></span><span class="sig-name descname"><span class="pre">StringSchemaDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.StringSchemaDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.schema.DataSchemaDict" title="wotpy.wot.dictionaries.schema.DataSchemaDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataSchemaDict</span></code></a></p>
 <p>Properties to describe a string type.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.StringSchemaDict.Meta">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.StringSchemaDict.Meta" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.StringSchemaDict.Meta" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.StringSchemaDict.Meta.defaults">
-<span class="sig-name descname"><span class="pre">defaults</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'readOnly':</span> <span class="pre">False,</span> <span class="pre">'writeOnly':</span> <span class="pre">False}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.StringSchemaDict.Meta.defaults" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'readOnly':</span> <span class="pre">False,</span> <span class="pre">'writeOnly':</span> <span class="pre">False}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.schema.StringSchemaDict.Meta.defaults" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.StringSchemaDict.Meta.fields">
-<span class="sig-name descname"><span class="pre">fields</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'const',</span> <span class="pre">'contentEncoding',</span> <span class="pre">'contentMediaType',</span> <span class="pre">'default',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'enum',</span> <span class="pre">'format',</span> <span class="pre">'maxLength',</span> <span class="pre">'minLength',</span> <span class="pre">'oneOf',</span> <span class="pre">'pattern',</span> <span class="pre">'readOnly',</span> <span class="pre">'title',</span> <span class="pre">'titles',</span> <span class="pre">'type',</span> <span class="pre">'unit',</span> <span class="pre">'writeOnly'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.StringSchemaDict.Meta.fields" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'const',</span> <span class="pre">'contentEncoding',</span> <span class="pre">'contentMediaType',</span> <span class="pre">'default',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'enum',</span> <span class="pre">'format',</span> <span class="pre">'maxLength',</span> <span class="pre">'minLength',</span> <span class="pre">'oneOf',</span> <span class="pre">'pattern',</span> <span class="pre">'readOnly',</span> <span class="pre">'title',</span> <span class="pre">'titles',</span> <span class="pre">'type',</span> <span class="pre">'unit',</span> <span class="pre">'writeOnly'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.schema.StringSchemaDict.Meta.fields" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.schema.StringSchemaDict.type">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.StringSchemaDict.type" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.schema.StringSchemaDict.type" title="Link to this definition"></a></dt>
 <dd><p>The type property represents the value type enumerated in DataType.</p>
 </dd></dl>
 

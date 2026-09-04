@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wotpy.wot.dictionaries.thing &mdash; WoTPy 0.17.2 documentation</title>
+  <title>wotpy.wot.dictionaries.thing &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=9fbddafe"></script>
-      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -43,6 +43,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting-started.html">Getting Started with wotpy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../protocols.html">Protocol Bindings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../authentication.html">Authentication Mechanisms</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../../api.html">API Reference</a><ul class="current">
@@ -119,7 +120,7 @@
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.thing.</span></span><span class="sig-name descname"><span class="pre">ThingFragment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.thing.</span></span><span class="sig-name descname"><span class="pre">ThingFragment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="wotpy.wot.dictionaries.base.html#wotpy.wot.dictionaries.base.WotBaseDict" title="wotpy.wot.dictionaries.base.WotBaseDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">WotBaseDict</span></code></a></p>
 <p>ThingFragment is a wrapper around a dictionary that contains properties
 representing semantic metadata and interactions (Properties, Actions and Events).
@@ -127,82 +128,82 @@ It is used for initializing an internal representation of a Thing Description,
 and it is also used in ThingFilter.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.Meta">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.Meta" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.Meta" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields">
-<span class="sig-name descname"><span class="pre">fields</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;context',</span> <span class="pre">'&#64;type',</span> <span class="pre">'actions',</span> <span class="pre">'base',</span> <span class="pre">'created',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'events',</span> <span class="pre">'forms',</span> <span class="pre">'id',</span> <span class="pre">'links',</span> <span class="pre">'modified',</span> <span class="pre">'profile',</span> <span class="pre">'properties',</span> <span class="pre">'schemaDefinitions',</span> <span class="pre">'security',</span> <span class="pre">'securityDefinitions',</span> <span class="pre">'support',</span> <span class="pre">'title',</span> <span class="pre">'titles',</span> <span class="pre">'uriVariables',</span> <span class="pre">'version'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;context',</span> <span class="pre">'&#64;type',</span> <span class="pre">'actions',</span> <span class="pre">'base',</span> <span class="pre">'created',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'events',</span> <span class="pre">'forms',</span> <span class="pre">'id',</span> <span class="pre">'links',</span> <span class="pre">'modified',</span> <span class="pre">'profile',</span> <span class="pre">'properties',</span> <span class="pre">'schemaDefinitions',</span> <span class="pre">'security',</span> <span class="pre">'securityDefinitions',</span> <span class="pre">'support',</span> <span class="pre">'title',</span> <span class="pre">'titles',</span> <span class="pre">'uriVariables',</span> <span class="pre">'version'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields_dict">
-<span class="sig-name descname"><span class="pre">fields_dict</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['titles',</span> <span class="pre">'descriptions',</span> <span class="pre">'properties',</span> <span class="pre">'actions',</span> <span class="pre">'events',</span> <span class="pre">'securityDefinitions',</span> <span class="pre">'schemaDefinitions',</span> <span class="pre">'uriVariables']</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields_dict" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields_dict</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['titles',</span> <span class="pre">'descriptions',</span> <span class="pre">'properties',</span> <span class="pre">'actions',</span> <span class="pre">'events',</span> <span class="pre">'securityDefinitions',</span> <span class="pre">'schemaDefinitions',</span> <span class="pre">'uriVariables']</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields_dict" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields_instance">
-<span class="sig-name descname"><span class="pre">fields_instance</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['version']</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields_instance" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields_instance</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['version']</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields_instance" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields_list">
-<span class="sig-name descname"><span class="pre">fields_list</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['&#64;context',</span> <span class="pre">'&#64;type',</span> <span class="pre">'links',</span> <span class="pre">'forms',</span> <span class="pre">'security',</span> <span class="pre">'profile']</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields_list" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields_list</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['&#64;context',</span> <span class="pre">'&#64;type',</span> <span class="pre">'links',</span> <span class="pre">'forms',</span> <span class="pre">'security',</span> <span class="pre">'profile']</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields_list" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields_readonly">
-<span class="sig-name descname"><span class="pre">fields_readonly</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['title']</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields_readonly" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields_readonly</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['title']</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields_readonly" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields_str">
-<span class="sig-name descname"><span class="pre">fields_str</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['&#64;context',</span> <span class="pre">'&#64;type',</span> <span class="pre">'id',</span> <span class="pre">'title',</span> <span class="pre">'description',</span> <span class="pre">'created',</span> <span class="pre">'modified',</span> <span class="pre">'support',</span> <span class="pre">'base',</span> <span class="pre">'security',</span> <span class="pre">'profile']</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields_str" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields_str</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['&#64;context',</span> <span class="pre">'&#64;type',</span> <span class="pre">'id',</span> <span class="pre">'title',</span> <span class="pre">'description',</span> <span class="pre">'created',</span> <span class="pre">'modified',</span> <span class="pre">'support',</span> <span class="pre">'base',</span> <span class="pre">'security',</span> <span class="pre">'profile']</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.Meta.fields_str" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.Meta.required">
-<span class="sig-name descname"><span class="pre">required</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;context',</span> <span class="pre">'security',</span> <span class="pre">'securityDefinitions',</span> <span class="pre">'title'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.Meta.required" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">required</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;context',</span> <span class="pre">'security',</span> <span class="pre">'securityDefinitions',</span> <span class="pre">'title'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.Meta.required" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.actions">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">actions</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.actions" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">actions</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.actions" title="Link to this definition"></a></dt>
 <dd><p>The actions optional attribute represents a dict with keys
 that correspond to Action names and values of type ActionFragment.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.events">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">events</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.events" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">events</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.events" title="Link to this definition"></a></dt>
 <dd><p>The events optional attribute represents a dictionary with keys
 that correspond to Event names and values of type EventFragment.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.links">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">links</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.links" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">links</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.links" title="Link to this definition"></a></dt>
 <dd><p>The links optional attribute represents an array of Link objects.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.properties">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">properties</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.properties" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">properties</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.properties" title="Link to this definition"></a></dt>
 <dd><p>The properties optional attribute represents a dict with keys
 that correspond to Property names and values of type PropertyFragment.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.schema_definitons">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">schema_definitons</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.schema_definitons" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">schema_definitons</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.schema_definitons" title="Link to this definition"></a></dt>
 <dd><p>Set of named data schemas. To be used in a schema name-value pair
 inside an AdditionalExpectedResponse object.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.security">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">security</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.security" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">security</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.security" title="Link to this definition"></a></dt>
 <dd><p>Set of security configurations, provided as an array,
 that must all be satisfied for access to resources at or
 below the current level, if not overridden at a lower level.</p>
@@ -210,24 +211,24 @@ below the current level, if not overridden at a lower level.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.security_definitions">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">security_definitions</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.security_definitions" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">security_definitions</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.security_definitions" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.title">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">title</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.title" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">title</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.title" title="Link to this definition"></a></dt>
 <dd><p>The title of the Thing.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.uri_variables">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">uri_variables</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.uri_variables" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uri_variables</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.uri_variables" title="Link to this definition"></a></dt>
 <dd><p>Define URI template variables as collection based on DataSchema declarations.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.thing.ThingFragment.version">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">version</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.version" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.thing.ThingFragment.version" title="Link to this definition"></a></dt>
 <dd><p>Provides version information.</p>
 </dd></dl>
 

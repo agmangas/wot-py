@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wotpy.protocols.http.handlers.utils &mdash; WoTPy 0.18.0 documentation</title>
+  <title>wotpy.protocols.http.handlers.base &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
 
@@ -19,8 +19,8 @@
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="wotpy.protocols.http.authenticator" href="../wotpy.protocols.http.authenticator.html" />
-    <link rel="prev" title="wotpy.protocols.http.handlers.property" href="wotpy.protocols.http.handlers.property.html" /> 
+    <link rel="next" title="wotpy.protocols.http.handlers.event" href="wotpy.protocols.http.handlers.event.html" />
+    <link rel="prev" title="wotpy.protocols.http.handlers.action" href="wotpy.protocols.http.handlers.action.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -93,9 +93,9 @@
           <li class="breadcrumb-item"><a href="../../../wotpy.protocols.html">wotpy.protocols</a></li>
           <li class="breadcrumb-item"><a href="../../wotpy.protocols.http.html">wotpy.protocols.http</a></li>
           <li class="breadcrumb-item"><a href="../wotpy.protocols.http.handlers.html">wotpy.protocols.http.handlers</a></li>
-      <li class="breadcrumb-item active">wotpy.protocols.http.handlers.utils</li>
+      <li class="breadcrumb-item active">wotpy.protocols.http.handlers.base</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../../../_sources/_autosummary/_protocols/_http/_handlers/wotpy.protocols.http.handlers.utils.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../../../_sources/_autosummary/_protocols/_http/_handlers/wotpy.protocols.http.handlers.base.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -103,40 +103,34 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-wotpy.protocols.http.handlers.utils">
-<span id="wotpy-protocols-http-handlers-utils"></span><h1>wotpy.protocols.http.handlers.utils<a class="headerlink" href="#module-wotpy.protocols.http.handlers.utils" title="Link to this heading"></a></h1>
-<p>General utilities.</p>
-<p class="rubric">Functions</p>
+  <section id="module-wotpy.protocols.http.handlers.base">
+<span id="wotpy-protocols-http-handlers-base"></span><h1>wotpy.protocols.http.handlers.base<a class="headerlink" href="#module-wotpy.protocols.http.handlers.base" title="Link to this heading"></a></h1>
+<p>Base request handler for proper error reporting.</p>
+<p class="rubric">Classes</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#wotpy.protocols.http.handlers.utils.get_exposed_thing" title="wotpy.protocols.http.handlers.utils.get_exposed_thing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_exposed_thing</span></code></a>(server, title)</p></td>
-<td><p>Utility function to retrieve an ExposedThing from the HTTPServer or raise an HTTPError.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wotpy.protocols.http.handlers.utils.parse_json_body" title="wotpy.protocols.http.handlers.utils.parse_json_body"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_json_body</span></code></a>(req_handler)</p></td>
-<td><p>Parses the request body as JSON and returns the resulting object.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#wotpy.protocols.http.handlers.utils.request_auth" title="wotpy.protocols.http.handlers.utils.request_auth"><code class="xref py py-obj docutils literal notranslate"><span class="pre">request_auth</span></code></a>(req_handler, scheme, thing_name)</p></td>
-<td><p>If authentication fails request authentication from the client with the correct scheme.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wotpy.protocols.http.handlers.base.BaseHandler" title="wotpy.protocols.http.handlers.base.BaseHandler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseHandler</span></code></a>(application, request, **kwargs)</p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
-<dl class="py function">
-<dt class="sig sig-object py" id="wotpy.protocols.http.handlers.utils.get_exposed_thing">
-<span class="sig-prename descclassname"><span class="pre">wotpy.protocols.http.handlers.utils.</span></span><span class="sig-name descname"><span class="pre">get_exposed_thing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">server</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.handlers.utils.get_exposed_thing" title="Link to this definition"></a></dt>
-<dd><p>Utility function to retrieve an ExposedThing
-from the HTTPServer or raise an HTTPError.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="wotpy.protocols.http.handlers.base.BaseHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.http.handlers.base.</span></span><span class="sig-name descname"><span class="pre">BaseHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">application</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Application</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HTTPServerRequest</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.handlers.base.BaseHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RequestHandler</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="wotpy.protocols.http.handlers.base.BaseHandler.write_error">
+<span class="sig-name descname"><span class="pre">write_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">status_code</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.handlers.base.BaseHandler.write_error" title="Link to this definition"></a></dt>
+<dd><p>Override to implement custom error pages.</p>
+<p><code class="docutils literal notranslate"><span class="pre">write_error</span></code> may call <cite>write</cite>, <cite>render</cite>, <cite>set_header</cite>, etc
+to produce output as usual.</p>
+<p>If this error was caused by an uncaught exception (including
+HTTPError), an <code class="docutils literal notranslate"><span class="pre">exc_info</span></code> triple will be available as
+<code class="docutils literal notranslate"><span class="pre">kwargs[&quot;exc_info&quot;]</span></code>.  Note that this exception may not be
+the “current” exception for purposes of methods like
+<code class="docutils literal notranslate"><span class="pre">sys.exc_info()</span></code> or <code class="docutils literal notranslate"><span class="pre">traceback.format_exc</span></code>.</p>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="wotpy.protocols.http.handlers.utils.parse_json_body">
-<span class="sig-prename descclassname"><span class="pre">wotpy.protocols.http.handlers.utils.</span></span><span class="sig-name descname"><span class="pre">parse_json_body</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">req_handler</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.handlers.utils.parse_json_body" title="Link to this definition"></a></dt>
-<dd><p>Parses the request body as JSON and returns the resulting object.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="wotpy.protocols.http.handlers.utils.request_auth">
-<span class="sig-prename descclassname"><span class="pre">wotpy.protocols.http.handlers.utils.</span></span><span class="sig-name descname"><span class="pre">request_auth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">req_handler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheme</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thing_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.http.handlers.utils.request_auth" title="Link to this definition"></a></dt>
-<dd><p>If authentication fails request authentication from the client with the correct scheme.</p>
 </dd></dl>
 
 </section>
@@ -145,8 +139,8 @@ from the HTTPServer or raise an HTTPError.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="wotpy.protocols.http.handlers.property.html" class="btn btn-neutral float-left" title="wotpy.protocols.http.handlers.property" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../wotpy.protocols.http.authenticator.html" class="btn btn-neutral float-right" title="wotpy.protocols.http.authenticator" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="wotpy.protocols.http.handlers.action.html" class="btn btn-neutral float-left" title="wotpy.protocols.http.handlers.action" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wotpy.protocols.http.handlers.event.html" class="btn btn-neutral float-right" title="wotpy.protocols.http.handlers.event" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

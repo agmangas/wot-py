@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wotpy.wot.servient &mdash; WoTPy 0.17.2 documentation</title>
+  <title>wotpy.wot.servient &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=9fbddafe"></script>
-      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -43,6 +43,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../getting-started.html">Getting Started with wotpy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../protocols.html">Protocol Bindings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../authentication.html">Authentication Mechanisms</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../api.html">API Reference</a><ul class="current">
@@ -128,7 +129,7 @@
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.servient.Servient">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.servient.</span></span><span class="sig-name descname"><span class="pre">Servient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">catalogue_port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">9090</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clients</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clients_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_default_forms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.servient.Servient" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.servient.</span></span><span class="sig-name descname"><span class="pre">Servient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">catalogue_port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">9090</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clients</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clients_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_default_forms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.servient.Servient" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>An entity that is both a WoT client and server at the same time.
 WoT servers are Web servers that possess capabilities to access underlying
@@ -164,13 +165,13 @@ ExposedThings are disabled by default.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.servient.Servient.catalogue_port">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">catalogue_port</span></span><a class="headerlink" href="#wotpy.wot.servient.Servient.catalogue_port" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">catalogue_port</span></span><a class="headerlink" href="#wotpy.wot.servient.Servient.catalogue_port" title="Link to this definition"></a></dt>
 <dd><p>Returns the current port of the HTTP Thing Description catalogue service.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.servient.Servient.clients">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">clients</span></span><a class="headerlink" href="#wotpy.wot.servient.Servient.clients" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">clients</span></span><a class="headerlink" href="#wotpy.wot.servient.Servient.clients" title="Link to this definition"></a></dt>
 <dd><p>Returns the dict of Protocol Binding clients attached to this servient.</p>
 </dd></dl>
 
@@ -196,20 +197,20 @@ This is, the servers will listen for requests for this thing.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.servient.Servient.enabled_exposed_things">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">enabled_exposed_things</span></span><a class="headerlink" href="#wotpy.wot.servient.Servient.enabled_exposed_things" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">enabled_exposed_things</span></span><a class="headerlink" href="#wotpy.wot.servient.Servient.enabled_exposed_things" title="Link to this definition"></a></dt>
 <dd><p>Returns an iterator for the enabled ExposedThings contained in this Servient.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.servient.Servient.exposed_thing_set">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">exposed_thing_set</span></span><a class="headerlink" href="#wotpy.wot.servient.Servient.exposed_thing_set" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exposed_thing_set</span></span><a class="headerlink" href="#wotpy.wot.servient.Servient.exposed_thing_set" title="Link to this definition"></a></dt>
 <dd><p>Returns the ExposedThingSet instance that
 contains the ExposedThings of this servient.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.servient.Servient.exposed_things">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">exposed_things</span></span><a class="headerlink" href="#wotpy.wot.servient.Servient.exposed_things" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exposed_things</span></span><a class="headerlink" href="#wotpy.wot.servient.Servient.exposed_things" title="Link to this definition"></a></dt>
 <dd><p>Returns an iterator for the ExposedThings contained in this Servient.</p>
 </dd></dl>
 
@@ -229,13 +230,13 @@ for one of the currently active servers.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.servient.Servient.hostname">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">hostname</span></span><a class="headerlink" href="#wotpy.wot.servient.Servient.hostname" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hostname</span></span><a class="headerlink" href="#wotpy.wot.servient.Servient.hostname" title="Link to this definition"></a></dt>
 <dd><p>Hostname attached to this servient.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.servient.Servient.is_running">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">is_running</span></span><a class="headerlink" href="#wotpy.wot.servient.Servient.is_running" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_running</span></span><a class="headerlink" href="#wotpy.wot.servient.Servient.is_running" title="Link to this definition"></a></dt>
 <dd><p>Returns True if the Servient is currently running
 (i.e. the attached servers have been started).</p>
 </dd></dl>
@@ -280,31 +281,31 @@ communicate with the given Interaction.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.servient.Servient.servers">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">servers</span></span><a class="headerlink" href="#wotpy.wot.servient.Servient.servers" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">servers</span></span><a class="headerlink" href="#wotpy.wot.servient.Servient.servers" title="Link to this definition"></a></dt>
 <dd><p>Returns the dict of Protocol Binding servers attached to this servient.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.servient.Servient.shutdown">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">shutdown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.servient.Servient.shutdown" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shutdown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.servient.Servient.shutdown" title="Link to this definition"></a></dt>
 <dd><p>Stops the server configured under this servient.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.servient.Servient.shutdown_hook">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">shutdown_hook</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.servient.Servient.shutdown_hook" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shutdown_hook</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.servient.Servient.shutdown_hook" title="Link to this definition"></a></dt>
 <dd><p>Hook that is implemented by subclass.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.servient.Servient.start">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.servient.Servient.start" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.servient.Servient.start" title="Link to this definition"></a></dt>
 <dd><p>Starts the servers and returns an instance of the WoT object.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.servient.Servient.startup_hook">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">startup_hook</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.servient.Servient.startup_hook" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">startup_hook</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.servient.Servient.startup_hook" title="Link to this definition"></a></dt>
 <dd><p>Hook that is implemented by subclass.</p>
 </dd></dl>
 
@@ -312,7 +313,7 @@ communicate with the given Interaction.</p>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="wotpy.wot.servient.ServientStateException">
-<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.servient.</span></span><span class="sig-name descname"><span class="pre">ServientStateException</span></span><a class="headerlink" href="#wotpy.wot.servient.ServientStateException" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.servient.</span></span><span class="sig-name descname"><span class="pre">ServientStateException</span></span><a class="headerlink" href="#wotpy.wot.servient.ServientStateException" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
 <p>Exception raised when the user modifies the Servient while
 the Servient is in an inappropriate state.</p>
@@ -320,7 +321,7 @@ the Servient is in an inappropriate state.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.servient.TDCatalogueHandler">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.servient.</span></span><span class="sig-name descname"><span class="pre">TDCatalogueHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">application</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Application</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HTTPServerRequest</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.servient.TDCatalogueHandler" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.servient.</span></span><span class="sig-name descname"><span class="pre">TDCatalogueHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">application</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Application</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HTTPServerRequest</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.servient.TDCatalogueHandler" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RequestHandler</span></code></p>
 <p>Handler that returns the entire catalogue of Things contained in this servient.
 May return TDs in expanded format or URL pointers to the individual TDs.</p>
@@ -338,7 +339,7 @@ May return TDs in expanded format or URL pointers to the individual TDs.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.servient.TDHandler">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.servient.</span></span><span class="sig-name descname"><span class="pre">TDHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">application</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Application</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HTTPServerRequest</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.servient.TDHandler" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.servient.</span></span><span class="sig-name descname"><span class="pre">TDHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">application</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Application</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HTTPServerRequest</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.servient.TDHandler" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RequestHandler</span></code></p>
 <p>Handler that returns the TD document of a given Thing.</p>
 <dl class="py method">

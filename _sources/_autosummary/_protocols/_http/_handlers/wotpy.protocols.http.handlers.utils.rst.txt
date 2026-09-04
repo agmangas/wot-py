@@ -8,7 +8,7 @@ wotpy.protocols.http.handlers.utils
 
    .. autosummary::
    
-      get_argument
       get_exposed_thing
+      parse_json_body
       request_auth
    

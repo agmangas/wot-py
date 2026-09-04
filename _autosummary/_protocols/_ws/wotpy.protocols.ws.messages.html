@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wotpy.protocols.ws.messages &mdash; WoTPy 0.17.2 documentation</title>
+  <title>wotpy.protocols.ws.messages &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=9fbddafe"></script>
-      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -43,6 +43,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting-started.html">Getting Started with wotpy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../protocols.html">Protocol Bindings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../authentication.html">Authentication Mechanisms</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../../api.html">API Reference</a><ul class="current">
@@ -139,12 +140,12 @@
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.protocols.ws.messages.WebsocketMessageEmittedItem">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.ws.messages.</span></span><span class="sig-name descname"><span class="pre">WebsocketMessageEmittedItem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subscription_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageEmittedItem" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.ws.messages.</span></span><span class="sig-name descname"><span class="pre">WebsocketMessageEmittedItem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subscription_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageEmittedItem" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Represents a Websockets message for an item emitted by an active subscription.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.protocols.ws.messages.WebsocketMessageEmittedItem.from_raw">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_msg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageEmittedItem.from_raw" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_msg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageEmittedItem.from_raw" title="Link to this definition"></a></dt>
 <dd><p>Builds a new WebsocketMessageEmittedItem instance from a raw socket message.
 Raises WebsocketMessageException if the message is invalid.</p>
 </dd></dl>
@@ -165,19 +166,19 @@ Raises WebsocketMessageException if the message is invalid.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.protocols.ws.messages.WebsocketMessageError">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.ws.messages.</span></span><span class="sig-name descname"><span class="pre">WebsocketMessageError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-32603</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msg_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageError" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.ws.messages.</span></span><span class="sig-name descname"><span class="pre">WebsocketMessageError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-32603</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msg_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageError" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Represents a WoT Websockets JSON-RPC error message.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.protocols.ws.messages.WebsocketMessageError.from_raw">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_msg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageError.from_raw" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_msg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageError.from_raw" title="Link to this definition"></a></dt>
 <dd><p>Builds a new WebsocketMessageError instance from a raw socket message.
 Raises WebsocketMessageException if the message is invalid.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.protocols.ws.messages.WebsocketMessageError.id">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageError.id" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageError.id" title="Link to this definition"></a></dt>
 <dd><p>ID property.</p>
 </dd></dl>
 
@@ -197,27 +198,27 @@ Raises WebsocketMessageException if the message is invalid.</p>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="wotpy.protocols.ws.messages.WebsocketMessageException">
-<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.ws.messages.</span></span><span class="sig-name descname"><span class="pre">WebsocketMessageException</span></span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageException" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.ws.messages.</span></span><span class="sig-name descname"><span class="pre">WebsocketMessageException</span></span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageException" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
 <p>Exception raised when a WS message appears to be invalid.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.protocols.ws.messages.WebsocketMessageRequest">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.ws.messages.</span></span><span class="sig-name descname"><span class="pre">WebsocketMessageRequest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msg_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageRequest" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.ws.messages.</span></span><span class="sig-name descname"><span class="pre">WebsocketMessageRequest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msg_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageRequest" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Represents a message received on a websocket that
 contains a JSON-RPC WoT action request.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.protocols.ws.messages.WebsocketMessageRequest.from_raw">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_msg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageRequest.from_raw" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_msg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageRequest.from_raw" title="Link to this definition"></a></dt>
 <dd><p>Builds a new WebsocketMessageRequest instance from a raw socket message.
 Raises WebsocketMessageException if the message is invalid.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.protocols.ws.messages.WebsocketMessageRequest.id">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageRequest.id" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageRequest.id" title="Link to this definition"></a></dt>
 <dd><p>ID property.</p>
 </dd></dl>
 
@@ -237,19 +238,19 @@ Raises WebsocketMessageException if the message is invalid.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.protocols.ws.messages.WebsocketMessageResponse">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.ws.messages.</span></span><span class="sig-name descname"><span class="pre">WebsocketMessageResponse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msg_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageResponse" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.ws.messages.</span></span><span class="sig-name descname"><span class="pre">WebsocketMessageResponse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msg_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageResponse" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Represents a WoT Websockets JSON-RPC response message.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.protocols.ws.messages.WebsocketMessageResponse.from_raw">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_msg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageResponse.from_raw" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_raw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_msg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageResponse.from_raw" title="Link to this definition"></a></dt>
 <dd><p>Builds a new WebsocketMessageResponse instance from a raw socket message.
 Raises WebsocketMessageException if the message is invalid.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.protocols.ws.messages.WebsocketMessageResponse.id">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageResponse.id" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#wotpy.protocols.ws.messages.WebsocketMessageResponse.id" title="Link to this definition"></a></dt>
 <dd><p>ID property.</p>
 </dd></dl>
 

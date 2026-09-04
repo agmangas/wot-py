@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wotpy.protocols.exceptions &mdash; WoTPy 0.17.2 documentation</title>
+  <title>wotpy.protocols.exceptions &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=9fbddafe"></script>
-      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -43,6 +43,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../getting-started.html">Getting Started with wotpy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../protocols.html">Protocol Bindings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../authentication.html">Authentication Mechanisms</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../api.html">API Reference</a><ul class="current">
@@ -116,37 +117,37 @@
 </table>
 <dl class="py exception">
 <dt class="sig sig-object py" id="wotpy.protocols.exceptions.ClientRequestTimeout">
-<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.exceptions.</span></span><span class="sig-name descname"><span class="pre">ClientRequestTimeout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.exceptions.ClientRequestTimeout" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.exceptions.</span></span><span class="sig-name descname"><span class="pre">ClientRequestTimeout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.exceptions.ClientRequestTimeout" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.protocols.exceptions.ProtocolClientException" title="wotpy.protocols.exceptions.ProtocolClientException"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProtocolClientException</span></code></a></p>
 <p>Exception raised when a protocol client request reaches the timeout.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.protocols.exceptions.ClientRequestTimeout.DEFAULT_MSG">
-<span class="sig-name descname"><span class="pre">DEFAULT_MSG</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Timeout</span> <span class="pre">in</span> <span class="pre">protocol</span> <span class="pre">client</span> <span class="pre">request'</span></span><a class="headerlink" href="#wotpy.protocols.exceptions.ClientRequestTimeout.DEFAULT_MSG" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">DEFAULT_MSG</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Timeout</span> <span class="pre">in</span> <span class="pre">protocol</span> <span class="pre">client</span> <span class="pre">request'</span></em><a class="headerlink" href="#wotpy.protocols.exceptions.ClientRequestTimeout.DEFAULT_MSG" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="wotpy.protocols.exceptions.FormNotFoundException">
-<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.exceptions.</span></span><span class="sig-name descname"><span class="pre">FormNotFoundException</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.exceptions.FormNotFoundException" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.exceptions.</span></span><span class="sig-name descname"><span class="pre">FormNotFoundException</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.exceptions.FormNotFoundException" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.protocols.exceptions.ProtocolClientException" title="wotpy.protocols.exceptions.ProtocolClientException"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProtocolClientException</span></code></a></p>
 <p>Exception raised when a form for a given protocol
 binding could not be found in a Thing Description.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.protocols.exceptions.FormNotFoundException.DEFAULT_MSG">
-<span class="sig-name descname"><span class="pre">DEFAULT_MSG</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Protocol</span> <span class="pre">Form</span> <span class="pre">not</span> <span class="pre">found</span> <span class="pre">in</span> <span class="pre">TD'</span></span><a class="headerlink" href="#wotpy.protocols.exceptions.FormNotFoundException.DEFAULT_MSG" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">DEFAULT_MSG</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Protocol</span> <span class="pre">Form</span> <span class="pre">not</span> <span class="pre">found</span> <span class="pre">in</span> <span class="pre">TD'</span></em><a class="headerlink" href="#wotpy.protocols.exceptions.FormNotFoundException.DEFAULT_MSG" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py exception">
 <dt class="sig sig-object py" id="wotpy.protocols.exceptions.ProtocolClientException">
-<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.exceptions.</span></span><span class="sig-name descname"><span class="pre">ProtocolClientException</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.exceptions.ProtocolClientException" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.exceptions.</span></span><span class="sig-name descname"><span class="pre">ProtocolClientException</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.exceptions.ProtocolClientException" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
 <p>Base Exceptions raised by clients of the protocol binding implementations.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.protocols.exceptions.ProtocolClientException.DEFAULT_MSG">
-<span class="sig-name descname"><span class="pre">DEFAULT_MSG</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Protocol</span> <span class="pre">client</span> <span class="pre">error'</span></span><a class="headerlink" href="#wotpy.protocols.exceptions.ProtocolClientException.DEFAULT_MSG" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">DEFAULT_MSG</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Protocol</span> <span class="pre">client</span> <span class="pre">error'</span></em><a class="headerlink" href="#wotpy.protocols.exceptions.ProtocolClientException.DEFAULT_MSG" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>

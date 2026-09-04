@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WebSockets &mdash; WoTPy 0.17.2 documentation</title>
+  <title>WebSockets &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9fbddafe"></script>
-      <script src="_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,6 +43,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting Started with wotpy</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="protocols.html">Protocol Bindings</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="http.html">HTTP</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mqtt.html">MQTT</a></li>
@@ -104,8 +105,8 @@ messages exchanged with the server when using the WebSockets Protocol Binding.</
 <p>Form elements associated with the WebSockets binding that are found in Thing Description documents serialized in
 JSON-LD have the following format:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;href&quot;</span><span class="p">:</span> <span class="s2">&quot;ws://host.fundacionctic.org:9393/temperaturething&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;mediaType&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span>
+    <span class="s2">"href"</span><span class="p">:</span> <span class="s2">"ws://host.fundacionctic.org:9393/temperaturething"</span><span class="p">,</span>
+    <span class="s2">"mediaType"</span><span class="p">:</span> <span class="s2">"application/json"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -131,10 +132,10 @@ JSON-LD have the following format:</p>
 JSON objects (JSON-RPC).</p>
 <p><strong>Request</strong> messages are sent by the client to interact with one of the Thing Interactions:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">method_name</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">method_params</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">message_id</span><span class="o">&gt;</span>
+    <span class="s2">"jsonrpc"</span><span class="p">:</span> <span class="s2">"2.0"</span><span class="p">,</span>
+    <span class="s2">"method"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">method_name</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"params"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">method_params</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">message_id</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -162,9 +163,9 @@ JSON objects (JSON-RPC).</p>
 </table>
 <p><strong>Response</strong> messages are sent by the server to respond to client requests:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">request_result</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">message_id</span><span class="o">&gt;</span>
+    <span class="s2">"jsonrpc"</span><span class="p">:</span> <span class="s2">"2.0"</span><span class="p">,</span>
+    <span class="s2">"result"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">request_result</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">message_id</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -188,13 +189,13 @@ JSON objects (JSON-RPC).</p>
 </table>
 <p><strong>Error</strong> messages are sometimes returned instead of a response if some error arises:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">error_code</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">error_message</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">error_data</span><span class="o">&gt;</span>
+    <span class="s2">"jsonrpc"</span><span class="p">:</span> <span class="s2">"2.0"</span><span class="p">,</span>
+    <span class="s2">"error"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"code"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">error_code</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">"message"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">error_message</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">"data"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">error_data</span><span class="o">&gt;</span>
     <span class="p">},</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">message_id</span><span class="o">&gt;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">message_id</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -226,9 +227,9 @@ JSON objects (JSON-RPC).</p>
 </table>
 <p><strong>Emitted Item</strong> messages are sent for active subscriptions when new events are emitted under that subscription:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;subscription&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_name</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_payload</span><span class="o">&gt;</span>
+    <span class="s2">"subscription"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_name</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_payload</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -261,20 +262,20 @@ JSON objects (JSON-RPC).</p>
 <h3>Read Property<a class="headerlink" href="#read-property" title="Link to this heading"></a></h3>
 <p>Request:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;read_property&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_name</span><span class="o">&gt;</span>
+    <span class="s2">"jsonrpc"</span><span class="p">:</span> <span class="s2">"2.0"</span><span class="p">,</span>
+    <span class="s2">"method"</span><span class="p">:</span> <span class="s2">"read_property"</span><span class="p">,</span>
+    <span class="s2">"params"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_name</span><span class="o">&gt;</span>
     <span class="p">},</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;09bca9be-7e78-4106-bf4e-e3d503290191&quot;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"09bca9be-7e78-4106-bf4e-e3d503290191"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;09bca9be-7e78-4106-bf4e-e3d503290191&quot;</span>
+    <span class="s2">"jsonrpc"</span><span class="p">:</span> <span class="s2">"2.0"</span><span class="p">,</span>
+    <span class="s2">"result"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"09bca9be-7e78-4106-bf4e-e3d503290191"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -283,21 +284,21 @@ JSON objects (JSON-RPC).</p>
 <h3>Write Property<a class="headerlink" href="#write-property" title="Link to this heading"></a></h3>
 <p>Request:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;write_property&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_name</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span>
+    <span class="s2">"jsonrpc"</span><span class="p">:</span> <span class="s2">"2.0"</span><span class="p">,</span>
+    <span class="s2">"method"</span><span class="p">:</span> <span class="s2">"write_property"</span><span class="p">,</span>
+    <span class="s2">"params"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_name</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">"value"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span>
     <span class="p">},</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;77b06e1f-02dd-4f17-a551-f86045d07099&quot;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"77b06e1f-02dd-4f17-a551-f86045d07099"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;77b06e1f-02dd-4f17-a551-f86045d07099&quot;</span>
+    <span class="s2">"jsonrpc"</span><span class="p">:</span> <span class="s2">"2.0"</span><span class="p">,</span>
+    <span class="s2">"result"</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"77b06e1f-02dd-4f17-a551-f86045d07099"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -307,21 +308,21 @@ JSON objects (JSON-RPC).</p>
 <h3>Invoke Action<a class="headerlink" href="#invoke-action" title="Link to this heading"></a></h3>
 <p>Request:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;invoke_action&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">action_name</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">invocation_parameters</span><span class="o">&gt;</span>
+    <span class="s2">"jsonrpc"</span><span class="p">:</span> <span class="s2">"2.0"</span><span class="p">,</span>
+    <span class="s2">"method"</span><span class="p">:</span> <span class="s2">"invoke_action"</span><span class="p">,</span>
+    <span class="s2">"params"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">action_name</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">"parameters"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">invocation_parameters</span><span class="o">&gt;</span>
     <span class="p">},</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;ec7455c4-f08a-4e8f-85c1-8b944ad9dc0e&quot;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"ec7455c4-f08a-4e8f-85c1-8b944ad9dc0e"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">action_result</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;ec7455c4-f08a-4e8f-85c1-8b944ad9dc0e&quot;</span>
+    <span class="s2">"jsonrpc"</span><span class="p">:</span> <span class="s2">"2.0"</span><span class="p">,</span>
+    <span class="s2">"result"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">action_result</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"ec7455c4-f08a-4e8f-85c1-8b944ad9dc0e"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -330,30 +331,30 @@ JSON objects (JSON-RPC).</p>
 <h3>Observe Property changes<a class="headerlink" href="#observe-property-changes" title="Link to this heading"></a></h3>
 <p>Request:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;on_property_change&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_name</span><span class="o">&gt;</span>
+    <span class="s2">"jsonrpc"</span><span class="p">:</span> <span class="s2">"2.0"</span><span class="p">,</span>
+    <span class="s2">"method"</span><span class="p">:</span> <span class="s2">"on_property_change"</span><span class="p">,</span>
+    <span class="s2">"params"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_name</span><span class="o">&gt;</span>
     <span class="p">},</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;dcd518b1-97d6-4b4b-9483-f26907734165&quot;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"dcd518b1-97d6-4b4b-9483-f26907734165"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;dcd518b1-97d6-4b4b-9483-f26907734165&quot;</span>
+    <span class="s2">"jsonrpc"</span><span class="p">:</span> <span class="s2">"2.0"</span><span class="p">,</span>
+    <span class="s2">"result"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"dcd518b1-97d6-4b4b-9483-f26907734165"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Message sent by the server for each property change:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;subscription&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;propertychange&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_name</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span>
+    <span class="s2">"subscription"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"propertychange"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_name</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">"value"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">property_value</span><span class="o">&gt;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -365,28 +366,28 @@ JSON objects (JSON-RPC).</p>
 <h3>Observe Event<a class="headerlink" href="#observe-event" title="Link to this heading"></a></h3>
 <p>Request:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;on_event&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_name</span><span class="o">&gt;</span>
+    <span class="s2">"jsonrpc"</span><span class="p">:</span> <span class="s2">"2.0"</span><span class="p">,</span>
+    <span class="s2">"method"</span><span class="p">:</span> <span class="s2">"on_event"</span><span class="p">,</span>
+    <span class="s2">"params"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_name</span><span class="o">&gt;</span>
     <span class="p">},</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;7fc84fa6-ef83-474c-8c91-06965bde3749&quot;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"7fc84fa6-ef83-474c-8c91-06965bde3749"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;7fc84fa6-ef83-474c-8c91-06965bde3749&quot;</span>
+    <span class="s2">"jsonrpc"</span><span class="p">:</span> <span class="s2">"2.0"</span><span class="p">,</span>
+    <span class="s2">"result"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"7fc84fa6-ef83-474c-8c91-06965bde3749"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Message sent by the server for each event emission:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;subscription&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_name</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_payload</span><span class="o">&gt;</span>
+    <span class="s2">"subscription"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_name</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">event_payload</span><span class="o">&gt;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -395,31 +396,31 @@ JSON objects (JSON-RPC).</p>
 <h3>Observe TD changes<a class="headerlink" href="#observe-td-changes" title="Link to this heading"></a></h3>
 <p>Request:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;on_td_change&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{},</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d52636f1-0c45-4603-8b7b-326937891917&quot;</span>
+    <span class="s2">"jsonrpc"</span><span class="p">:</span> <span class="s2">"2.0"</span><span class="p">,</span>
+    <span class="s2">"method"</span><span class="p">:</span> <span class="s2">"on_td_change"</span><span class="p">,</span>
+    <span class="s2">"params"</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"d52636f1-0c45-4603-8b7b-326937891917"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d52636f1-0c45-4603-8b7b-326937891917&quot;</span>
+    <span class="s2">"jsonrpc"</span><span class="p">:</span> <span class="s2">"2.0"</span><span class="p">,</span>
+    <span class="s2">"result"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"d52636f1-0c45-4603-8b7b-326937891917"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Message sent by the server for each Thing Description change:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;subscription&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;descriptionchange&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;td_change_type&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">td_change_type</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">method</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">data</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">description</span><span class="o">&gt;</span>
+    <span class="s2">"subscription"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"descriptionchange"</span><span class="p">,</span>
+    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"td_change_type"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">td_change_type</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">"method"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">method</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">"name"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">"data"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">data</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">"description"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">description</span><span class="o">&gt;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -431,20 +432,20 @@ JSON objects (JSON-RPC).</p>
 <h3>Dispose subscription<a class="headerlink" href="#dispose-subscription" title="Link to this heading"></a></h3>
 <p>Request:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;dispose&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;subscription&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span>
+    <span class="s2">"jsonrpc"</span><span class="p">:</span> <span class="s2">"2.0"</span><span class="p">,</span>
+    <span class="s2">"method"</span><span class="p">:</span> <span class="s2">"dispose"</span><span class="p">,</span>
+    <span class="s2">"params"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"subscription"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span>
     <span class="p">},</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e02de075-7d5f-4466-b901-2ffd96437939&quot;</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"e02de075-7d5f-4466-b901-2ffd96437939"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;jsonrpc&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e02de075-7d5f-4466-b901-2ffd96437939&quot;</span>
+    <span class="s2">"jsonrpc"</span><span class="p">:</span> <span class="s2">"2.0"</span><span class="p">,</span>
+    <span class="s2">"result"</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">subscription_id</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"e02de075-7d5f-4466-b901-2ffd96437939"</span>
 <span class="p">}</span>
 </pre></div>
 </div>

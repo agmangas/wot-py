@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wotpy.wot.dictionaries.security &mdash; WoTPy 0.17.2 documentation</title>
+  <title>wotpy.wot.dictionaries.security &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=9fbddafe"></script>
-      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -43,6 +43,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting-started.html">Getting Started with wotpy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../protocols.html">Protocol Bindings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../authentication.html">Authentication Mechanisms</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../../api.html">API Reference</a><ul class="current">
@@ -146,34 +147,34 @@
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">APIKeySecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">APIKeySecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecuritySchemeDict</span></code></a></p>
 <p>API key authentication security configuration.
 This is for the case where the access token is opaque and is not using a standard token format.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta.defaults">
-<span class="sig-name descname"><span class="pre">defaults</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'in':</span> <span class="pre">'query'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta.defaults" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'in':</span> <span class="pre">'query'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta.defaults" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta.fields">
-<span class="sig-name descname"><span class="pre">fields</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'in',</span> <span class="pre">'name',</span> <span class="pre">'proxy',</span> <span class="pre">'scheme'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta.fields" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'in',</span> <span class="pre">'name',</span> <span class="pre">'proxy',</span> <span class="pre">'scheme'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta.fields" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta.required">
-<span class="sig-name descname"><span class="pre">required</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'scheme'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta.required" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">required</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'scheme'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.Meta.required" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.scheme">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.APIKeySecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
 <dd><p>The scheme property represents the identification
 of the security scheme to be used for the Thing.</p>
 </dd></dl>
@@ -182,14 +183,14 @@ of the security scheme to be used for the Thing.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.AutoSecuritySchemeDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">AutoSecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.AutoSecuritySchemeDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">AutoSecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.AutoSecuritySchemeDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecuritySchemeDict</span></code></a></p>
 <p>An automatic authentication security configuration indicating
 that the security parameters are going to be negotiated by
 the underlying protocols at runtime.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.AutoSecuritySchemeDict.scheme">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.AutoSecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.AutoSecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
 <dd><p>The scheme property represents the identification
 of the security scheme to be used for the Thing.</p>
 </dd></dl>
@@ -198,33 +199,33 @@ of the security scheme to be used for the Thing.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.BasicSecuritySchemeDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">BasicSecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">BasicSecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecuritySchemeDict</span></code></a></p>
 <p>Basic authentication security configuration using an unencrypted username and password.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta.defaults">
-<span class="sig-name descname"><span class="pre">defaults</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'in':</span> <span class="pre">'header'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta.defaults" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'in':</span> <span class="pre">'header'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta.defaults" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta.fields">
-<span class="sig-name descname"><span class="pre">fields</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'in',</span> <span class="pre">'name',</span> <span class="pre">'proxy',</span> <span class="pre">'scheme'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta.fields" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'in',</span> <span class="pre">'name',</span> <span class="pre">'proxy',</span> <span class="pre">'scheme'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta.fields" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta.required">
-<span class="sig-name descname"><span class="pre">required</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'scheme'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta.required" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">required</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'scheme'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.Meta.required" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.scheme">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BasicSecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
 <dd><p>The scheme property represents the identification
 of the security scheme to be used for the Thing.</p>
 </dd></dl>
@@ -233,7 +234,7 @@ of the security scheme to be used for the Thing.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.BearerSecuritySchemeDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">BearerSecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">BearerSecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecuritySchemeDict</span></code></a></p>
 <p>Bearer token authentication security configuration. This scheme is intended
 for situations where bearer tokens are used independently of OAuth2.
@@ -241,28 +242,28 @@ If the oauth2 scheme is specified it is not generally necessary to
 specify this scheme as well as it is implied.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta.defaults">
-<span class="sig-name descname"><span class="pre">defaults</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'alg':</span> <span class="pre">'ES256',</span> <span class="pre">'format':</span> <span class="pre">'jwt',</span> <span class="pre">'in':</span> <span class="pre">'header'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta.defaults" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'alg':</span> <span class="pre">'ES256',</span> <span class="pre">'format':</span> <span class="pre">'jwt',</span> <span class="pre">'in':</span> <span class="pre">'header'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta.defaults" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta.fields">
-<span class="sig-name descname"><span class="pre">fields</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'alg',</span> <span class="pre">'authorization',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'format',</span> <span class="pre">'in',</span> <span class="pre">'name',</span> <span class="pre">'proxy',</span> <span class="pre">'scheme'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta.fields" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'alg',</span> <span class="pre">'authorization',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'format',</span> <span class="pre">'in',</span> <span class="pre">'name',</span> <span class="pre">'proxy',</span> <span class="pre">'scheme'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta.fields" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta.required">
-<span class="sig-name descname"><span class="pre">required</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'scheme'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta.required" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">required</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'scheme'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.Meta.required" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.scheme">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.BearerSecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
 <dd><p>The scheme property represents the identification
 of the security scheme to be used for the Thing.</p>
 </dd></dl>
@@ -271,7 +272,7 @@ of the security scheme to be used for the Thing.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.ComboSecuritySchemeDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">ComboSecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.ComboSecuritySchemeDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">ComboSecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.ComboSecuritySchemeDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecuritySchemeDict</span></code></a></p>
 <p>A combination of other security schemes. Elements of this scheme define
 various ways in which other named schemes defined in securityDefinitions,
@@ -279,23 +280,23 @@ including other ComboSecurityScheme definitions, are to be combined to
 create a new scheme definition.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.ComboSecuritySchemeDict.Meta">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.ComboSecuritySchemeDict.Meta" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.ComboSecuritySchemeDict.Meta" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.ComboSecuritySchemeDict.Meta.fields">
-<span class="sig-name descname"><span class="pre">fields</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'allOf',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'oneOf',</span> <span class="pre">'proxy',</span> <span class="pre">'scheme'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.ComboSecuritySchemeDict.Meta.fields" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'allOf',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'oneOf',</span> <span class="pre">'proxy',</span> <span class="pre">'scheme'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.ComboSecuritySchemeDict.Meta.fields" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.ComboSecuritySchemeDict.Meta.required">
-<span class="sig-name descname"><span class="pre">required</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'scheme'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.ComboSecuritySchemeDict.Meta.required" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">required</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'scheme'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.ComboSecuritySchemeDict.Meta.required" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.ComboSecuritySchemeDict.scheme">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.ComboSecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.ComboSecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
 <dd><p>The scheme property represents the identification
 of the security scheme to be used for the Thing.</p>
 </dd></dl>
@@ -304,34 +305,34 @@ of the security scheme to be used for the Thing.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.DigestSecuritySchemeDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">DigestSecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">DigestSecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecuritySchemeDict</span></code></a></p>
 <p>Digest authentication security configuration. This scheme is similar to
 basic authentication but with added features to avoid man-in-the-middle attacks.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta.defaults">
-<span class="sig-name descname"><span class="pre">defaults</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'in':</span> <span class="pre">'header',</span> <span class="pre">'qop':</span> <span class="pre">'auth'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta.defaults" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'in':</span> <span class="pre">'header',</span> <span class="pre">'qop':</span> <span class="pre">'auth'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta.defaults" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta.fields">
-<span class="sig-name descname"><span class="pre">fields</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'in',</span> <span class="pre">'name',</span> <span class="pre">'proxy',</span> <span class="pre">'qop',</span> <span class="pre">'scheme'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta.fields" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'in',</span> <span class="pre">'name',</span> <span class="pre">'proxy',</span> <span class="pre">'qop',</span> <span class="pre">'scheme'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta.fields" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta.required">
-<span class="sig-name descname"><span class="pre">required</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'scheme'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta.required" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">required</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'scheme'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.Meta.required" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.scheme">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.DigestSecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
 <dd><p>The scheme property represents the identification
 of the security scheme to be used for the Thing.</p>
 </dd></dl>
@@ -340,13 +341,13 @@ of the security scheme to be used for the Thing.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.NoSecuritySchemeDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">NoSecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.NoSecuritySchemeDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">NoSecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.NoSecuritySchemeDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecuritySchemeDict</span></code></a></p>
 <p>A security configuration indicating there is no authentication
 or other mechanism required to access the resource.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.NoSecuritySchemeDict.scheme">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.NoSecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.NoSecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
 <dd><p>The scheme property represents the identification
 of the security scheme to be used for the Thing.</p>
 </dd></dl>
@@ -355,7 +356,7 @@ of the security scheme to be used for the Thing.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">OAuth2SecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">OAuth2SecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecuritySchemeDict</span></code></a></p>
 <p>OAuth2 authentication security configuration.
 For the implicit flow the authorization and scopes are required.
@@ -363,28 +364,28 @@ For the password and client flows both token and scopes are required.
 For the code flow authorization, token, and scopes are required.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta.defaults">
-<span class="sig-name descname"><span class="pre">defaults</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'flow':</span> <span class="pre">'implicit'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta.defaults" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'flow':</span> <span class="pre">'implicit'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta.defaults" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta.fields">
-<span class="sig-name descname"><span class="pre">fields</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'authorization',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'flow',</span> <span class="pre">'proxy',</span> <span class="pre">'refresh',</span> <span class="pre">'scheme',</span> <span class="pre">'scopes',</span> <span class="pre">'token'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta.fields" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'authorization',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'flow',</span> <span class="pre">'proxy',</span> <span class="pre">'refresh',</span> <span class="pre">'scheme',</span> <span class="pre">'scopes',</span> <span class="pre">'token'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta.fields" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta.required">
-<span class="sig-name descname"><span class="pre">required</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'scheme'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta.required" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">required</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'scheme'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.Meta.required" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.scheme">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.OAuth2SecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
 <dd><p>The scheme property represents the identification
 of the security scheme to be used for the Thing.</p>
 </dd></dl>
@@ -393,28 +394,28 @@ of the security scheme to be used for the Thing.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.PSKSecuritySchemeDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">PSKSecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.PSKSecuritySchemeDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">PSKSecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.PSKSecuritySchemeDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="wotpy.wot.dictionaries.security.SecuritySchemeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">SecuritySchemeDict</span></code></a></p>
 <p>Pre-shared key authentication security configuration.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.Meta">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.Meta" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.Meta" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.Meta.fields">
-<span class="sig-name descname"><span class="pre">fields</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'identity',</span> <span class="pre">'proxy',</span> <span class="pre">'scheme'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.Meta.fields" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'identity',</span> <span class="pre">'proxy',</span> <span class="pre">'scheme'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.Meta.fields" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.Meta.required">
-<span class="sig-name descname"><span class="pre">required</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'scheme'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.Meta.required" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">required</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'scheme'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.Meta.required" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.scheme">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.PSKSecuritySchemeDict.scheme" title="Link to this definition"></a></dt>
 <dd><p>The scheme property represents the identification
 of the security scheme to be used for the Thing.</p>
 </dd></dl>
@@ -423,28 +424,28 @@ of the security scheme to be used for the Thing.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.SecuritySchemeDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">SecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.dictionaries.security.</span></span><span class="sig-name descname"><span class="pre">SecuritySchemeDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="wotpy.wot.dictionaries.base.html#wotpy.wot.dictionaries.base.WotBaseDict" title="wotpy.wot.dictionaries.base.WotBaseDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">WotBaseDict</span></code></a></p>
 <p>Contains security related configuration.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.SecuritySchemeDict.Meta">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict.Meta" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict.Meta" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.SecuritySchemeDict.Meta.fields">
-<span class="sig-name descname"><span class="pre">fields</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'proxy',</span> <span class="pre">'scheme'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict.Meta.fields" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'&#64;type',</span> <span class="pre">'description',</span> <span class="pre">'descriptions',</span> <span class="pre">'proxy',</span> <span class="pre">'scheme'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict.Meta.fields" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.SecuritySchemeDict.Meta.required">
-<span class="sig-name descname"><span class="pre">required</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'scheme'}</span></span><a class="headerlink" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict.Meta.required" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">required</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'scheme'}</span></em><a class="headerlink" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict.Meta.required" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.dictionaries.security.SecuritySchemeDict.build">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict.build" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.dictionaries.security.SecuritySchemeDict.build" title="Link to this definition"></a></dt>
 <dd><p>Builds an instance of the appropriate subclass for the given SecurityScheme.</p>
 </dd></dl>
 

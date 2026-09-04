@@ -1,0 +1,12 @@
+wotpy.protocols.http.handlers.base
+==================================
+
+.. automodule:: wotpy.protocols.http.handlers.base
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      BaseHandler
+   

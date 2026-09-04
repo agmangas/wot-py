@@ -1,0 +1,295 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Getting Started with wotpy &mdash; WoTPy 0.18.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Protocol Bindings" href="protocols.html" />
+    <link rel="prev" title="WoTPy" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            WoTPy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started with wotpy</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-the-example">Running the example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-the-coffee-machine-exposes">What the coffee machine exposes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#properties">Properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#actions">Actions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#events">Events</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#reading-the-client-output">Reading the client output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#other-examples">Other examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#next-steps">Next steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="protocols.html">Protocol Bindings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authentication.html">Authentication Mechanisms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">WoTPy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Getting Started with wotpy</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/getting-started.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="getting-started-with-wotpy">
+<span id="getting-started"></span><h1>Getting Started with wotpy<a class="headerlink" href="#getting-started-with-wotpy" title="Link to this heading"></a></h1>
+<p>wotpy is a Python implementation of the <a class="reference external" href="https://www.w3.org/WoT/">W3C WoT Runtime and Scripting API</a>.
+It lets you build Things (producers) and Consumers in Python, with built-in protocol bindings for HTTP, WebSockets, MQTT, CoAP, and Zenoh.</p>
+<p>This guide gets you up and running using the <strong>Smart Coffee Machine</strong> example.
+By the end you will have a Thing and a Consumer running locally and talking to each other.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p>Install wotpy from PyPI:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>wotpy
+</pre></div>
+</div>
+<p>For development — running the examples from the repository — you need a virtual environment with the project installed in editable mode.</p>
+<ul>
+<li><p>Using <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
+.venv/bin/pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[tests]"</span>
+</pre></div>
+</div>
+</li>
+<li><p>Using <code class="docutils literal notranslate"><span class="pre">uv</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>venv<span class="w"> </span>.venv
+uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span>tests
+</pre></div>
+</div>
+</li>
+</ul>
+<p>If you have <a class="reference external" href="https://taskfile.dev/installation/">Taskfile</a> <strong>v3.28 or later</strong> installed, the first two steps can be replaced with <code class="docutils literal notranslate"><span class="pre">task</span> <span class="pre">venv</span></code> (pip) or <code class="docutils literal notranslate"><span class="pre">task</span> <span class="pre">uv-venv</span></code> (uv).</p>
+</section>
+<section id="running-the-example">
+<h2>Running the example<a class="headerlink" href="#running-the-example" title="Link to this heading"></a></h2>
+<p>Open two terminals in the repository root.</p>
+<p><strong>Terminal 1 — start the Thing (server)</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>.venv/bin/python<span class="w"> </span>examples/coffee-machine/server.py
+</pre></div>
+</div>
+<p>You should see output similar to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">INFO</span>     <span class="n">coffee</span><span class="o">-</span><span class="n">machine</span><span class="p">:</span><span class="n">server</span><span class="o">.</span><span class="n">py</span> <span class="n">Creating</span> <span class="n">WebSocket</span> <span class="n">server</span> <span class="n">on</span><span class="p">:</span> <span class="mi">9393</span>
+<span class="n">INFO</span>     <span class="n">coffee</span><span class="o">-</span><span class="n">machine</span><span class="p">:</span><span class="n">server</span><span class="o">.</span><span class="n">py</span> <span class="n">Creating</span> <span class="n">HTTP</span> <span class="n">server</span> <span class="n">on</span><span class="p">:</span> <span class="mi">9494</span>
+<span class="n">INFO</span>     <span class="n">coffee</span><span class="o">-</span><span class="n">machine</span><span class="p">:</span><span class="n">server</span><span class="o">.</span><span class="n">py</span> <span class="n">Creating</span> <span class="n">servient</span> <span class="k">with</span> <span class="n">TD</span> <span class="n">catalogue</span> <span class="n">on</span><span class="p">:</span> <span class="mi">9090</span>
+<span class="n">INFO</span>     <span class="n">coffee</span><span class="o">-</span><span class="n">machine</span><span class="p">:</span><span class="n">server</span><span class="o">.</span><span class="n">py</span> <span class="n">Starting</span> <span class="n">servient</span>
+<span class="n">INFO</span>     <span class="n">coffee</span><span class="o">-</span><span class="n">machine</span><span class="p">:</span><span class="n">server</span><span class="o">.</span><span class="n">py</span> <span class="n">Exposing</span> <span class="ow">and</span> <span class="n">configuring</span> <span class="n">Thing</span>
+<span class="n">INFO</span>     <span class="n">coffee</span><span class="o">-</span><span class="n">machine</span><span class="p">:</span><span class="n">server</span><span class="o">.</span><span class="n">py</span> <span class="n">Smart</span><span class="o">-</span><span class="n">Coffee</span><span class="o">-</span><span class="n">Machine</span> <span class="ow">is</span> <span class="n">ready</span>
+</pre></div>
+</div>
+<p>The server exposes three endpoints:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">http://localhost:9090</span></code> — Thing Description catalogue (lists all available Things)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">http://localhost:9494</span></code> — HTTP protocol binding</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ws://localhost:9393</span></code> — WebSocket protocol binding</p></li>
+</ul>
+<p><strong>Terminal 2 — run the Consumer (client)</strong></p>
+<p>The client discovers the Thing’s URL automatically from the catalogue, so no manual configuration is needed:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>.venv/bin/python<span class="w"> </span>examples/coffee-machine/client.py
+</pre></div>
+</div>
+</section>
+<section id="what-the-coffee-machine-exposes">
+<h2>What the coffee machine exposes<a class="headerlink" href="#what-the-coffee-machine-exposes" title="Link to this heading"></a></h2>
+<p>The Thing Description defines the following interactions:</p>
+<section id="properties">
+<h3>Properties<a class="headerlink" href="#properties" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Property</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">allAvailableResources</span></code></p></td>
+<td><p>object</p></td>
+<td><p>Current percentage of water, milk, chocolate, and coffeeBeans</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">possibleDrinks</span></code></p></td>
+<td><p>array</p></td>
+<td><p>Fixed list of available drink types</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">servedCounter</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>Total number of drinks served so far</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">maintenanceNeeded</span></code></p></td>
+<td><p>boolean</p></td>
+<td><p>Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> automatically when <code class="docutils literal notranslate"><span class="pre">servedCounter</span></code> &gt; 1000; observable</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">schedules</span></code></p></td>
+<td><p>array</p></td>
+<td><p>List of scheduled drink tasks</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="actions">
+<h3>Actions<a class="headerlink" href="#actions" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">makeDrink</span></code></dt><dd><p>Brew a drink. Accepts <code class="docutils literal notranslate"><span class="pre">drinkId</span></code>, <code class="docutils literal notranslate"><span class="pre">size</span></code> (<code class="docutils literal notranslate"><span class="pre">s</span></code>/<code class="docutils literal notranslate"><span class="pre">m</span></code>/<code class="docutils literal notranslate"><span class="pre">l</span></code>), and <code class="docutils literal notranslate"><span class="pre">quantity</span></code> (1–5).
+Defaults to one medium americano if no input is provided.
+Returns <code class="docutils literal notranslate"><span class="pre">{&quot;result&quot;:</span> <span class="pre">true,</span> <span class="pre">&quot;message&quot;:</span> <span class="pre">&quot;...&quot;}</span></code> on success.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">setSchedule</span></code></dt><dd><p>Add a recurring or one-off brew schedule. <code class="docutils literal notranslate"><span class="pre">time</span></code> (24 h format) and <code class="docutils literal notranslate"><span class="pre">mode</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">everyday</span></code>, <code class="docutils literal notranslate"><span class="pre">everyMo</span></code>) are required.</p>
+</dd>
+</dl>
+</section>
+<section id="events">
+<h3>Events<a class="headerlink" href="#events" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">outOfResource</span></code></dt><dd><p>Emitted when a requested drink cannot be made because a resource (water, milk, etc.) has run out.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="reading-the-client-output">
+<h2>Reading the client output<a class="headerlink" href="#reading-the-client-output" title="Link to this heading"></a></h2>
+<p>When the client runs successfully you will see log lines showing each interaction in sequence:</p>
+<ol class="arabic simple">
+<li><p>Read <code class="docutils literal notranslate"><span class="pre">allAvailableResources</span></code> (all at 100 %)</p></li>
+<li><p>Write water level down to 80 % and read it back</p></li>
+<li><p>Subscribe to <code class="docutils literal notranslate"><span class="pre">maintenanceNeeded</span></code> observable property</p></li>
+<li><p>Invoke <code class="docutils literal notranslate"><span class="pre">makeDrink</span></code> for 3 large lattes and log the result</p></li>
+<li><p>Read <code class="docutils literal notranslate"><span class="pre">allAvailableResources</span></code> again to see resource consumption</p></li>
+<li><p>Invoke <code class="docutils literal notranslate"><span class="pre">setSchedule</span></code> for a daily espresso at 10:00</p></li>
+<li><p>Read <code class="docutils literal notranslate"><span class="pre">schedules</span></code> to confirm it was stored</p></li>
+<li><p>Subscribe to the <code class="docutils literal notranslate"><span class="pre">outOfResource</span></code> event</p></li>
+<li><p>Wait 60 seconds for any incoming events, then exit</p></li>
+</ol>
+</section>
+<section id="other-examples">
+<h2>Other examples<a class="headerlink" href="#other-examples" title="Link to this heading"></a></h2>
+<p>Each example directory contains a <code class="docutils literal notranslate"><span class="pre">README.md</span></code> with setup and run instructions.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Example</p></th>
+<th class="head"><p>What it covers</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/eclipse-thingweb/wotpy/tree/develop/examples/coffee-machine">coffee-machine</a></p></td>
+<td><p>Full producer/consumer pair — properties, actions, events, catalogue discovery <em>(this guide)</em></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/eclipse-thingweb/wotpy/tree/develop/examples/temperature">temperature</a></p></td>
+<td><p>Server with a custom property read handler, periodic updates, and threshold events</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/eclipse-thingweb/wotpy/tree/develop/examples/subscriber">subscriber</a></p></td>
+<td><p>Generic consumer that subscribes to all observables on any Thing by TD URL</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/eclipse-thingweb/wotpy/tree/develop/examples/cpumonitor">cpumonitor</a></p></td>
+<td><p>HTTP + WebSocket + MQTT server with environment-variable configuration</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/eclipse-thingweb/wotpy/tree/develop/examples/basic-security-test">basic-security-test</a></p></td>
+<td><p>Basic auth (username/password) over CoAP</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/eclipse-thingweb/wotpy/tree/develop/examples/bearer-security-test">bearer-security-test</a></p></td>
+<td><p>Bearer token auth over HTTP</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/eclipse-thingweb/wotpy/tree/develop/examples/benchmark">benchmark</a></p></td>
+<td><p>Throughput and latency measurement across protocol bindings</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="next-steps">
+<h2>Next steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="protocols.html#protocols"><span class="std std-ref">Protocol Bindings</span></a> — learn how properties, actions, and events map to raw HTTP, WebSocket, MQTT, CoAP, and Zenoh messages</p></li>
+<li><p><a class="reference internal" href="authentication.html#authentication"><span class="std std-ref">Authentication Mechanisms</span></a> — add security to your Things</p></li>
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a> — full API reference</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="WoTPy" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="protocols.html" class="btn btn-neutral float-right" title="Protocol Bindings" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018, Fundacion CTIC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wotpy.protocols.coap.authenticator &mdash; WoTPy 0.17.2 documentation</title>
+  <title>wotpy.protocols.coap.authenticator &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=9fbddafe"></script>
-      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -43,6 +43,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting-started.html">Getting Started with wotpy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../protocols.html">Protocol Bindings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../authentication.html">Authentication Mechanisms</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../../api.html">API Reference</a><ul class="current">
@@ -141,7 +142,7 @@
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.protocols.coap.authenticator.APIKeySecurityAuthenticator">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">APIKeySecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.APIKeySecurityAuthenticator" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">APIKeySecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.APIKeySecurityAuthenticator" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.protocols.coap.authenticator.BaseAuthenticator" title="wotpy.protocols.coap.authenticator.BaseAuthenticator"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAuthenticator</span></code></a></p>
 <p>API Key authenticator.</p>
 <dl class="py method">
@@ -154,7 +155,7 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.protocols.coap.authenticator.AutoSecurityAuthenticator">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">AutoSecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.AutoSecurityAuthenticator" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">AutoSecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.AutoSecurityAuthenticator" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.protocols.coap.authenticator.BaseAuthenticator" title="wotpy.protocols.coap.authenticator.BaseAuthenticator"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAuthenticator</span></code></a></p>
 <p>Auto security authenticator.</p>
 <dl class="py method">
@@ -167,19 +168,19 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.protocols.coap.authenticator.BaseAuthenticator">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">BaseAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.BaseAuthenticator" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">BaseAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.BaseAuthenticator" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>This is the base authenticator class describing
 the authentication interface.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.protocols.coap.authenticator.BaseAuthenticator.authenticate">
-<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">authenticate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">server_creds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.BaseAuthenticator.authenticate" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">authenticate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">server_creds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.BaseAuthenticator.authenticate" title="Link to this definition"></a></dt>
 <dd><p>Checks the credentials of a request.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.protocols.coap.authenticator.BaseAuthenticator.build">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.BaseAuthenticator.build" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.BaseAuthenticator.build" title="Link to this definition"></a></dt>
 <dd><p>Builds an instance of the appropriate subclass for the given SecurityScheme.</p>
 </dd></dl>
 
@@ -187,7 +188,7 @@ the authentication interface.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.protocols.coap.authenticator.BasicSecurityAuthenticator">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">BasicSecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.BasicSecurityAuthenticator" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">BasicSecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.BasicSecurityAuthenticator" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.protocols.coap.authenticator.BaseAuthenticator" title="wotpy.protocols.coap.authenticator.BaseAuthenticator"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAuthenticator</span></code></a></p>
 <p>Basic username and password authenticator.</p>
 <dl class="py method">
@@ -200,7 +201,7 @@ the authentication interface.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.protocols.coap.authenticator.BearerSecurityAuthenticator">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">BearerSecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.BearerSecurityAuthenticator" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">BearerSecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.BearerSecurityAuthenticator" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.protocols.coap.authenticator.BaseAuthenticator" title="wotpy.protocols.coap.authenticator.BaseAuthenticator"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAuthenticator</span></code></a></p>
 <p>Bearer token authenticator.</p>
 <dl class="py method">
@@ -213,7 +214,7 @@ the authentication interface.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.protocols.coap.authenticator.ComboSecurityAuthenticator">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">ComboSecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.ComboSecurityAuthenticator" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">ComboSecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.ComboSecurityAuthenticator" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.protocols.coap.authenticator.BaseAuthenticator" title="wotpy.protocols.coap.authenticator.BaseAuthenticator"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAuthenticator</span></code></a></p>
 <p>Combinator of security schemes authenticator.</p>
 <dl class="py method">
@@ -226,7 +227,7 @@ the authentication interface.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.protocols.coap.authenticator.DigestSecurityAuthenticator">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">DigestSecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.DigestSecurityAuthenticator" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">DigestSecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.DigestSecurityAuthenticator" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.protocols.coap.authenticator.BaseAuthenticator" title="wotpy.protocols.coap.authenticator.BaseAuthenticator"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAuthenticator</span></code></a></p>
 <p>Digest authenticator.</p>
 <dl class="py method">
@@ -239,7 +240,7 @@ the authentication interface.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.protocols.coap.authenticator.NoSecurityAuthenticator">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">NoSecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.NoSecurityAuthenticator" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">NoSecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.NoSecurityAuthenticator" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.protocols.coap.authenticator.BaseAuthenticator" title="wotpy.protocols.coap.authenticator.BaseAuthenticator"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAuthenticator</span></code></a></p>
 <p>Authenticator that allows all requests.</p>
 <dl class="py method">
@@ -252,7 +253,7 @@ the authentication interface.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.protocols.coap.authenticator.OAuth2SecurityAuthenticator">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">OAuth2SecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.OAuth2SecurityAuthenticator" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">OAuth2SecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.OAuth2SecurityAuthenticator" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.protocols.coap.authenticator.BaseAuthenticator" title="wotpy.protocols.coap.authenticator.BaseAuthenticator"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAuthenticator</span></code></a></p>
 <p>OAuth2 authenticator.</p>
 <dl class="py method">
@@ -265,7 +266,7 @@ the authentication interface.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.protocols.coap.authenticator.PSKSecurityAuthenticator">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">PSKSecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.PSKSecurityAuthenticator" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.protocols.coap.authenticator.</span></span><span class="sig-name descname"><span class="pre">PSKSecurityAuthenticator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">security_scheme_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.protocols.coap.authenticator.PSKSecurityAuthenticator" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.protocols.coap.authenticator.BaseAuthenticator" title="wotpy.protocols.coap.authenticator.BaseAuthenticator"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseAuthenticator</span></code></a></p>
 <p>Pre shared key authenticator.</p>
 <dl class="py method">

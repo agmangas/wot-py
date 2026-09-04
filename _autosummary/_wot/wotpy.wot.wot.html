@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wotpy.wot.wot &mdash; WoTPy 0.17.2 documentation</title>
+  <title>wotpy.wot.wot &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=9fbddafe"></script>
-      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -42,6 +42,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../getting-started.html">Getting Started with wotpy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../protocols.html">Protocol Bindings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../authentication.html">Authentication Mechanisms</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../api.html">API Reference</a><ul class="current">
@@ -110,7 +111,7 @@
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.wot.WoT">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.wot.</span></span><span class="sig-name descname"><span class="pre">WoT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">servient</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.wot.</span></span><span class="sig-name descname"><span class="pre">WoT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">servient</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>The WoT object is the API entry point and it is exposed by an
 implementation of the WoT Runtime. The WoT object does not expose
@@ -124,7 +125,7 @@ ConsumedThing object instantiated based on that description.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.wot.WoT.consume_from_url">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">consume_from_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">credentials_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout_secs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.consume_from_url" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">consume_from_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">credentials_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout_secs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.consume_from_url" title="Link to this definition"></a></dt>
 <dd><p>Return a Future that resolves to a ConsumedThing created
 from the thing description retrieved from the given URL.</p>
 </dd></dl>
@@ -138,7 +139,7 @@ that match the optional argument filter of type ThingFilter.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.wot.WoT.fetch">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">headers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout_secs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.fetch" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fetch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">headers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout_secs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.fetch" title="Link to this definition"></a></dt>
 <dd><p>Accepts an url argument and returns a Future
 that resolves with a Thing Description string.</p>
 </dd></dl>
@@ -152,14 +153,14 @@ object, locally created based on the provided initialization parameters.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.wot.WoT.produce_from_url">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">produce_from_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout_secs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.produce_from_url" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">produce_from_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout_secs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.produce_from_url" title="Link to this definition"></a></dt>
 <dd><p>Return a Future that resolves to an ExposedThing created
 from the thing description retrieved from the given URL.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.wot.WoT.register">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thing</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.register" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thing</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.register" title="Link to this definition"></a></dt>
 <dd><p>Generate the Thing Description as td, given the Properties,
 Actions and Events defined for this ExposedThing object.
 Then make a request to register td to the given WoT Thing Directory.</p>
@@ -167,7 +168,7 @@ Then make a request to register td to the given WoT Thing Directory.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.wot.WoT.servient">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">servient</span></span><a class="headerlink" href="#wotpy.wot.wot.WoT.servient" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">servient</span></span><a class="headerlink" href="#wotpy.wot.wot.WoT.servient" title="Link to this definition"></a></dt>
 <dd><p>Servient instance of this WoT entrypoint.</p>
 </dd></dl>
 
@@ -178,14 +179,14 @@ Then make a request to register td to the given WoT Thing Directory.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.wot.WoT.thing_from_model">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">thing_from_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.thing_from_model" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thing_from_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.thing_from_model" title="Link to this definition"></a></dt>
 <dd><p>Takes a ThingModel and builds a Thing.
 Raises if the model has an unexpected type.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.wot.WoT.unregister">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">unregister</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thing</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.unregister" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unregister</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thing</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.wot.WoT.unregister" title="Link to this definition"></a></dt>
 <dd><p>Makes a request to unregister the thing from the given WoT Thing Directory.</p>
 </dd></dl>
 

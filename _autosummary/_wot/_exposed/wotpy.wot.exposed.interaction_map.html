@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wotpy.wot.exposed.interaction_map &mdash; WoTPy 0.17.2 documentation</title>
+  <title>wotpy.wot.exposed.interaction_map &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=9fbddafe"></script>
-      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -43,6 +43,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting-started.html">Getting Started with wotpy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../protocols.html">Protocol Bindings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../authentication.html">Authentication Mechanisms</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../../api.html">API Reference</a><ul class="current">
@@ -132,12 +133,12 @@
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingAction">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.exposed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ExposedThingAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposed_thing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingAction" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.exposed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ExposedThingAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposed_thing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingAction" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>The ThingAction interface implementation for ExposedThing objects.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingAction.invoke">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">invoke</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingAction.invoke" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">invoke</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingAction.invoke" title="Link to this definition"></a></dt>
 <dd><p>The run() method when invoked, starts the Action interaction
 with the input value provided by the inputValue argument.</p>
 </dd></dl>
@@ -146,19 +147,19 @@ with the input value provided by the inputValue argument.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingActionDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.exposed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ExposedThingActionDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingActionDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.exposed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ExposedThingActionDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingActionDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict" title="wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExposedThingInteractionDict</span></code></a></p>
 <p>A dictionary that provides lazy access to the objects that implement
 the ThingAction interface for each action in a given ExposedThing.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingActionDict.interaction_dict">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">interaction_dict</span></span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingActionDict.interaction_dict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">interaction_dict</span></span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingActionDict.interaction_dict" title="Link to this definition"></a></dt>
 <dd><p>Returns the InteractionPattern objects dict by name.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingActionDict.thing_interaction_class">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">thing_interaction_class</span></span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingActionDict.thing_interaction_class" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thing_interaction_class</span></span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingActionDict.thing_interaction_class" title="Link to this definition"></a></dt>
 <dd><p>Returns the class that implements the
 Interaction interface for this type of interaction.</p>
 </dd></dl>
@@ -167,7 +168,7 @@ Interaction interface for this type of interaction.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingEvent">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.exposed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ExposedThingEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposed_thing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingEvent" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.exposed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ExposedThingEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposed_thing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingEvent" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>The ThingEvent interface implementation for ExposedThing objects.</p>
 <dl class="py method">
@@ -186,19 +187,19 @@ Interaction interface for this type of interaction.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingEventDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.exposed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ExposedThingEventDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingEventDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.exposed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ExposedThingEventDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingEventDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict" title="wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExposedThingInteractionDict</span></code></a></p>
 <p>A dictionary that provides lazy access to the objects that implement
 the ThingEvent interface for each event in a given ExposedThing.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingEventDict.interaction_dict">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">interaction_dict</span></span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingEventDict.interaction_dict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">interaction_dict</span></span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingEventDict.interaction_dict" title="Link to this definition"></a></dt>
 <dd><p>Returns the InteractionPattern objects dict by name.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingEventDict.thing_interaction_class">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">thing_interaction_class</span></span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingEventDict.thing_interaction_class" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thing_interaction_class</span></span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingEventDict.thing_interaction_class" title="Link to this definition"></a></dt>
 <dd><p>Returns the class that implements the
 Interaction interface for this type of interaction.</p>
 </dd></dl>
@@ -207,19 +208,19 @@ Interaction interface for this type of interaction.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.exposed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ExposedThingInteractionDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.exposed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ExposedThingInteractionDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">UserDict</span></code></p>
 <p>A dictionary that provides lazy access to the objects that implement
 the Interaction interface for each interaction in a given ExposedThing.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict.interaction_dict">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">interaction_dict</span></span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict.interaction_dict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">interaction_dict</span></span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict.interaction_dict" title="Link to this definition"></a></dt>
 <dd><p>Returns the InteractionPattern objects dict by name.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict.thing_interaction_class">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">thing_interaction_class</span></span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict.thing_interaction_class" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thing_interaction_class</span></span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict.thing_interaction_class" title="Link to this definition"></a></dt>
 <dd><p>Returns the class that implements the
 Interaction interface for this type of interaction.</p>
 </dd></dl>
@@ -228,12 +229,12 @@ Interaction interface for this type of interaction.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingProperty">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.exposed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ExposedThingProperty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposed_thing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingProperty" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.exposed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ExposedThingProperty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposed_thing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingProperty" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>The ThingProperty interface implementation for ExposedThing objects.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingProperty.read">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingProperty.read" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingProperty.read" title="Link to this definition"></a></dt>
 <dd><p>The get() method will fetch the value of the Property.
 A coroutine that yields the value or raises an error.</p>
 </dd></dl>
@@ -246,7 +247,7 @@ A coroutine that yields the value or raises an error.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingProperty.write">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingProperty.write" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingProperty.write" title="Link to this definition"></a></dt>
 <dd><p>The set() method will attempt to set the value of the
 Property specified in the value argument whose type SHOULD
 match the one specified by the type property.
@@ -257,19 +258,19 @@ A coroutine that yields on success or raises an error.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingPropertyDict">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.exposed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ExposedThingPropertyDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingPropertyDict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.exposed.interaction_map.</span></span><span class="sig-name descname"><span class="pre">ExposedThingPropertyDict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingPropertyDict" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict" title="wotpy.wot.exposed.interaction_map.ExposedThingInteractionDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExposedThingInteractionDict</span></code></a></p>
 <p>A dictionary that provides lazy access to the objects that implement
 the ThingProperty interface for each property in a given ExposedThing.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingPropertyDict.interaction_dict">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">interaction_dict</span></span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingPropertyDict.interaction_dict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">interaction_dict</span></span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingPropertyDict.interaction_dict" title="Link to this definition"></a></dt>
 <dd><p>Returns the InteractionPattern objects dict by name.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.interaction_map.ExposedThingPropertyDict.thing_interaction_class">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">thing_interaction_class</span></span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingPropertyDict.thing_interaction_class" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thing_interaction_class</span></span><a class="headerlink" href="#wotpy.wot.exposed.interaction_map.ExposedThingPropertyDict.thing_interaction_class" title="Link to this definition"></a></dt>
 <dd><p>Returns the class that implements the
 Interaction interface for this type of interaction.</p>
 </dd></dl>

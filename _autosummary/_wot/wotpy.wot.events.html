@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wotpy.wot.events &mdash; WoTPy 0.17.2 documentation</title>
+  <title>wotpy.wot.events &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=9fbddafe"></script>
-      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -43,6 +43,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../getting-started.html">Getting Started with wotpy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../protocols.html">Protocol Bindings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../authentication.html">Authentication Mechanisms</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../api.html">API Reference</a><ul class="current">
@@ -135,7 +136,7 @@
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.events.ActionInvocationEmittedEvent">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.events.</span></span><span class="sig-name descname"><span class="pre">ActionInvocationEmittedEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.events.ActionInvocationEmittedEvent" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.events.</span></span><span class="sig-name descname"><span class="pre">ActionInvocationEmittedEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.events.ActionInvocationEmittedEvent" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.events.EmittedEvent" title="wotpy.wot.events.EmittedEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">EmittedEvent</span></code></a></p>
 <p>Event triggered to indicate an action invocation.
 Should be initialized with a ActionInvocationEventInit instance.</p>
@@ -143,7 +144,7 @@ Should be initialized with a ActionInvocationEventInit instance.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.events.ActionInvocationEventInit">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.events.</span></span><span class="sig-name descname"><span class="pre">ActionInvocationEventInit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.events.ActionInvocationEventInit" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.events.</span></span><span class="sig-name descname"><span class="pre">ActionInvocationEventInit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.events.ActionInvocationEventInit" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Represents the data contained in an action invocation event.</p>
 <dl class="field-list simple">
@@ -158,13 +159,13 @@ Should be initialized with a ActionInvocationEventInit instance.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.events.EmittedEvent">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.events.</span></span><span class="sig-name descname"><span class="pre">EmittedEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.events.EmittedEvent" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.events.</span></span><span class="sig-name descname"><span class="pre">EmittedEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.events.EmittedEvent" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Base event class.
 Represents a generic event defined in a TD.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.events.EmittedEvent.data">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#wotpy.wot.events.EmittedEvent.data" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#wotpy.wot.events.EmittedEvent.data" title="Link to this definition"></a></dt>
 <dd><p>Data property.</p>
 </dd></dl>
 
@@ -172,7 +173,7 @@ Represents a generic event defined in a TD.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.events.PropertyChangeEmittedEvent">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.events.</span></span><span class="sig-name descname"><span class="pre">PropertyChangeEmittedEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.events.PropertyChangeEmittedEvent" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.events.</span></span><span class="sig-name descname"><span class="pre">PropertyChangeEmittedEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.events.PropertyChangeEmittedEvent" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.events.EmittedEvent" title="wotpy.wot.events.EmittedEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">EmittedEvent</span></code></a></p>
 <p>Event triggered to indicate a property change.
 Should be initialized with a PropertyChangeEventInit instance.</p>
@@ -180,7 +181,7 @@ Should be initialized with a PropertyChangeEventInit instance.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.events.PropertyChangeEventInit">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.events.</span></span><span class="sig-name descname"><span class="pre">PropertyChangeEventInit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.events.PropertyChangeEventInit" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.events.</span></span><span class="sig-name descname"><span class="pre">PropertyChangeEventInit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.events.PropertyChangeEventInit" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Represents the data contained in a property update event.</p>
 <dl class="field-list simple">
@@ -195,7 +196,7 @@ Should be initialized with a PropertyChangeEventInit instance.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.events.ThingDescriptionChangeEmittedEvent">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.events.</span></span><span class="sig-name descname"><span class="pre">ThingDescriptionChangeEmittedEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.events.ThingDescriptionChangeEmittedEvent" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.events.</span></span><span class="sig-name descname"><span class="pre">ThingDescriptionChangeEmittedEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.events.ThingDescriptionChangeEmittedEvent" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#wotpy.wot.events.EmittedEvent" title="wotpy.wot.events.EmittedEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">EmittedEvent</span></code></a></p>
 <p>Event triggered to indicate a thing description change.
 Should be initialized with a ThingDescriptionChangeEventInit instance.</p>
@@ -203,7 +204,7 @@ Should be initialized with a ThingDescriptionChangeEventInit instance.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.events.ThingDescriptionChangeEventInit">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.events.</span></span><span class="sig-name descname"><span class="pre">ThingDescriptionChangeEventInit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">td_change_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.events.ThingDescriptionChangeEventInit" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.events.</span></span><span class="sig-name descname"><span class="pre">ThingDescriptionChangeEventInit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">td_change_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.events.ThingDescriptionChangeEventInit" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Represents the data contained in a thing description update event.</p>
 <dl class="field-list simple">

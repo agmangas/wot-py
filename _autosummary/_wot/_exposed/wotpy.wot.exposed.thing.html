@@ -6,16 +6,16 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wotpy.wot.exposed.thing &mdash; WoTPy 0.17.2 documentation</title>
+  <title>wotpy.wot.exposed.thing &mdash; WoTPy 0.18.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=9fbddafe"></script>
-      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/documentation_options.js?v=ba2e7b09"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -43,6 +43,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../getting-started.html">Getting Started with wotpy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../protocols.html">Protocol Bindings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../authentication.html">Authentication Mechanisms</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../../api.html">API Reference</a><ul class="current">
@@ -114,52 +115,52 @@
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">wotpy.wot.exposed.thing.</span></span><span class="sig-name descname"><span class="pre">ExposedThing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">servient</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thing</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wotpy.wot.exposed.thing.</span></span><span class="sig-name descname"><span class="pre">ExposedThing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">servient</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thing</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>An entity that serves to define the behavior of a Thing.
 An application uses this class when it acts as the Thing ‘server’.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.HandlerKeys">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">HandlerKeys</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.HandlerKeys" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">HandlerKeys</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.HandlerKeys" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="../../_utils/wotpy.utils.enums.html#wotpy.utils.enums.EnumListMixin" title="wotpy.utils.enums.EnumListMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">EnumListMixin</span></code></a></p>
 <p>Enumeration of handler keys.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.INVOKE_ACTION">
-<span class="sig-name descname"><span class="pre">INVOKE_ACTION</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'invoke_action'</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.INVOKE_ACTION" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">INVOKE_ACTION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'invoke_action'</span></em><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.INVOKE_ACTION" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.OBSERVE">
-<span class="sig-name descname"><span class="pre">OBSERVE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'observe'</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.OBSERVE" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">OBSERVE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'observe'</span></em><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.OBSERVE" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.RETRIEVE_PROPERTY">
-<span class="sig-name descname"><span class="pre">RETRIEVE_PROPERTY</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'retrieve_property'</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.RETRIEVE_PROPERTY" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">RETRIEVE_PROPERTY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'retrieve_property'</span></em><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.RETRIEVE_PROPERTY" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.UPDATE_PROPERTY">
-<span class="sig-name descname"><span class="pre">UPDATE_PROPERTY</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'update_property'</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.UPDATE_PROPERTY" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">UPDATE_PROPERTY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'update_property'</span></em><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.HandlerKeys.UPDATE_PROPERTY" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.InteractionStateKeys">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">InteractionStateKeys</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.InteractionStateKeys" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">InteractionStateKeys</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.InteractionStateKeys" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="../../_utils/wotpy.utils.enums.html#wotpy.utils.enums.EnumListMixin" title="wotpy.utils.enums.EnumListMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">EnumListMixin</span></code></a></p>
 <p>Enumeration of interaction state keys.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.InteractionStateKeys.PROPERTY_VALUES">
-<span class="sig-name descname"><span class="pre">PROPERTY_VALUES</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'property_values'</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.InteractionStateKeys.PROPERTY_VALUES" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">PROPERTY_VALUES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'property_values'</span></em><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.InteractionStateKeys.PROPERTY_VALUES" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.actions">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">actions</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.actions" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">actions</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.actions" title="Link to this definition"></a></dt>
 <dd><p>Returns a dictionary of ThingAction items.</p>
 </dd></dl>
 
@@ -200,7 +201,7 @@ the event_name argument and data specified by the payload argument.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.events">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">events</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.events" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">events</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.events" title="Link to this definition"></a></dt>
 <dd><p>Returns a dictionary of ThingEvent items.</p>
 </dd></dl>
 
@@ -213,7 +214,7 @@ WoT interactions using Properties, Actions and Events will be possible.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.handle_write_property">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">handle_write_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.handle_write_property" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">handle_write_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.handle_write_property" title="Link to this definition"></a></dt>
 <dd><p>Function that gets called from protocol servers to handle external write
 requests. In contrast to internal writes that are allowed on readOnly properties,
 external property writes fail.</p>
@@ -221,13 +222,13 @@ external property writes fail.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.id">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.id" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.id" title="Link to this definition"></a></dt>
 <dd><p>Returns the ID of the Thing.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.invoke_action">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">invoke_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.invoke_action" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">invoke_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.invoke_action" title="Link to this definition"></a></dt>
 <dd><p>Invokes an Action with the given parameters and yields with the invocation result.</p>
 </dd></dl>
 
@@ -254,13 +255,13 @@ from notifications to the Thing Description.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.properties">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">properties</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.properties" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">properties</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.properties" title="Link to this definition"></a></dt>
 <dd><p>Returns a dictionary of ThingProperty items.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.read_property">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">read_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.read_property" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.read_property" title="Link to this definition"></a></dt>
 <dd><p>Takes the Property name as the name argument, then requests from
 the underlying platform and the Protocol Bindings to retrieve the
 Property on the remote Thing and return the result. Returns a Future
@@ -290,7 +291,7 @@ updates the Thing Description and returns the object.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.servient">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">servient</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.servient" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">servient</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.servient" title="Link to this definition"></a></dt>
 <dd><p>Servient that contains this ExposedThing.</p>
 </dd></dl>
 
@@ -326,19 +327,19 @@ Throws on error. Returns a reference to the same object for supporting chaining.
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.thing">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">thing</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.thing" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thing</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.thing" title="Link to this definition"></a></dt>
 <dd><p>Returns the object that represents the Thing beneath this ExposedThing.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.title">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">title</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.title" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">title</span></span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.title" title="Link to this definition"></a></dt>
 <dd><p>Returns the title of the Thing.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wotpy.wot.exposed.thing.ExposedThing.write_property">
-<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">write_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.write_property" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wotpy.wot.exposed.thing.ExposedThing.write_property" title="Link to this definition"></a></dt>
 <dd><p>Takes the Property name as the name argument and the new value as the
 value argument, then requests from the underlying platform and the Protocol
 Bindings to update the Property on the remote Thing and return the result.
