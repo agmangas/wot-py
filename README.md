@@ -142,3 +142,9 @@ task: [docker-tests] echo "✅ Tests for Python 3.10 completed successfully"
 ```
 
 An MQTT broker is needed as a dependency for the MQTT binding tests. The task will automatically create a new container based on the [eclipse-mosquitto image](https://hub.docker.com/_/eclipse-mosquitto) and expose the broker port to the host. The `WOTPY_TESTS_MQTT_BROKER_URL` environment variable will be set to the broker URL.
+
+## Publishing New Versions
+
+You should use the `version.sh` file and not change any versions anywhere manually.
+Running `version.sh minor` will bump the minor version, push the tags and update the master branch and also trigger the release.
+Make sure to clear the `.venv` environment and reinstall the packages before publishing.
