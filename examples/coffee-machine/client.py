@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
 # Copyright (c) 2023 CTIC Centro Tecnologico
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -29,20 +30,30 @@ https://github.com/eclipse/thingweb.node-wot/blob/master/packages/examples/src/s
 import asyncio
 import json
 import logging
-
-import coloredlogs
+import urllib.request
 
 from wotpy.wot.servient import Servient
 from wotpy.wot.wot import WoT
 
 _logger = logging.getLogger("coffee-machine-client")
 
+CATALOGUE_URL = "http://127.0.0.1:9090"
+THING_TITLE = "Smart-Coffee-Machine"
+
+
+async def discover_thing_url(catalogue: str, title: str) -> str:
+    loop = asyncio.get_event_loop()
+    data = await loop.run_in_executor(
+        None, lambda: urllib.request.urlopen(catalogue).read()
+    )
+    return json.loads(data)[title]
+
 
 async def main():
     wot = WoT(servient=Servient())
 
     consumed_thing = await wot.consume_from_url(
-        "http://127.0.0.1:9090/smart-coffee-machine-97e83de1-f5c9-a4a0-23b6-be918d3a22ca"
+        await discover_thing_url(CATALOGUE_URL, THING_TITLE)
     )
 
     _logger.info("Consumed Thing: {}".format(consumed_thing))
@@ -121,6 +132,27 @@ async def main():
     await asyncio.sleep(wait_sleep_secs)
 
 
+def _setup_logging() -> None:
+    colors = {
+        logging.DEBUG: "\033[37m",
+        logging.INFO: "\033[36m",
+        logging.WARNING: "\033[33m",
+        logging.ERROR: "\033[31m",
+        logging.CRITICAL: "\033[35m",
+    }
+    reset = "\033[0m"
+
+    class _ColorFormatter(logging.Formatter):
+        def format(self, record: logging.LogRecord) -> str:
+            record.levelname = f"{colors.get(record.levelno, '')}{record.levelname}{reset}"
+            return super().format(record)
+
+    handler = logging.StreamHandler()
+    handler.setFormatter(_ColorFormatter("%(asctime)s %(name)s %(levelname)s %(message)s"))
+    logging.root.setLevel(logging.DEBUG)
+    logging.root.addHandler(handler)
+
+
 if __name__ == "__main__":
-    coloredlogs.install(level="DEBUG")
+    _setup_logging()
     asyncio.run(main())

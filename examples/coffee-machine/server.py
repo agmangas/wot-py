@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
 # Copyright (c) 2023 CTIC Centro Tecnologico
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -32,8 +33,6 @@ import logging
 import math
 import os
 
-import coloredlogs
-
 from wotpy.protocols.http.server import HTTPServer
 from wotpy.protocols.ws.server import WebsocketServer
 from wotpy.wot.servient import Servient
@@ -52,6 +51,12 @@ A complementary tutorial is available at http://www.thingweb.io/smart-coffee-mac
     "@context": [
         "https://www.w3.org/2019/wot/td/v1",
     ],
+    "securityDefinitions": {
+        "nosec_sc": {
+            "scheme": "nosec",
+        }
+    },
+    "security": "nosec_sc",
     "properties": {
         "allAvailableResources": {
             "type": "object",
@@ -462,6 +467,27 @@ def notify(msg, subscribers=["admin@coffeeMachine.com"]):
     _logger.info(msg)
 
 
+def _setup_logging() -> None:
+    colors = {
+        logging.DEBUG: "\033[37m",
+        logging.INFO: "\033[36m",
+        logging.WARNING: "\033[33m",
+        logging.ERROR: "\033[31m",
+        logging.CRITICAL: "\033[35m",
+    }
+    reset = "\033[0m"
+
+    class _ColorFormatter(logging.Formatter):
+        def format(self, record: logging.LogRecord) -> str:
+            record.levelname = f"{colors.get(record.levelno, '')}{record.levelname}{reset}"
+            return super().format(record)
+
+    handler = logging.StreamHandler()
+    handler.setFormatter(_ColorFormatter("%(asctime)s %(name)s %(levelname)s %(message)s"))
+    logging.root.setLevel(logging.DEBUG)
+    logging.root.addHandler(handler)
+
+
 if __name__ == "__main__":
-    coloredlogs.install(level="DEBUG")
+    _setup_logging()
     asyncio.run(main())

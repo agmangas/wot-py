@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Contributors to the Eclipse Foundation -->
+
 <h1>
   <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/eclipse-thingweb/thingweb/master/brand/logos/wotpy_for_dark_bg.svg">
@@ -23,6 +25,8 @@ Please note that there's still a **significant pending issue**. Although the pro
 * S. Käbisch and T. Kamiya, ‘Web of Things (WoT) Thing Description’, W3C, W3C Working Draft, Oct. 2018. [Online]. Available: https://www.w3.org/TR/2018/WD-wot-thing-description-20181021/
 
 > ℹ️ It is in our plans to get wotpy up to speed with the latest version of the specifications. We don't have an ETA for this, but we will be working on it in the near future.
+>
+> If you are looking for a Python-like reference for the current Scripting API, see [the `WoT` namespace definition](https://w3c.github.io/wot-scripting-api/#the-wot-namespace) in the W3C WoT Scripting API specification. The canonical reference implementation is [node-wot](https://github.com/eclipse-thingweb/node-wot).
 
 In summary, wotpy is mature enough to be used in projects; in fact, it is being used in production at [CTIC](https://github.com/fundacionctic). However, it is not an adequate representation of the current status of the W3C WoT. We greatly encourage you to check the [Developer Resources section on the WoT website](https://www.w3.org/WoT/developers) to find out about the current state of the art.
 
@@ -48,7 +52,7 @@ pip install wotpy
 
 ### Development
 
-The development workflow of wotpy is based on [Taskfile](https://taskfile.dev/installation/), so that's the first thing you need to install.
+The development workflow of wotpy is based on [Taskfile](https://taskfile.dev/installation/) v3.28 or later, so that's the first thing you need to install. If you are on Windows, see [Running tests on Windows](#running-tests-on-windows).
 
 Then, to create a virtual environment under `.venv`, and install the project in development mode with all the test dependencies, run:
 * Using `pip`:
@@ -60,7 +64,44 @@ task venv
 task uv-venv
 ```
 
-Some wotpy features (e.g., the CoAP binding) are not available outside of Linux. If you have Docker installed on your system and want to run the tests in a Linux environment easily, you can use the Docker-based test task:
+If `task` is not available or you have an older version, you can run the underlying commands directly:
+* Using `pip`:
+```sh
+python3 -m venv .venv
+.venv/bin/pip install -U -e ".[tests]"
+```
+* Using `uv`:
+```sh
+uv venv .venv
+uv sync --extra tests
+```
+
+### Documentation
+
+The docs are built with [Sphinx](https://www.sphinx-doc.org/). Install the docs dependencies first:
+
+```sh
+pip install -e ".[docs]"
+```
+
+Or with `uv`:
+
+```sh
+uv sync --extra docs
+```
+
+Then build from the `docs/` directory:
+
+```sh
+cd docs
+make html
+```
+
+The output is written to `docs/_build/html/`. Open `docs/_build/html/index.html` in a browser to preview. Use `make clean html` to force a full rebuild.
+
+## Running tests on Windows
+
+Some wotpy features (e.g., the CoAP binding) are not available outside of Linux. If you have Docker installed and want to run the full test suite in a Linux environment, you can use the Docker-based test task:
 
 ```sh
 $ PYTHON_TAG="3.10" task docker-tests
