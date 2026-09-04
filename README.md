@@ -147,4 +147,4 @@ An MQTT broker is needed as a dependency for the MQTT binding tests. The task wi
 
 You should use the `version.sh` file and not change any versions anywhere manually.
 Running `version.sh minor` will bump the minor version, push the tags and update the master branch and also trigger the release.
-Make sure to clear the `.venv` environment and reinstall the packages before publishing
+Make sure to clear the `.venv` environment and reinstall the packages before publishing.
