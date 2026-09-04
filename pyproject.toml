@@ -44,6 +44,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+dev = [
+  "bump2version>=1.0.1"
+]
+
 tests = [
   "cryptography>=49.0.0",
   "pyOpenSSL>=25.1.0",
